@@ -1,0 +1,15 @@
+Job Title: Senior Backend Engineer
+Company: CloudScale Inc.
+
+About the Role:
+We are looking for a Senior Backend Engineer to design and scale high-throughput API microservices.
+
+Requirements:
+- 5+ years of experience with Python and backend frameworks (FastAPI, Django).
+- Extensive hands-on experience with PostgreSQL database optimization and Redis caching.
+- Deep expertise in AWS cloud services (S3, ECS, Lambda) and Kubernetes container orchestration.
+- Proven track record leading technical teams and optimizing system latency.
+
+Nice to Have:
+- Experience with Kafka or event-driven streaming.
+- Infrastructure as code expertise using Terraform.
