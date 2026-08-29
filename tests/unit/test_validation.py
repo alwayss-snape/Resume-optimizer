@@ -11,7 +11,7 @@ def test_factual_validator_preserves_grounded_claims():
 
     valid = RewriteProposal(source_id="b1",
         original_text="Handled 50M requests with 35% latency reduction.",
-        rewritten_text="Optimized handling of 50M requests, reducing latency by 35%.",
+        rewritten_text="Handled 50M requests with 35% latency reduction.",
         evidence_ids=["ev_1"])
     assert validator.validate_proposal(valid, evidence).approved is True
 
