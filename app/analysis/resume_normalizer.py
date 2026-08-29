@@ -139,7 +139,7 @@ class ResumeNormalizer:
                 parts = text.split(":")
                 category = parts[0].strip() if len(parts) > 1 else "Skills"
                 raw_skills_text = parts[1] if len(parts) > 1 else parts[0]
-                skills_list = [s.strip() for s in re.split(r'[,;\|\bullet\*\•\n]', raw_skills_text) if s.strip()]
+                skills_list = [s.strip() for s in re.split(r'[,;\|\*\•\n]', raw_skills_text) if s.strip()]
                 
                 if category not in skills_dict:
                     skills_dict[category] = []
