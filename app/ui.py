@@ -1,3 +1,4 @@
+import base64
 import os
 import sys
 import tempfile
@@ -71,7 +72,7 @@ with col1:
     uploaded_file = st.file_uploader(
         "Choose a DOCX or PDF resume",
         type=["docx", "pdf"],
-        help="DOCX preserves layout. PDF reconstructs into standard ATS format."
+        help="DOCX output preserves the uploaded layout. PDF layout reproduction is best-effort."
     )
 
 with col2:
@@ -172,13 +173,18 @@ if btn_analyze or btn_tailor:
 
                 with preview_tab:
                     st.markdown("### Tailored Resume Document Preview")
-                    if results.get("preview_md"):
-                        st.markdown(
-                            f'<div style="background-color: #111827; border: 1px solid #374151; border-radius: 10px; padding: 2rem;">'
-                            f'{results["preview_md"]}'
-                            f'</div>',
-                            unsafe_allow_html=True,
+                    if results.get("pdf") and os.path.exists(results["pdf"]):
+                        # Preview the generated document itself, not a flattened
+                        # Markdown reconstruction of its contents.
+                        with open(results["pdf"], "rb") as f:
+                            pdf_b64 = base64.b64encode(f.read()).decode("ascii")
+                        st.components.v1.html(
+                            f'<iframe src="data:application/pdf;base64,{pdf_b64}" '
+                            f'width="100%" height="900" style="border: 1px solid #374151;"></iframe>',
+                            height=920,
                         )
+                    else:
+                        st.info("The generated DOCX is available for download. A visual preview requires PDF conversion.")
 
                 with changes_tab:
                     st.markdown("### Change Log & Audit Report")
