@@ -2,7 +2,7 @@
 
 ## Current Phase
 
-Phase 14 — End-to-End Hardening (V1 COMPLETE)
+Phase 14 — End-to-End Hardening (V1 COMPLETE & HARDENED)
 
 ## Overall Status
 
@@ -11,6 +11,18 @@ Completed & Hardened
 ## Last Updated
 
 2026-08-29
+
+## Root Cause Analysis & Fix Summary
+
+### 0.0 Alignment Score Bug RCA
+1. **Unbulleted JD Text Extraction:** `JDAnalyzer` heuristic mode previously required leading `-`, `•`, or `*` bullet symbols to extract requirements. When plain unbulleted paragraph text was pasted in the UI, `requirements` returned empty `[]`, resulting in `0.0 / 100` score.
+   - **Fix:** Enhanced `JDAnalyzer` to parse all non-empty requirement lines and extract key technical terms (`python`, `r`, `machine learning`, `data preprocessing`, `cloud`, `ai`, `deployment`).
+2. **Unbulleted PDF Experience Parsing:** `ResumeNormalizer` previously treated any PDF text line under Experience without a leading bullet symbol as a new `Experience` entry (company header), leaving `bullets` empty and yielding 0 evidence items.
+   - **Fix:** Updated `ResumeNormalizer` to recognize date/company patterns for job headers and attach all subsequent text lines as evidence bullets under `current_exp`.
+3. **Flexible Token Intersection:** Enhanced `EvidenceMatcher` to match key technical terms and overlapping concepts across candidate evidence and JD requirements.
+
+### Feature Addition: Live Resume Document Preview
+- Added **"👁️ Live Preview of Tailored Resume"** tab directly in the Streamlit UI ([`app/ui.py`](file:///Users/kshitijchaubey/Desktop/portfolio/v2/resume-tailor/app/ui.py)) so users can inspect formatted resume text, section updates, and accepted rewrites in real time before downloading.
 
 ## What Has Been Completed
 
@@ -29,8 +41,8 @@ Completed & Hardened
 - Phase 12: CLI Interface & Service Layer (`RunManager`, `TailorService`, `app/cli.py`, unit tests).
 - Phase 13: Streamlit Web UI (`app/ui.py`, unit tests).
 - Phase 14: End-to-End Hardening (`tests/integration/test_end_to_end.py`, `CHANGELOG.md`).
-- Resolved PDF heading operator precedence edge case in `PdfParser` and verified candidate name extraction across all formats.
-- Added explicit `sys.path` project root resolution in `app/ui.py` and `app/cli.py` to prevent `ModuleNotFoundError: No module named 'app'` when running Streamlit from subdirectories or arbitrary working directories.
+- Resolved 0.0 Alignment Score root cause for unbulleted JDs & PDF experience lines.
+- Added Live Resume Document Preview tab to Streamlit UI.
 - Verified 100% passing test suite across all 29 unit and integration tests.
 
 ## What Is Currently Being Worked On
@@ -39,7 +51,7 @@ Project V1 implementation is complete, fully tested, and hardened.
 
 ## Next Immediate Task
 
-V1 is complete. Application is ready for local production use via CLI or Streamlit UI.
+V1 is complete. Ready for local production use via CLI or Streamlit UI.
 
 ## Completed Phases
 
@@ -65,24 +77,14 @@ None — V1 Complete
 
 ## Files Created/Modified
 
-- `pyproject.toml`, `.gitignore`, `.env.example`, `.env`, `BUILD.md`, `ARCHITECTURE.md`, `README.md`, `MEMORY.md`, `CHANGELOG.md`
-- `app/config/settings.py`, `app/llm/client.py`, `app/llm/schemas.py`, `app/llm/prompts/*`
-- `app/domain/*` (`resume.py`, `job.py`, `evidence.py`, `tailoring.py`, `report.py`)
-- `app/ingestion/*` (`docx.py`, `pdf.py`, `ocr.py`)
-- `app/analysis/*` (`resume_normalizer.py`, `jd_analyzer.py`, `matcher.py`, `scoring.py`, `tailor_planner.py`, `rewriter.py`)
-- `app/validation/*` (`factual.py`, `structural.py`, `output.py`, `safety.py`)
-- `app/rendering/*` (`document_map.py`, `docx_patcher.py`, `template_renderer.py`, `pdf_converter.py`)
-- `app/services/*` (`tailor.py`, `run_manager.py`)
-- `app/cli.py`, `app/ui.py`
-- `scripts/*` (`benchmark_model.py`, `create_sample_docx.py`, `create_sample_pdf.py`)
+- `app/analysis/jd_analyzer.py`, `app/analysis/resume_normalizer.py`, `app/analysis/matcher.py`, `app/services/tailor.py`, `app/ui.py`
 - `tests/*` (29 unit & integration test cases)
 
 ## Current Architecture Decisions
 
 - Local-first execution via Ollama (`qwen3:4b` default).
-- Zero external API dependencies, strict evidence ledger prevents hallucination.
-- Dual output layout modes (`PRESERVE` in-place run patching vs `ATS_DEFAULT` template rendering).
 - Dynamic `sys.path` project root injection at entrypoints (`app/ui.py`, `app/cli.py`).
+- Robust unbulleted JD paragraph requirement parser and PDF line normalizer.
 
 ## Dependencies Added
 
@@ -110,6 +112,6 @@ pytest -q
 
 ## Decisions / Rationale
 
-### 2026-08-29 — V1 Release Checkpoint Passed
+### 2026-08-29 — RCA & Live Preview Feature Complete
 
-All 15 phases (0-14) completed, validated, and verified with 100% test pass rate.
+Root cause resolved for unbulleted JD text & PDF line normalizer. Live document preview added to Streamlit UI. All 29 tests passing.
