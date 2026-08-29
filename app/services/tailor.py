@@ -42,6 +42,42 @@ class TailorService:
         self.safety_guard = SafetyGuard()
         self.run_manager = RunManager()
 
+    def generate_preview_md(self, resume: Resume) -> str:
+        lines = [f"# {resume.candidate.name}\n"]
+        contact = []
+        if resume.candidate.email:
+            contact.append(f"📧 {resume.candidate.email}")
+        if resume.candidate.phone:
+            contact.append(f"📞 {resume.candidate.phone}")
+        if resume.candidate.location:
+            contact.append(f"📍 {resume.candidate.location}")
+        if contact:
+            lines.append(" | ".join(contact) + "\n")
+
+        if resume.summary:
+            lines.append("## Professional Summary\n" + resume.summary + "\n")
+
+        if resume.experience:
+            lines.append("## Work Experience\n")
+            for exp in resume.experience:
+                lines.append(f"### {exp.company} — *{exp.title}*\n")
+                for bullet in exp.bullets:
+                    lines.append(f"- {bullet.text}")
+                lines.append("")
+
+        if resume.skills:
+            lines.append("## Technical Skills\n")
+            for cat, s_list in resume.skills.items():
+                lines.append(f"**{cat}:** {', '.join(s_list)}")
+            lines.append("")
+
+        if resume.education:
+            lines.append("## Education\n")
+            for edu in resume.education:
+                lines.append(f"- **{edu.degree}** — {edu.institution}")
+
+        return "\n".join(lines)
+
     def analyze_only(self, resume_path: str, jd_text: str) -> TailoringReport:
         clean_jd_text = self.safety_guard.sanitize(jd_text)
         
@@ -106,15 +142,16 @@ class TailorService:
         docx_output_path = os.path.join(output_dir, "tailored_resume.docx")
         pdf_output_path = os.path.join(output_dir, "tailored_resume.pdf")
 
+        # Update resume model with approved rewrites for ATS & preview rendering
+        prop_dict = {p.source_id: p.rewritten_text for p in approved_proposals}
+        for exp in resume.experience:
+            for b in exp.bullets:
+                if b.id in prop_dict:
+                    b.text = prop_dict[b.id]
+
         if mode == "PRESERVE" and not is_pdf:
             self.docx_patcher.patch(resume_path, raw_doc.document_map, approved_proposals, docx_output_path)
         else:
-            # Update resume model with approved rewrites for ATS rendering
-            prop_dict = {p.source_id: p.rewritten_text for p in approved_proposals}
-            for exp in resume.experience:
-                for b in exp.bullets:
-                    if b.id in prop_dict:
-                        b.text = prop_dict[b.id]
             self.template_renderer.render_ats_default(resume, docx_output_path)
 
         # PDF Conversion
@@ -144,10 +181,13 @@ class TailorService:
                 for req in plan.unsupported_requirements:
                     f.write(f"- {req}\n")
 
+        preview_md = self.generate_preview_md(resume)
+
         return {
             "docx": docx_output_path,
             "pdf": pdf_output_path if pdf_res else "",
             "changes_md": report_md_path,
-            "alignment_score": str(score),
+            "alignment_score": f"{score:.1f}",
             "run_dir": run_dir,
+            "preview_md": preview_md,
         }

@@ -1,5 +1,5 @@
 import re
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Set
 from app.domain.evidence import Evidence
 from app.domain.job import JobDescription, Requirement
 from app.domain.report import Match
@@ -15,6 +15,15 @@ ALIASES: Dict[str, str] = {
     "js": "javascript",
     "py": "python",
     "tf": "terraform",
+    "ml": "machine learning",
+    "ai": "artificial intelligence",
+    "dl": "deep learning",
+}
+
+STOP_WORDS: Set[str] = {
+    "and", "the", "with", "for", "such", "as", "that", "this", "should", "have", "must",
+    "required", "knowledge", "experience", "familiarity", "candidate", "minimum", "years",
+    "position", "office", "full", "time", "is", "of", "in", "to", "or", "a", "an", "on", "at"
 }
 
 class EvidenceMatcher:
@@ -25,6 +34,10 @@ class EvidenceMatcher:
         cleaned = text.lower().strip()
         return ALIASES.get(cleaned, cleaned)
 
+    def _extract_key_tokens(self, text: str) -> Set[str]:
+        tokens = set(re.findall(r'\b[A-Za-z0-9\+#\.-]{2,}\b', text.lower()))
+        return {ALIASES.get(t, t) for t in tokens if t not in STOP_WORDS}
+
     def match(
         self,
         job_description: JobDescription,
@@ -32,40 +45,45 @@ class EvidenceMatcher:
     ) -> List[Match]:
         matches: List[Match] = []
 
-        # Prepare normalized evidence texts
-        norm_evidence = [
-            (ev, self._normalize_term(ev.text), ev.text.lower())
-            for ev in evidence_list
-        ]
+        # Build evidence tokens mapping
+        evidence_data = []
+        for ev in evidence_list:
+            ev_norm = self._normalize_term(ev.text)
+            ev_tokens = self._extract_key_tokens(ev.text)
+            evidence_data.append((ev, ev_norm, ev.text.lower(), ev_tokens))
 
         for req in job_description.requirements:
             req_text_norm = self._normalize_term(req.text)
+            req_tokens = self._extract_key_tokens(req.text)
+
             matched_evidence_ids: List[str] = []
             status = "MISSING"
-            explanation = "No direct or strong evidence found in resume."
+            explanation = "No direct or strong evidence found in candidate resume."
             confidence = 1.0
 
-            # Layer 1 & Layer 2: Exact & Alias matching
-            for ev, norm_text, raw_lower in norm_evidence:
-                if req_text_norm in raw_lower or req_text_norm in norm_text:
+            # Layer 1 & Layer 2: Substring & Token matching
+            for ev, ev_norm, raw_lower, ev_tokens in evidence_data:
+                # Substring match
+                if req_text_norm in raw_lower or req_text_norm in ev_norm:
                     matched_evidence_ids.append(ev.id)
                     status = "EXPLICIT"
-                    explanation = f"Direct match found in candidate evidence (Evidence ID: {ev.id})."
+                    explanation = f"Direct match found in evidence (ID: {ev.id})."
                     break
-                
-                # Check individual word tokens for multi-word skill requirements
-                req_tokens = set(re.findall(r'\w+', req_text_norm))
-                ev_tokens = set(re.findall(r'\w+', norm_text))
-                if req_tokens and req_tokens.issubset(ev_tokens):
-                    matched_evidence_ids.append(ev.id)
-                    status = "SUPPORTED"
-                    explanation = f"Strong conceptual match found in evidence ID {ev.id}."
-                    break
-                elif req_tokens and len(req_tokens.intersection(ev_tokens)) >= len(req_tokens) * 0.5:
-                    if status == "MISSING":
-                        matched_evidence_ids.append(ev.id)
-                        status = "PARTIAL"
-                        explanation = f"Partial term match found in evidence ID {ev.id}."
+
+                # Key technical token intersection
+                if req_tokens and ev_tokens:
+                    intersection = req_tokens.intersection(ev_tokens)
+                    if intersection:
+                        overlap_ratio = len(intersection) / len(req_tokens)
+                        if overlap_ratio >= 0.5 or len(intersection) >= 2:
+                            matched_evidence_ids.append(ev.id)
+                            status = "EXPLICIT" if overlap_ratio >= 0.8 else "SUPPORTED"
+                            explanation = f"Strong conceptual match on '{', '.join(intersection)}' (Evidence ID: {ev.id})."
+                            break
+                        elif len(intersection) == 1 and status == "MISSING":
+                            matched_evidence_ids.append(ev.id)
+                            status = "PARTIAL"
+                            explanation = f"Partial match on '{', '.join(intersection)}' (Evidence ID: {ev.id})."
 
             matches.append(Match(
                 requirement_id=req.id,

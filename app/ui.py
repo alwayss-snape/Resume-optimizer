@@ -167,10 +167,24 @@ if btn_analyze or btn_tailor:
                                 use_container_width=True,
                             )
 
-                st.write("### Change Log & Report")
-                if os.path.exists(results["changes_md"]):
-                    with open(results["changes_md"], "r", encoding="utf-8") as f:
-                        st.markdown(f.read())
+                st.write("---")
+                preview_tab, changes_tab = st.tabs(["👁️ Live Preview of Tailored Resume", "📋 Change Log & Audit Report"])
+
+                with preview_tab:
+                    st.markdown("### Tailored Resume Document Preview")
+                    if results.get("preview_md"):
+                        st.markdown(
+                            f'<div style="background-color: #111827; border: 1px solid #374151; border-radius: 10px; padding: 2rem;">'
+                            f'{results["preview_md"]}'
+                            f'</div>',
+                            unsafe_allow_html=True,
+                        )
+
+                with changes_tab:
+                    st.markdown("### Change Log & Audit Report")
+                    if os.path.exists(results["changes_md"]):
+                        with open(results["changes_md"], "r", encoding="utf-8") as f:
+                            st.markdown(f.read())
 
         except Exception as e:
             st.error(f"Execution Error: {e}")

@@ -16,11 +16,21 @@ class LLMJDAnalysisOutput(BaseModel):
     keywords: List[str] = Field(default_factory=list)
 
 class JDAnalyzer:
+    STOP_WORDS = {"and", "the", "with", "for", "such", "as", "that", "this", "should", "have", "must", "required", "knowledge", "experience", "familiarity"}
+
     def __init__(self, llm_client: Optional[LLMClient] = None):
         self.llm_client = llm_client
 
+    def extract_keywords_from_text(self, text: str) -> List[str]:
+        words = re.findall(r'\b[A-Za-z0-9\+#\.-]{2,}\b', text)
+        keywords = []
+        for w in words:
+            w_clean = w.strip(".,()")
+            if w_clean.lower() not in self.STOP_WORDS and len(w_clean) > 1:
+                keywords.append(w_clean)
+        return list(dict.fromkeys(keywords))
+
     def analyze(self, jd_text: str) -> JobDescription:
-        # Heuristic baseline extraction
         lines = [line.strip() for line in jd_text.split("\n") if line.strip()]
         job_title = None
         company = None
@@ -31,7 +41,7 @@ class JDAnalyzer:
             elif line.lower().startswith("company:"):
                 company = line.split(":", 1)[1].strip()
 
-        # If LLM client provided and available, perform LLM extraction
+        # Attempt LLM extraction if client available
         if self.llm_client and self.llm_client.is_available():
             try:
                 prompt_path = os.path.join(os.path.dirname(__file__), "..", "llm", "prompts", "jd_analysis.txt")
@@ -89,37 +99,56 @@ class JDAnalyzer:
                         priority="required",
                     ))
 
-                return JobDescription(
-                    job_title=extracted.job_title or job_title,
-                    company=extracted.company or company,
-                    requirements=requirements,
-                    keywords=extracted.keywords,
-                    raw_text=jd_text,
-                )
-            except Exception as e:
-                pass  # Fallback to heuristic parsing if LLM call fails
+                if requirements:
+                    return JobDescription(
+                        job_title=extracted.job_title or job_title or "Target Role",
+                        company=extracted.company or company or "Company",
+                        requirements=requirements,
+                        keywords=extracted.keywords or self.extract_keywords_from_text(jd_text),
+                        raw_text=jd_text,
+                    )
+            except Exception:
+                pass  # Fallback to robust heuristic parsing
 
-        # Pure heuristic parsing fallback
+        # Robust heuristic extraction (works for bulleted AND unbulleted text)
         req_counter = 0
         requirements: List[Requirement] = []
-        keywords: List[str] = []
         is_preferred = False
 
         for line in lines:
-            if "nice to have" in line.lower() or "preferred" in line.lower():
+            if line.lower().startswith("job title:") or line.lower().startswith("company:"):
+                continue
+
+            line_lower = line.lower()
+            if any(k in line_lower for k in ("nice to have", "preferred", "optional", "plus")):
                 is_preferred = True
-            if line.startswith("-") or line.startswith("•") or line.startswith("*"):
-                req_text = line.lstrip("-•* ").strip()
-                req_counter += 1
-                requirements.append(Requirement(
-                    id=f"req_{req_counter:03d}",
-                    text=req_text,
-                    category="skill",
-                    priority="preferred" if is_preferred else "required",
-                ))
+
+            clean_line = line.lstrip("-•* ").strip()
+            if len(clean_line) < 5:
+                continue
+
+            # Determine category
+            if any(k in line_lower for k in ("year", "years", "experience", "background")):
+                category = "experience"
+            elif any(k in line_lower for k in ("degree", "education", "bachelor", "master", "phd")):
+                category = "qualification"
+            elif any(k in line_lower for k in ("responsible", "manage", "lead", "develop", "design", "build")):
+                category = "responsibility"
+            else:
+                category = "skill"
+
+            req_counter += 1
+            requirements.append(Requirement(
+                id=f"req_{req_counter:03d}",
+                text=clean_line,
+                category=category,
+                priority="preferred" if is_preferred else "required",
+            ))
+
+        keywords = self.extract_keywords_from_text(jd_text)
 
         return JobDescription(
-            job_title=job_title or "Position",
+            job_title=job_title or "Target Role",
             company=company or "Company",
             requirements=requirements,
             keywords=keywords,
