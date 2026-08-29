@@ -34,9 +34,17 @@ class FactualValidator:
     def extract_numbers(self, text: str) -> set[str]:
         return set(self.NUMERIC_PATTERN.findall(text))
 
+    @staticmethod
+    def _canonical_term(token: str) -> str:
+        token = token.lower()
+        for suffix in ("ing", "ed", "es", "s"):
+            if token.endswith(suffix) and len(token) > len(suffix) + 2:
+                return token[:-len(suffix)]
+        return token
+
     def _factual_terms(self, text: str) -> set[str]:
         return {
-            token.lower() for token in self.TOKEN_RE.findall(text)
+            self._canonical_term(token) for token in self.TOKEN_RE.findall(text)
             if token.lower() not in self.NON_FACTUAL_WORDS
         }
 
