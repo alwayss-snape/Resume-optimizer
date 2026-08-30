@@ -183,8 +183,11 @@ if btn_analyze or btn_tailor:
                             f'width="100%" height="900" style="border: 1px solid #374151;"></iframe>',
                             height=920,
                         )
+                    elif results.get("html") and os.path.exists(results["html"]):
+                        with open(results["html"], "r", encoding="utf-8") as f:
+                            st.components.v1.html(f.read(), height=900, scrolling=True)
                     else:
-                        st.info("The generated DOCX is available for download. A visual preview requires PDF conversion.")
+                        st.info("The generated DOCX is available for download. A visual preview could not be generated.")
 
                 with changes_tab:
                     st.markdown("### Change Log & Audit Report")
