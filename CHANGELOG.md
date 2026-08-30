@@ -5,7 +5,7 @@
 ### In Progress
 - **Redesign Phase 1 — Canonical Resume Document:** Added `ResumeDocument`, a versioned JSON source of truth holding résumé content, presentation preferences, import metadata, and an auditable revision history.
 - Added unit coverage for JSON snapshots and import revision provenance.
-- Phase validation pending.
+- Independent source review completed. The model contract is sound; service/UI adoption is intentionally scheduled for subsequent phases.
 
 
 ## [0.1.0] - 2026-08-29
