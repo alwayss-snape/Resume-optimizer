@@ -2,15 +2,22 @@
 
 ## Current Phase
 
-Phase 14 — End-to-End Hardening (V1 COMPLETE & HARDENED)
+Redesign Phase 1 — Canonical Editable Resume Document
 
 ## Overall Status
 
-Completed & Hardened
+V2 redesign in progress
 
 ## Last Updated
 
-2026-08-29
+2026-08-30
+
+## V2 Redesign Progress
+
+### Phase 1 — Canonical Editable Resume Document
+- Added `ResumeDocument` as the versioned JSON source of truth for content, presentation choices, source metadata, and revision history.
+- Every import, user edit, or AI change can be recorded with actor, changed paths, and source evidence.
+- Added a focused contract test. Independent phase validation is next.
 
 ## Root Cause Analysis & Fix Summary
 
