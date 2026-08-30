@@ -7,6 +7,7 @@ class DocumentLocation(BaseModel):
     table_index: Optional[int] = None
     row: Optional[int] = None
     column: Optional[int] = None
+    cell_paragraph_index: Optional[int] = None
     run_indices: List[int] = Field(default_factory=list)
     style_name: Optional[str] = None
     original_text: str = ""
