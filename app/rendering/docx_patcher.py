@@ -46,8 +46,9 @@ class DocxPatcher:
                     table = doc.tables[location.table_index]
                     if 0 <= location.row < len(table.rows) and 0 <= location.column < len(table.rows[location.row].cells):
                         cell = table.rows[location.row].cells[location.column]
-                        if cell.paragraphs:
-                            self._replace_paragraph_text(cell.paragraphs[0], proposal.rewritten_text)
+                        paragraph_index = location.cell_paragraph_index
+                        if paragraph_index is not None and 0 <= paragraph_index < len(cell.paragraphs):
+                            self._replace_paragraph_text(cell.paragraphs[paragraph_index], proposal.rewritten_text)
 
         os.makedirs(os.path.dirname(output_docx_path), exist_ok=True)
         doc.save(output_docx_path)
