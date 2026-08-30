@@ -16,7 +16,7 @@ Input Resume (.docx / .pdf) + JD Text
   ├──► Tailoring Planner -> Tailoring Plan (Grounded in Evidence)
   ├──► LLM Rewrite Engine -> Rewritten Bullet / Summary / Skills Proposals
   ├──► Factual & Structural Validator Gate -> Approved / Rejected Items
-  ├──► Rendering Engine (DOCX Patch Engine / ATS Template Renderer) -> Tailored DOCX
+  ├──► Canonical Resume Document (JSON + revision history)\n  ├──► Rendering Engine (Preserve DOCX / ATS DOCX / ATS HTML-CSS) -> DOCX + HTML
   ├──► PDF Converter (Headless LibreOffice) -> Tailored PDF
   └──► Output QA & Audit Log -> Report & Change Log
 ```
