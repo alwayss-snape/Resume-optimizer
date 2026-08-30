@@ -85,31 +85,37 @@ class DocxParser:
             document_map.add_location(block_id, location)
             full_text_lines.append(p.text)
 
-        # Process tables
+        # Process every table paragraph individually. A cell may contain multiple
+        # bullets; recording it as one block makes a safe in-place patch impossible.
         for t_idx, table in enumerate(doc.tables):
             for r_idx, row in enumerate(table.rows):
                 for c_idx, cell in enumerate(row.cells):
-                    cell_text = cell.text.strip()
-                    if not cell_text:
-                        continue
-                    block_id = f"tbl_{t_idx}_r{r_idx}_c{c_idx}"
-                    location = DocumentLocation(
-                        section=current_section,
-                        table_index=t_idx,
-                        row=r_idx,
-                        column=c_idx,
-                        original_text=cell.text,
-                    )
-                    raw_block = RawBlock(
-                        id=block_id,
-                        block_type="table_cell",
-                        text=cell_text,
-                        section=current_section,
-                        location=location,
-                    )
-                    blocks.append(raw_block)
-                    document_map.add_location(block_id, location)
-                    full_text_lines.append(cell_text)
+                    for p_idx, paragraph in enumerate(cell.paragraphs):
+                        cell_text = paragraph.text.strip()
+                        if not cell_text:
+                            continue
+                        block_id = f"tbl_{t_idx}_r{r_idx}_c{c_idx}_p{p_idx}"
+                        style_name = paragraph.style.name if paragraph.style else ""
+                        location = DocumentLocation(
+                            section=current_section,
+                            table_index=t_idx,
+                            row=r_idx,
+                            column=c_idx,
+                            cell_paragraph_index=p_idx,
+                            run_indices=list(range(len(paragraph.runs))),
+                            style_name=style_name,
+                            original_text=paragraph.text,
+                        )
+                        raw_block = RawBlock(
+                            id=block_id,
+                            block_type="table_cell",
+                            text=cell_text,
+                            section=current_section,
+                            location=location,
+                        )
+                        blocks.append(raw_block)
+                        document_map.add_location(block_id, location)
+                        full_text_lines.append(cell_text)
 
         return RawDocument(
             filename=os.path.basename(file_path),
