@@ -15,6 +15,7 @@ V2 redesign in progress
 ## V2 Redesign Progress
 
 ### Phase 1 — Canonical Editable Resume Document
+Status: **Foundation complete; consumer migration is scheduled for later phases.**
 - Added `ResumeDocument` as the versioned JSON source of truth for content, presentation choices, source metadata, and revision history.
 - Every import, user edit, or AI change can be recorded with actor, changed paths, and source evidence.
 - Added a focused contract test. Independent phase validation is next.
@@ -58,7 +59,7 @@ Project V1 implementation is complete, fully tested, and hardened.
 
 ## Next Immediate Task
 
-V1 is complete. Ready for local production use via CLI or Streamlit UI.
+Continue V2 Phase 2: adopt the canonical document in the renderer and introduce a standard ATS-safe output template. V1 remains available, but V2 is not yet complete.
 
 ## Completed Phases
 
