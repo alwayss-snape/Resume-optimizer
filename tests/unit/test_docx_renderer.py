@@ -4,6 +4,7 @@ import pytest
 
 from app.analysis.rewriter import RewriteProposal
 from app.domain.resume import Candidate, Experience, Resume, ResumeBullet
+from app.domain.resume_document import ResumeDocument
 from app.ingestion.docx import DocxParser
 from app.rendering.docx_patcher import DocxPatcher
 from app.rendering.template_renderer import TemplateRenderer
@@ -53,3 +54,29 @@ def test_template_renderer_ats_mode(tmp_path):
     full_text = "\n".join([p.text for p in rendered_doc.paragraphs])
     assert "John Smith" in full_text
     assert "Led cloud architecture on AWS." in full_text
+
+
+def test_template_renderer_accepts_resumedocument(tmp_path):
+    resume = Resume(
+        candidate=Candidate(name="Jane Doe", email="jane@example.com"),
+        summary="Senior Engineer",
+        experience=[
+            Experience(
+                id="exp_2",
+                company="ExampleCo",
+                title="SWE",
+                bullets=[ResumeBullet(id="b2", text="Built scalable APIs.")],
+            )
+        ],
+    )
+
+    resume_doc = ResumeDocument(resume=resume, source_filename="sample.docx")
+    renderer = TemplateRenderer()
+    out_path = str(tmp_path / "ats_resume_doc.docx")
+    res_path = renderer.render_ats_default(resume_doc, out_path)
+
+    assert os.path.exists(res_path)
+    rendered_doc = docx.Document(res_path)
+    full_text = "\n".join([p.text for p in rendered_doc.paragraphs])
+    assert "Jane Doe" in full_text
+    assert "Built scalable APIs." in full_text

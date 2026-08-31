@@ -1,20 +1,17 @@
 # Changelog — Local Resume Tailor
 
-<<<<<<< HEAD
+## [Unreleased] - 2026-08-31
+
+### Changed
+- Project baseline restoration and V2 planning started. Current test
+	count in this environment: 29 passing.
+
 ## [0.2.0] - 2026-08-30
 
 ### In Progress
 - **Redesign Phase 1 — Canonical Resume Document:** Added `ResumeDocument`, a versioned JSON source of truth holding résumé content, presentation preferences, import metadata, and an auditable revision history.
 - Added unit coverage for JSON snapshots and import revision provenance.
 - Independent source review completed. The model contract is sound; service/UI adoption is intentionally scheduled for subsequent phases.
-
-=======
-## [Unreleased] - 2026-08-31
-
-### Changed
-- Project baseline restoration and V2 planning started. Current test
-	count in this environment: 29 passing.
->>>>>>> 5ab2b72 (Phase0: fix token/numeric regexes, add dependency check, update MEMORY & CHANGELOG)
 
 ## [0.1.0] - 2026-08-29
 

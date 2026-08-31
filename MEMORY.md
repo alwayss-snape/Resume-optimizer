@@ -55,16 +55,12 @@ Status: **Foundation complete; consumer migration is scheduled for later phases.
 - Phase 12: CLI Interface & Service Layer (`RunManager`, `TailorService`, `app/cli.py`, unit tests).
 - Phase 13: Streamlit Web UI (`app/ui.py`, unit tests).
 - Phase 14: End-to-End Hardening (`tests/integration/test_end_to_end.py`, `CHANGELOG.md`).
-<<<<<<< HEAD
 - Resolved 0.0 Alignment Score root cause for unbulleted JDs & PDF experience lines.
 - Added Live Resume Document Preview tab to Streamlit UI.
-- Verified 100% passing test suite across all 29 unit and integration tests.
-=======
 - Resolved PDF heading operator precedence edge case in `PdfParser` and verified candidate name extraction across all formats.
 - Added explicit `sys.path` project root resolution in `app/ui.py` and `app/cli.py` to prevent `ModuleNotFoundError: No module named 'app'` when running Streamlit from subdirectories or arbitrary working directories.
 - Verified 29 passing unit & integration tests in the current environment.
 - Next: Begin V2 workstream (restore baseline, harden validators, canonical ResumeDocument).
->>>>>>> 5ab2b72 (Phase0: fix token/numeric regexes, add dependency check, update MEMORY & CHANGELOG)
 
 ## What Is Currently Being Worked On
 

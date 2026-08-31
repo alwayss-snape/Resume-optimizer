@@ -19,9 +19,11 @@ class ValidationResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
 
 class FactualValidator:
-<<<<<<< HEAD
-    NUMERIC_PATTERN = re.compile(r"\\b\\d+(?:[\\.,]\\d+)?%?\\b|\\b\\$\\d+(?:[\\.,]\\d+)?\\b")
-    TOKEN_RE = re.compile(r"\\b[A-Za-z][A-Za-z0-9+#.-]{1,}\\b")
+    # Match either plain numbers with optional decimals and percent sign (e.g. 20, 3.5, 12%)
+    # or currency amounts with leading $ (e.g. $5,000 or $3.5M). Use a grouped
+    # alternation so word-boundary handling is consistent.
+    NUMERIC_PATTERN = re.compile(r'(?:\b\d+(?:[.,]\d+)?%?\b|\$\d+(?:[.,]\d+)?\b)')
+    TOKEN_RE = re.compile(r"\b[A-Za-z][A-Za-z0-9+#.-]{1,}\b")
     # Grammar and action-verb changes are allowed; factual nouns/tools are not.
     NON_FACTUAL_WORDS = {
         "a", "an", "the", "and", "or", "for", "of", "to", "in", "on", "with", "by",
@@ -31,12 +33,6 @@ class FactualValidator:
         "enabled", "supported", "drove", "driving", "implemented", "implement",
         "architected", "managed", "helped", "contributed", "successfully",
     }
-=======
-    # Match either plain numbers with optional decimals and percent sign (e.g. 20, 3.5, 12%)
-    # or currency amounts with leading $ (e.g. $5,000 or $3.5M). Use a grouped
-    # alternation so word-boundary handling is consistent.
-    NUMERIC_PATTERN = re.compile(r'(?:\b\d+(?:[.,]\d+)?%?|\$\d+(?:[.,]\d+)?\b)')
->>>>>>> 5ab2b72 (Phase0: fix token/numeric regexes, add dependency check, update MEMORY & CHANGELOG)
 
     def extract_numbers(self, text: str) -> set[str]:
         return set(self.NUMERIC_PATTERN.findall(text))

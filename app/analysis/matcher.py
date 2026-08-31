@@ -57,7 +57,6 @@ class EvidenceMatcher:
                 "MISSING", [], "No resume evidence supports this requirement.", 0.0
             )
 
-<<<<<<< HEAD
             # Requirements that contain no substantive terms must not be scored as a match.
             if not req_tokens:
                 explanation = "Not scored: the extracted requirement has no substantive, comparable terms."
@@ -92,31 +91,6 @@ class EvidenceMatcher:
                         f"Only {len(overlap)} of {len(req_tokens)} substantive terms match "
                         f"resume evidence {evidence_id}: {', '.join(sorted(overlap))}."
                     )
-=======
-            # Layer 1 & Layer 2: Exact & Alias matching
-            for ev, norm_text, raw_lower in norm_evidence:
-                if req_text_norm in raw_lower or req_text_norm in norm_text:
-                    matched_evidence_ids.append(ev.id)
-                    status = "EXPLICIT"
-                    explanation = f"Direct match found in candidate evidence (Evidence ID: {ev.id})."
-                    break
-                
-                # Check individual word/tokens for multi-word skill requirements.
-                # Include common symbols used in skill names like +, #, ., and -
-                token_pattern = r"[A-Za-z0-9+#._-]+"
-                req_tokens = set(re.findall(token_pattern, req_text_norm))
-                ev_tokens = set(re.findall(token_pattern, norm_text))
-                if req_tokens and req_tokens.issubset(ev_tokens):
-                    matched_evidence_ids.append(ev.id)
-                    status = "SUPPORTED"
-                    explanation = f"Strong conceptual match found in evidence ID {ev.id}."
-                    break
-                elif req_tokens and len(req_tokens.intersection(ev_tokens)) >= len(req_tokens) * 0.5:
-                    if status == "MISSING":
-                        matched_evidence_ids.append(ev.id)
-                        status = "PARTIAL"
-                        explanation = f"Partial term match found in evidence ID {ev.id}."
->>>>>>> 5ab2b72 (Phase0: fix token/numeric regexes, add dependency check, update MEMORY & CHANGELOG)
 
             matches.append(Match(
                 requirement_id=req.id, requirement_text=req.text, status=status,

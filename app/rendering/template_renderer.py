@@ -1,13 +1,32 @@
 import os
 
 import docx
+<<<<<<< HEAD
 
+=======
+from typing import Any
+>>>>>>> b495747 (Refactor: renderer accepts ResumeDocument; Tailor passes ResumeDocument; add validation agent and tests)
 from app.domain.resume import Resume
+try:
+    from app.domain.resume_document import ResumeDocument
+except Exception:
+    ResumeDocument = None
+
 
 class TemplateRenderer:
+<<<<<<< HEAD
     """Standard single-column, ATS-safe DOCX renderer with no content omissions."""
 
     def render_ats_default(self, resume: Resume, output_path: str) -> str:
+=======
+    def render_ats_default(self, resume_or_doc: Any, output_path: str) -> str:
+        # Accept either a Resume or a ResumeDocument; unwrap when necessary
+        if hasattr(resume_or_doc, "resume"):
+            resume = resume_or_doc.resume
+        else:
+            resume = resume_or_doc
+
+>>>>>>> b495747 (Refactor: renderer accepts ResumeDocument; Tailor passes ResumeDocument; add validation agent and tests)
         doc = docx.Document()
         doc.add_paragraph(resume.candidate.name, style="Title")
 
@@ -19,11 +38,32 @@ class TemplateRenderer:
         if contact:
             doc.add_paragraph(" | ".join(contact))
 
+<<<<<<< HEAD
         if resume.summary:
             doc.add_heading("Professional Summary", level=1)
             doc.add_paragraph(resume.summary)
 
         if resume.experience:
+=======
+        # Contact info
+        contact_parts = []
+        if resume.candidate.email:
+            contact_parts.append(f"Email: {resume.candidate.email}")
+        if resume.candidate.phone:
+            contact_parts.append(f"Phone: {resume.candidate.phone}")
+        if resume.candidate.location:
+            contact_parts.append(f"Location: {resume.candidate.location}")
+        if contact_parts:
+            doc.add_paragraph(" | ".join(contact_parts))
+
+        # Summary
+        if resume and getattr(resume, "summary", None):
+            doc.add_heading("Professional Summary", level=1)
+            doc.add_paragraph(resume.summary)
+
+        # Experience
+        if resume and getattr(resume, "experience", None):
+>>>>>>> b495747 (Refactor: renderer accepts ResumeDocument; Tailor passes ResumeDocument; add validation agent and tests)
             doc.add_heading("Work Experience", level=1)
             for exp in resume.experience:
                 heading = " — ".join(value for value in (exp.title, exp.company) if value)
@@ -44,12 +84,23 @@ class TemplateRenderer:
                 for bullet in project.bullets:
                     doc.add_paragraph(bullet.text, style="List Bullet")
 
+<<<<<<< HEAD
         if resume.skills:
             doc.add_heading("Skills", level=1)
             for category, skills in resume.skills.items():
                 doc.add_paragraph(f"{category}: {', '.join(skills)}")
 
         if resume.education:
+=======
+        # Skills
+        if resume and getattr(resume, "skills", None):
+            doc.add_heading("Technical Skills", level=1)
+            for category, skill_list in resume.skills.items():
+                doc.add_paragraph(f"{category}: {', '.join(skill_list)}")
+
+        # Education
+        if resume and getattr(resume, "education", None):
+>>>>>>> b495747 (Refactor: renderer accepts ResumeDocument; Tailor passes ResumeDocument; add validation agent and tests)
             doc.add_heading("Education", level=1)
             for education in resume.education:
                 values = [education.degree, education.institution, education.dates]
