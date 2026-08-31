@@ -10,6 +10,15 @@ class Settings(BaseSettings):
     max_context_tokens: int = 12000
     strict_factual_mode: bool = True
 
+    # Groq (cloud, free tier) — optional alternative to local Ollama.
+    # Set LLM_PROVIDER=groq to route generation through Groq instead of
+    # Ollama. NOTE: this sends resume/JD text to Groq's servers, which is
+    # a deliberate opt-out of this project's local-first default — see
+    # ARCHITECTURE.md.
+    groq_api_key: str = ""
+    groq_model: str = "openai/gpt-oss-120b"
+    groq_base_url: str = "https://api.groq.com/openai/v1"
+
     # Semantic matching (local sentence-transformers embedding layer).
     # Only applied to requirements the deterministic EvidenceMatcher leaves MISSING.
     semantic_match_enabled: bool = True

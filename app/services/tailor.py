@@ -451,6 +451,17 @@ class TailorService:
         self.run_manager.save_json(run_dir, "plan.json", plan)
         self.run_manager.save_json(run_dir, "rewrites.json", approved_proposals)
 
+        # Groq/Ollama token usage for this run (every LLMClient.generate()
+        # call made anywhere in the pipeline is recorded on the client
+        # instance) — lets us see real per-run token consumption instead of
+        # guessing whether a single free-tier model is enough headroom.
+        usage_summary = None
+        try:
+            usage_summary = self.llm_client.get_usage_summary()
+            self.run_manager.save_json(run_dir, "llm_usage.json", usage_summary)
+        except Exception:
+            pass
+
         # Generate human-readable change log / report
         report_md_path = os.path.join(output_dir, "changes.md")
         with open(report_md_path, "w", encoding="utf-8") as f:
@@ -494,6 +505,17 @@ class TailorService:
                     f.write("\n## Validation Warnings\n\n")
                     for w in warnings:
                         f.write(f"- {w}\n")
+
+                if usage_summary:
+                    f.write("\n## LLM Usage\n\n")
+                    f.write(f"- Provider: {usage_summary['provider']}\n")
+                    f.write(f"- Model: {usage_summary['model']}\n")
+                    f.write(f"- Calls: {usage_summary['call_count']} "
+                            f"({usage_summary['success_count']} succeeded, {usage_summary['failure_count']} failed)\n")
+                    f.write(f"- Tokens: {usage_summary['total_prompt_tokens']} prompt + "
+                            f"{usage_summary['total_completion_tokens']} completion = "
+                            f"{usage_summary['total_tokens']} total\n")
+                    f.write(f"- Time in LLM calls: {usage_summary['total_duration_seconds']}s\n")
         
                 # Summarize artifact verification state
                 f.write("\n## Artifact Verification\n\n")

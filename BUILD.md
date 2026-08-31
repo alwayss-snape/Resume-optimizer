@@ -25,6 +25,28 @@
    ollama pull qwen3:4b
    ```
 
+## Optional: Using Groq Instead of a Local Model
+
+If your local model isn't strong enough, you can route generation through
+[Groq](https://console.groq.com) — a free, fast cloud inference API — instead
+of Ollama. This is an opt-in trade-off: resume/JD text is sent to Groq's
+servers, which departs from this project's local-first default (see
+ARCHITECTURE.md).
+
+1. Create a free API key at https://console.groq.com/keys (no card required).
+2. Copy `.env.example` to `.env` if you haven't already, then set:
+   ```
+   LLM_PROVIDER=groq
+   GROQ_API_KEY=your-key-here
+   GROQ_MODEL=openai/gpt-oss-120b
+   ```
+3. Run the app as usual — `LLMClient` picks up the Groq provider automatically.
+   Switch back to `LLM_PROVIDER=ollama` at any time to go fully local again.
+
+The free tier is rate-limited per model (see Groq's docs for current limits),
+which is generally fine for tailoring one resume at a time but can be hit
+during heavy batch testing.
+
 ## Running Tests
 
 ```bash

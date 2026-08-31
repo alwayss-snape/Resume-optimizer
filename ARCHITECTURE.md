@@ -36,6 +36,12 @@ The Semantic Matcher (`app/analysis/semantic_matcher.py`) is a separate, seconda
 
 ## Security & Privacy Constraints
 
-- All models run locally: Ollama (`qwen3:4b` default) for rewriting, and a local sentence-embedding model (`all-MiniLM-L6-v2` default) for semantic matching.
-- Zero external API dependencies.
-- No network logging of sensitive personal candidate data.
+- **Default: local-only.** Ollama (`qwen3:4b` default) for rewriting, and a local sentence-embedding model
+  (`all-MiniLM-L6-v2` default) for semantic matching. Zero external API dependencies in this mode.
+- **Optional: Groq provider.** `app/llm/client.py` also supports routing generation through
+  [Groq](https://console.groq.com)'s free cloud inference API (`LLM_PROVIDER=groq`, OpenAI-compatible
+  `chat/completions` endpoint) when a stronger model than the local default is needed. This is opt-in only —
+  the default remains Ollama — but when enabled, prompt content (which includes resume and JD text) is sent to
+  Groq's servers, and Groq's own data-handling terms apply. Anyone deploying this for others' resumes should be
+  aware of that before switching providers.
+- No network logging of sensitive personal candidate data by this application, in either mode.

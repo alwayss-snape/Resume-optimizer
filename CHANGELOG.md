@@ -13,6 +13,8 @@
 	into the matcher; no consumer or test coverage).
 
 ### Added
+- **Per-run LLM token-usage tracking:** `LLMClient` now records every `generate()` call (provider, model, prompt/completion tokens, duration, success/failure) to `self.usage_log`; `get_usage_summary()` aggregates it. `TailorService.tailor_resume()` saves this as `data/runs/<run_id>/llm_usage.json` and a short summary in `changes.md`, so real per-run token consumption is measurable instead of estimated — the basis for deciding whether a single Groq model has enough free-tier headroom or a fast/strong split is worth the added complexity.
+- **Groq provider support (opt-in, off by default):** `app/llm/client.py` can now route generation through Groq's free cloud inference API instead of local Ollama, selected via `LLM_PROVIDER=groq` (`GROQ_API_KEY`/`GROQ_MODEL` in `.env`). Implemented as a second provider branch behind the same `generate`/`generate_json`/`is_available` interface, using `httpx` against Groq's OpenAI-compatible `chat/completions` endpoint — no other call site changed. Ollama remains the default; enabling Groq sends resume/JD text off-device, documented in `ARCHITECTURE.md` and `BUILD.md`. New `httpx` dependency (`pyproject.toml`); new Groq-path tests in `tests/unit/test_llm_client.py`.
 - Real-time `changes.md` progress logging in `app/services/tailor.py`.
 - `ChangeProposal` schema and UI review flow: proposals can be generated, reviewed, edited, and applied from the Streamlit UI.
 - Terminology registry, now the single source of truth for term aliasing: `app/analysis/terminology.py`.
