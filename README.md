@@ -13,3 +13,18 @@ Local-first, privacy-focused application for tailoring resumes to job descriptio
 ## Quick Start
 
 See [BUILD.md](BUILD.md) for installation and environment setup.
+
+## Development
+
+- Create and activate a virtualenv, then install dependencies from `pyproject.toml`.
+- Use `pytest` to run tests.
+
+Auto-commit helper
+
+If you want an automated local helper to commit & push changes periodically (for example during long-running development), run:
+
+```
+./scripts/autocommit.sh 300 "Auto-commit: periodic checkpoint"
+```
+
+This script is intended to be run manually by a developer and will not be started by the application.

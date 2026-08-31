@@ -1,5 +1,6 @@
 import os
 import shutil
+from datetime import datetime
 from typing import Dict, List, Optional, Tuple
 
 from app.analysis.jd_analyzer import JDAnalyzer
@@ -108,6 +109,26 @@ class TailorService:
             missing_requirements=missing_m,
         )
 
+    def generate_proposals(self, resume_path: str, jd_text: str):
+        """Generate rewrite proposals without applying them. Returns list of proposals.
+
+        Useful for UI review flows.
+        """
+        clean_jd_text = self.safety_guard.sanitize(jd_text)
+
+        if resume_path.endswith(".pdf"):
+            raw_doc = self.pdf_parser.parse(resume_path)
+        else:
+            raw_doc = self.docx_parser.parse(resume_path)
+
+        resume_doc, evidence_list = self.resume_normalizer.normalize(raw_doc)
+        resume = resume_doc.resume
+        job_desc = self.jd_analyzer.analyze(clean_jd_text)
+        matches = self.matcher.match(job_desc, evidence_list)
+        plan = self.planner.create_plan(resume, job_desc, evidence_list, matches)
+        proposals = self.rewriter.execute_plan(resume, plan, evidence_list, job_desc)
+        return proposals
+
     def tailor_resume(
         self,
         resume_path: str,
@@ -115,9 +136,30 @@ class TailorService:
         output_dir: str,
         mode: str = "PRESERVE",
         strict_factual: bool = False,
+        preapproved_proposals: Optional[List] = None,
     ) -> Dict[str, str]:
         run_dir = self.run_manager.create_run(resume_path, jd_text)
         clean_jd_text = self.safety_guard.sanitize(jd_text)
+        
+        # Prepare incremental change log so callers (and UI) can tail it in
+        # near-real-time while processing proceeds.
+        report_md_path = os.path.join(output_dir, "changes.md")
+        os.makedirs(output_dir, exist_ok=True)
+        with open(report_md_path, "w", encoding="utf-8") as f:
+            f.write(f"# Tailoring Report & Change Log\n\n")
+            f.write(f"**Started:** {datetime.utcnow().isoformat()}Z\n\n")
+            f.write("## Progress Log\n\n")
+        
+        def _append_progress(msg: str) -> None:
+            ts = datetime.utcnow().isoformat() + "Z"
+            try:
+                with open(report_md_path, "a", encoding="utf-8") as pf:
+                    pf.write(f"- [{ts}] {msg}\n")
+            except Exception:
+                # Never fail tailoring flow due to progress logging
+                pass
+        
+        _append_progress("Run created: " + run_dir)
 
         is_pdf = resume_path.endswith(".pdf")
         if is_pdf:
@@ -129,6 +171,7 @@ class TailorService:
         # Normalizer returns a canonical ResumeDocument and the extracted evidence
         resume_doc, evidence_list = self.resume_normalizer.normalize(raw_doc)
         resume = resume_doc.resume
+        _append_progress("Imported and normalized resume")
         # Record import as a revision (best-effort)
         try:
             resume_doc.record_revision("Imported uploaded résumé", ["resume", "source"], actor="import")
@@ -137,9 +180,23 @@ class TailorService:
         job_desc = self.jd_analyzer.analyze(clean_jd_text)
         matches = self.matcher.match(job_desc, evidence_list)
         score = self.scorer.calculate_score(matches, job_desc.requirements)
+        _append_progress(f"Analyzed JD and computed initial alignment score: {score:.1f}")
 
         plan = self.planner.create_plan(resume, job_desc, evidence_list, matches)
         proposals = self.rewriter.execute_plan(resume, plan, evidence_list, job_desc)
+        if preapproved_proposals is not None:
+            # Accept externally provided proposals (e.g., from UI review). They may
+            # be plain dicts — coerce to the model if necessary.
+            coerced = []
+            for p in preapproved_proposals:
+                if isinstance(p, dict):
+                    # Import lazily to avoid cycles
+                    from app.analysis.rewriter import RewriteProposal
+                    coerced.append(RewriteProposal(**p))
+                else:
+                    coerced.append(p)
+            proposals = coerced
+        _append_progress(f"Planner created plan with {len(plan.actions)} actions; generated {len(proposals)} proposals")
 
         approved_proposals: List[RewriteProposal] = []
         warnings: List[str] = []
@@ -154,12 +211,15 @@ class TailorService:
                 approved_proposals.append(prop)
                 # Record AI-applied rewrite as a revision on the ResumeDocument
                 try:
-                    resume_doc.record_revision(rev_id=f"ai_{prop.source_id}", actor="ai", original=prop.original_text, rewritten=prop.rewritten_text, evidence_ids=prop.evidence_ids, source="llm_rewriter")
+                    prop_sem = getattr(prop, "semantic_id", None) or getattr(prop, "target_semantic_id", None) or getattr(prop, "source_id", None)
+                    rev_id = f"ai_{prop_sem}"
+                    resume_doc.record_revision(rev_id=rev_id, actor="ai", original=getattr(prop, "original_text", ""), rewritten=(getattr(prop, "rewritten_text", None) or getattr(prop, "proposed_text", None) or ""), evidence_ids=getattr(prop, "evidence_ids", []), source="llm_rewriter")
                 except Exception:
                     # don't fail tailoring flow if recording revision fails
                     pass
             else:
                 warnings.extend(res.warnings)
+        _append_progress(f"Validation complete: {len(approved_proposals)} approved, {len(proposals)-len(approved_proposals)} rejected")
 
         # Output file generation
         os.makedirs(output_dir, exist_ok=True)
@@ -168,7 +228,8 @@ class TailorService:
         html_output_path = os.path.join(output_dir, "tailored_resume.html")
 
         # Update resume model with approved rewrites for ATS & preview rendering
-        prop_dict = {p.source_id: p.rewritten_text for p in approved_proposals}
+        # Apply approved rewrites to the canonical resume model using semantic ids
+        prop_dict = { (getattr(p, "semantic_id", None) or getattr(p, "target_semantic_id", None) or getattr(p, "source_id", None)) : (getattr(p, "rewritten_text", None) or getattr(p, "proposed_text", None) or "") for p in approved_proposals}
         for exp in resume.experience:
             for b in exp.bullets:
                 if b.id in prop_dict:
@@ -178,22 +239,26 @@ class TailorService:
             try:
                 resume_doc.record_revision(
                     "Applied evidence-approved AI rewrites",
-                    [f"resume.experience.{proposal.source_id}" for proposal in approved_proposals],
+                    [f"resume.experience.{(getattr(proposal, 'semantic_id', None) or getattr(proposal, 'target_semantic_id', None) or getattr(proposal, 'source_id', None))}" for proposal in approved_proposals],
                     actor="ai",
-                    evidence_ids=[evidence_id for proposal in approved_proposals for evidence_id in proposal.evidence_ids],
+                    evidence_ids=[evidence_id for proposal in approved_proposals for evidence_id in getattr(proposal, "evidence_ids", [])],
                 )
             except Exception:
                 pass
+            _append_progress(f"Applied {len(approved_proposals)} approved rewrites to canonical resume model")
 
         if mode == "PRESERVE" and not is_pdf:
             self.docx_patcher.patch(resume_path, raw_doc.document_map, approved_proposals, docx_output_path)
+            _append_progress(f"DOCX preserve-mode patch applied to {docx_output_path}")
         else:
             # Pass the ResumeDocument so renderers can access revisions and metadata
             self.template_renderer.render_ats_default(resume_doc, docx_output_path)
+            _append_progress(f"DOCX reconstructed via template renderer at {docx_output_path}")
 
         # Canonical ATS HTML is available for browser preview and print workflows.
         try:
             self.html_renderer.write_html(resume_doc, html_output_path)
+            _append_progress(f"HTML preview written to {html_output_path}")
         except Exception:
             pass
 
@@ -203,6 +268,7 @@ class TailorService:
             warnings.extend(struct_warnings)
 
         # Output QA validations (DOCX and PDF) to catch rendering issues
+        docx_warnings = []
         try:
             docx_warnings = self.qa_validator.validate_docx(docx_output_path, expected_candidate_name=resume.candidate.name)
             warnings.extend(docx_warnings)
@@ -215,11 +281,21 @@ class TailorService:
         if strict_factual and warnings:
             approved_proposals = []
             warnings.append("Strict Factual Mode enabled: rewrites withheld due to validation warnings.")
+            _append_progress("Strict factual mode triggered: rewrites withheld")
 
-        # PDF Conversion
+        # PDF Conversion and QA
+        pdf_warnings = []
         pdf_res = self.pdf_converter.convert_docx_to_pdf(docx_output_path, output_dir)
         if not pdf_res:
             warnings.append("LibreOffice not available or PDF conversion failed; DOCX rendered successfully.")
+            _append_progress("PDF conversion failed or LibreOffice unavailable")
+        else:
+            try:
+                pdf_warnings = self.qa_validator.validate_pdf(pdf_res, expected_candidate_name=resume.candidate.name)
+                warnings.extend(pdf_warnings)
+            except Exception:
+                warnings.append("Output QA PDF validation failed unexpectedly.")
+            _append_progress(f"PDF conversion complete: {pdf_res}")
 
         # Save artifacts to run folder
         # Save the ResumeDocument as canonical SOT
@@ -241,7 +317,8 @@ class TailorService:
             f.write(f"**Alignment Score:** {score:.1f} / 100\n\n")
             f.write(f"## Accepted Rewrites\n\n")
             for prop in approved_proposals:
-                f.write(f"### Bullet ({prop.source_id})\n")
+                bullet_id = prop.semantic_id or prop.source_id or "unknown"
+                f.write(f"### Bullet ({bullet_id})\n")
                 f.write(f"- **Original:** {prop.original_text}\n")
                 f.write(f"- **Tailored:** {prop.rewritten_text}\n")
                 f.write(f"- **Rationale:** {prop.rationale}\n\n")
@@ -253,8 +330,73 @@ class TailorService:
                 f.write("\n## Validation Warnings\n\n")
                 for w in warnings:
                     f.write(f"- {w}\n")
+        
+        # Overwrite the progress log with a final, complete change log that
+        # includes accepted rewrites and validation summaries. This preserves
+        # the earlier progress entries written incrementally.
+        try:
+            with open(report_md_path, "a", encoding="utf-8") as f:
+                f.write(f"\n\n## Final Summary\n\n")
+                f.write(f"**Alignment Score:** {score:.1f} / 100\n\n")
+                f.write(f"## Accepted Rewrites\n\n")
+                for prop in approved_proposals:
+                    bullet_id = prop.semantic_id or prop.source_id or "unknown"
+                    f.write(f"### Bullet ({bullet_id})\n")
+                    f.write(f"- **Original:** {prop.original_text}\n")
+                    f.write(f"- **Tailored:** {prop.rewritten_text}\n")
+                    f.write(f"- **Rationale:** {prop.rationale}\n\n")
+                if plan.unsupported_requirements:
+                    f.write(f"## Unsupported Missing Requirements\n\n")
+                    for req in plan.unsupported_requirements:
+                        f.write(f"- {req}\n")
+                if warnings:
+                    f.write("\n## Validation Warnings\n\n")
+                    for w in warnings:
+                        f.write(f"- {w}\n")
+        
+                # Summarize artifact verification state
+                f.write("\n## Artifact Verification\n\n")
+                f.write(f"- DOCX warnings ({len(docx_warnings)}):\n")
+                for w in docx_warnings:
+                    f.write(f"  - {w}\n")
+                f.write(f"- PDF warnings ({len(pdf_warnings)}):\n")
+                for w in pdf_warnings:
+                    f.write(f"  - {w}\n")
+        except Exception:
+            # Non-fatal: continue even if final logging fails
+            pass
+
+            # Summarize artifact verification state
+            f.write("\n## Artifact Verification\n\n")
+            f.write(f"- DOCX warnings ({len(docx_warnings)}):\n")
+            for w in docx_warnings:
+                f.write(f"  - {w}\n")
+            f.write(f"- PDF warnings ({len(pdf_warnings)}):\n")
+            for w in pdf_warnings:
+                f.write(f"  - {w}\n")
 
         preview_md = self.generate_preview_md(resume)
+
+        # Determine overall success: fail if any critical QA warnings present
+        critical_signals = [
+            "does not exist",
+            "contains no text",
+            "0 bytes",
+            "contains 0 pages",
+            "contains no readable text",
+            "Failed to parse rendered DOCX",
+            "Failed to parse rendered PDF",
+            "Expected candidate name",
+        ]
+
+        def has_critical(warnings_list):
+            return any(any(sig in w for sig in critical_signals) for w in warnings_list)
+
+        success = True
+        if has_critical(docx_warnings):
+            success = False
+        if pdf_res and has_critical(pdf_warnings):
+            success = False
 
         return {
             "docx": docx_output_path,
@@ -265,4 +407,7 @@ class TailorService:
             "run_dir": run_dir,
             "preview_md": preview_md,
             "warnings": warnings,
+            "docx_warnings": docx_warnings,
+            "pdf_warnings": pdf_warnings,
+            "success": success,
         }

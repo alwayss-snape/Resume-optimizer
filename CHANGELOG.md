@@ -4,7 +4,15 @@
 
 ### Changed
 - Project baseline restoration and V2 planning started. Current test
-	count in this environment: 29 passing.
+	count in this environment: 36 passing.
+
+### Added
+- Real-time `changes.md` progress logging in `app/services/tailor.py`.
+- `ChangeProposal` schema and UI review flow: proposals can be generated, reviewed, edited, and applied from the Streamlit UI.
+- Terminology registry scaffolding: `app/analysis/terminology.py`.
+- Evidence index scaffolding: `app/analysis/evidence_index.py`.
+- Deterministic scorer components and breakdown: `app/analysis/scoring.py`.
+- Preview fallback: prefer `st.pdf`, fall back to local HTTP PDF preview or PNG raster via PyMuPDF in `app/ui.py`.
 
 ## [0.2.0] - 2026-08-30
 

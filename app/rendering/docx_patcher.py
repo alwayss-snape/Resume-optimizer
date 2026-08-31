@@ -30,13 +30,16 @@ class DocxPatcher:
 
         doc = docx.Document(source_docx_path)
         for proposal in approved_proposals:
-            location = document_map.get_location(proposal.source_id)
+            prop_source = getattr(proposal, "source_id", None) or getattr(proposal, "target_source_location_id", None)
+            location = document_map.get_location(prop_source)
             if not location:
-                continue
+                # Fail loudly when a proposal targets an unknown source_location_id
+                raise ValueError(f"Unknown source location for proposal: {prop_source}")
 
             if location.paragraph_index is not None:
                 if 0 <= location.paragraph_index < len(doc.paragraphs):
-                    self._replace_paragraph_text(doc.paragraphs[location.paragraph_index], proposal.rewritten_text)
+                    new_text = getattr(proposal, "rewritten_text", None) or getattr(proposal, "proposed_text", "")
+                    self._replace_paragraph_text(doc.paragraphs[location.paragraph_index], new_text)
                 continue
 
             # Résumés often use tables for two-column layouts. Patch the existing
@@ -48,7 +51,8 @@ class DocxPatcher:
                         cell = table.rows[location.row].cells[location.column]
                         paragraph_index = location.cell_paragraph_index
                         if paragraph_index is not None and 0 <= paragraph_index < len(cell.paragraphs):
-                            self._replace_paragraph_text(cell.paragraphs[paragraph_index], proposal.rewritten_text)
+                            new_text = getattr(proposal, "rewritten_text", None) or getattr(proposal, "proposed_text", "")
+                            self._replace_paragraph_text(cell.paragraphs[paragraph_index], new_text)
 
         os.makedirs(os.path.dirname(output_docx_path), exist_ok=True)
         doc.save(output_docx_path)

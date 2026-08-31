@@ -53,20 +53,33 @@ class FactualValidator:
 
     def validate_proposal(self, proposal: RewriteProposal, evidence_list: List[Evidence]) -> ValidationResult:
         warnings: List[str] = []
-        source_evidence = [
-            evidence for evidence in evidence_list
-            if evidence.id in proposal.evidence_ids and evidence.source_id == proposal.source_id
-        ]
+        # Match evidence either by semantic id (preferred) or by raw source location id
+        source_evidence = []
+        for evidence in evidence_list:
+            if evidence.id not in getattr(proposal, "evidence_ids", []):
+                continue
+            # evidence.source_id holds the canonical semantic id when available;
+            # evidence.source_location_id stores the raw document block id.
+            # Support both old and new proposal field names for compatibility.
+            prop_sem_id = getattr(proposal, "semantic_id", None) or getattr(proposal, "target_semantic_id", None) or getattr(proposal, "source_id", None)
+            if prop_sem_id and getattr(evidence, "source_id", None) == prop_sem_id:
+                source_evidence.append(evidence)
+                continue
+            prop_loc = getattr(proposal, "source_id", None) or getattr(proposal, "target_source_location_id", None)
+            if prop_loc and getattr(evidence, "source_location_id", None) == prop_loc:
+                source_evidence.append(evidence)
+                continue
         if not source_evidence:
-            warnings.append("Rewrite rejected: no cited evidence belongs to the source bullet.")
+            warnings.append("Rewrite rejected: no cited evidence belongs to the source bullet or location.")
         else:
-            original_numbers = self.extract_numbers(proposal.original_text)
-            rewritten_numbers = self.extract_numbers(proposal.rewritten_text)
+            original_numbers = self.extract_numbers(getattr(proposal, "original_text", ""))
+            rewritten_text = getattr(proposal, "rewritten_text", None) or getattr(proposal, "proposed_text", None) or ""
+            rewritten_numbers = self.extract_numbers(rewritten_text)
             if rewritten_numbers != original_numbers:
                 warnings.append("Rewrite rejected: numbers, dates, or percentages must be preserved exactly.")
 
             evidence_terms = set().union(*(self._factual_terms(ev.text) for ev in source_evidence))
-            new_terms = self._factual_terms(proposal.rewritten_text) - evidence_terms
+            new_terms = self._factual_terms(rewritten_text) - evidence_terms
             if new_terms:
                 warnings.append(
                     "Rewrite rejected: unsupported factual terms were introduced: "
@@ -75,7 +88,7 @@ class FactualValidator:
 
         status: Literal["SUPPORTED", "UNSUPPORTED", "AMBIGUOUS"] = "SUPPORTED" if not warnings else "UNSUPPORTED"
         check = ClaimCheck(
-            claim=proposal.rewritten_text, evidence_ids=proposal.evidence_ids, status=status,
+            claim=rewritten_text, evidence_ids=getattr(proposal, "evidence_ids", []), status=status,
             explanation="All claims are traceable to the cited source bullet." if not warnings else " ".join(warnings),
         )
         return ValidationResult(

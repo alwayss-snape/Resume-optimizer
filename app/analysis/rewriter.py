@@ -1,19 +1,22 @@
 import os
 from typing import Dict, List, Optional
-from pydantic import BaseModel, Field
+from uuid import uuid4
 
+from pydantic import Field
+
+from app.analysis.change_proposal import ChangeProposal
 from app.domain.evidence import Evidence
 from app.domain.job import JobDescription
 from app.domain.resume import Resume
 from app.domain.tailoring import TailoringAction, TailoringPlan
 from app.llm.client import LLMClient
 
-class RewriteProposal(BaseModel):
-    source_id: str
-    original_text: str
-    rewritten_text: str
-    evidence_ids: List[str] = Field(default_factory=list)
-    rationale: str = ""
+
+# Backwards compatibility: expose the old name `RewriteProposal` as an
+# alias to the richer `ChangeProposal` model so external callers/tests
+# that import from this module continue to work.
+RewriteProposal = ChangeProposal
+
 
 class LLMRewriter:
     def __init__(self, llm_client: Optional[LLMClient] = None):
@@ -71,19 +74,23 @@ class LLMRewriter:
         bullet_map = {}
         for exp in resume.experience:
             for bullet in exp.bullets:
-                bullet_map[bullet.id] = bullet.text
+                bullet_map[bullet.id] = bullet
 
         for action in plan.actions:
             if action.action == "REWRITE" and action.source_id in bullet_map:
-                orig_text = bullet_map[action.source_id]
+                bullet = bullet_map[action.source_id]
+                orig_text = bullet.text
                 action_ev = [evidence_map[ev_id] for ev_id in action.evidence_ids if ev_id in evidence_map]
                 jd_req_texts = [r.text for r in job_description.requirements]
 
                 new_text = self.rewrite_bullet(orig_text, action_ev, jd_req_texts)
+                # Prefer the bullet's raw source_location_id for patching; fall back to semantic id
                 proposals.append(RewriteProposal(
-                    source_id=action.source_id,
+                    id=f"prop_{uuid4().hex[:8]}",
+                    target_semantic_id=bullet.id,
+                    target_source_location_id=bullet.source_location_id or bullet.id,
                     original_text=orig_text,
-                    rewritten_text=new_text,
+                    proposed_text=new_text,
                     evidence_ids=action.evidence_ids,
                     rationale=action.rationale,
                 ))

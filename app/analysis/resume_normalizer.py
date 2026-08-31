@@ -1,5 +1,5 @@
 import re
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 from app.domain.evidence import Evidence
 from app.domain.resume import Candidate, Education, Experience, Project, Resume, ResumeBullet
 from app.domain.resume_document import ResumeDocument
@@ -22,8 +22,8 @@ class ResumeNormalizer:
         candidate_location = None
 
         current_section = "Header"
-        current_exp: Experience | None = None
-        current_proj: Project | None = None
+        current_exp: Optional[Experience] = None
+        current_proj: Optional[Project] = None
 
         exp_counter = 0
         bullet_counter = 0
@@ -63,7 +63,9 @@ class ResumeNormalizer:
                 evidence_list.append(Evidence(
                     id=ev_id,
                     source_type="summary",
+                    # No semantic node for a free-form summary; store raw location as both
                     source_id=block.id,
+                    source_location_id=block.id,
                     text=text,
                 ))
 
@@ -110,7 +112,9 @@ class ResumeNormalizer:
                     evidence_list.append(Evidence(
                         id=ev_id,
                         source_type="experience",
+                        # Link evidence to the canonical bullet id and also retain raw block id
                         source_id=bullet_id,
+                        source_location_id=block.id,
                         text=f"{current_exp.company}: {text}",
                     ))
 
@@ -132,6 +136,7 @@ class ResumeNormalizer:
                         id=ev_id,
                         source_type="project",
                         source_id=bullet_id,
+                        source_location_id=block.id,
                         text=f"Project ({current_proj.name}): {text}",
                     ))
 
@@ -152,7 +157,9 @@ class ResumeNormalizer:
                     evidence_list.append(Evidence(
                         id=ev_id,
                         source_type="skill",
+                        # Skills are not always tied to a semantic node; store a generated id
                         source_id=f"skill_{ev_counter:04d}",
+                        source_location_id=block.id,
                         text=skill,
                     ))
 
@@ -172,6 +179,7 @@ class ResumeNormalizer:
                     id=ev_id,
                     source_type="education",
                     source_id=edu_id,
+                    source_location_id=block.id,
                     text=text,
                 ))
 
@@ -183,6 +191,7 @@ class ResumeNormalizer:
                     id=ev_id,
                     source_type="general",
                     source_id=block.id,
+                    source_location_id=block.id,
                     text=text,
                 ))
 

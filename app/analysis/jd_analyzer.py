@@ -58,6 +58,26 @@ class JDAnalyzer:
             signal in lowered for signal in self.REQUIREMENT_SIGNALS
         )
 
+    def _segment_line(self, line: str) -> List[str]:
+        """Conservatively split a requirement line into atomic requirement phrases.
+
+        Strategy:
+        - Split on semicolons first.
+        - Split on ' and ' when the clause contains an action verb signal to avoid
+          splitting simple enumerations of nouns.
+        """
+        parts = [p.strip() for p in re.split(r";", line) if p.strip()]
+        atomic: List[str] = []
+        verbs = [v for v in self.REQUIREMENT_SIGNALS if v.isalpha()]
+        for p in parts:
+            lowered = p.lower()
+            if " and " in lowered and any(v in lowered for v in verbs):
+                subparts = [s.strip() for s in re.split(r"\band\b", p) if s.strip()]
+                atomic.extend(subparts)
+            else:
+                atomic.append(p)
+        return atomic
+
     def analyze(self, jd_text: str) -> JobDescription:
         lines = [line.strip() for line in jd_text.splitlines() if line.strip()]
         job_title = None
@@ -83,18 +103,22 @@ class JDAnalyzer:
                 ))
                 continue
 
-            was_bullet = bool(re.match(r"^[-•*▪–—]\\s+", line))
-            clean_line = re.sub(r"^[-•*▪–—]\\s+", "", line).strip()
+            was_bullet = bool(re.match(r"^[-•*▪–—]\s+", line))
+            clean_line = re.sub(r"^[-•*▪–—]\s+", "", line).strip()
             if not self._is_requirement(clean_line, was_bullet, requirement_section):
                 continue
 
             priority = "preferred" if (
                 preferred_section or any(signal in clean_line.lower() for signal in self.PREFERRED_SIGNALS)
             ) else "required"
-            requirements.append(Requirement(
-                id=f"req_{len(requirements) + 1:03d}",
-                text=clean_line, category=self._category(clean_line), priority=priority,
-            ))
+
+            # Segment long or compound lines into atomic requirements
+            segments = self._segment_line(clean_line)
+            for seg in segments:
+                requirements.append(Requirement(
+                    id=f"req_{len(requirements) + 1:03d}",
+                    text=seg, category=self._category(seg), priority=priority,
+                ))
 
         return JobDescription(
             job_title=job_title or "Target Role",

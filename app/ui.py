@@ -38,6 +38,43 @@ def get_local_pdf_preview_url(pdf_path: str):
     return httpd, f"http://127.0.0.1:{port}/{pdf_name}"
 
 
+def display_pdf_with_fallback(pdf_path: str, height: int = 900):
+    """Try to use Streamlit's native PDF display if available, otherwise fall back
+    to the local HTTP server preview. If PyMuPDF is installed, also offer a PNG
+    raster fallback for environments where embedding is restricted.
+    """
+    # Prefer native `st.pdf` if available
+    try:
+        st_pdf = getattr(st, "pdf", None)
+        if callable(st_pdf):
+            with open(pdf_path, "rb") as f:
+                st_pdf(f.read())
+            return None
+    except Exception:
+        pass
+
+    # Fallback: serve via local HTTP endpoint
+    try:
+        httpd, url = get_local_pdf_preview_url(pdf_path)
+        st.caption("Preview is served from a local HTTP endpoint so Chrome can render the PDF normally.")
+        st.components.v1.iframe(url, height=height, scrolling=True)
+        return httpd
+    except Exception:
+        # Try PNG raster via PyMuPDF if available
+        try:
+            import fitz
+            doc = fitz.open(pdf_path)
+            pix = doc.load_page(0).get_pixmap(matrix=fitz.Matrix(2, 2))
+            from io import BytesIO
+            buf = BytesIO()
+            pix.save(buf, output="png")
+            st.image(buf.getvalue(), use_column_width=True)
+            return None
+        except Exception:
+            st.info("Could not render PDF preview in this environment.")
+            return None
+
+
 # Custom CSS styling
 st.markdown("""
 <style>
@@ -155,67 +192,129 @@ if btn_analyze or btn_tailor:
                 status_text.text("Analyzing job description and generating tailoring plan...")
                 progress_bar.progress(50)
 
-                status_text.text("Executing controlled LLM rewriting and factual validation...")
+                status_text.text("Executing controlled LLM rewriting and factual validation (generating proposals)...")
                 progress_bar.progress(75)
 
-                output_dir = tempfile.mkdtemp()
-                results = service.tailor_resume(tmp_resume_path, jd_input, output_dir, mode=render_mode, strict_factual=strict_factual)
-                progress_bar.progress(100)
-                status_text.text("Done!")
+                # Generate proposals for UI review before applying
+                proposals = service.generate_proposals(tmp_resume_path, jd_input)
 
-                st.success(f"Resume Tailoring Completed! Alignment Score: {results['alignment_score']} / 100")
+                st.markdown("### Review Proposed Rewrites")
+                st.markdown("Edit proposed text or uncheck to reject. Then click **Apply & Generate**.")
 
-                res_col1, res_col2 = st.columns(2)
-                with res_col1:
-                    if results["docx"] and os.path.exists(results["docx"]):
-                        with open(results["docx"], "rb") as f:
-                            st.download_button(
-                                label="📥 Download Tailored DOCX",
-                                data=f.read(),
-                                file_name="tailored_resume.docx",
-                                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                                use_container_width=True,
-                            )
-                with res_col2:
-                    if results["pdf"] and os.path.exists(results["pdf"]):
-                        with open(results["pdf"], "rb") as f:
-                            st.download_button(
-                                label="📥 Download Tailored PDF",
-                                data=f.read(),
-                                file_name="tailored_resume.pdf",
-                                mime="application/pdf",
-                                use_container_width=True,
-                            )
+                with st.form("proposal_review_form"):
+                    selected = []
+                    edits = {}
+                    for i, p in enumerate(proposals):
+                        keybase = f"p_{i}"
+                        orig = getattr(p, "original_text", "")
+                        prop_text = getattr(p, "proposed_text", None) or getattr(p, "rewritten_text", None) or ""
+                        col1, col2 = st.columns([1, 3])
+                        with col1:
+                            sel = st.checkbox("Apply", value=True, key=keybase+"_apply")
+                        with col2:
+                            st.markdown(f"**Original:** {orig}")
+                            edt = st.text_area(f"Proposed ({i+1})", value=prop_text, key=keybase+"_edit", height=80)
+                        if sel:
+                            selected.append(p)
+                            edits[p.id if hasattr(p, 'id') else i] = edt
+                    apply_btn = st.form_submit_button("Apply & Generate")
 
-                st.write("---")
-                preview_tab, changes_tab = st.tabs(["👁️ Live Preview of Tailored Resume", "📋 Change Log & Audit Report"])
+                if not apply_btn:
+                    st.info("Review the proposals and press 'Apply & Generate' when ready.")
+                else:
+                    # Build preapproved proposals list from selected edits
+                    preapproved = []
+                    for p in selected:
+                        edited_text = edits.get(p.id if hasattr(p, 'id') else None) or (getattr(p, "proposed_text", None) or getattr(p, "rewritten_text", None) or "")
+                        # Coerce to dict for transport into tailor_resume
+                        if hasattr(p, 'model_dump'):
+                            base = p.model_dump()
+                        elif hasattr(p, 'dict'):
+                            base = p.dict()
+                        else:
+                            base = {}
+                        base["proposed_text"] = edited_text
+                        preapproved.append(base)
 
-                with preview_tab:
-                    st.markdown("### Tailored Resume Document Preview")
-                    if results.get("pdf") and os.path.exists(results["pdf"]):
-                        preview_server, preview_url = get_local_pdf_preview_url(results["pdf"])
-                        st.caption("Preview is served from a local HTTP endpoint so Chrome can render the PDF normally.")
-                        st.components.v1.iframe(preview_url, height=900, scrolling=True)
-                        with open(results["pdf"], "rb") as f:
-                            st.download_button(
-                                label="📥 Open / Download Tailored PDF",
-                                data=f.read(),
-                                file_name="tailored_resume.pdf",
-                                mime="application/pdf",
-                                use_container_width=True,
-                            )
-                        st.session_state["preview_server"] = preview_server
-                    elif results.get("html") and os.path.exists(results["html"]):
-                        with open(results["html"], "r", encoding="utf-8") as f:
-                            st.components.v1.html(f.read(), height=900, scrolling=True)
+                    output_dir = tempfile.mkdtemp()
+                    results = service.tailor_resume(tmp_resume_path, jd_input, output_dir, mode=render_mode, strict_factual=strict_factual, preapproved_proposals=preapproved)
+                    progress_bar.progress(100)
+                    status_text.text("Done!")
+
+                    if results.get("success"):
+                        st.success(f"Resume Tailoring Completed! Alignment Score: {results['alignment_score']} / 100")
                     else:
-                        st.info("The generated DOCX is available for download. A visual preview could not be generated.")
+                        st.error(f"Resume Tailoring Completed with Warnings. Alignment Score: {results['alignment_score']} / 100")
 
-                with changes_tab:
-                    st.markdown("### Change Log & Audit Report")
-                    if os.path.exists(results["changes_md"]):
-                        with open(results["changes_md"], "r", encoding="utf-8") as f:
-                            st.markdown(f.read())
+                    res_col1, res_col2 = st.columns(2)
+                    with res_col1:
+                        if results["docx"] and os.path.exists(results["docx"]):
+                            with open(results["docx"], "rb") as f:
+                                st.download_button(
+                                    label="📥 Download Tailored DOCX",
+                                    data=f.read(),
+                                    file_name="tailored_resume.docx",
+                                    mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                                    use_container_width=True,
+                                )
+                    with res_col2:
+                        if results["pdf"] and os.path.exists(results["pdf"]):
+                            with open(results["pdf"], "rb") as f:
+                                st.download_button(
+                                    label="📥 Download Tailored PDF",
+                                    data=f.read(),
+                                    file_name="tailored_resume.pdf",
+                                    mime="application/pdf",
+                                    use_container_width=True,
+                                )
+
+                    st.write("---")
+                    preview_tab, changes_tab = st.tabs(["👁️ Live Preview of Tailored Resume", "📋 Change Log & Audit Report"])
+
+                    with preview_tab:
+                        st.markdown("### Tailored Resume Document Preview")
+                        if results.get("pdf") and os.path.exists(results["pdf"]):
+                            preview_server = display_pdf_with_fallback(results["pdf"], height=900)
+                            with open(results["pdf"], "rb") as f:
+                                st.download_button(
+                                    label="📥 Open / Download Tailored PDF",
+                                    data=f.read(),
+                                    file_name="tailored_resume.pdf",
+                                    mime="application/pdf",
+                                    use_container_width=True,
+                                )
+                            if preview_server:
+                                st.session_state["preview_server"] = preview_server
+                        elif results.get("html") and os.path.exists(results["html"]):
+                            with open(results["html"], "r", encoding="utf-8") as f:
+                                st.components.v1.html(f.read(), height=900, scrolling=True)
+                        else:
+                            st.info("The generated DOCX is available for download. A visual preview could not be generated.")
+
+                    with changes_tab:
+                        st.markdown("### Change Log & Audit Report")
+                        if os.path.exists(results["changes_md"]):
+                            with open(results["changes_md"], "r", encoding="utf-8") as f:
+                                st.markdown(f.read())
+
+                        # Surface per-artifact warnings prominently
+                        st.markdown("#### Artifact Warnings")
+                        docx_warns = results.get("docx_warnings", []) or []
+                        pdf_warns = results.get("pdf_warnings", []) or []
+                        if docx_warns:
+                            st.markdown("**DOCX Warnings:**")
+                            for w in docx_warns:
+                                st.warning(w)
+                        else:
+                            st.success("DOCX: No warnings")
+
+                        if results.get("pdf"):
+                            if pdf_warns:
+                                st.markdown("**PDF Warnings:**")
+                                for w in pdf_warns:
+                                    st.warning(w)
+                            else:
+                                st.success("PDF: No warnings")
 
         except Exception as e:
             st.error(f"Execution Error: {e}")
