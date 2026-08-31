@@ -113,6 +113,7 @@ class TailorService:
         jd_text: str,
         output_dir: str,
         mode: str = "PRESERVE",
+        strict_factual: bool = False,
     ) -> Dict[str, str]:
         run_dir = self.run_manager.create_run(resume_path, jd_text)
         clean_jd_text = self.safety_guard.sanitize(jd_text)
@@ -200,6 +201,12 @@ class TailorService:
             # Never fail the tailoring flow due to QA check exceptions
             warnings.append("Output QA DOCX validation failed unexpectedly.")
 >>>>>>> 0587dcd (Phase1: wire StructuralValidator and OutputQAValidator into TailorService; collect validation warnings)
+
+        # Respect strict factual mode: if enabled and any validation warnings exist,
+        # withhold applying rewrites to avoid introducing potentially unsupported claims.
+        if strict_factual and warnings:
+            approved_proposals = []
+            warnings.append("Strict Factual Mode enabled: rewrites withheld due to validation warnings.")
 
         # PDF Conversion
         pdf_res = self.pdf_converter.convert_docx_to_pdf(docx_output_path, output_dir)

@@ -140,7 +140,7 @@ if btn_analyze or btn_tailor:
                 progress_bar.progress(75)
 
                 output_dir = tempfile.mkdtemp()
-                results = service.tailor_resume(tmp_resume_path, jd_input, output_dir, mode=render_mode)
+                results = service.tailor_resume(tmp_resume_path, jd_input, output_dir, mode=render_mode, strict_factual=strict_factual)
                 progress_bar.progress(100)
                 status_text.text("Done!")
 
