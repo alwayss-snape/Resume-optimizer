@@ -1,7 +1,9 @@
-import base64
 import os
 import sys
 import tempfile
+import threading
+from functools import partial
+from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 
 # Ensure project root directory is in sys.path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -18,6 +20,23 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded",
 )
+
+def get_local_pdf_preview_url(pdf_path: str):
+    """Serve a PDF from a temporary HTTP endpoint so Chrome can render it in an iframe."""
+    pdf_dir = os.path.dirname(os.path.abspath(pdf_path))
+    pdf_name = os.path.basename(pdf_path)
+
+    class QuietHandler(SimpleHTTPRequestHandler):
+        def log_message(self, format, *args):
+            return
+
+    handler = partial(QuietHandler, directory=pdf_dir)
+    httpd = ThreadingHTTPServer(("127.0.0.1", 0), handler)
+    thread = threading.Thread(target=httpd.serve_forever, daemon=True)
+    thread.start()
+    port = httpd.server_address[1]
+    return httpd, f"http://127.0.0.1:{port}/{pdf_name}"
+
 
 # Custom CSS styling
 st.markdown("""
@@ -174,15 +193,18 @@ if btn_analyze or btn_tailor:
                 with preview_tab:
                     st.markdown("### Tailored Resume Document Preview")
                     if results.get("pdf") and os.path.exists(results["pdf"]):
-                        # Preview the generated document itself, not a flattened
-                        # Markdown reconstruction of its contents.
+                        preview_server, preview_url = get_local_pdf_preview_url(results["pdf"])
+                        st.caption("Preview is served from a local HTTP endpoint so Chrome can render the PDF normally.")
+                        st.components.v1.iframe(preview_url, height=900, scrolling=True)
                         with open(results["pdf"], "rb") as f:
-                            pdf_b64 = base64.b64encode(f.read()).decode("ascii")
-                        st.components.v1.html(
-                            f'<iframe src="data:application/pdf;base64,{pdf_b64}" '
-                            f'width="100%" height="900" style="border: 1px solid #374151;"></iframe>',
-                            height=920,
-                        )
+                            st.download_button(
+                                label="📥 Open / Download Tailored PDF",
+                                data=f.read(),
+                                file_name="tailored_resume.pdf",
+                                mime="application/pdf",
+                                use_container_width=True,
+                            )
+                        st.session_state["preview_server"] = preview_server
                     elif results.get("html") and os.path.exists(results["html"]):
                         with open(results["html"], "r", encoding="utf-8") as f:
                             st.components.v1.html(f.read(), height=900, scrolling=True)

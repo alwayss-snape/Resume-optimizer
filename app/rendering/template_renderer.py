@@ -1,11 +1,8 @@
 import os
 
 import docx
-<<<<<<< HEAD
-
-=======
 from typing import Any
->>>>>>> b495747 (Refactor: renderer accepts ResumeDocument; Tailor passes ResumeDocument; add validation agent and tests)
+
 from app.domain.resume import Resume
 try:
     from app.domain.resume_document import ResumeDocument
@@ -14,11 +11,8 @@ except Exception:
 
 
 class TemplateRenderer:
-<<<<<<< HEAD
-    """Standard single-column, ATS-safe DOCX renderer with no content omissions."""
+    """Standard single-column, ATS-safe DOCX renderer with support for ResumeDocument."""
 
-    def render_ats_default(self, resume: Resume, output_path: str) -> str:
-=======
     def render_ats_default(self, resume_or_doc: Any, output_path: str) -> str:
         # Accept either a Resume or a ResumeDocument; unwrap when necessary
         if hasattr(resume_or_doc, "resume"):
@@ -26,92 +20,85 @@ class TemplateRenderer:
         else:
             resume = resume_or_doc
 
->>>>>>> b495747 (Refactor: renderer accepts ResumeDocument; Tailor passes ResumeDocument; add validation agent and tests)
         doc = docx.Document()
-        doc.add_paragraph(resume.candidate.name, style="Title")
+        candidate_name = getattr(resume, "candidate", None) and getattr(resume.candidate, "name", None)
+        if candidate_name:
+            doc.add_paragraph(candidate_name, style="Title")
 
-        contact = [
-            value for value in (resume.candidate.email, resume.candidate.phone,
-                                resume.candidate.location, *resume.candidate.links)
-            if value
-        ]
-        if contact:
-            doc.add_paragraph(" | ".join(contact))
-
-<<<<<<< HEAD
-        if resume.summary:
-            doc.add_heading("Professional Summary", level=1)
-            doc.add_paragraph(resume.summary)
-
-        if resume.experience:
-=======
         # Contact info
         contact_parts = []
-        if resume.candidate.email:
-            contact_parts.append(f"Email: {resume.candidate.email}")
-        if resume.candidate.phone:
-            contact_parts.append(f"Phone: {resume.candidate.phone}")
-        if resume.candidate.location:
-            contact_parts.append(f"Location: {resume.candidate.location}")
+        if getattr(resume, "candidate", None):
+            cand = resume.candidate
+            if getattr(cand, "email", None):
+                contact_parts.append(cand.email)
+            if getattr(cand, "phone", None):
+                contact_parts.append(cand.phone)
+            if getattr(cand, "location", None):
+                contact_parts.append(cand.location)
+            links = getattr(cand, "links", []) or []
+            contact_parts.extend([l for l in links if l])
         if contact_parts:
             doc.add_paragraph(" | ".join(contact_parts))
 
         # Summary
-        if resume and getattr(resume, "summary", None):
+        if getattr(resume, "summary", None):
             doc.add_heading("Professional Summary", level=1)
             doc.add_paragraph(resume.summary)
 
         # Experience
-        if resume and getattr(resume, "experience", None):
->>>>>>> b495747 (Refactor: renderer accepts ResumeDocument; Tailor passes ResumeDocument; add validation agent and tests)
+        if getattr(resume, "experience", None):
             doc.add_heading("Work Experience", level=1)
             for exp in resume.experience:
-                heading = " — ".join(value for value in (exp.title, exp.company) if value)
-                if exp.start_date or exp.end_date:
-                    heading += f" | {' — '.join(value for value in (exp.start_date, exp.end_date) if value)}"
-                doc.add_paragraph(heading).runs[0].bold = True
-                for bullet in exp.bullets:
-                    doc.add_paragraph(bullet.text, style="List Bullet")
+                heading = " — ".join(value for value in (getattr(exp, "title", None), getattr(exp, "company", None)) if value)
+                dates = [getattr(exp, "start_date", None), getattr(exp, "end_date", None)]
+                if any(dates):
+                    heading += f" | {' — '.join(value for value in dates if value)}"
+                p = doc.add_paragraph(heading)
+                if p.runs:
+                    p.runs[0].bold = True
+                for bullet in getattr(exp, "bullets", []) or []:
+                    doc.add_paragraph(getattr(bullet, "text", ""), style="List Bullet")
 
-        if resume.projects:
+        # Projects
+        if getattr(resume, "projects", None):
             doc.add_heading("Projects", level=1)
             for project in resume.projects:
-                doc.add_paragraph(project.name).runs[0].bold = True
-                if project.description:
+                p = doc.add_paragraph(getattr(project, "name", ""))
+                if p.runs:
+                    p.runs[0].bold = True
+                if getattr(project, "description", None):
                     doc.add_paragraph(project.description)
-                if project.technologies:
+                if getattr(project, "technologies", None):
                     doc.add_paragraph("Technologies: " + ", ".join(project.technologies))
-                for bullet in project.bullets:
-                    doc.add_paragraph(bullet.text, style="List Bullet")
+                for bullet in getattr(project, "bullets", []) or []:
+                    doc.add_paragraph(getattr(bullet, "text", ""), style="List Bullet")
 
-<<<<<<< HEAD
-        if resume.skills:
-            doc.add_heading("Skills", level=1)
-            for category, skills in resume.skills.items():
-                doc.add_paragraph(f"{category}: {', '.join(skills)}")
-
-        if resume.education:
-=======
         # Skills
-        if resume and getattr(resume, "skills", None):
+        if getattr(resume, "skills", None):
             doc.add_heading("Technical Skills", level=1)
             for category, skill_list in resume.skills.items():
                 doc.add_paragraph(f"{category}: {', '.join(skill_list)}")
 
         # Education
-        if resume and getattr(resume, "education", None):
->>>>>>> b495747 (Refactor: renderer accepts ResumeDocument; Tailor passes ResumeDocument; add validation agent and tests)
+        if getattr(resume, "education", None):
             doc.add_heading("Education", level=1)
             for education in resume.education:
-                values = [education.degree, education.institution, education.dates]
+                values = [getattr(education, "degree", None), getattr(education, "institution", None), getattr(education, "dates", None)]
                 doc.add_paragraph(" — ".join(value for value in values if value))
 
-        if resume.certifications:
+        # Certifications
+        if getattr(resume, "certifications", None):
             doc.add_heading("Certifications", level=1)
             for certification in resume.certifications:
-                doc.add_paragraph(" — ".join(value for value in certification.values() if value))
+                # certification may be dict-like
+                try:
+                    vals = [v for v in certification.values() if v]
+                except Exception:
+                    vals = [v for v in certification if v]
+                doc.add_paragraph(" — ".join(vals))
 
-        if resume.achievements:
+        # Achievements
+        if getattr(resume, "achievements", None):
             doc.add_heading("Achievements", level=1)
             for achievement in resume.achievements:
                 doc.add_paragraph(achievement, style="List Bullet")

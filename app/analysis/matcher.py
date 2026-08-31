@@ -33,11 +33,13 @@ class EvidenceMatcher:
     def _normalize_text(self, text: str) -> str:
         value = text.lower().strip()
         for source, target in ALIASES.items():
-            value = re.sub(r"\\b" + re.escape(source) + r"\\b", target, value)
-        return re.sub(r"\\s+", " ", value)
+            # match whole-word aliases (use raw backslash escapes)
+            value = re.sub(r"\b" + re.escape(source) + r"\b", target, value)
+        # collapse whitespace
+        return re.sub(r"\s+", " ", value)
 
     def _extract_key_tokens(self, text: str) -> Set[str]:
-        tokens = set(re.findall(r"\\b[A-Za-z0-9+#.-]{2,}\\b", self._normalize_text(text)))
+        tokens = set(re.findall(r"\b[A-Za-z0-9+#.-]{2,}\b", self._normalize_text(text)))
         return {token for token in tokens if token not in STOP_WORDS}
 
     def _meaningful_tokens(self, text: str) -> Set[str]:
