@@ -229,7 +229,7 @@ class TailorService:
             pass
         # Also save the legacy resume.json for compatibility
         self.run_manager.save_json(run_dir, "resume.json", resume)
-        self.run_manager.save_json(run_dir, "resume_document.json", resume_document)
+        # (Note: `resume_doc` already saved above as resume_document canonical SOT)
         self.run_manager.save_json(run_dir, "jd.json", job_desc)
         self.run_manager.save_json(run_dir, "plan.json", plan)
         self.run_manager.save_json(run_dir, "rewrites.json", approved_proposals)

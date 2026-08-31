@@ -6,13 +6,9 @@ from app.domain.resume_document import ResumeDocument
 from app.ingestion.docx import RawDocument
 
 class ResumeNormalizer:
-<<<<<<< HEAD
-    DATE_PATTERN = re.compile(r'\b(?:19|20)\d{2}\b|\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|Present|Current)\b', re.IGNORECASE)
+    DATE_PATTERN = re.compile(r"\b(?:19|20)\d{2}\b|\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|Present|Current)\b", re.IGNORECASE)
 
-    def normalize(self, raw_doc: RawDocument) -> Tuple[Resume, List[Evidence]]:
-=======
     def normalize(self, raw_doc: RawDocument) -> Tuple["ResumeDocument", List[Evidence]]:
->>>>>>> cbd4d9f (WIP: save local changes before rebase)
         summary_text: List[str] = []
         experiences: List[Experience] = []
         projects: List[Project] = []

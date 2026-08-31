@@ -1,7 +1,13 @@
 import os
 import logging
-from typing import List
-import fitz  # PyMuPDF
+from typing import List, Optional
+
+try:
+    import fitz  # PyMuPDF
+    _FITZ_IMPORT_ERROR = None
+except Exception as e:  # pragma: no cover - runtime dependency may be missing in some environments
+    fitz = None
+    _FITZ_IMPORT_ERROR = e
 
 from app.ingestion.docx import RawBlock, RawDocument
 from app.ingestion.ocr import OCREngine
@@ -15,7 +21,16 @@ class PdfParser:
     def __init__(self):
         self.ocr_engine = OCREngine()
 
+    def _ensure_fitz(self) -> None:
+        if fitz is None:
+            raise RuntimeError(
+                "PyMuPDF is required to parse PDFs but it's not installed. "
+                "Install it with `pip install PyMuPDF` (or add `PyMuPDF` to your project dependencies). "
+                f"Underlying import error: {_FITZ_IMPORT_ERROR!r}"
+            )
+
     def parse(self, file_path: str) -> RawDocument:
+        self._ensure_fitz()
         if not os.path.exists(file_path):
             raise FileNotFoundError(f"PDF file not found at path: {file_path}")
 
