@@ -1,10 +1,11 @@
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Literal, Optional
+from typing import Any, Dict, List, Optional, Literal
 from uuid import uuid4
 
 from pydantic import BaseModel, Field
 
 from app.domain.resume import Resume
+
 
 class ResumePresentation(BaseModel):
     """Display choices; content remains in the canonical Resume model."""
@@ -16,18 +17,24 @@ class ResumePresentation(BaseModel):
     accent_color: str = "#1F4E79"
     compact: bool = False
 
+
 class ResumeSource(BaseModel):
     filename: str
     file_type: Literal["docx", "pdf", "json", "manual"]
     import_mode: Literal["preserve", "template", "manual"] = "template"
 
+
 class ResumeRevision(BaseModel):
     id: str = Field(default_factory=lambda: f"rev_{uuid4().hex[:12]}")
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     actor: Literal["user", "ai", "import"] = "user"
-    summary: str
+    summary: Optional[str] = None
     changed_paths: List[str] = Field(default_factory=list)
+    original_text: Optional[str] = None
+    rewritten_text: Optional[str] = None
     evidence_ids: List[str] = Field(default_factory=list)
+    source: Optional[str] = None
+
 
 class ResumeDocument(BaseModel):
     """Versioned source of truth for editing, tailoring, and rendering."""
@@ -40,17 +47,25 @@ class ResumeDocument(BaseModel):
 
     def record_revision(
         self,
-        summary: str,
-        changed_paths: List[str],
+        summary: Optional[str] = None,
+        changed_paths: Optional[List[str]] = None,
         *,
+        rev_id: Optional[str] = None,
         actor: Literal["user", "ai", "import"] = "user",
+        original: Optional[str] = None,
+        rewritten: Optional[str] = None,
         evidence_ids: Optional[List[str]] = None,
+        source: Optional[str] = None,
     ) -> ResumeRevision:
         revision = ResumeRevision(
+            id=rev_id or f"rev_{uuid4().hex[:12]}",
             actor=actor,
-            summary=summary,
-            changed_paths=changed_paths,
+            summary=summary or "",
+            changed_paths=changed_paths or [],
+            original_text=original,
+            rewritten_text=rewritten,
             evidence_ids=evidence_ids or [],
+            source=source,
         )
         self.revisions.append(revision)
         return revision

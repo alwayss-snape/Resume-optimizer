@@ -10,8 +10,10 @@ def test_resume_normalizer():
     raw_doc = parser.parse(sample_path)
 
     normalizer = ResumeNormalizer()
-    resume, evidence_list = normalizer.normalize(raw_doc)
+    resume_doc, evidence_list = normalizer.normalize(raw_doc)
 
+    assert hasattr(resume_doc, "resume")
+    resume = resume_doc.resume
     assert isinstance(resume, Resume)
     assert resume.candidate.name == "Jane Doe"
     assert resume.candidate.email == "jane.doe@example.com"

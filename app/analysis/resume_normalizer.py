@@ -2,12 +2,17 @@ import re
 from typing import List, Tuple
 from app.domain.evidence import Evidence
 from app.domain.resume import Candidate, Education, Experience, Project, Resume, ResumeBullet
+from app.domain.resume_document import ResumeDocument
 from app.ingestion.docx import RawDocument
 
 class ResumeNormalizer:
+<<<<<<< HEAD
     DATE_PATTERN = re.compile(r'\b(?:19|20)\d{2}\b|\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|Present|Current)\b', re.IGNORECASE)
 
     def normalize(self, raw_doc: RawDocument) -> Tuple[Resume, List[Evidence]]:
+=======
+    def normalize(self, raw_doc: RawDocument) -> Tuple["ResumeDocument", List[Evidence]]:
+>>>>>>> cbd4d9f (WIP: save local changes before rebase)
         summary_text: List[str] = []
         experiences: List[Experience] = []
         projects: List[Project] = []
@@ -201,4 +206,8 @@ class ResumeNormalizer:
             skills=skills_dict,
         )
 
-        return resume, evidence_list
+        # Wrap into ResumeDocument (single source of truth)
+        resume_doc = ResumeDocument(resume=resume)
+        resume_doc.record_revision(rev_id="import_0001", actor="import", original=None, rewritten=None, evidence_ids=[e.id for e in evidence_list], source=raw_doc.filename)
+
+        return resume_doc, evidence_list

@@ -2,7 +2,13 @@ import json
 import logging
 import time
 from typing import Any, Dict, List, Optional, Type, TypeVar
-import ollama
+
+# `ollama` is optional for tests and offline runs. Import lazily and tolerate failures.
+try:
+    import ollama
+except Exception:
+    ollama = None
+
 from pydantic import BaseModel, ValidationError
 
 from app.config.settings import settings
@@ -27,7 +33,15 @@ class LLMClient:
         self.host = host or settings.llm_host
         self.model = model or settings.llm_model
         self.timeout = timeout or settings.llm_timeout_seconds
-        self.client = ollama.Client(host=self.host)
+        # Create Ollama client if available; otherwise keep None and operate in degraded mode.
+        if ollama is not None:
+            try:
+                self.client = ollama.Client(host=self.host)
+            except Exception as e:
+                logging.getLogger(__name__).warning(f"Could not initialize ollama client: {e}")
+                self.client = None
+        else:
+            self.client = None
 
     def is_available(self) -> bool:
         """Check if Ollama server is reachable and model is available."""
@@ -54,6 +68,9 @@ class LLMClient:
             "temperature": temperature,
         }
 
+        if not self.client:
+            raise LLMConnectionError("LLM client is not configured or Ollama client not available.")
+
         try:
             response = self.client.chat(
                 model=self.model,
@@ -63,7 +80,7 @@ class LLMClient:
             )
             duration = time.time() - start_time
             content = response.get("message", {}).get("content", "")
-            
+
             prompt_tokens = response.get("prompt_eval_count")
             completion_tokens = response.get("eval_count")
 
@@ -74,9 +91,10 @@ class LLMClient:
                 completion_tokens=completion_tokens,
                 duration_seconds=round(duration, 3),
             )
-        except ollama.ResponseError as e:
-            raise LLMError(f"Ollama error: {e}") from e
         except Exception as e:
+            # If Ollama-specific ResponseError is available, surface it as LLMError
+            if ollama is not None and hasattr(ollama, "ResponseError") and isinstance(e, getattr(ollama, "ResponseError")):
+                raise LLMError(f"Ollama error: {e}") from e
             if "connect" in str(e).lower() or "connection" in str(e).lower():
                 raise LLMConnectionError(f"Cannot connect to Ollama host at {self.host}: {e}") from e
             raise LLMError(f"LLM generation failed: {e}") from e
