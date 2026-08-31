@@ -23,6 +23,7 @@ from app.rendering.template_renderer import TemplateRenderer
 from app.services.run_manager import RunManager
 from app.validation.factual import FactualValidator
 from app.validation.output import OutputQAValidator
+from app.validation.structural import StructuralValidator
 from app.validation.safety import SafetyGuard
 
 class TailorService:
@@ -37,6 +38,7 @@ class TailorService:
         self.planner = TailoringPlanner(self.llm_client)
         self.rewriter = LLMRewriter(self.llm_client)
         self.validator = FactualValidator()
+        self.struct_validator = StructuralValidator()
         self.docx_patcher = DocxPatcher()
         self.template_renderer = TemplateRenderer()
         self.html_renderer = HtmlResumeRenderer()
@@ -144,6 +146,10 @@ class TailorService:
         approved_proposals: List[RewriteProposal] = []
         warnings: List[str] = []
 
+        # Keep a copy of the original resume model for structural validation
+        import copy
+        original_resume = copy.deepcopy(resume)
+
         for prop in proposals:
             res = self.validator.validate_proposal(prop, evidence_list)
             if res.approved:
@@ -177,8 +183,23 @@ class TailorService:
         else:
             self.template_renderer.render_ats_default(resume, docx_output_path)
 
+<<<<<<< HEAD
         # Canonical ATS HTML is available for browser preview and print workflows.
         self.html_renderer.write_html(resume_document, html_output_path)
+=======
+        # Structural validation: ensure tailoring didn't alter identity/content unexpectedly
+        struct_warnings = self.struct_validator.validate(original_resume, resume)
+        if struct_warnings:
+            warnings.extend(struct_warnings)
+
+        # Output QA validations (DOCX and PDF) to catch rendering issues
+        try:
+            docx_warnings = self.qa_validator.validate_docx(docx_output_path, expected_candidate_name=resume.candidate.name)
+            warnings.extend(docx_warnings)
+        except Exception:
+            # Never fail the tailoring flow due to QA check exceptions
+            warnings.append("Output QA DOCX validation failed unexpectedly.")
+>>>>>>> 0587dcd (Phase1: wire StructuralValidator and OutputQAValidator into TailorService; collect validation warnings)
 
         # PDF Conversion
         pdf_res = self.pdf_converter.convert_docx_to_pdf(docx_output_path, output_dir)
@@ -207,6 +228,10 @@ class TailorService:
                 f.write(f"## Unsupported Missing Requirements\n\n")
                 for req in plan.unsupported_requirements:
                     f.write(f"- {req}\n")
+            if warnings:
+                f.write("\n## Validation Warnings\n\n")
+                for w in warnings:
+                    f.write(f"- {w}\n")
 
         preview_md = self.generate_preview_md(resume)
 
@@ -217,5 +242,9 @@ class TailorService:
             "changes_md": report_md_path,
             "alignment_score": f"{score:.1f}",
             "run_dir": run_dir,
+<<<<<<< HEAD
             "preview_md": preview_md,
+=======
+            "warnings": warnings,
+>>>>>>> 0587dcd (Phase1: wire StructuralValidator and OutputQAValidator into TailorService; collect validation warnings)
         }
