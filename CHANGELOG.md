@@ -1,5 +1,11 @@
 # Changelog — Local Resume Tailor
 
+## [Unreleased] - 2026-08-31
+
+### Changed
+- Project baseline restoration and V2 planning started. Current test
+	count in this environment: 29 passing.
+
 ## [0.1.0] - 2026-08-29
 
 ### Added

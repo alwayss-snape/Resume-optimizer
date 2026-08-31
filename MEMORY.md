@@ -31,7 +31,8 @@ Completed & Hardened
 - Phase 14: End-to-End Hardening (`tests/integration/test_end_to_end.py`, `CHANGELOG.md`).
 - Resolved PDF heading operator precedence edge case in `PdfParser` and verified candidate name extraction across all formats.
 - Added explicit `sys.path` project root resolution in `app/ui.py` and `app/cli.py` to prevent `ModuleNotFoundError: No module named 'app'` when running Streamlit from subdirectories or arbitrary working directories.
-- Verified 100% passing test suite across all 29 unit and integration tests.
+- Verified 29 passing unit & integration tests in the current environment.
+- Next: Begin V2 workstream (restore baseline, harden validators, canonical ResumeDocument).
 
 ## What Is Currently Being Worked On
 

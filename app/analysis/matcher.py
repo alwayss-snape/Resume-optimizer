@@ -53,9 +53,11 @@ class EvidenceMatcher:
                     explanation = f"Direct match found in candidate evidence (Evidence ID: {ev.id})."
                     break
                 
-                # Check individual word tokens for multi-word skill requirements
-                req_tokens = set(re.findall(r'\w+', req_text_norm))
-                ev_tokens = set(re.findall(r'\w+', norm_text))
+                # Check individual word/tokens for multi-word skill requirements.
+                # Include common symbols used in skill names like +, #, ., and -
+                token_pattern = r"[A-Za-z0-9+#._-]+"
+                req_tokens = set(re.findall(token_pattern, req_text_norm))
+                ev_tokens = set(re.findall(token_pattern, norm_text))
                 if req_tokens and req_tokens.issubset(ev_tokens):
                     matched_evidence_ids.append(ev.id)
                     status = "SUPPORTED"

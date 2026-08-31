@@ -18,7 +18,10 @@ class ValidationResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
 
 class FactualValidator:
-    NUMERIC_PATTERN = re.compile(r'\b\d+(?:[\.,]\d+)?%?|\b\$\d+(?:[\.,]\d+)?\b')
+    # Match either plain numbers with optional decimals and percent sign (e.g. 20, 3.5, 12%)
+    # or currency amounts with leading $ (e.g. $5,000 or $3.5M). Use a grouped
+    # alternation so word-boundary handling is consistent.
+    NUMERIC_PATTERN = re.compile(r'(?:\b\d+(?:[.,]\d+)?%?|\$\d+(?:[.,]\d+)?\b)')
 
     def extract_numbers(self, text: str) -> set[str]:
         return set(self.NUMERIC_PATTERN.findall(text))
