@@ -10,6 +10,12 @@ class Settings(BaseSettings):
     max_context_tokens: int = 12000
     strict_factual_mode: bool = True
 
+    # Semantic matching (local sentence-transformers embedding layer).
+    # Only applied to requirements the deterministic EvidenceMatcher leaves MISSING.
+    semantic_match_enabled: bool = True
+    semantic_match_model: str = "all-MiniLM-L6-v2"
+    semantic_match_threshold: float = 0.58
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

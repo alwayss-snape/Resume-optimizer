@@ -42,12 +42,32 @@ class TailoringPlanner:
                 ]
 
                 if matched_reqs:
+                    # A SEMANTIC_PARTIAL match is a weaker, inferred (paraphrase)
+                    # signal compared to EXPLICIT/SUPPORTED/PARTIAL, which are
+                    # backed by exact or token-overlap evidence. When a bullet's
+                    # only match is semantic, it's still correct to select it
+                    # for REWRITE (tightening a genuinely relevant bullet toward
+                    # the JD's phrasing, grounded in the same real evidence) —
+                    # but the rationale must say so plainly, rather than present
+                    # it as an exact requirement match when it wasn't one.
+                    deterministic_matches = [m for m in matched_reqs if m.status != "SEMANTIC_PARTIAL"]
+                    primary_match = deterministic_matches[0] if deterministic_matches else matched_reqs[0]
+                    is_semantic_only = not deterministic_matches
+
+                    if is_semantic_only:
+                        rationale = (
+                            f"Align bullet with JD requirement (inferred via semantic "
+                            f"similarity, not an exact match): {primary_match.requirement_text}"
+                        )
+                    else:
+                        rationale = f"Align bullet with JD requirement: {primary_match.requirement_text}"
+
                     actions.append(TailoringAction(
                         action="REWRITE",
                         source_id=bullet.id,
                         target_section="experience",
                         evidence_ids=bullet_ev_ids,
-                        rationale=f"Align bullet with JD requirement: {matched_reqs[0].requirement_text}",
+                        rationale=rationale,
                     ))
                 else:
                     actions.append(TailoringAction(

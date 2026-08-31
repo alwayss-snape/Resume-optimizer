@@ -1,13 +1,13 @@
 # Local Resume Tailor
 
-Local-first, privacy-focused application for tailoring resumes to job descriptions using local LLMs (Ollama + Qwen3).
+Local-first, privacy-focused application for tailoring resumes to job descriptions using local LLMs (Ollama + Qwen3) and a local sentence-embedding model for semantic matching.
 
 ## Key Features
 
 - **Strict Factual Accuracy:** Never fabricates skills, dates, employers, metrics, or certifications.
 - **Evidence Ledger:** All rewrites reference verifiable source evidence.
 - **Layout Preservation:** Patches existing `.docx` elements preserving formatting, fonts, and styles.
-- **Hybrid Matching Engine:** Exact, alias, and semantic evidence matching.
+- **Hybrid Matching Engine:** Exact, alias, and local embedding-based semantic matching. The semantic layer only considers requirements the deterministic layer leaves unmatched, is clearly labeled as an inferred (not exact) match wherever shown, and never overrides a deterministic match.
 - **CLI & Web UI:** Includes both a command-line interface and a Streamlit dashboard.
 
 ## Quick Start

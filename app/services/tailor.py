@@ -8,6 +8,7 @@ from app.analysis.matcher import EvidenceMatcher
 from app.analysis.resume_normalizer import ResumeNormalizer
 from app.analysis.rewriter import LLMRewriter, RewriteProposal
 from app.analysis.scoring import AlignmentScorer
+from app.analysis.semantic_matcher import SemanticMatcher
 from app.analysis.tailor_planner import TailoringPlanner
 from app.domain.job import JobDescription
 from app.domain.report import TailoringReport
@@ -35,6 +36,10 @@ class TailorService:
         self.resume_normalizer = ResumeNormalizer()
         self.jd_analyzer = JDAnalyzer(self.llm_client)
         self.matcher = EvidenceMatcher(self.llm_client)
+        # A single reused instance: the embedding model (if enabled) is
+        # lazy-loaded on first use and cached here, rather than reloaded on
+        # every analyze_only/generate_proposals/tailor_resume call.
+        self.semantic_matcher = SemanticMatcher()
         self.scorer = AlignmentScorer()
         self.planner = TailoringPlanner(self.llm_client)
         self.rewriter = LLMRewriter(self.llm_client)
@@ -96,7 +101,9 @@ class TailorService:
         resume = resume_doc.resume
         job_desc = self.jd_analyzer.analyze(clean_jd_text)
         matches = self.matcher.match(job_desc, evidence_list)
+        matches = self.semantic_matcher.match(job_desc.requirements, evidence_list, matches)
         score = self.scorer.calculate_score(matches, job_desc.requirements)
+        score_components = self.scorer.calculate_components(matches, job_desc.requirements)
 
         required_m = [m for m in matches if any(r.id == m.requirement_id and r.priority == "required" for r in job_desc.requirements)]
         preferred_m = [m for m in matches if any(r.id == m.requirement_id and r.priority == "preferred" for r in job_desc.requirements)]
@@ -107,6 +114,7 @@ class TailorService:
             required_matches=required_m,
             preferred_matches=preferred_m,
             missing_requirements=missing_m,
+            score_components=dict(score_components),
         )
 
     def generate_proposals(self, resume_path: str, jd_text: str):
@@ -125,6 +133,7 @@ class TailorService:
         resume = resume_doc.resume
         job_desc = self.jd_analyzer.analyze(clean_jd_text)
         matches = self.matcher.match(job_desc, evidence_list)
+        matches = self.semantic_matcher.match(job_desc.requirements, evidence_list, matches)
         plan = self.planner.create_plan(resume, job_desc, evidence_list, matches)
         proposals = self.rewriter.execute_plan(resume, plan, evidence_list, job_desc)
         return proposals
@@ -179,6 +188,7 @@ class TailorService:
             pass
         job_desc = self.jd_analyzer.analyze(clean_jd_text)
         matches = self.matcher.match(job_desc, evidence_list)
+        matches = self.semantic_matcher.match(job_desc.requirements, evidence_list, matches)
         score = self.scorer.calculate_score(matches, job_desc.requirements)
         _append_progress(f"Analyzed JD and computed initial alignment score: {score:.1f}")
 

@@ -36,3 +36,42 @@ def test_alignment_scorer_requires_cited_evidence():
     uncited = Match(requirement_id="req_001", requirement_text="Python",
                     status="EXPLICIT", evidence_ids=[])
     assert AlignmentScorer().calculate_score([uncited], [requirement]) == 0.0
+
+
+def test_slash_alternatives_satisfied_by_either_option():
+    """'AWS/GCP' is an either/or option list, not a conjunctive requirement:
+    having ONLY AWS should be enough to satisfy it, not count as 50% missing."""
+    jd = JobDescription(job_title="t", company="c", requirements=[
+        Requirement(id="req_001", text="AWS/GCP", category="skill", priority="preferred"),
+    ], keywords=[], raw_text="")
+    evidence = [Evidence(id="ev_001", source_type="skill", source_id="s1", text="AWS Redshift")]
+
+    match = EvidenceMatcher().match(jd, evidence)[0]
+    assert match.status == "SUPPORTED"
+    assert match.evidence_ids == ["ev_001"]
+
+
+def test_slash_alternatives_still_missing_if_no_option_present():
+    """If NEITHER alternative is present, the unit must not be satisfied."""
+    jd = JobDescription(job_title="t", company="c", requirements=[
+        Requirement(id="req_001", text="AWS/GCP", category="skill", priority="preferred"),
+    ], keywords=[], raw_text="")
+    evidence = [Evidence(id="ev_001", source_type="skill", source_id="s1", text="On-prem infrastructure")]
+
+    match = EvidenceMatcher().match(jd, evidence)[0]
+    assert match.status == "MISSING"
+
+
+def test_slash_alternatives_within_a_longer_requirement():
+    """A multi-word requirement containing a slash-alternative must treat
+    only that portion as either/or; the rest of the requirement's tokens
+    still need to be present as usual."""
+    jd = JobDescription(job_title="t", company="c", requirements=[
+        Requirement(id="req_001", text="Deploy frameworks in AWS/Azure/GCP", category="skill", priority="preferred"),
+    ], keywords=[], raw_text="")
+    # "Deploy" and "frameworks" both present, plus one of the three cloud alternatives (Azure).
+    evidence = [Evidence(id="ev_001", source_type="experience", source_id="e1",
+                          text="Built deploy frameworks on Azure Databricks")]
+
+    match = EvidenceMatcher().match(jd, evidence)[0]
+    assert match.status == "SUPPORTED"

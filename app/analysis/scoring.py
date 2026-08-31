@@ -10,11 +10,16 @@ class ScoreComponents(TypedDict):
     keyword_coverage: float
     evidence_strength: float
     confidence: float
+    # Coverage from SEMANTIC_PARTIAL matches only, kept separate from the
+    # other coverage fields and from the headline score (see calculate_score).
+    # This is an inferred signal, not hard evidence, and is surfaced
+    # transparently rather than blended into the trusted number.
+    semantic_coverage: float
 
 
 STATUS_WEIGHTS: Dict[str, float] = {
     "EXPLICIT": 1.00, "SUPPORTED": 0.85, "PARTIAL": 0.50,
-    "UNCERTAIN": 0.00, "MISSING": 0.00,
+    "SEMANTIC_PARTIAL": 0.35, "UNCERTAIN": 0.00, "MISSING": 0.00,
 }
 
 CATEGORY_WEIGHTS: Dict[str, float] = {
@@ -36,36 +41,62 @@ class AlignmentScorer:
         preferred_weighted = 0.0
         keyword_weighted = 0.0
         evidence_strength_total = 0.0
+        semantic_weighted = 0.0
         required_total = preferred_total = keyword_total = 0.0
 
         for requirement in requirements:
             match = match_map.get(requirement.id)
+            status = getattr(match, "status", "MISSING")
             evidence_backed = bool(match and getattr(match, "evidence_ids", None))
-            status_weight = STATUS_WEIGHTS.get(getattr(match, "status", "MISSING"), 0.0) if evidence_backed else 0.0
+            status_weight = STATUS_WEIGHTS.get(status, 0.0) if evidence_backed else 0.0
 
             weight = requirement.weight if requirement.weight is not None else CATEGORY_WEIGHTS.get(requirement.category, 0.2)
 
-            if requirement.criticality == "critical" or requirement.category == "qualification":
-                required_weighted += status_weight * weight
+            # SEMANTIC_PARTIAL is an inferred signal, not hard evidence. It must
+            # never contribute to required_coverage / preferred_coverage /
+            # keyword_coverage (and therefore never to the headline score in
+            # calculate_score) — it is only counted in semantic_coverage below.
+            # Denominators (required_total etc.) still accumulate this
+            # requirement's weight, exactly as they would for a MISSING match,
+            # so semantic matches cannot silently inflate coverage.
+            bucket_status_weight = 0.0 if status == "SEMANTIC_PARTIAL" else status_weight
+
+            # Bucket by criticality. Requirement.criticality defaults to
+            # "required" (see app/domain/job.py) — previously only
+            # "critical" landed here, so most ordinary requirements were
+            # silently scored as "keyword" coverage instead of "required"
+            # coverage. Both "critical" and "required" now count as the
+            # required bucket; "preferred" and "informational" are handled
+            # below.
+            if requirement.criticality in ("critical", "required") or requirement.category == "qualification":
+                required_weighted += bucket_status_weight * weight
                 required_total += weight
             elif requirement.criticality == "preferred":
-                preferred_weighted += status_weight * weight
+                preferred_weighted += bucket_status_weight * weight
                 preferred_total += weight
             else:
-                keyword_weighted += status_weight * weight
+                keyword_weighted += bucket_status_weight * weight
                 keyword_total += weight
 
+            if status == "SEMANTIC_PARTIAL":
+                semantic_weighted += status_weight * weight
+
             # evidence strength: average of STATUS_WEIGHTS for matched items
+            # (includes SEMANTIC_PARTIAL, at its own lower weight, since it is
+            # still evidence-backed information for auditing purposes — it
+            # just doesn't count toward the trusted coverage buckets above).
             if evidence_backed:
                 evidence_strength_total += status_weight * weight
 
         def safe_div(n, d):
             return (n / d) if d else 0.0
 
+        total_weight = required_total + preferred_total + keyword_total
         required_coverage = safe_div(required_weighted, required_total) * 100.0
         preferred_coverage = safe_div(preferred_weighted, preferred_total) * 100.0
         keyword_coverage = safe_div(keyword_weighted, keyword_total) * 100.0
-        evidence_strength = safe_div(evidence_strength_total, (required_total + preferred_total + keyword_total)) * 100.0
+        evidence_strength = safe_div(evidence_strength_total, total_weight) * 100.0
+        semantic_coverage = safe_div(semantic_weighted, total_weight) * 100.0
 
         # confidence is a simple function of evidence strength and coverage
         confidence = (evidence_strength * 0.7 + (required_coverage * 0.3))
@@ -76,9 +107,12 @@ class AlignmentScorer:
             keyword_coverage=round(keyword_coverage, 1),
             evidence_strength=round(evidence_strength, 1),
             confidence=round(confidence, 1),
+            semantic_coverage=round(semantic_coverage, 1),
         )
 
     def calculate_score(self, matches: List[Match], requirements: List[Requirement]) -> float:
         comps = self.calculate_components(matches, requirements)
-        # Simple aggregate: weighted sum favoring required coverage
+        # Simple aggregate: weighted sum favoring required coverage.
+        # semantic_coverage is deliberately excluded — the headline score
+        # reflects only hard (deterministic) evidence. See ScoreComponents.
         return round((comps["required_coverage"] * 0.6 + comps["preferred_coverage"] * 0.3 + comps["keyword_coverage"] * 0.1), 1)

@@ -14,8 +14,11 @@ class JDAnalyzer:
     }
     HEADING_RE = re.compile(
         r"^(about( the)? job|about us|what we offer|benefits|equal opportunity|"
-        r"responsibilities|requirements|qualifications|preferred qualifications|"
-        r"nice to have|skills|who you are|what you.ll do)[:\\s]*$",
+        r"nice to have|who you are|what you.ll do|"
+        r"(minimum|required|basic|desired|preferred|additional|other|key|core|"
+        r"technical|essential|primary|general)?\s*"
+        r"(responsibilit(y|ies)|requirements?|qualifications?|skills)"
+        r")[:\s]*$",
         re.IGNORECASE,
     )
     REQUIREMENT_SIGNALS = (

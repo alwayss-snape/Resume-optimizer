@@ -29,6 +29,37 @@ class PdfParser:
                 f"Underlying import error: {_FITZ_IMPORT_ERROR!r}"
             )
 
+    def _merge_wrapped_lines(self, lines: List[str]) -> List[str]:
+        """Join PDF-extracted lines that are word-wrap continuations of one
+        sentence back into a single line.
+
+        PyMuPDF's "blocks" extraction returns every visually-wrapped line of a
+        bullet or paragraph as a separate line, even when they are just
+        word-wrap continuations of one sentence (e.g. a long bullet that spans
+        2-3 lines in the rendered PDF). Left unmerged, each wrapped line
+        becomes its own truncated RawBlock/Evidence item, which starves both
+        the deterministic and semantic matchers of complete sentences to
+        match against.
+
+        A line is joined onto the previous one only when it starts with a
+        lowercase letter: genuine mid-sentence word-wrap continues in
+        lowercase, whereas a new heading, bullet, or name virtually always
+        starts capitalized (or with a bullet prefix). This is deliberately
+        conservative — it will under-merge some genuine continuations (e.g.
+        ones that wrap right before a capitalized word) rather than risk
+        swallowing a heading or name into the preceding line, which
+        previously broke candidate-name detection on sample.pdf.
+        """
+        merged_lines: List[str] = []
+        for line in lines:
+            is_bullet_start = line.startswith(self.BULLET_PREFIXES)
+            starts_lowercase = bool(line) and line[0].islower()
+            if merged_lines and starts_lowercase and not is_bullet_start:
+                merged_lines[-1] = f"{merged_lines[-1]} {line}".strip()
+            else:
+                merged_lines.append(line)
+        return merged_lines
+
     def parse(self, file_path: str) -> RawDocument:
         self._ensure_fitz()
         if not os.path.exists(file_path):
@@ -52,6 +83,8 @@ class PdfParser:
                     raw_text = b[4].strip()
                     total_text_length += len(raw_text)
                     lines = [line.strip() for line in raw_text.split("\n") if line.strip()]
+                    lines = self._merge_wrapped_lines(lines)
+
                     for line_idx, line in enumerate(lines):
                         is_bullet = line.startswith(self.BULLET_PREFIXES)
                         COMMON_SECTIONS = {"summary", "professional summary", "experience", "work experience", "skills", "technical skills", "education", "projects", "certifications", "achievements", "profile"}

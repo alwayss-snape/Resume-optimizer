@@ -1,4 +1,4 @@
-from typing import List, Literal, Optional
+from typing import Dict, List, Literal, Optional
 from pydantic import BaseModel, Field
 
 class Match(BaseModel):
@@ -8,6 +8,7 @@ class Match(BaseModel):
         "EXPLICIT",
         "SUPPORTED",
         "PARTIAL",
+        "SEMANTIC_PARTIAL",
         "MISSING",
         "UNCERTAIN"
     ]
@@ -21,3 +22,7 @@ class TailoringReport(BaseModel):
     preferred_matches: List[Match] = Field(default_factory=list)
     missing_requirements: List[Match] = Field(default_factory=list)
     warnings: List[str] = Field(default_factory=list)
+    # Optional score breakdown (see AlignmentScorer.calculate_components).
+    # Populated by analyze_only; kept optional so existing callers that don't
+    # need the breakdown are unaffected.
+    score_components: Optional[Dict[str, float]] = None

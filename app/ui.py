@@ -170,14 +170,43 @@ if btn_analyze or btn_tailor:
                 
                 st.success("Analysis Complete!")
                 st.metric("Alignment Score", f"{report.alignment_score:.1f} / 100")
+                if report.score_components and report.score_components.get("semantic_coverage", 0) > 0:
+                    st.caption(
+                        f"🔎 Semantic coverage: {report.score_components['semantic_coverage']:.1f}% "
+                        "of requirement weight is matched only via inferred (paraphrase) similarity, "
+                        "not counted in the score above — see the 🔎 items below."
+                    )
                 
                 tab1, tab2, tab3 = st.tabs(["Required Matches", "Preferred Matches", "Missing Requirements"])
+
+                # Distinct badge per status. SEMANTIC_PARTIAL gets its own
+                # marker (🔎) separate from the deterministic PARTIAL (⚠️) so
+                # it's never confused with a token-overlap match — a semantic
+                # match is a weaker, inferred signal and must read as one.
+                status_badges = {
+                    "EXPLICIT": "✅",
+                    "SUPPORTED": "✅",
+                    "PARTIAL": "⚠️",
+                    "SEMANTIC_PARTIAL": "🔎",
+                    "UNCERTAIN": "❓",
+                    "MISSING": "❌",
+                }
+
+                def _render_match(m):
+                    badge = status_badges.get(m.status, "•")
+                    st.write(f"- {badge} **[{m.status}]** {m.requirement_text}")
+                    if m.status == "SEMANTIC_PARTIAL":
+                        # Never show a semantic match as a bare status — always
+                        # surface the evidence and similarity score it's based
+                        # on, since it's an inferred match, not an exact one.
+                        st.caption(f"　　{m.explanation}")
+
                 with tab1:
                     for m in report.required_matches:
-                        st.write(f"- **[{m.status}]** {m.requirement_text}")
+                        _render_match(m)
                 with tab2:
                     for m in report.preferred_matches:
-                        st.write(f"- **[{m.status}]** {m.requirement_text}")
+                        _render_match(m)
                 with tab3:
                     for m in report.missing_requirements:
                         st.write(f"- ❌ {m.requirement_text}")

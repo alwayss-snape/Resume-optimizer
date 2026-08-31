@@ -38,6 +38,20 @@ Status: **Foundation complete; consumer migration is scheduled for later phases.
 ### Feature Addition: Live Resume Document Preview
 - Added **"👁️ Live Preview of Tailored Resume"** tab directly in the Streamlit UI ([`app/ui.py`](file:///Users/kshitijchaubey/Desktop/portfolio/v2/resume-tailor/app/ui.py)) so users can inspect formatted resume text, section updates, and accepted rewrites in real time before downloading.
 
+### Feature Addition: Semantic Matching Layer + 3-Bug RCA (2026-08-31)
+Added a secondary, embedding-based semantic matcher (`app/analysis/semantic_matcher.py`) that runs only on requirements the deterministic `EvidenceMatcher` leaves `MISSING`, never overrides a deterministic match, and is excluded from the headline `alignment_score` (surfaced separately as `semantic_coverage`). See ARCHITECTURE.md's "Semantic Matching Design" section for the full contract.
+
+While validating this against a real JD + resume pair, found and fixed three pre-existing bugs:
+1. **PDF word-wrap truncation:** `PdfParser` split every visually-wrapped line into its own block, truncating long bullets. Fixed with a conservative lowercase-start merge heuristic (`_merge_wrapped_lines`). Verified no regression on candidate-name/heading extraction.
+2. **JD heading leakage:** `HEADING_RE` only matched a narrow set of exact heading phrases; variants like "Minimum Qualifications" leaked through as fake requirements. Broadened the regex to accept common qualifier prefixes. Also fixed an over-escaped whitespace character class in the same regex.
+3. **Slash-alternatives treated as conjunctive:** `EvidenceMatcher` required *both* sides of "AWS/GCP" rather than *either*. Added `_extract_requirement_units` to treat a slash-group as one OR-satisfiable unit.
+
+Also consolidated the previously-duplicated alias maps (`matcher.py`'s inline `ALIASES` vs `terminology.py`'s `ALIAS_MAP`) into `terminology.py` as the single source, and removed the unused `evidence_index.py` scaffolding (never wired into the matcher, no test coverage).
+
+**Follow-up (same day):** both items below were fixed on request, not left deferred:
+- `scoring.py`'s "required" bucket previously only fired for `requirement.criticality == "critical"`, but `Requirement.criticality` defaults to `"required"` — most default-criticality requirements were landing in `keyword_weighted` instead of `required_weighted`. Fixed by including `"required"` in the bucket check; this intentionally changes existing score outputs.
+- `TailoringPlanner.create_plan`'s bullet-matching didn't filter by status, so a `SEMANTIC_PARTIAL` match flowed into `REWRITE` the same as any deterministic match. Kept that behavior (it's genuinely correct — a semantically-relevant bullet should be tightened toward the JD's phrasing) but made it deliberate: the planner now prefers citing a deterministic match for the rationale when one exists, and labels the rationale "inferred via semantic similarity, not an exact match" when only a semantic match supports the rewrite.
+
 ## What Has Been Completed
 
 - Phase 0: Created `resume-tailor/` directory structure, virtualenv `.venv`, dependencies, `pyproject.toml`, `.env`, `BUILD.md`, `ARCHITECTURE.md`, `README.md`.
@@ -105,13 +119,13 @@ None — V1 Complete
 
 ## Dependencies Added
 
-- `pydantic`, `pydantic-settings`, `python-docx`, `pymupdf`, `ollama`, `streamlit`, `python-dotenv`, `pytest`
+- `pydantic`, `pydantic-settings`, `python-docx`, `pymupdf`, `ollama`, `streamlit`, `python-dotenv`, `pytest`, `sentence-transformers` (optional; semantic matching fails soft if unavailable)
 
 ## Tests
 
 ### Passing
 
-- All 29 unit & integration test cases pass cleanly.
+- 59 unit & integration test cases pass cleanly (up from 36 baseline this session: +6 semantic matcher, +5 scoring, +5 PDF parser, +2 JD analyzer, +3 matcher OR-group, +2 planner tests).
 
 ### Failing
 
@@ -132,3 +146,12 @@ pytest -q
 ### 2026-08-29 — RCA & Live Preview Feature Complete
 
 Root cause resolved for unbulleted JD text & PDF line normalizer. Live document preview added to Streamlit UI. All 29 tests passing.
+
+### 2026-08-31 — Semantic Matching Layer Added + 3-Bug RCA
+
+Added `SemanticMatcher` as a secondary, embedding-based signal that only considers deterministic-`MISSING` requirements, is excluded from the headline score, and fails soft if its optional dependency is unavailable. While validating against a real JD/resume pair, found and fixed: PDF word-wrap truncation, JD heading-regex leakage, and slash-alternative (AND vs OR) requirement handling. Consolidated duplicated alias maps into one source of truth and removed unused `evidence_index.py` scaffolding. 56 tests passing (up from 36).
+
+### 2026-08-31 — Follow-up: Scoring Bucket + Planner Rationale Fixes
+
+Fixed the two known issues deferred from the same-day semantic matching work: (1) `scoring.py`'s required-bucket check now includes the actual default `criticality == "required"`, not just `"critical"` — this changes existing score outputs on purpose, since most ordinary requirements were previously mis-bucketed into `keyword_coverage`. (2) `TailoringPlanner.create_plan` now explicitly prefers a deterministic match over `SEMANTIC_PARTIAL` when citing a rewrite rationale, and labels the rationale as inferred when only a semantic match supports it. 59 tests passing (up from 56).
+
