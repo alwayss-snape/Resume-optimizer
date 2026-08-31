@@ -82,3 +82,22 @@ class TailoringPlanner:
             actions=actions,
             unsupported_requirements=unsupported,
         )
+
+    def rank_missing_requirements(
+        self,
+        missing_matches: List[Match],
+        job_description: JobDescription,
+        limit: int = 5,
+    ) -> List[Match]:
+        """Order MISSING matches so the most important, still-unaddressed
+        requirements surface first (required before preferred before
+        informational), for driving advisory "what to add" suggestions.
+        """
+        priority_by_req = {r.id: r.priority for r in job_description.requirements}
+        priority_rank = {"required": 0, "preferred": 1, "informational": 2}
+
+        def sort_key(m: Match):
+            return priority_rank.get(priority_by_req.get(m.requirement_id, "preferred"), 1)
+
+        ranked = sorted(missing_matches, key=sort_key)
+        return ranked[:limit]

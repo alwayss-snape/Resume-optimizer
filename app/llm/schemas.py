@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, Field
 
 class LLMResponse(BaseModel):
@@ -28,3 +28,19 @@ class LLMTimeoutError(LLMError):
 class LLMInvalidJSONError(LLMError):
     """Raised when structured JSON output parsing fails after retries."""
     pass
+
+class BulletRewriteResult(BaseModel):
+    """Structured response for a single bullet rewrite/composition call."""
+    rewritten: str
+    rationale: str = ""
+    evidence_ids: List[str] = Field(default_factory=list)
+
+
+class MissingRequirementSuggestion(BaseModel):
+    """Advisory-only suggestion for a JD requirement the resume doesn't
+    currently address. Never applied automatically — surfaced to the
+    candidate as an example phrasing to adapt with their own real facts."""
+    requirement_text: str = ""
+    suggested_phrasing: str = ""
+    keywords: List[str] = Field(default_factory=list)
+

@@ -2,6 +2,7 @@ import os
 import shutil
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple
+from uuid import uuid4
 
 from app.analysis.jd_analyzer import JDAnalyzer
 from app.analysis.matcher import EvidenceMatcher
@@ -10,9 +11,10 @@ from app.analysis.rewriter import LLMRewriter, RewriteProposal
 from app.analysis.scoring import AlignmentScorer
 from app.analysis.semantic_matcher import SemanticMatcher
 from app.analysis.tailor_planner import TailoringPlanner
+from app.domain.evidence import Evidence
 from app.domain.job import JobDescription
 from app.domain.report import TailoringReport
-from app.domain.resume import Resume
+from app.domain.resume import Project, Resume, ResumeBullet
 from app.domain.resume_document import ResumeDocument, ResumeSource
 from app.domain.tailoring import TailoringPlan
 from app.ingestion.docx import DocxParser
@@ -117,10 +119,12 @@ class TailorService:
             score_components=dict(score_components),
         )
 
-    def generate_proposals(self, resume_path: str, jd_text: str):
-        """Generate rewrite proposals without applying them. Returns list of proposals.
+    def generate_proposals(self, resume_path: str, jd_text: str, suggestion_limit: int = 5) -> Dict:
+        """Generate rewrite proposals without applying them, plus advisory
+        suggestions for JD requirements the résumé doesn't address at all.
 
-        Useful for UI review flows.
+        Returns {"proposals": [...], "missing_suggestions": [...],
+        "alignment_score": float}. Useful for UI review flows.
         """
         clean_jd_text = self.safety_guard.sanitize(jd_text)
 
@@ -134,9 +138,99 @@ class TailorService:
         job_desc = self.jd_analyzer.analyze(clean_jd_text)
         matches = self.matcher.match(job_desc, evidence_list)
         matches = self.semantic_matcher.match(job_desc.requirements, evidence_list, matches)
+        score = self.scorer.calculate_score(matches, job_desc.requirements)
         plan = self.planner.create_plan(resume, job_desc, evidence_list, matches)
         proposals = self.rewriter.execute_plan(resume, plan, evidence_list, job_desc)
-        return proposals
+
+        missing_matches = [m for m in matches if m.status == "MISSING"]
+        ranked_missing = self.planner.rank_missing_requirements(missing_matches, job_desc, limit=suggestion_limit)
+        missing_suggestions = []
+        for m in ranked_missing:
+            suggestion = self.rewriter.suggest_for_missing_requirement(m.requirement_text, job_desc.keywords)
+            if suggestion:
+                missing_suggestions.append(suggestion)
+
+        return {
+            "proposals": proposals,
+            "missing_suggestions": missing_suggestions,
+            "alignment_score": score,
+            "llm_available": bool(self.llm_client and self.llm_client.is_available()),
+            "experience_options": [{"id": e.id, "label": f"{e.company} — {e.title}"} for e in resume.experience],
+        }
+
+    def incorporate_user_addition(
+        self,
+        resume: Resume,
+        evidence_list: List["object"],
+        job_desc: JobDescription,
+        addition_text: str,
+        target: str = "auto",
+    ) -> Tuple[Resume, List, Optional[str]]:
+        """Fold a user-supplied free-text addition (a project, an
+        achievement, a skill, anything they typed in) into the résumé as one
+        polished, JD-keyword-aware bullet — grounded ONLY in what the user
+        actually wrote (the LLM is explicitly told this text IS the
+        evidence, so it may not invent facts beyond it).
+
+        `target` is either "auto" (append to the most recent experience
+        entry), "new_project" (create a new Project entry), or the `id` of
+        a specific Experience entry to append to.
+
+        Mutates `resume` in place and returns (resume, updated_evidence_list,
+        rationale_or_None). If `addition_text` is blank, this is a no-op.
+        """
+        addition_text = (addition_text or "").strip()
+        if not addition_text:
+            return resume, evidence_list, None
+
+        jd_req_texts = [r.text for r in job_desc.requirements]
+        user_evidence = Evidence(
+            id=f"ev_user_{uuid4().hex[:6]}",
+            source_type="general",
+            source_id="user_addition",
+            text=addition_text,
+        )
+        polished_text, rationale = self.rewriter.rewrite_bullet(
+            addition_text,
+            evidence=[user_evidence],
+            jd_requirements=jd_req_texts,
+            target_keywords=job_desc.keywords,
+        )
+        polished_text = polished_text or addition_text
+
+        if target == "new_project":
+            proj_id = f"proj_user_{uuid4().hex[:6]}"
+            bullet_id = f"{proj_id}_b01"
+            bullet = ResumeBullet(id=bullet_id, text=polished_text)
+            resume.projects.append(Project(id=proj_id, name="Additional Project", bullets=[bullet]))
+            ev_text = f"Project (Additional Project): {polished_text}"
+            ev_source_type = "project"
+        else:
+            exp = None
+            if target and target not in ("auto", "new_project"):
+                exp = next((e for e in resume.experience if e.id == target), None)
+            if exp is None and resume.experience:
+                exp = resume.experience[0]
+
+            if exp is None:
+                # No experience section to attach to at all — fall back to a
+                # new project rather than silently dropping the addition.
+                return self.incorporate_user_addition(resume, evidence_list, job_desc, addition_text, target="new_project")
+
+            bullet_id = f"{exp.id}_b_user_{uuid4().hex[:6]}"
+            bullet = ResumeBullet(id=bullet_id, text=polished_text)
+            exp.bullets.append(bullet)
+            ev_text = f"{exp.company}: {polished_text}"
+            ev_source_type = "experience"
+
+        new_evidence = Evidence(
+            id=f"ev_user_add_{uuid4().hex[:6]}",
+            source_type=ev_source_type,
+            source_id=bullet_id,
+            text=ev_text,
+        )
+        updated_evidence_list = list(evidence_list) + [new_evidence]
+        return resume, updated_evidence_list, rationale
 
     def tailor_resume(
         self,
@@ -146,6 +240,8 @@ class TailorService:
         mode: str = "PRESERVE",
         strict_factual: bool = False,
         preapproved_proposals: Optional[List] = None,
+        addition_text: Optional[str] = None,
+        addition_target: str = "auto",
     ) -> Dict[str, str]:
         run_dir = self.run_manager.create_run(resume_path, jd_text)
         clean_jd_text = self.safety_guard.sanitize(jd_text)
@@ -177,6 +273,13 @@ class TailorService:
         else:
             raw_doc = self.docx_parser.parse(resume_path)
 
+        if addition_text and (addition_text or "").strip() and mode == "PRESERVE":
+            # A brand-new bullet has no corresponding block in the original
+            # layout, so it cannot be positionally patched in place — fall
+            # back to the reconstructed ATS template so the addition
+            # actually shows up in the output.
+            mode = "ATS_DEFAULT"
+
         # Normalizer returns a canonical ResumeDocument and the extracted evidence
         resume_doc, evidence_list = self.resume_normalizer.normalize(raw_doc)
         resume = resume_doc.resume
@@ -189,8 +292,8 @@ class TailorService:
         job_desc = self.jd_analyzer.analyze(clean_jd_text)
         matches = self.matcher.match(job_desc, evidence_list)
         matches = self.semantic_matcher.match(job_desc.requirements, evidence_list, matches)
-        score = self.scorer.calculate_score(matches, job_desc.requirements)
-        _append_progress(f"Analyzed JD and computed initial alignment score: {score:.1f}")
+        initial_score = self.scorer.calculate_score(matches, job_desc.requirements)
+        _append_progress(f"Analyzed JD and computed initial alignment score: {initial_score:.1f}")
 
         plan = self.planner.create_plan(resume, job_desc, evidence_list, matches)
         proposals = self.rewriter.execute_plan(resume, plan, evidence_list, job_desc)
@@ -256,6 +359,34 @@ class TailorService:
             except Exception:
                 pass
             _append_progress(f"Applied {len(approved_proposals)} approved rewrites to canonical resume model")
+
+        # Keep the evidence ledger in sync with rewritten bullet text so that
+        # rescoring below (and any future analysis) reflects the tailored
+        # wording rather than the pre-tailoring original.
+        for b_id, new_text in prop_dict.items():
+            for ev in evidence_list:
+                if ev.source_id == b_id and ev.source_type in ("experience", "project"):
+                    prefix = ev.text.split(":", 1)[0] if ":" in ev.text else None
+                    ev.text = f"{prefix}: {new_text}" if prefix else new_text
+
+        # Fold in any free-text content the candidate typed in the UI (a
+        # project, an achievement, a skill) as one more polished, evidence-
+        # grounded bullet, then recompute the alignment score so it reflects
+        # everything just applied — the rewrites above and this addition.
+        addition_note = None
+        if addition_text and (addition_text or "").strip():
+            resume, evidence_list, addition_note = self.incorporate_user_addition(
+                resume, evidence_list, job_desc, addition_text, addition_target,
+            )
+            if addition_note:
+                _append_progress(f"Incorporated user-supplied addition: {addition_note}")
+            else:
+                _append_progress("Incorporated user-supplied addition")
+
+        matches = self.matcher.match(job_desc, evidence_list)
+        matches = self.semantic_matcher.match(job_desc.requirements, evidence_list, matches)
+        score = self.scorer.calculate_score(matches, job_desc.requirements)
+        _append_progress(f"Recomputed alignment score after applying changes: {score:.1f} (was {initial_score:.1f})")
 
         if mode == "PRESERVE" and not is_pdf:
             self.docx_patcher.patch(resume_path, raw_doc.document_map, approved_proposals, docx_output_path)
@@ -414,6 +545,8 @@ class TailorService:
             "html": html_output_path,
             "changes_md": report_md_path,
             "alignment_score": f"{score:.1f}",
+            "initial_alignment_score": f"{initial_score:.1f}",
+            "addition_note": addition_note,
             "run_dir": run_dir,
             "preview_md": preview_md,
             "warnings": warnings,

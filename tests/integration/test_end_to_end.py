@@ -43,3 +43,35 @@ def test_integration_prompt_injection_safety(tmp_path):
     service = TailorService()
     results = service.tailor_resume(resume_path, untrusted_jd, out_dir)
     assert os.path.exists(results["docx"])
+
+def test_user_addition_is_incorporated_and_score_recomputed(tmp_path):
+    """Free-text content the candidate types in the review UI must show up in
+    the rendered résumé, and the returned alignment score must reflect it
+    (never just echo the pre-tailoring score)."""
+    resume_path = "tests/fixtures/resumes/sample.docx"
+    jd_path = "tests/fixtures/jds/sample.txt"
+    out_dir = str(tmp_path / "addition_out")
+
+    with open(jd_path, "r", encoding="utf-8") as f:
+        jd_text = f.read()
+
+    service = TailorService()
+    baseline = service.tailor_resume(resume_path, jd_text, str(tmp_path / "baseline_out"), mode="ATS_DEFAULT")
+
+    results = service.tailor_resume(
+        resume_path,
+        jd_text,
+        out_dir,
+        mode="ATS_DEFAULT",
+        addition_text="Automated Terraform-based provisioning of ECS services, cutting deploy time in half.",
+        addition_target="auto",
+    )
+
+    assert os.path.exists(results["docx"])
+    assert "initial_alignment_score" in results
+    assert float(results["alignment_score"]) >= float(baseline["alignment_score"])
+
+    with open(results["html"], "r", encoding="utf-8") as f:
+        html = f.read()
+    assert "Terraform" in html
+
