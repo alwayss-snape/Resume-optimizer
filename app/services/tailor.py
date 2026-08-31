@@ -52,7 +52,8 @@ class TailorService:
         else:
             raw_doc = self.docx_parser.parse(resume_path)
 
-        resume, evidence_list = self.resume_normalizer.normalize(raw_doc)
+        resume_doc, evidence_list = self.resume_normalizer.normalize(raw_doc)
+        resume = resume_doc.resume
         job_desc = self.jd_analyzer.analyze(clean_jd_text)
         matches = self.matcher.match(job_desc, evidence_list)
         score = self.scorer.calculate_score(matches, job_desc.requirements)
@@ -86,7 +87,8 @@ class TailorService:
         else:
             raw_doc = self.docx_parser.parse(resume_path)
 
-        resume, evidence_list = self.resume_normalizer.normalize(raw_doc)
+        resume_doc, evidence_list = self.resume_normalizer.normalize(raw_doc)
+        resume = resume_doc.resume
         job_desc = self.jd_analyzer.analyze(clean_jd_text)
         matches = self.matcher.match(job_desc, evidence_list)
         score = self.scorer.calculate_score(matches, job_desc.requirements)
@@ -105,6 +107,12 @@ class TailorService:
             res = self.validator.validate_proposal(prop, evidence_list)
             if res.approved:
                 approved_proposals.append(prop)
+                # Record AI-applied rewrite as a revision on the ResumeDocument
+                try:
+                    resume_doc.record_revision(rev_id=f"ai_{prop.source_id}", actor="ai", original=prop.original_text, rewritten=prop.rewritten_text, evidence_ids=prop.evidence_ids, source="llm_rewriter")
+                except Exception:
+                    # don't fail tailoring flow if recording revision fails
+                    pass
             else:
                 warnings.extend(res.warnings)
 
@@ -122,7 +130,8 @@ class TailorService:
                 for b in exp.bullets:
                     if b.id in prop_dict:
                         b.text = prop_dict[b.id]
-            self.template_renderer.render_ats_default(resume, docx_output_path)
+            # Pass the ResumeDocument so renderers can access revisions and metadata
+            self.template_renderer.render_ats_default(resume_doc, docx_output_path)
 
         # Structural validation: ensure tailoring didn't alter identity/content unexpectedly
         struct_warnings = self.struct_validator.validate(original_resume, resume)
@@ -149,6 +158,12 @@ class TailorService:
             warnings.append("LibreOffice not available or PDF conversion failed; DOCX rendered successfully.")
 
         # Save artifacts to run folder
+        # Save the ResumeDocument as canonical SOT
+        try:
+            self.run_manager.save_json(run_dir, "resume_document.json", resume_doc)
+        except Exception:
+            pass
+        # Also save the legacy resume.json for compatibility
         self.run_manager.save_json(run_dir, "resume.json", resume)
         self.run_manager.save_json(run_dir, "jd.json", job_desc)
         self.run_manager.save_json(run_dir, "plan.json", plan)

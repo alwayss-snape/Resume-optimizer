@@ -1,9 +1,21 @@
 import os
 import docx
+from typing import Any
 from app.domain.resume import Resume
+try:
+    from app.domain.resume_document import ResumeDocument
+except Exception:
+    ResumeDocument = None
+
 
 class TemplateRenderer:
-    def render_ats_default(self, resume: Resume, output_path: str) -> str:
+    def render_ats_default(self, resume_or_doc: Any, output_path: str) -> str:
+        # Accept either a Resume or a ResumeDocument; unwrap when necessary
+        if hasattr(resume_or_doc, "resume"):
+            resume = resume_or_doc.resume
+        else:
+            resume = resume_or_doc
+
         doc = docx.Document()
 
         # Title
@@ -22,12 +34,12 @@ class TemplateRenderer:
             doc.add_paragraph(" | ".join(contact_parts))
 
         # Summary
-        if resume.summary:
+        if resume and getattr(resume, "summary", None):
             doc.add_heading("Professional Summary", level=1)
             doc.add_paragraph(resume.summary)
 
         # Experience
-        if resume.experience:
+        if resume and getattr(resume, "experience", None):
             doc.add_heading("Work Experience", level=1)
             for exp in resume.experience:
                 p_exp = doc.add_paragraph()
@@ -38,13 +50,13 @@ class TemplateRenderer:
                     doc.add_paragraph(f"• {bullet.text}", style="List Bullet")
 
         # Skills
-        if resume.skills:
+        if resume and getattr(resume, "skills", None):
             doc.add_heading("Technical Skills", level=1)
             for category, skill_list in resume.skills.items():
                 doc.add_paragraph(f"{category}: {', '.join(skill_list)}")
 
         # Education
-        if resume.education:
+        if resume and getattr(resume, "education", None):
             doc.add_heading("Education", level=1)
             for edu in resume.education:
                 doc.add_paragraph(f"{edu.institution} — {edu.degree}")
