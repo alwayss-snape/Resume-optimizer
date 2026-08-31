@@ -263,9 +263,6 @@ class TailorService:
             "changes_md": report_md_path,
             "alignment_score": f"{score:.1f}",
             "run_dir": run_dir,
-<<<<<<< HEAD
             "preview_md": preview_md,
-=======
             "warnings": warnings,
->>>>>>> 0587dcd (Phase1: wire StructuralValidator and OutputQAValidator into TailorService; collect validation warnings)
         }
