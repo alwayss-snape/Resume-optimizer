@@ -44,3 +44,14 @@ class MissingRequirementSuggestion(BaseModel):
     suggested_phrasing: str = ""
     keywords: List[str] = Field(default_factory=list)
 
+
+class JDRequirementSelection(BaseModel):
+    """Which job-description line indices (from a numbered list the caller
+    sent) are genuine candidate requirements — skills, qualifications,
+    responsibilities, or experience a candidate should be evaluated
+    against — as opposed to boilerplate (company/team description,
+    culture statements, benefits/perks, compensation, EEO/diversity
+    statements, application instructions, generic filler). Selecting by
+    INDEX rather than generating text keeps every requirement recoverable
+    verbatim from the JD — see JDAnalyzer._llm_select_requirement_lines."""
+    requirement_line_indices: List[int] = Field(default_factory=list)
