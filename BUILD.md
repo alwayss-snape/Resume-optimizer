@@ -25,6 +25,13 @@
    ollama pull qwen3:4b
    ```
 
+4. Enable the docs hooks (once per clone). They keep `docs/KNOWLEDGE_GRAPH.*` and `docs/CHANGE_LOG.md` up to date on
+   every commit:
+   ```bash
+   bash scripts/install_hooks.sh
+   ```
+   To regenerate by hand: `python3 scripts/update_docs.py graph` (add `--check` to verify it's up to date).
+
 ## Optional: Using Groq Instead of a Local Model
 
 If your local model isn't strong enough, you can route generation through

@@ -1,0 +1,14 @@
+#!/bin/sh
+# Regenerate docs/KNOWLEDGE_GRAPH.{json,md} and include them in this commit.
+# Never blocks the commit: on any failure it warns and exits 0.
+[ -n "$DOCS_HOOK_RUNNING" ] && exit 0
+
+ROOT="$(git rev-parse --show-toplevel)"
+PY="$("$ROOT/.githooks/_python")" || { echo "[docs hook] no python found; knowledge graph not updated" >&2; exit 0; }
+
+if "$PY" "$ROOT/scripts/update_docs.py" graph; then
+  git add "$ROOT/docs/KNOWLEDGE_GRAPH.json" "$ROOT/docs/KNOWLEDGE_GRAPH.md"
+else
+  echo "[docs hook] knowledge graph update failed; committing without it" >&2
+fi
+exit 0

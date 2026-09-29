@@ -1,0 +1,26 @@
+#!/bin/sh
+# For "major" commits, add a timestamped entry to docs/CHANGE_LOG.md and fold it
+# into the commit that was just made (git ignores index changes made during
+# commit-msg, so an amend here is the only way to keep log + code in one commit).
+# Never fails: on any error it warns and leaves the commit as it is.
+[ -n "$DOCS_HOOK_RUNNING" ] && exit 0  # guard against the amend re-triggering us
+
+ROOT="$(git rev-parse --show-toplevel)"
+GIT_DIR="$(git rev-parse --git-dir)"
+
+# Leave rebases, cherry-picks, merges and reverts alone: amending mid-sequence is unsafe.
+for f in rebase-merge rebase-apply CHERRY_PICK_HEAD MERGE_HEAD REVERT_HEAD; do
+  [ -e "$GIT_DIR/$f" ] && exit 0
+done
+
+PY="$("$ROOT/.githooks/_python")" || exit 0
+"$PY" "$ROOT/scripts/update_docs.py" is-major HEAD || exit 0
+
+if "$PY" "$ROOT/scripts/update_docs.py" log-entry HEAD; then
+  git add "$ROOT/docs/CHANGE_LOG.md" &&
+    DOCS_HOOK_RUNNING=1 git commit --amend --no-edit --no-verify --quiet &&
+    echo "[docs hook] docs/CHANGE_LOG.md updated"
+else
+  echo "[docs hook] change log update failed; commit left unchanged" >&2
+fi
+exit 0

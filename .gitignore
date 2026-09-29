@@ -1,4 +1,5 @@
 .venv/
+.venv*/
 __pycache__/
 *.pyc
 *.pyo
@@ -18,3 +19,12 @@ data/output/*
 !data/output/.gitkeep
 
 .env
+
+# Secrets: SSH deploy key used for pushing from sandboxed sessions
+/Resume-optimizer
+/Resume-optimizer.pub
+*.pem
+id_*
+
+# Personal output (tailored resumes) — never commit
+Claude outputs/

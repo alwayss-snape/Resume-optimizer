@@ -1,0 +1,11 @@
+#!/bin/sh
+# Shared helper for the hooks: pick a Python (3.9+) to run scripts/update_docs.py.
+# update_docs.py is stdlib-only, so any interpreter works; prefer the repo venv.
+ROOT="$(git rev-parse --show-toplevel)"
+for py in "$ROOT/.venv/bin/python" "$ROOT/.venv_py311/bin/python" python3 python; do
+  if command -v "$py" >/dev/null 2>&1; then
+    echo "$py"
+    exit 0
+  fi
+done
+exit 1

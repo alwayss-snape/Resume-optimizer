@@ -1,0 +1,111 @@
+# Project Overview — Resume-optimizer
+
+_Start here. Last reviewed: 2026-09-29 (branch `fb_ksh`). Hand-maintained — update it when capabilities or open
+issues change. For "where is X in the code" see [KNOWLEDGE_GRAPH.md](KNOWLEDGE_GRAPH.md); for "what changed when"
+see [CHANGE_LOG.md](CHANGE_LOG.md)._
+
+## What it is
+
+A local-first resume tailoring app (Python package `resume-tailor`). You give it a resume (DOCX or PDF) and a pasted
+job description, and it:
+
+1. scores how well the resume matches the JD (0–100, with a breakdown),
+2. proposes rewrites of your experience bullets that lean toward the JD, **using only facts already in your resume**,
+3. lets you review, edit, accept or reject each rewrite, and add extra content in your own words,
+4. produces a tailored **DOCX**, **PDF** (via LibreOffice) and **HTML** file, plus an audit log (`changes.md`).
+
+Core rule (from ARCHITECTURE.md): _the LLM edits content; deterministic code owns structure, formatting, validation
+and file generation._ Every rewrite must trace back to an "evidence" item from the original resume.
+
+**Ways to run it:** Streamlit UI (`streamlit run app/ui.py`) or CLI (`python -m app.cli analyze|tailor ...`).
+**LLM:** Groq cloud (`LLM_PROVIDER=groq`, which is what `.env` uses today) or local Ollama (`qwen3:4b`).
+Semantic matching uses a local embedding model (`all-MiniLM-L6-v2`).
+
+## The pipeline
+
+| # | Stage | Main file(s) | What happens |
+|---|---|---|---|
+| 1 | Ingest | `ingestion/docx.py`, `ingestion/pdf.py` | Reads the file into raw blocks and records where each paragraph lives (`DocumentMap`) |
+| 2 | Normalize | `analysis/resume_normalizer.py` | Builds a structured `Resume` + an **evidence ledger**, wrapped in a versioned `ResumeDocument` |
+| 3 | JD analysis | `analysis/jd_analyzer.py` | The LLM picks which JD lines are real requirements (by index, so text stays verbatim); falls back to heuristics |
+| 4 | Match | `analysis/matcher.py`, `analysis/semantic_matcher.py` | Exact / alias / token matching first; embeddings only for what's still missing |
+| 5 | Score | `analysis/scoring.py` | Weighted 0–100 score; semantic-only matches reported separately, not counted |
+| 6 | Plan | `analysis/tailor_planner.py` | Chooses which bullets to rewrite and ranks missing requirements |
+| 7 | Rewrite | `analysis/rewriter.py` + `llm/client.py` | The LLM rewrites each bullet grounded in its evidence; suggests phrasing for gaps |
+| 8 | Validate | `validation/factual.py`, `structural.py`, `output.py` | Rejects rewrites that add new numbers or terms; checks identity and the output files |
+| 9 | Render | `rendering/*` | **PRESERVE** (patches your original DOCX in place) or **ATS_DEFAULT** (clean template); PDF via LibreOffice |
+| 10 | Report | `services/tailor.py`, `services/run_manager.py` | `changes.md`, artifacts in `data/runs/<id>/`, LLM token usage |
+
+`services/tailor.py::TailorService` orchestrates all of it through three entry points: `analyze_only`,
+`generate_proposals` (UI step 1) and `tailor_resume` (UI step 2, "Apply & Generate").
+
+## Capabilities today
+
+| Area | Status | Notes |
+|---|---|---|
+| DOCX parsing (incl. table layouts) | ✅ Works | Verified against the user's real resume (Sep 29 fixes) |
+| PDF parsing | ✅ Works | Text PDFs only; `ocr.py` is a stub path. PDF input always uses the ATS template |
+| JD requirement extraction | ✅ Works | LLM-assisted with deterministic fallback |
+| Matching + score | ✅ Works | Deterministic + semantic; score breakdown in `ScoreComponents` |
+| Rewrite experience bullets | ⚠️ Partial | Only experience bullets. Summary and skills are never rewritten. See issues 2–3 re: LLM actually firing |
+| Review / edit proposals in UI | ✅ Works | Checkbox + editable text per proposal |
+| Suggestions for missing requirements | ✅ Works | Illustrative only, clearly labeled |
+| Add free-text content | ✅ Works | Append to an existing role or create a new project |
+| Add a **new job role** | ❌ Not built | Designed, see "Open work" |
+| Strict Factual Mode | ⚠️ Cosmetic | See issue 4 |
+| DOCX / PDF / HTML output | ✅ Works | Polished formatting (Sep 29). PDF needs LibreOffice installed |
+| CLI | ✅ Works | `analyze` and `tailor` only; no review step, no addition text |
+| Tests | ✅ 87 passing | `pytest -q` (~80 s, loads the embedding model) |
+| Multiple JDs / history / cover letter | ❌ Not built | — |
+
+## Open issues (found 2026-09-29, not yet fixed)
+
+Ordered by impact. None are fixed yet; they're recorded so they can be prioritized.
+
+1. **Leaked deploy key:** a private SSH key (`/Resume-optimizer`) was committed in `4054827` and pushed to `origin`.
+   It's now untracked and gitignored, but it's still in git history. **Revoke it on GitHub (Settings → Deploy keys)
+   and generate a new one.**
+2. **Local Ollama can never work.** The root-level `ollama.py` (a test stub) shadows the real `ollama` package,
+   because `app/ui.py` and `app/cli.py` put the repo root first on `sys.path`. Its `list()` returns no models, so
+   `LLMClient.is_available()` is always False on the Ollama path and every rewrite silently returns the original text.
+   Fix: move the stub under `tests/` (e.g. a `conftest.py` fixture).
+3. **UI overrides the Groq model.** The sidebar always passes an Ollama model name (`qwen3:4b`) into
+   `LLMClient(model=...)`, which overrides `GROQ_MODEL` when `LLM_PROVIDER=groq`. Groq is then asked for a model it
+   doesn't have → calls likely fail → silent no-op rewrites. Needs a quick live confirmation. Fix: make the model
+   picker provider-aware.
+4. **Strict Factual Mode doesn't change the output.** `tailor_resume()` clears `approved_proposals` (`tailor.py` ~L422)
+   *after* the DOCX was already rendered with them (~L391–397) and after they were applied to the resume model.
+   It's on by default in the UI.
+5. **"Apply & Generate" runs the LLM twice.** `tailor_resume()` always re-runs planner + rewriter (~L298–299) and
+   then discards the result in favour of the UI's pre-approved list, which doubles LLM time and tokens.
+6. **Dead code:** a duplicate block after `except Exception: pass` in `tailor_resume()` (~L532–539) writes to a
+   closed file if reached. `app/services/validation_agent.py` isn't imported anywhere. 5 of 6 prompt files in
+   `app/llm/prompts/` are unused (only `rewrite_bullet.txt` is loaded; see KNOWLEDGE_GRAPH §6).
+7. **User's source resume** has "LinkedIn | Email | Leetcode" as placeholder text with no hyperlinks. The user will
+   fix this in their own file, so no code action is needed.
+
+## Open work: "Add as a new Job Role" (designed, approved, not coded)
+
+Gap: `TailorService.incorporate_user_addition()` can only append one bullet to an existing `Experience` or create a
+`Project`; there's no way to create a new `Experience`.
+
+- **Backend** (`app/services/tailor.py`): new `add_new_role(resume, evidence_list, job_desc, role_data, description_text)`
+  that builds an `Experience` (add it to the `app.domain.resume` import), splits the pasted description into chunks and
+  polishes each into its own grounded bullet. Wire it into `tailor_resume()` next to the `addition_text` handling via a
+  new `new_role_data: Optional[dict]`, and force `mode = "ATS_DEFAULT"` when present.
+- **Frontend** (`app/ui.py`): add "➕ Add as a new Job Role" to `target_labels`. The target selectbox must move
+  **outside** `st.form("proposal_review_form")` (forms don't rerun until submit, and the reveal needs an immediate
+  rerun). Fields: Company (structurally required, so confirm with the user), Job Title, Location, "currently working
+  here" checkbox, Start/End date (`st.date_input`, formatted `%b %Y`; End shows "Present" when current), description
+  text area.
+
+## Repo map (docs)
+
+| File | Purpose | Maintained |
+|---|---|---|
+| `docs/PROJECT_OVERVIEW.md` | This file: what/status/issues/next | By hand |
+| `docs/KNOWLEDGE_GRAPH.md` / `.json` | Where everything is: tree, layer × stage matrix, module cards, deps | Auto (pre-commit) |
+| `docs/CHANGE_LOG.md` | Timestamped log of major commits | Auto (post-commit) |
+| `ARCHITECTURE.md` | Design principles, semantic-matching contract, privacy | By hand |
+| `BUILD.md` | Setup, running, tests, hooks | By hand |
+| `CLAUDE.md` | Working rules for Claude Code sessions | By hand |

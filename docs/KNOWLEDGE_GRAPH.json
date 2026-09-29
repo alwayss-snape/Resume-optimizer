@@ -1,0 +1,3664 @@
+{
+  "schema": 1,
+  "source_hash": "2c91ca1bf84a1724",
+  "stats": {
+    "files": 84,
+    "python_files": 64,
+    "app_modules": 35,
+    "test_files": 23,
+    "classes": 61,
+    "functions": 219,
+    "lines_of_python": 7147
+  },
+  "axes": {
+    "x": "location (path)",
+    "y": "layer",
+    "z": "pipeline stage",
+    "layers": [
+      "Analysis",
+      "Config",
+      "Docs",
+      "Domain models",
+      "Entry points",
+      "Ingestion",
+      "LLM",
+      "Rendering",
+      "Services",
+      "Tests",
+      "Tooling",
+      "Validation"
+    ],
+    "stages": [
+      "1 Ingest",
+      "2 Normalize",
+      "3 JD analysis",
+      "4 Match",
+      "5 Score",
+      "6 Plan",
+      "7 Rewrite",
+      "8 Validate",
+      "9 Render",
+      "10 Report"
+    ]
+  },
+  "settings": [
+    {
+      "name": "llm_provider",
+      "env": "LLM_PROVIDER",
+      "type": "str",
+      "default": "'ollama'"
+    },
+    {
+      "name": "llm_host",
+      "env": "LLM_HOST",
+      "type": "str",
+      "default": "'http://localhost:11434'"
+    },
+    {
+      "name": "llm_model",
+      "env": "LLM_MODEL",
+      "type": "str",
+      "default": "'qwen3:4b'"
+    },
+    {
+      "name": "llm_temperature",
+      "env": "LLM_TEMPERATURE",
+      "type": "float",
+      "default": "0.1"
+    },
+    {
+      "name": "llm_timeout_seconds",
+      "env": "LLM_TIMEOUT_SECONDS",
+      "type": "int",
+      "default": "180"
+    },
+    {
+      "name": "max_context_tokens",
+      "env": "MAX_CONTEXT_TOKENS",
+      "type": "int",
+      "default": "12000"
+    },
+    {
+      "name": "strict_factual_mode",
+      "env": "STRICT_FACTUAL_MODE",
+      "type": "bool",
+      "default": "True"
+    },
+    {
+      "name": "groq_api_key",
+      "env": "GROQ_API_KEY",
+      "type": "str",
+      "default": "''"
+    },
+    {
+      "name": "groq_model",
+      "env": "GROQ_MODEL",
+      "type": "str",
+      "default": "'openai/gpt-oss-120b'"
+    },
+    {
+      "name": "groq_base_url",
+      "env": "GROQ_BASE_URL",
+      "type": "str",
+      "default": "'https://api.groq.com/openai/v1'"
+    },
+    {
+      "name": "semantic_match_enabled",
+      "env": "SEMANTIC_MATCH_ENABLED",
+      "type": "bool",
+      "default": "True"
+    },
+    {
+      "name": "semantic_match_model",
+      "env": "SEMANTIC_MATCH_MODEL",
+      "type": "str",
+      "default": "'all-MiniLM-L6-v2'"
+    },
+    {
+      "name": "semantic_match_threshold",
+      "env": "SEMANTIC_MATCH_THRESHOLD",
+      "type": "float",
+      "default": "0.58"
+    }
+  ],
+  "nodes": [
+    {
+      "id": ".env.example",
+      "type": "file",
+      "layer": "Root",
+      "stages": [],
+      "lines": 14
+    },
+    {
+      "id": ".githooks/_python",
+      "type": "file",
+      "layer": "Tooling",
+      "stages": [],
+      "lines": 11
+    },
+    {
+      "id": ".githooks/post-commit",
+      "type": "file",
+      "layer": "Tooling",
+      "stages": [],
+      "lines": 26
+    },
+    {
+      "id": ".githooks/pre-commit",
+      "type": "file",
+      "layer": "Tooling",
+      "stages": [],
+      "lines": 14
+    },
+    {
+      "id": "ARCHITECTURE.md",
+      "type": "file",
+      "layer": "Root",
+      "stages": [],
+      "lines": 47
+    },
+    {
+      "id": "BUILD.md",
+      "type": "file",
+      "layer": "Root",
+      "stages": [],
+      "lines": 78
+    },
+    {
+      "id": "CLAUDE.md",
+      "type": "file",
+      "layer": "Root",
+      "stages": [],
+      "lines": 25
+    },
+    {
+      "id": "README.md",
+      "type": "file",
+      "layer": "Root",
+      "stages": [],
+      "lines": 37
+    },
+    {
+      "id": "app/analysis/change_proposal.py",
+      "type": "python",
+      "layer": "Analysis",
+      "stages": [
+        "7 Rewrite"
+      ],
+      "lines": 65,
+      "doc": "",
+      "classes": [
+        {
+          "name": "ChangeProposal",
+          "line": 6,
+          "doc": "Richer change proposal schema for review and audit.",
+          "methods": [
+            {
+              "name": "model_dump",
+              "line": 25,
+              "doc": ""
+            },
+            {
+              "name": "semantic_id",
+              "line": 40,
+              "doc": ""
+            },
+            {
+              "name": "source_id",
+              "line": 50,
+              "doc": ""
+            },
+            {
+              "name": "rewritten_text",
+              "line": 59,
+              "doc": ""
+            }
+          ]
+        }
+      ],
+      "functions": []
+    },
+    {
+      "id": "app/analysis/jd_analyzer.py",
+      "type": "python",
+      "layer": "Analysis",
+      "stages": [
+        "3 JD analysis"
+      ],
+      "lines": 250,
+      "doc": "",
+      "classes": [
+        {
+          "name": "JDAnalyzer",
+          "line": 8,
+          "doc": "Extract only text that is visibly present in the supplied job description.",
+          "methods": [
+            {
+              "name": "__init__",
+              "line": 36,
+              "doc": ""
+            },
+            {
+              "name": "extract_keywords_from_text",
+              "line": 46,
+              "doc": ""
+            },
+            {
+              "name": "_category",
+              "line": 53,
+              "doc": ""
+            },
+            {
+              "name": "_is_requirement",
+              "line": 64,
+              "doc": ""
+            },
+            {
+              "name": "_segment_line",
+              "line": 73,
+              "doc": "Conservatively split a requirement line into atomic requirement phrases."
+            },
+            {
+              "name": "_reflow_lines",
+              "line": 93,
+              "doc": "Undo hard line-wrapping from pasted JDs (job boards/PDFs often wrap"
+            },
+            {
+              "name": "_llm_select_requirement_lines",
+              "line": 128,
+              "doc": "Ask the LLM which of the given candidate line indices are genuine"
+            },
+            {
+              "name": "analyze",
+              "line": 178,
+              "doc": ""
+            }
+          ]
+        }
+      ],
+      "functions": []
+    },
+    {
+      "id": "app/analysis/matcher.py",
+      "type": "python",
+      "layer": "Analysis",
+      "stages": [
+        "4 Match"
+      ],
+      "lines": 146,
+      "doc": "",
+      "classes": [
+        {
+          "name": "EvidenceMatcher",
+          "line": 20,
+          "doc": "Deterministic, evidence-only matcher.",
+          "methods": [
+            {
+              "name": "__init__",
+              "line": 27,
+              "doc": ""
+            },
+            {
+              "name": "_normalize_text",
+              "line": 30,
+              "doc": ""
+            },
+            {
+              "name": "_extract_key_tokens",
+              "line": 38,
+              "doc": ""
+            },
+            {
+              "name": "_meaningful_tokens",
+              "line": 42,
+              "doc": ""
+            },
+            {
+              "name": "_extract_requirement_units",
+              "line": 45,
+              "doc": "Break a requirement into comparable 'units' for coverage scoring."
+            },
+            {
+              "name": "match",
+              "line": 89,
+              "doc": ""
+            }
+          ]
+        }
+      ],
+      "functions": []
+    },
+    {
+      "id": "app/analysis/resume_normalizer.py",
+      "type": "python",
+      "layer": "Analysis",
+      "stages": [
+        "2 Normalize"
+      ],
+      "lines": 452,
+      "doc": "",
+      "classes": [
+        {
+          "name": "ResumeNormalizer",
+          "line": 8,
+          "doc": "",
+          "methods": [
+            {
+              "name": "_extract_date_range",
+              "line": 53,
+              "doc": ""
+            },
+            {
+              "name": "_strip_date_range",
+              "line": 57,
+              "doc": ""
+            },
+            {
+              "name": "_parse_title_and_dates",
+              "line": 61,
+              "doc": "'Data Scientist II | August 2024 - Present' ->"
+            },
+            {
+              "name": "_split_respecting_parens",
+              "line": 70,
+              "doc": "Split on sep_chars, but never inside ( ) or [ ] groups \u2014 so"
+            },
+            {
+              "name": "normalize",
+              "line": 93,
+              "doc": ""
+            }
+          ]
+        }
+      ],
+      "functions": []
+    },
+    {
+      "id": "app/analysis/rewriter.py",
+      "type": "python",
+      "layer": "Analysis",
+      "stages": [
+        "7 Rewrite"
+      ],
+      "lines": 184,
+      "doc": "",
+      "classes": [
+        {
+          "name": "LLMRewriter",
+          "line": 22,
+          "doc": "",
+          "methods": [
+            {
+              "name": "__init__",
+              "line": 23,
+              "doc": ""
+            },
+            {
+              "name": "rewrite_bullet",
+              "line": 26,
+              "doc": "Rewrite (or, given a single free-text `original_text` with no"
+            },
+            {
+              "name": "suggest_for_missing_requirement",
+              "line": 88,
+              "doc": "Advisory only. For a JD requirement the resume doesn't currently"
+            },
+            {
+              "name": "execute_plan",
+              "line": 135,
+              "doc": ""
+            }
+          ]
+        }
+      ],
+      "functions": []
+    },
+    {
+      "id": "app/analysis/scoring.py",
+      "type": "python",
+      "layer": "Analysis",
+      "stages": [
+        "5 Score"
+      ],
+      "lines": 118,
+      "doc": "",
+      "classes": [
+        {
+          "name": "ScoreComponents",
+          "line": 7,
+          "doc": "",
+          "methods": []
+        },
+        {
+          "name": "AlignmentScorer",
+          "line": 31,
+          "doc": "A transparent weighted average of evidence-backed requirement coverage.",
+          "methods": [
+            {
+              "name": "calculate_components",
+              "line": 38,
+              "doc": ""
+            },
+            {
+              "name": "calculate_score",
+              "line": 113,
+              "doc": ""
+            }
+          ]
+        }
+      ],
+      "functions": []
+    },
+    {
+      "id": "app/analysis/semantic_matcher.py",
+      "type": "python",
+      "layer": "Analysis",
+      "stages": [
+        "4 Match"
+      ],
+      "lines": 166,
+      "doc": "Semantic (embedding-based) matching layer.",
+      "classes": [
+        {
+          "name": "SemanticMatcher",
+          "line": 42,
+          "doc": "Adds SEMANTIC_PARTIAL matches for requirements the deterministic",
+          "methods": [
+            {
+              "name": "__init__",
+              "line": 54,
+              "doc": ""
+            },
+            {
+              "name": "_get_embedder",
+              "line": 77,
+              "doc": ""
+            },
+            {
+              "name": "match",
+              "line": 97,
+              "doc": "Returns a new match list: every non-MISSING match from"
+            }
+          ]
+        }
+      ],
+      "functions": [
+        {
+          "name": "_cosine_similarity",
+          "line": 33,
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "app/analysis/tailor_planner.py",
+      "type": "python",
+      "layer": "Analysis",
+      "stages": [
+        "6 Plan"
+      ],
+      "lines": 103,
+      "doc": "",
+      "classes": [
+        {
+          "name": "TailoringPlanner",
+          "line": 9,
+          "doc": "",
+          "methods": [
+            {
+              "name": "__init__",
+              "line": 10,
+              "doc": ""
+            },
+            {
+              "name": "create_plan",
+              "line": 13,
+              "doc": ""
+            },
+            {
+              "name": "rank_missing_requirements",
+              "line": 86,
+              "doc": "Order MISSING matches so the most important, still-unaddressed"
+            }
+          ]
+        }
+      ],
+      "functions": []
+    },
+    {
+      "id": "app/analysis/terminology.py",
+      "type": "python",
+      "layer": "Analysis",
+      "stages": [
+        "4 Match"
+      ],
+      "lines": 55,
+      "doc": "",
+      "classes": [],
+      "functions": [
+        {
+          "name": "flat_alias_to_canonical",
+          "line": 32,
+          "doc": "Build a flat alias->canonical map (e.g. 'k8s' -> 'kubernetes') for"
+        },
+        {
+          "name": "normalize_phrase",
+          "line": 42,
+          "doc": "Normalize a phrase to its canonical lowercased form and expand common acronyms."
+        }
+      ]
+    },
+    {
+      "id": "app/cli.py",
+      "type": "python",
+      "layer": "Entry points",
+      "stages": [
+        "1 Ingest",
+        "2 Normalize",
+        "3 JD analysis",
+        "4 Match",
+        "5 Score",
+        "6 Plan",
+        "7 Rewrite",
+        "8 Validate",
+        "9 Render",
+        "10 Report"
+      ],
+      "lines": 69,
+      "doc": "",
+      "classes": [],
+      "functions": [
+        {
+          "name": "main",
+          "line": 10,
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "app/config/settings.py",
+      "type": "python",
+      "layer": "Config",
+      "stages": [],
+      "lines": 34,
+      "doc": "",
+      "classes": [
+        {
+          "name": "Settings",
+          "line": 4,
+          "doc": "",
+          "methods": []
+        }
+      ],
+      "functions": []
+    },
+    {
+      "id": "app/domain/evidence.py",
+      "type": "python",
+      "layer": "Domain models",
+      "stages": [
+        "2 Normalize",
+        "4 Match"
+      ],
+      "lines": 21,
+      "doc": "",
+      "classes": [
+        {
+          "name": "Evidence",
+          "line": 4,
+          "doc": "",
+          "methods": []
+        }
+      ],
+      "functions": []
+    },
+    {
+      "id": "app/domain/job.py",
+      "type": "python",
+      "layer": "Domain models",
+      "stages": [
+        "3 JD analysis"
+      ],
+      "lines": 33,
+      "doc": "",
+      "classes": [
+        {
+          "name": "Requirement",
+          "line": 4,
+          "doc": "",
+          "methods": []
+        },
+        {
+          "name": "JobDescription",
+          "line": 28,
+          "doc": "",
+          "methods": []
+        }
+      ],
+      "functions": []
+    },
+    {
+      "id": "app/domain/report.py",
+      "type": "python",
+      "layer": "Domain models",
+      "stages": [
+        "4 Match",
+        "5 Score"
+      ],
+      "lines": 28,
+      "doc": "",
+      "classes": [
+        {
+          "name": "Match",
+          "line": 4,
+          "doc": "",
+          "methods": []
+        },
+        {
+          "name": "TailoringReport",
+          "line": 19,
+          "doc": "",
+          "methods": []
+        }
+      ],
+      "functions": []
+    },
+    {
+      "id": "app/domain/resume.py",
+      "type": "python",
+      "layer": "Domain models",
+      "stages": [
+        "2 Normalize"
+      ],
+      "lines": 49,
+      "doc": "",
+      "classes": [
+        {
+          "name": "Candidate",
+          "line": 4,
+          "doc": "",
+          "methods": []
+        },
+        {
+          "name": "ResumeBullet",
+          "line": 11,
+          "doc": "",
+          "methods": []
+        },
+        {
+          "name": "Experience",
+          "line": 16,
+          "doc": "",
+          "methods": []
+        },
+        {
+          "name": "Project",
+          "line": 25,
+          "doc": "",
+          "methods": []
+        },
+        {
+          "name": "Education",
+          "line": 32,
+          "doc": "",
+          "methods": []
+        },
+        {
+          "name": "Resume",
+          "line": 40,
+          "doc": "",
+          "methods": []
+        }
+      ],
+      "functions": []
+    },
+    {
+      "id": "app/domain/resume_document.py",
+      "type": "python",
+      "layer": "Domain models",
+      "stages": [
+        "2 Normalize",
+        "9 Render"
+      ],
+      "lines": 75,
+      "doc": "",
+      "classes": [
+        {
+          "name": "ResumePresentation",
+          "line": 10,
+          "doc": "Display choices; content remains in the canonical Resume model.",
+          "methods": []
+        },
+        {
+          "name": "ResumeSource",
+          "line": 21,
+          "doc": "",
+          "methods": []
+        },
+        {
+          "name": "ResumeRevision",
+          "line": 27,
+          "doc": "",
+          "methods": []
+        },
+        {
+          "name": "ResumeDocument",
+          "line": 39,
+          "doc": "Versioned source of truth for editing, tailoring, and rendering.",
+          "methods": [
+            {
+              "name": "record_revision",
+              "line": 48,
+              "doc": ""
+            },
+            {
+              "name": "snapshot",
+              "line": 73,
+              "doc": "Return a JSON-serializable, versioned document for storage or export."
+            }
+          ]
+        }
+      ],
+      "functions": []
+    },
+    {
+      "id": "app/domain/tailoring.py",
+      "type": "python",
+      "layer": "Domain models",
+      "stages": [
+        "6 Plan"
+      ],
+      "lines": 19,
+      "doc": "",
+      "classes": [
+        {
+          "name": "TailoringAction",
+          "line": 4,
+          "doc": "",
+          "methods": []
+        },
+        {
+          "name": "TailoringPlan",
+          "line": 17,
+          "doc": "",
+          "methods": []
+        }
+      ],
+      "functions": []
+    },
+    {
+      "id": "app/ingestion/docx.py",
+      "type": "python",
+      "layer": "Ingestion",
+      "stages": [
+        "1 Ingest"
+      ],
+      "lines": 128,
+      "doc": "",
+      "classes": [
+        {
+          "name": "RawBlock",
+          "line": 9,
+          "doc": "",
+          "methods": []
+        },
+        {
+          "name": "RawDocument",
+          "line": 16,
+          "doc": "",
+          "methods": []
+        },
+        {
+          "name": "DocxParser",
+          "line": 22,
+          "doc": "",
+          "methods": [
+            {
+              "name": "parse",
+              "line": 28,
+              "doc": ""
+            }
+          ]
+        }
+      ],
+      "functions": []
+    },
+    {
+      "id": "app/ingestion/ocr.py",
+      "type": "python",
+      "layer": "Ingestion",
+      "stages": [
+        "1 Ingest"
+      ],
+      "lines": 33,
+      "doc": "",
+      "classes": [
+        {
+          "name": "OCREngine",
+          "line": 6,
+          "doc": "",
+          "methods": [
+            {
+              "name": "__init__",
+              "line": 7,
+              "doc": ""
+            },
+            {
+              "name": "is_available",
+              "line": 15,
+              "doc": ""
+            },
+            {
+              "name": "extract_text_from_image",
+              "line": 18,
+              "doc": ""
+            }
+          ]
+        }
+      ],
+      "functions": []
+    },
+    {
+      "id": "app/ingestion/pdf.py",
+      "type": "python",
+      "layer": "Ingestion",
+      "stages": [
+        "1 Ingest"
+      ],
+      "lines": 167,
+      "doc": "",
+      "classes": [
+        {
+          "name": "PdfParser",
+          "line": 18,
+          "doc": "",
+          "methods": [
+            {
+              "name": "__init__",
+              "line": 21,
+              "doc": ""
+            },
+            {
+              "name": "_ensure_fitz",
+              "line": 24,
+              "doc": ""
+            },
+            {
+              "name": "_merge_wrapped_lines",
+              "line": 32,
+              "doc": "Join PDF-extracted lines that are word-wrap continuations of one"
+            },
+            {
+              "name": "parse",
+              "line": 63,
+              "doc": ""
+            }
+          ]
+        }
+      ],
+      "functions": []
+    },
+    {
+      "id": "app/llm/client.py",
+      "type": "python",
+      "layer": "LLM",
+      "stages": [
+        "3 JD analysis",
+        "7 Rewrite"
+      ],
+      "lines": 347,
+      "doc": "",
+      "classes": [
+        {
+          "name": "LLMClient",
+          "line": 34,
+          "doc": "Unified client for text generation, across two interchangeable providers:",
+          "methods": [
+            {
+              "name": "__init__",
+              "line": 50,
+              "doc": ""
+            },
+            {
+              "name": "is_available",
+              "line": 95,
+              "doc": "Check if the configured provider is reachable and the model is available."
+            },
+            {
+              "name": "_groq_is_available",
+              "line": 108,
+              "doc": ""
+            },
+            {
+              "name": "generate",
+              "line": 122,
+              "doc": "Generate text from the LLM using the chat interface."
+            },
+            {
+              "name": "get_usage_summary",
+              "line": 161,
+              "doc": "Aggregate every generate() call made on this client instance so"
+            },
+            {
+              "name": "_generate_ollama",
+              "line": 185,
+              "doc": ""
+            },
+            {
+              "name": "_generate_groq",
+              "line": 228,
+              "doc": ""
+            },
+            {
+              "name": "generate_json",
+              "line": 283,
+              "doc": "Generate structured JSON conforming to a Pydantic model with retry logic."
+            }
+          ]
+        }
+      ],
+      "functions": []
+    },
+    {
+      "id": "app/llm/prompts/final_review.txt",
+      "type": "prompt",
+      "layer": "LLM",
+      "stages": [],
+      "lines": 2
+    },
+    {
+      "id": "app/llm/prompts/jd_analysis.txt",
+      "type": "prompt",
+      "layer": "LLM",
+      "stages": [],
+      "lines": 13
+    },
+    {
+      "id": "app/llm/prompts/resume_normalization.txt",
+      "type": "prompt",
+      "layer": "LLM",
+      "stages": [],
+      "lines": 7
+    },
+    {
+      "id": "app/llm/prompts/rewrite_bullet.txt",
+      "type": "prompt",
+      "layer": "LLM",
+      "stages": [],
+      "lines": 30
+    },
+    {
+      "id": "app/llm/prompts/tailoring_plan.txt",
+      "type": "prompt",
+      "layer": "LLM",
+      "stages": [],
+      "lines": 6
+    },
+    {
+      "id": "app/llm/prompts/validate_claims.txt",
+      "type": "prompt",
+      "layer": "LLM",
+      "stages": [],
+      "lines": 9
+    },
+    {
+      "id": "app/llm/schemas.py",
+      "type": "python",
+      "layer": "LLM",
+      "stages": [
+        "3 JD analysis",
+        "7 Rewrite"
+      ],
+      "lines": 57,
+      "doc": "",
+      "classes": [
+        {
+          "name": "LLMResponse",
+          "line": 4,
+          "doc": "",
+          "methods": []
+        },
+        {
+          "name": "LLMError",
+          "line": 13,
+          "doc": "Base exception for LLM errors.",
+          "methods": []
+        },
+        {
+          "name": "LLMConnectionError",
+          "line": 18,
+          "doc": "Raised when Ollama server is unreachable.",
+          "methods": []
+        },
+        {
+          "name": "LLMTimeoutError",
+          "line": 23,
+          "doc": "Raised when LLM call exceeds timeout.",
+          "methods": []
+        },
+        {
+          "name": "LLMInvalidJSONError",
+          "line": 28,
+          "doc": "Raised when structured JSON output parsing fails after retries.",
+          "methods": []
+        },
+        {
+          "name": "BulletRewriteResult",
+          "line": 32,
+          "doc": "Structured response for a single bullet rewrite/composition call.",
+          "methods": []
+        },
+        {
+          "name": "MissingRequirementSuggestion",
+          "line": 39,
+          "doc": "Advisory-only suggestion for a JD requirement the resume doesn't",
+          "methods": []
+        },
+        {
+          "name": "JDRequirementSelection",
+          "line": 48,
+          "doc": "Which job-description line indices (from a numbered list the caller",
+          "methods": []
+        }
+      ],
+      "functions": []
+    },
+    {
+      "id": "app/rendering/document_map.py",
+      "type": "python",
+      "layer": "Rendering",
+      "stages": [
+        "1 Ingest",
+        "9 Render"
+      ],
+      "lines": 22,
+      "doc": "",
+      "classes": [
+        {
+          "name": "DocumentLocation",
+          "line": 4,
+          "doc": "",
+          "methods": []
+        },
+        {
+          "name": "DocumentMap",
+          "line": 15,
+          "doc": "",
+          "methods": [
+            {
+              "name": "add_location",
+              "line": 18,
+              "doc": ""
+            },
+            {
+              "name": "get_location",
+              "line": 21,
+              "doc": ""
+            }
+          ]
+        }
+      ],
+      "functions": []
+    },
+    {
+      "id": "app/rendering/docx_patcher.py",
+      "type": "python",
+      "layer": "Rendering",
+      "stages": [
+        "9 Render"
+      ],
+      "lines": 59,
+      "doc": "",
+      "classes": [
+        {
+          "name": "DocxPatcher",
+          "line": 9,
+          "doc": "Apply approved text-only rewrites without rebuilding the source document.",
+          "methods": [
+            {
+              "name": "_replace_paragraph_text",
+              "line": 13,
+              "doc": ""
+            },
+            {
+              "name": "patch",
+              "line": 26,
+              "doc": ""
+            }
+          ]
+        }
+      ],
+      "functions": []
+    },
+    {
+      "id": "app/rendering/html_renderer.py",
+      "type": "python",
+      "layer": "Rendering",
+      "stages": [
+        "9 Render"
+      ],
+      "lines": 115,
+      "doc": "",
+      "classes": [
+        {
+          "name": "HtmlResumeRenderer",
+          "line": 8,
+          "doc": "Render an ATS-safe, printable r\u00e9sum\u00e9 from the canonical document.",
+          "methods": [
+            {
+              "name": "_items",
+              "line": 11,
+              "doc": ""
+            },
+            {
+              "name": "_meta_line",
+              "line": 14,
+              "doc": "A de-emphasized 'Company \u00b7 Location' style line under a bolded"
+            },
+            {
+              "name": "render",
+              "line": 22,
+              "doc": ""
+            },
+            {
+              "name": "write_html",
+              "line": 111,
+              "doc": ""
+            }
+          ]
+        }
+      ],
+      "functions": []
+    },
+    {
+      "id": "app/rendering/pdf_converter.py",
+      "type": "python",
+      "layer": "Rendering",
+      "stages": [
+        "9 Render"
+      ],
+      "lines": 60,
+      "doc": "",
+      "classes": [
+        {
+          "name": "PdfConverter",
+          "line": 9,
+          "doc": "",
+          "methods": [
+            {
+              "name": "find_libreoffice_binary",
+              "line": 10,
+              "doc": ""
+            },
+            {
+              "name": "convert_docx_to_pdf",
+              "line": 27,
+              "doc": ""
+            }
+          ]
+        }
+      ],
+      "functions": []
+    },
+    {
+      "id": "app/rendering/template_renderer.py",
+      "type": "python",
+      "layer": "Rendering",
+      "stages": [
+        "9 Render"
+      ],
+      "lines": 269,
+      "doc": "",
+      "classes": [
+        {
+          "name": "TemplateRenderer",
+          "line": 25,
+          "doc": "Standard single-column, ATS-safe DOCX renderer with support for ResumeDocument.",
+          "methods": [
+            {
+              "name": "render_ats_default",
+              "line": 28,
+              "doc": ""
+            },
+            {
+              "name": "_set_document_defaults",
+              "line": 194,
+              "doc": "Tighter, more consistent margins/typography than python-docx's"
+            },
+            {
+              "name": "_content_width",
+              "line": 218,
+              "doc": ""
+            },
+            {
+              "name": "_add_section_heading",
+              "line": 222,
+              "doc": "A section label in the accent color with a rule underneath \u2014"
+            },
+            {
+              "name": "_add_title_dates_line",
+              "line": 237,
+              "doc": "Title (bold) on the left, date range right-aligned on the same"
+            },
+            {
+              "name": "_add_bottom_border",
+              "line": 256,
+              "doc": "Adds a single bottom border to a paragraph via raw OOXML \u2014 the"
+            }
+          ]
+        }
+      ],
+      "functions": []
+    },
+    {
+      "id": "app/services/run_manager.py",
+      "type": "python",
+      "layer": "Services",
+      "stages": [
+        "10 Report"
+      ],
+      "lines": 37,
+      "doc": "",
+      "classes": [
+        {
+          "name": "RunManager",
+          "line": 8,
+          "doc": "",
+          "methods": [
+            {
+              "name": "__init__",
+              "line": 9,
+              "doc": ""
+            },
+            {
+              "name": "create_run",
+              "line": 12,
+              "doc": ""
+            },
+            {
+              "name": "save_json",
+              "line": 30,
+              "doc": ""
+            }
+          ]
+        }
+      ],
+      "functions": []
+    },
+    {
+      "id": "app/services/tailor.py",
+      "type": "python",
+      "layer": "Services",
+      "stages": [
+        "1 Ingest",
+        "2 Normalize",
+        "3 JD analysis",
+        "4 Match",
+        "5 Score",
+        "6 Plan",
+        "7 Rewrite",
+        "8 Validate",
+        "9 Render",
+        "10 Report"
+      ],
+      "lines": 578,
+      "doc": "",
+      "classes": [
+        {
+          "name": "TailorService",
+          "line": 33,
+          "doc": "",
+          "methods": [
+            {
+              "name": "__init__",
+              "line": 34,
+              "doc": ""
+            },
+            {
+              "name": "generate_preview_md",
+              "line": 58,
+              "doc": ""
+            },
+            {
+              "name": "analyze_only",
+              "line": 94,
+              "doc": ""
+            },
+            {
+              "name": "generate_proposals",
+              "line": 122,
+              "doc": "Generate rewrite proposals without applying them, plus advisory"
+            },
+            {
+              "name": "incorporate_user_addition",
+              "line": 161,
+              "doc": "Fold a user-supplied free-text addition (a project, an"
+            },
+            {
+              "name": "tailor_resume",
+              "line": 235,
+              "doc": ""
+            }
+          ]
+        }
+      ],
+      "functions": []
+    },
+    {
+      "id": "app/services/validation_agent.py",
+      "type": "python",
+      "layer": "Services",
+      "stages": [
+        "8 Validate"
+      ],
+      "lines": 71,
+      "doc": "",
+      "classes": [
+        {
+          "name": "ValidationAgent",
+          "line": 8,
+          "doc": "",
+          "methods": [
+            {
+              "name": "__init__",
+              "line": 9,
+              "doc": ""
+            },
+            {
+              "name": "validate_run",
+              "line": 14,
+              "doc": ""
+            }
+          ]
+        }
+      ],
+      "functions": []
+    },
+    {
+      "id": "app/ui.py",
+      "type": "python",
+      "layer": "Entry points",
+      "stages": [
+        "1 Ingest",
+        "2 Normalize",
+        "3 JD analysis",
+        "4 Match",
+        "5 Score",
+        "6 Plan",
+        "7 Rewrite",
+        "8 Validate",
+        "9 Render",
+        "10 Report"
+      ],
+      "lines": 502,
+      "doc": "",
+      "classes": [],
+      "functions": [
+        {
+          "name": "get_local_pdf_preview_url",
+          "line": 25,
+          "doc": "Serve a PDF from a temporary HTTP endpoint so Chrome can render it in an iframe."
+        },
+        {
+          "name": "display_pdf_with_fallback",
+          "line": 42,
+          "doc": "Try to use Streamlit's native PDF display if available, otherwise fall back"
+        },
+        {
+          "name": "_cleanup_session_state",
+          "line": 79,
+          "doc": "Remove temp files from a previous run and reset to a clean 'idle' state."
+        }
+      ]
+    },
+    {
+      "id": "app/validation/factual.py",
+      "type": "python",
+      "layer": "Validation",
+      "stages": [
+        "8 Validate"
+      ],
+      "lines": 96,
+      "doc": "",
+      "classes": [
+        {
+          "name": "ClaimCheck",
+          "line": 9,
+          "doc": "",
+          "methods": []
+        },
+        {
+          "name": "ValidationResult",
+          "line": 15,
+          "doc": "",
+          "methods": []
+        },
+        {
+          "name": "FactualValidator",
+          "line": 21,
+          "doc": "",
+          "methods": [
+            {
+              "name": "extract_numbers",
+              "line": 37,
+              "doc": ""
+            },
+            {
+              "name": "_canonical_term",
+              "line": 41,
+              "doc": ""
+            },
+            {
+              "name": "_factual_terms",
+              "line": 48,
+              "doc": ""
+            },
+            {
+              "name": "validate_proposal",
+              "line": 54,
+              "doc": ""
+            }
+          ]
+        }
+      ],
+      "functions": []
+    },
+    {
+      "id": "app/validation/output.py",
+      "type": "python",
+      "layer": "Validation",
+      "stages": [
+        "8 Validate"
+      ],
+      "lines": 56,
+      "doc": "",
+      "classes": [
+        {
+          "name": "OutputQAValidator",
+          "line": 6,
+          "doc": "",
+          "methods": [
+            {
+              "name": "validate_docx",
+              "line": 7,
+              "doc": ""
+            },
+            {
+              "name": "validate_pdf",
+              "line": 29,
+              "doc": ""
+            }
+          ]
+        }
+      ],
+      "functions": []
+    },
+    {
+      "id": "app/validation/safety.py",
+      "type": "python",
+      "layer": "Validation",
+      "stages": [
+        "3 JD analysis"
+      ],
+      "lines": 16,
+      "doc": "",
+      "classes": [
+        {
+          "name": "SafetyGuard",
+          "line": 3,
+          "doc": "",
+          "methods": [
+            {
+              "name": "sanitize",
+              "line": 11,
+              "doc": "Sanitize text input by escaping system prompt injection attempts."
+            }
+          ]
+        }
+      ],
+      "functions": []
+    },
+    {
+      "id": "app/validation/structural.py",
+      "type": "python",
+      "layer": "Validation",
+      "stages": [
+        "8 Validate"
+      ],
+      "lines": 22,
+      "doc": "",
+      "classes": [
+        {
+          "name": "StructuralValidator",
+          "line": 4,
+          "doc": "",
+          "methods": [
+            {
+              "name": "validate",
+              "line": 5,
+              "doc": ""
+            }
+          ]
+        }
+      ],
+      "functions": []
+    },
+    {
+      "id": "ollama.py",
+      "type": "python",
+      "layer": "Root",
+      "stages": [],
+      "lines": 22,
+      "doc": "Lightweight local stub for the `ollama` package used in tests.",
+      "classes": [
+        {
+          "name": "ResponseError",
+          "line": 10,
+          "doc": "",
+          "methods": []
+        },
+        {
+          "name": "Client",
+          "line": 13,
+          "doc": "",
+          "methods": [
+            {
+              "name": "__init__",
+              "line": 14,
+              "doc": ""
+            },
+            {
+              "name": "list",
+              "line": 17,
+              "doc": ""
+            },
+            {
+              "name": "chat",
+              "line": 20,
+              "doc": ""
+            }
+          ]
+        }
+      ],
+      "functions": []
+    },
+    {
+      "id": "pyproject.toml",
+      "type": "file",
+      "layer": "Root",
+      "stages": [],
+      "lines": 40
+    },
+    {
+      "id": "scripts/autocommit.sh",
+      "type": "file",
+      "layer": "Tooling",
+      "stages": [],
+      "lines": 16
+    },
+    {
+      "id": "scripts/benchmark_model.py",
+      "type": "python",
+      "layer": "Tooling",
+      "stages": [],
+      "lines": 38,
+      "doc": "Benchmark local LLM latency and availability via Ollama.",
+      "classes": [
+        {
+          "name": "SimpleResponse",
+          "line": 9,
+          "doc": "",
+          "methods": []
+        }
+      ],
+      "functions": [
+        {
+          "name": "benchmark",
+          "line": 13,
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "scripts/check_dependencies.py",
+      "type": "python",
+      "layer": "Tooling",
+      "stages": [],
+      "lines": 54,
+      "doc": "Simple dependency checker for LibreOffice and Ollama.",
+      "classes": [],
+      "functions": []
+    },
+    {
+      "id": "scripts/create_sample_docx.py",
+      "type": "python",
+      "layer": "Tooling",
+      "stages": [],
+      "lines": 46,
+      "doc": "Generate sample fixture DOCX resume for testing.",
+      "classes": [],
+      "functions": [
+        {
+          "name": "create_sample_docx",
+          "line": 7,
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "scripts/create_sample_pdf.py",
+      "type": "python",
+      "layer": "Tooling",
+      "stages": [],
+      "lines": 38,
+      "doc": "Generate sample PDF resume fixture using PyMuPDF.",
+      "classes": [],
+      "functions": [
+        {
+          "name": "create_sample_pdf",
+          "line": 7,
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "scripts/install_hooks.sh",
+      "type": "file",
+      "layer": "Tooling",
+      "stages": [],
+      "lines": 8
+    },
+    {
+      "id": "scripts/update_docs.py",
+      "type": "python",
+      "layer": "Tooling",
+      "stages": [],
+      "lines": 717,
+      "doc": "Regenerate the repo's living docs: the knowledge graph and the change log.",
+      "classes": [],
+      "functions": [
+        {
+          "name": "git",
+          "line": 115,
+          "doc": ""
+        },
+        {
+          "name": "layer_of",
+          "line": 122,
+          "doc": ""
+        },
+        {
+          "name": "module_name",
+          "line": 129,
+          "doc": ""
+        },
+        {
+          "name": "first_line",
+          "line": 136,
+          "doc": ""
+        },
+        {
+          "name": "list_files",
+          "line": 145,
+          "doc": "Tracked + new (not ignored) files, restricted to the project map."
+        },
+        {
+          "name": "parse_python",
+          "line": 163,
+          "doc": ""
+        },
+        {
+          "name": "symbols_of",
+          "line": 191,
+          "doc": ""
+        },
+        {
+          "name": "settings_fields",
+          "line": 204,
+          "doc": ""
+        },
+        {
+          "name": "build_graph",
+          "line": 223,
+          "doc": ""
+        },
+        {
+          "name": "render_graph_md",
+          "line": 297,
+          "doc": ""
+        },
+        {
+          "name": "write_graph",
+          "line": 495,
+          "doc": ""
+        },
+        {
+          "name": "commit_info",
+          "line": 538,
+          "doc": ""
+        },
+        {
+          "name": "changed_files",
+          "line": 549,
+          "doc": ""
+        },
+        {
+          "name": "is_major",
+          "line": 562,
+          "doc": ""
+        },
+        {
+          "name": "blob",
+          "line": 571,
+          "doc": ""
+        },
+        {
+          "name": "structure_delta",
+          "line": 576,
+          "doc": ""
+        },
+        {
+          "name": "render_entry",
+          "line": 599,
+          "doc": ""
+        },
+        {
+          "name": "_split_entries",
+          "line": 642,
+          "doc": ""
+        },
+        {
+          "name": "_join",
+          "line": 654,
+          "doc": ""
+        },
+        {
+          "name": "log_entry",
+          "line": 658,
+          "doc": ""
+        },
+        {
+          "name": "backfill",
+          "line": 676,
+          "doc": ""
+        },
+        {
+          "name": "main",
+          "line": 693,
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "tests/fixtures/jds/sample.txt",
+      "type": "file",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 15
+    },
+    {
+      "id": "tests/fixtures/resumes/sample.docx",
+      "type": "file",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 147
+    },
+    {
+      "id": "tests/fixtures/resumes/sample.pdf",
+      "type": "file",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 47
+    },
+    {
+      "id": "tests/integration/test_end_to_end.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 77,
+      "doc": "",
+      "classes": [],
+      "functions": [
+        {
+          "name": "test_integration_docx_pipeline",
+          "line": 6,
+          "doc": ""
+        },
+        {
+          "name": "test_integration_pdf_pipeline",
+          "line": 22,
+          "doc": ""
+        },
+        {
+          "name": "test_integration_prompt_injection_safety",
+          "line": 38,
+          "doc": ""
+        },
+        {
+          "name": "test_user_addition_is_incorporated_and_score_recomputed",
+          "line": 47,
+          "doc": "Free-text content the candidate types in the review UI must show up in"
+        }
+      ]
+    },
+    {
+      "id": "tests/integration/test_preserve_rewrite_end_to_end.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 113,
+      "doc": "",
+      "classes": [],
+      "functions": [
+        {
+          "name": "test_approved_rewrite_appears_in_all_outputs",
+          "line": 14,
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "tests/unit/test_cli.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 31,
+      "doc": "",
+      "classes": [],
+      "functions": [
+        {
+          "name": "test_tailor_service_analyze_only",
+          "line": 5,
+          "doc": ""
+        },
+        {
+          "name": "test_tailor_service_end_to_end_docx",
+          "line": 18,
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "tests/unit/test_docx_parser.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 40,
+      "doc": "",
+      "classes": [],
+      "functions": [
+        {
+          "name": "test_docx_parser_sample",
+          "line": 6,
+          "doc": ""
+        },
+        {
+          "name": "test_docx_parser_file_not_found",
+          "line": 37,
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "tests/unit/test_docx_renderer.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 82,
+      "doc": "",
+      "classes": [],
+      "functions": [
+        {
+          "name": "test_docx_patcher_preserve_mode",
+          "line": 12,
+          "doc": ""
+        },
+        {
+          "name": "test_template_renderer_ats_mode",
+          "line": 34,
+          "doc": ""
+        },
+        {
+          "name": "test_template_renderer_accepts_resumedocument",
+          "line": 59,
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "tests/unit/test_env.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 3,
+      "doc": "",
+      "classes": [],
+      "functions": [
+        {
+          "name": "test_environment_baseline",
+          "line": 1,
+          "doc": "Simple baseline test to verify pytest framework setup."
+        }
+      ]
+    },
+    {
+      "id": "tests/unit/test_html_renderer.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 23,
+      "doc": "",
+      "classes": [],
+      "functions": [
+        {
+          "name": "test_html_renderer_outputs_ats_sections_and_escapes_content",
+          "line": 5,
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "tests/unit/test_jd_analyzer.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 61,
+      "doc": "",
+      "classes": [],
+      "functions": [
+        {
+          "name": "test_jd_analyzer_heuristic",
+          "line": 6,
+          "doc": ""
+        },
+        {
+          "name": "test_heading_variants_are_not_extracted_as_requirements",
+          "line": 26,
+          "doc": "Headings with a qualifier prefix (Minimum/Preferred/Required/Technical"
+        },
+        {
+          "name": "test_heading_like_words_inside_real_requirements_are_not_filtered",
+          "line": 51,
+          "doc": "A genuine requirement sentence that happens to contain a heading-like"
+        }
+      ]
+    },
+    {
+      "id": "tests/unit/test_jd_analyzer_llm.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 122,
+      "doc": "",
+      "classes": [
+        {
+          "name": "_FakeLLMClient",
+          "line": 5,
+          "doc": "Minimal duck-typed stand-in for LLMClient \u2014 JDAnalyzer only calls",
+          "methods": [
+            {
+              "name": "__init__",
+              "line": 10,
+              "doc": ""
+            },
+            {
+              "name": "is_available",
+              "line": 16,
+              "doc": ""
+            },
+            {
+              "name": "generate_json",
+              "line": 19,
+              "doc": ""
+            }
+          ]
+        }
+      ],
+      "functions": [
+        {
+          "name": "test_reflow_merges_hard_wrapped_bullet_before_scoring",
+          "line": 26,
+          "doc": "A bullet wrapped mid-sentence across two physical lines (common when"
+        },
+        {
+          "name": "test_reflow_does_not_merge_metadata_or_heading_lines",
+          "line": 45,
+          "doc": "Short label lines like 'Job Title:' / 'Company:' must never get"
+        },
+        {
+          "name": "test_llm_selection_excludes_boilerplate_bullet_the_heuristic_would_keep",
+          "line": 55,
+          "doc": "Core fix: a bulleted perks/benefits line ('flexible PTO and remote"
+        },
+        {
+          "name": "test_llm_unavailable_falls_back_to_heuristic",
+          "line": 81,
+          "doc": ""
+        },
+        {
+          "name": "test_llm_error_falls_back_to_heuristic",
+          "line": 89,
+          "doc": ""
+        },
+        {
+          "name": "test_degenerate_empty_llm_selection_falls_back_to_heuristic",
+          "line": 97,
+          "doc": "An empty selection over a non-trivial candidate pool looks like a"
+        },
+        {
+          "name": "test_llm_hallucinated_index_out_of_range_is_ignored",
+          "line": 113,
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "tests/unit/test_llm_client.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 193,
+      "doc": "",
+      "classes": [
+        {
+          "name": "SampleSchema",
+          "line": 9,
+          "doc": "",
+          "methods": []
+        }
+      ],
+      "functions": [
+        {
+          "name": "test_llm_client_initialization",
+          "line": 16,
+          "doc": ""
+        },
+        {
+          "name": "test_llm_is_available_true",
+          "line": 23,
+          "doc": ""
+        },
+        {
+          "name": "test_llm_is_available_false",
+          "line": 32,
+          "doc": ""
+        },
+        {
+          "name": "test_generate_text_success",
+          "line": 41,
+          "doc": ""
+        },
+        {
+          "name": "test_generate_json_success",
+          "line": 57,
+          "doc": ""
+        },
+        {
+          "name": "test_generate_json_retry_failure",
+          "line": 76,
+          "doc": ""
+        },
+        {
+          "name": "test_groq_client_initialization",
+          "line": 94,
+          "doc": ""
+        },
+        {
+          "name": "test_groq_missing_api_key_raises_connection_error",
+          "line": 101,
+          "doc": ""
+        },
+        {
+          "name": "test_groq_generate_text_success",
+          "line": 107,
+          "doc": ""
+        },
+        {
+          "name": "test_groq_generate_api_error_raises_llm_error",
+          "line": 129,
+          "doc": ""
+        },
+        {
+          "name": "test_groq_is_available_true",
+          "line": 140,
+          "doc": ""
+        },
+        {
+          "name": "test_groq_is_available_false_without_key",
+          "line": 148,
+          "doc": ""
+        },
+        {
+          "name": "test_usage_log_records_successful_call",
+          "line": 156,
+          "doc": ""
+        },
+        {
+          "name": "test_usage_log_records_failed_call",
+          "line": 179,
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "tests/unit/test_matcher.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 77,
+      "doc": "",
+      "classes": [],
+      "functions": [
+        {
+          "name": "test_evidence_matcher_exact_and_alias",
+          "line": 7,
+          "doc": ""
+        },
+        {
+          "name": "test_one_generic_word_cannot_create_a_strong_match",
+          "line": 24,
+          "doc": ""
+        },
+        {
+          "name": "test_alignment_scorer_requires_cited_evidence",
+          "line": 34,
+          "doc": ""
+        },
+        {
+          "name": "test_slash_alternatives_satisfied_by_either_option",
+          "line": 41,
+          "doc": "'AWS/GCP' is an either/or option list, not a conjunctive requirement:"
+        },
+        {
+          "name": "test_slash_alternatives_still_missing_if_no_option_present",
+          "line": 54,
+          "doc": "If NEITHER alternative is present, the unit must not be satisfied."
+        },
+        {
+          "name": "test_slash_alternatives_within_a_longer_requirement",
+          "line": 65,
+          "doc": "A multi-word requirement containing a slash-alternative must treat"
+        }
+      ]
+    },
+    {
+      "id": "tests/unit/test_pdf_converter.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 22,
+      "doc": "",
+      "classes": [],
+      "functions": [
+        {
+          "name": "test_pdf_converter_find_binary_or_graceful_none",
+          "line": 6,
+          "doc": ""
+        },
+        {
+          "name": "test_output_qa_validator",
+          "line": 13,
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "tests/unit/test_pdf_parser.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 78,
+      "doc": "",
+      "classes": [],
+      "functions": [
+        {
+          "name": "test_pdf_parser_text_layer",
+          "line": 6,
+          "doc": ""
+        },
+        {
+          "name": "test_pdf_parser_file_not_found",
+          "line": 22,
+          "doc": ""
+        },
+        {
+          "name": "test_merge_wrapped_lines_joins_lowercase_continuation",
+          "line": 28,
+          "doc": "A word-wrapped sentence split across two PDF lines, where the second"
+        },
+        {
+          "name": "test_merge_wrapped_lines_does_not_merge_name_and_contact_line",
+          "line": 42,
+          "doc": "A short name line followed by a capitalized contact-info line must NOT"
+        },
+        {
+          "name": "test_merge_wrapped_lines_does_not_merge_headings",
+          "line": 52,
+          "doc": "A Title-Case section heading followed by its content must stay"
+        },
+        {
+          "name": "test_merge_wrapped_lines_does_not_merge_across_bullets",
+          "line": 61,
+          "doc": "A lowercase-starting bullet (unusual but possible) must never be"
+        },
+        {
+          "name": "test_pdf_parser_end_to_end_no_truncated_bullets",
+          "line": 70,
+          "doc": "Regression guard: sample.pdf's known multi-line bullet must come"
+        }
+      ]
+    },
+    {
+      "id": "tests/unit/test_resume_document.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 35,
+      "doc": "",
+      "classes": [],
+      "functions": [
+        {
+          "name": "test_resume_document_has_versioned_json_snapshot",
+          "line": 4,
+          "doc": ""
+        },
+        {
+          "name": "test_resume_document_serializes_revision_timestamp_and_rejects_invalid_source",
+          "line": 23,
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "tests/unit/test_resume_normalizer.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 33,
+      "doc": "",
+      "classes": [],
+      "functions": [
+        {
+          "name": "test_resume_normalizer",
+          "line": 7,
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "tests/unit/test_rewriter.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 131,
+      "doc": "",
+      "classes": [],
+      "functions": [
+        {
+          "name": "test_rewriter_deterministic_fallback",
+          "line": 11,
+          "doc": ""
+        },
+        {
+          "name": "test_rewrite_bullet_parses_structured_json_when_llm_available",
+          "line": 58,
+          "doc": "rewrite_bullet must parse the JSON {rewritten, rationale, evidence_ids}"
+        },
+        {
+          "name": "test_rewrite_bullet_falls_back_when_llm_unreachable",
+          "line": 87,
+          "doc": ""
+        },
+        {
+          "name": "test_suggest_for_missing_requirement_returns_labeled_example",
+          "line": 101,
+          "doc": ""
+        },
+        {
+          "name": "test_suggest_for_missing_requirement_none_without_llm",
+          "line": 128,
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "tests/unit/test_scoring.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 82,
+      "doc": "",
+      "classes": [],
+      "functions": [
+        {
+          "name": "_req",
+          "line": 6,
+          "doc": ""
+        },
+        {
+          "name": "_match",
+          "line": 11,
+          "doc": ""
+        },
+        {
+          "name": "test_semantic_partial_excluded_from_headline_score",
+          "line": 16,
+          "doc": "A requirement matched only via SEMANTIC_PARTIAL must score identically"
+        },
+        {
+          "name": "test_semantic_coverage_reflects_semantic_matches_only",
+          "line": 30,
+          "doc": ""
+        },
+        {
+          "name": "test_explicit_match_unaffected_by_semantic_coverage_field",
+          "line": 43,
+          "doc": ""
+        },
+        {
+          "name": "test_mixed_requirements_headline_score_matches_pre_semantic_behavior",
+          "line": 51,
+          "doc": "Adding one SEMANTIC_PARTIAL requirement alongside an EXPLICIT one must"
+        },
+        {
+          "name": "test_default_criticality_requirement_counts_as_required_coverage",
+          "line": 73,
+          "doc": "Regression: Requirement.criticality defaults to 'required' (not"
+        }
+      ]
+    },
+    {
+      "id": "tests/unit/test_semantic_matcher.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 144,
+      "doc": "Tests for SemanticMatcher.",
+      "classes": [],
+      "functions": [
+        {
+          "name": "_fake_embedder",
+          "line": 28,
+          "doc": "A deterministic 'embedding' for testing: represents each text as a"
+        },
+        {
+          "name": "_missing_match",
+          "line": 45,
+          "doc": ""
+        },
+        {
+          "name": "test_semantic_partial_on_paraphrase",
+          "line": 53,
+          "doc": ""
+        },
+        {
+          "name": "test_stays_missing_below_threshold",
+          "line": 69,
+          "doc": ""
+        },
+        {
+          "name": "test_never_overrides_non_missing_status",
+          "line": 82,
+          "doc": ""
+        },
+        {
+          "name": "test_disabled_flag_is_a_no_op",
+          "line": 108,
+          "doc": ""
+        },
+        {
+          "name": "test_embedder_exception_falls_back_gracefully",
+          "line": 120,
+          "doc": ""
+        },
+        {
+          "name": "test_no_missing_requirements_short_circuits",
+          "line": 135,
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "tests/unit/test_tailor_planner.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 149,
+      "doc": "",
+      "classes": [],
+      "functions": [
+        {
+          "name": "test_tailor_planner",
+          "line": 9,
+          "doc": ""
+        },
+        {
+          "name": "test_semantic_only_match_produces_rewrite_with_labeled_rationale",
+          "line": 57,
+          "doc": "A bullet whose only match is SEMANTIC_PARTIAL (an inferred, not exact,"
+        },
+        {
+          "name": "test_deterministic_match_preferred_over_semantic_for_rationale",
+          "line": 105,
+          "doc": "If a bullet has BOTH a deterministic match and a semantic match (to"
+        }
+      ]
+    },
+    {
+      "id": "tests/unit/test_tailor_service_addition.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 107,
+      "doc": "",
+      "classes": [],
+      "functions": [
+        {
+          "name": "_service",
+          "line": 8,
+          "doc": ""
+        },
+        {
+          "name": "test_incorporate_user_addition_appends_bullet_to_most_recent_experience",
+          "line": 17,
+          "doc": ""
+        },
+        {
+          "name": "test_incorporate_user_addition_new_project_target",
+          "line": 50,
+          "doc": ""
+        },
+        {
+          "name": "test_incorporate_user_addition_falls_back_to_project_when_no_experience",
+          "line": 64,
+          "doc": "target='auto' with zero Experience entries must not drop the addition."
+        },
+        {
+          "name": "test_incorporate_user_addition_blank_text_is_noop",
+          "line": 78,
+          "doc": ""
+        },
+        {
+          "name": "test_rank_missing_requirements_orders_required_before_preferred",
+          "line": 90,
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "tests/unit/test_template_renderer_standalone.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 84,
+      "doc": "",
+      "classes": [],
+      "functions": [
+        {
+          "name": "_full_text",
+          "line": 9,
+          "doc": ""
+        },
+        {
+          "name": "test_template_renderer_ats_mode",
+          "line": 14,
+          "doc": ""
+        },
+        {
+          "name": "test_template_renderer_accepts_resumedocument",
+          "line": 43,
+          "doc": ""
+        },
+        {
+          "name": "test_template_renderer_handles_missing_optional_fields",
+          "line": 68,
+          "doc": "No dates, no location, no email \u2014 must not crash, and must still"
+        }
+      ]
+    },
+    {
+      "id": "tests/unit/test_ui.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 6,
+      "doc": "",
+      "classes": [],
+      "functions": [
+        {
+          "name": "test_ui_importable",
+          "line": 3,
+          "doc": "Verify Streamlit app module can be imported without error."
+        }
+      ]
+    },
+    {
+      "id": "tests/unit/test_validation.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 37,
+      "doc": "",
+      "classes": [],
+      "functions": [
+        {
+          "name": "test_factual_validator_preserves_grounded_claims",
+          "line": 7,
+          "doc": ""
+        },
+        {
+          "name": "test_factual_validator_rejects_new_numbers_or_tools",
+          "line": 18,
+          "doc": ""
+        },
+        {
+          "name": "test_safety_guard_prompt_injection",
+          "line": 35,
+          "doc": ""
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": "app/analysis/change_proposal.py",
+      "to": "app/analysis/change_proposal.py::ChangeProposal",
+      "type": "contains"
+    },
+    {
+      "from": "app/analysis/jd_analyzer.py",
+      "to": "app/analysis/jd_analyzer.py::JDAnalyzer",
+      "type": "contains"
+    },
+    {
+      "from": "app/analysis/jd_analyzer.py",
+      "to": "app/domain/job.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/analysis/jd_analyzer.py",
+      "to": "app/llm/client.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/analysis/jd_analyzer.py",
+      "to": "app/llm/schemas.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/analysis/jd_analyzer.py",
+      "to": "tests/unit/test_jd_analyzer.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/analysis/jd_analyzer.py",
+      "to": "tests/unit/test_jd_analyzer_llm.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/analysis/matcher.py",
+      "to": "app/analysis/matcher.py::EvidenceMatcher",
+      "type": "contains"
+    },
+    {
+      "from": "app/analysis/matcher.py",
+      "to": "app/analysis/terminology.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/analysis/matcher.py",
+      "to": "app/domain/evidence.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/analysis/matcher.py",
+      "to": "app/domain/job.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/analysis/matcher.py",
+      "to": "app/domain/report.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/analysis/matcher.py",
+      "to": "app/llm/client.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/analysis/matcher.py",
+      "to": "tests/unit/test_matcher.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/analysis/resume_normalizer.py",
+      "to": "app/analysis/resume_normalizer.py::ResumeNormalizer",
+      "type": "contains"
+    },
+    {
+      "from": "app/analysis/resume_normalizer.py",
+      "to": "app/domain/evidence.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/analysis/resume_normalizer.py",
+      "to": "app/domain/resume.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/analysis/resume_normalizer.py",
+      "to": "app/domain/resume_document.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/analysis/resume_normalizer.py",
+      "to": "app/ingestion/docx.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/analysis/resume_normalizer.py",
+      "to": "tests/integration/test_preserve_rewrite_end_to_end.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/analysis/resume_normalizer.py",
+      "to": "tests/unit/test_resume_normalizer.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/analysis/rewriter.py",
+      "to": "app/analysis/change_proposal.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/analysis/rewriter.py",
+      "to": "app/analysis/rewriter.py::LLMRewriter",
+      "type": "contains"
+    },
+    {
+      "from": "app/analysis/rewriter.py",
+      "to": "app/domain/evidence.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/analysis/rewriter.py",
+      "to": "app/domain/job.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/analysis/rewriter.py",
+      "to": "app/domain/resume.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/analysis/rewriter.py",
+      "to": "app/domain/tailoring.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/analysis/rewriter.py",
+      "to": "app/llm/client.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/analysis/rewriter.py",
+      "to": "app/llm/prompts/rewrite_bullet.txt",
+      "type": "uses_prompt"
+    },
+    {
+      "from": "app/analysis/rewriter.py",
+      "to": "app/llm/schemas.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/analysis/rewriter.py",
+      "to": "tests/integration/test_preserve_rewrite_end_to_end.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/analysis/rewriter.py",
+      "to": "tests/unit/test_docx_renderer.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/analysis/rewriter.py",
+      "to": "tests/unit/test_rewriter.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/analysis/rewriter.py",
+      "to": "tests/unit/test_validation.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/analysis/scoring.py",
+      "to": "app/analysis/scoring.py::AlignmentScorer",
+      "type": "contains"
+    },
+    {
+      "from": "app/analysis/scoring.py",
+      "to": "app/analysis/scoring.py::ScoreComponents",
+      "type": "contains"
+    },
+    {
+      "from": "app/analysis/scoring.py",
+      "to": "app/domain/job.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/analysis/scoring.py",
+      "to": "app/domain/report.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/analysis/scoring.py",
+      "to": "tests/unit/test_matcher.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/analysis/scoring.py",
+      "to": "tests/unit/test_scoring.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/analysis/semantic_matcher.py",
+      "to": "app/analysis/semantic_matcher.py::SemanticMatcher",
+      "type": "contains"
+    },
+    {
+      "from": "app/analysis/semantic_matcher.py",
+      "to": "app/config/settings.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/analysis/semantic_matcher.py",
+      "to": "app/domain/evidence.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/analysis/semantic_matcher.py",
+      "to": "app/domain/job.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/analysis/semantic_matcher.py",
+      "to": "app/domain/report.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/analysis/semantic_matcher.py",
+      "to": "tests/unit/test_semantic_matcher.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/analysis/tailor_planner.py",
+      "to": "app/analysis/tailor_planner.py::TailoringPlanner",
+      "type": "contains"
+    },
+    {
+      "from": "app/analysis/tailor_planner.py",
+      "to": "app/domain/evidence.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/analysis/tailor_planner.py",
+      "to": "app/domain/job.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/analysis/tailor_planner.py",
+      "to": "app/domain/report.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/analysis/tailor_planner.py",
+      "to": "app/domain/resume.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/analysis/tailor_planner.py",
+      "to": "app/domain/tailoring.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/analysis/tailor_planner.py",
+      "to": "app/llm/client.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/analysis/tailor_planner.py",
+      "to": "tests/unit/test_tailor_planner.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/cli.py",
+      "to": "app/services/tailor.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/config/settings.py",
+      "to": "app/config/settings.py::Settings",
+      "type": "contains"
+    },
+    {
+      "from": "app/domain/evidence.py",
+      "to": "app/domain/evidence.py::Evidence",
+      "type": "contains"
+    },
+    {
+      "from": "app/domain/evidence.py",
+      "to": "tests/unit/test_matcher.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/evidence.py",
+      "to": "tests/unit/test_resume_normalizer.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/evidence.py",
+      "to": "tests/unit/test_rewriter.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/evidence.py",
+      "to": "tests/unit/test_semantic_matcher.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/evidence.py",
+      "to": "tests/unit/test_tailor_planner.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/evidence.py",
+      "to": "tests/unit/test_tailor_service_addition.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/evidence.py",
+      "to": "tests/unit/test_validation.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/job.py",
+      "to": "app/domain/job.py::JobDescription",
+      "type": "contains"
+    },
+    {
+      "from": "app/domain/job.py",
+      "to": "app/domain/job.py::Requirement",
+      "type": "contains"
+    },
+    {
+      "from": "app/domain/job.py",
+      "to": "tests/unit/test_jd_analyzer.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/job.py",
+      "to": "tests/unit/test_matcher.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/job.py",
+      "to": "tests/unit/test_rewriter.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/job.py",
+      "to": "tests/unit/test_scoring.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/job.py",
+      "to": "tests/unit/test_semantic_matcher.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/job.py",
+      "to": "tests/unit/test_tailor_planner.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/job.py",
+      "to": "tests/unit/test_tailor_service_addition.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/report.py",
+      "to": "app/domain/report.py::Match",
+      "type": "contains"
+    },
+    {
+      "from": "app/domain/report.py",
+      "to": "app/domain/report.py::TailoringReport",
+      "type": "contains"
+    },
+    {
+      "from": "app/domain/report.py",
+      "to": "tests/unit/test_matcher.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/report.py",
+      "to": "tests/unit/test_scoring.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/report.py",
+      "to": "tests/unit/test_semantic_matcher.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/report.py",
+      "to": "tests/unit/test_tailor_planner.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/report.py",
+      "to": "tests/unit/test_tailor_service_addition.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/resume.py",
+      "to": "app/domain/resume.py::Candidate",
+      "type": "contains"
+    },
+    {
+      "from": "app/domain/resume.py",
+      "to": "app/domain/resume.py::Education",
+      "type": "contains"
+    },
+    {
+      "from": "app/domain/resume.py",
+      "to": "app/domain/resume.py::Experience",
+      "type": "contains"
+    },
+    {
+      "from": "app/domain/resume.py",
+      "to": "app/domain/resume.py::Project",
+      "type": "contains"
+    },
+    {
+      "from": "app/domain/resume.py",
+      "to": "app/domain/resume.py::Resume",
+      "type": "contains"
+    },
+    {
+      "from": "app/domain/resume.py",
+      "to": "app/domain/resume.py::ResumeBullet",
+      "type": "contains"
+    },
+    {
+      "from": "app/domain/resume.py",
+      "to": "tests/unit/test_docx_renderer.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/resume.py",
+      "to": "tests/unit/test_html_renderer.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/resume.py",
+      "to": "tests/unit/test_resume_document.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/resume.py",
+      "to": "tests/unit/test_resume_normalizer.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/resume.py",
+      "to": "tests/unit/test_rewriter.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/resume.py",
+      "to": "tests/unit/test_tailor_planner.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/resume.py",
+      "to": "tests/unit/test_tailor_service_addition.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/resume.py",
+      "to": "tests/unit/test_template_renderer_standalone.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/resume_document.py",
+      "to": "app/domain/resume.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/domain/resume_document.py",
+      "to": "app/domain/resume_document.py::ResumeDocument",
+      "type": "contains"
+    },
+    {
+      "from": "app/domain/resume_document.py",
+      "to": "app/domain/resume_document.py::ResumePresentation",
+      "type": "contains"
+    },
+    {
+      "from": "app/domain/resume_document.py",
+      "to": "app/domain/resume_document.py::ResumeRevision",
+      "type": "contains"
+    },
+    {
+      "from": "app/domain/resume_document.py",
+      "to": "app/domain/resume_document.py::ResumeSource",
+      "type": "contains"
+    },
+    {
+      "from": "app/domain/resume_document.py",
+      "to": "tests/unit/test_docx_renderer.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/resume_document.py",
+      "to": "tests/unit/test_html_renderer.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/resume_document.py",
+      "to": "tests/unit/test_resume_document.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/resume_document.py",
+      "to": "tests/unit/test_template_renderer_standalone.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/tailoring.py",
+      "to": "app/domain/tailoring.py::TailoringAction",
+      "type": "contains"
+    },
+    {
+      "from": "app/domain/tailoring.py",
+      "to": "app/domain/tailoring.py::TailoringPlan",
+      "type": "contains"
+    },
+    {
+      "from": "app/domain/tailoring.py",
+      "to": "tests/unit/test_rewriter.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/tailoring.py",
+      "to": "tests/unit/test_tailor_planner.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/ingestion/docx.py",
+      "to": "app/ingestion/docx.py::DocxParser",
+      "type": "contains"
+    },
+    {
+      "from": "app/ingestion/docx.py",
+      "to": "app/ingestion/docx.py::RawBlock",
+      "type": "contains"
+    },
+    {
+      "from": "app/ingestion/docx.py",
+      "to": "app/ingestion/docx.py::RawDocument",
+      "type": "contains"
+    },
+    {
+      "from": "app/ingestion/docx.py",
+      "to": "app/rendering/document_map.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/ingestion/docx.py",
+      "to": "tests/integration/test_preserve_rewrite_end_to_end.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/ingestion/docx.py",
+      "to": "tests/unit/test_docx_parser.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/ingestion/docx.py",
+      "to": "tests/unit/test_docx_renderer.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/ingestion/docx.py",
+      "to": "tests/unit/test_pdf_parser.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/ingestion/docx.py",
+      "to": "tests/unit/test_resume_normalizer.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/ingestion/ocr.py",
+      "to": "app/ingestion/ocr.py::OCREngine",
+      "type": "contains"
+    },
+    {
+      "from": "app/ingestion/pdf.py",
+      "to": "app/ingestion/docx.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/ingestion/pdf.py",
+      "to": "app/ingestion/ocr.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/ingestion/pdf.py",
+      "to": "app/ingestion/pdf.py::PdfParser",
+      "type": "contains"
+    },
+    {
+      "from": "app/ingestion/pdf.py",
+      "to": "app/rendering/document_map.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/ingestion/pdf.py",
+      "to": "tests/unit/test_pdf_parser.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/llm/client.py",
+      "to": "app/config/settings.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/llm/client.py",
+      "to": "app/llm/client.py::LLMClient",
+      "type": "contains"
+    },
+    {
+      "from": "app/llm/client.py",
+      "to": "app/llm/schemas.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/llm/client.py",
+      "to": "ollama.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/llm/client.py",
+      "to": "tests/unit/test_llm_client.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/llm/client.py",
+      "to": "tests/unit/test_rewriter.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/llm/schemas.py",
+      "to": "app/llm/schemas.py::BulletRewriteResult",
+      "type": "contains"
+    },
+    {
+      "from": "app/llm/schemas.py",
+      "to": "app/llm/schemas.py::JDRequirementSelection",
+      "type": "contains"
+    },
+    {
+      "from": "app/llm/schemas.py",
+      "to": "app/llm/schemas.py::LLMConnectionError",
+      "type": "contains"
+    },
+    {
+      "from": "app/llm/schemas.py",
+      "to": "app/llm/schemas.py::LLMError",
+      "type": "contains"
+    },
+    {
+      "from": "app/llm/schemas.py",
+      "to": "app/llm/schemas.py::LLMInvalidJSONError",
+      "type": "contains"
+    },
+    {
+      "from": "app/llm/schemas.py",
+      "to": "app/llm/schemas.py::LLMResponse",
+      "type": "contains"
+    },
+    {
+      "from": "app/llm/schemas.py",
+      "to": "app/llm/schemas.py::LLMTimeoutError",
+      "type": "contains"
+    },
+    {
+      "from": "app/llm/schemas.py",
+      "to": "app/llm/schemas.py::MissingRequirementSuggestion",
+      "type": "contains"
+    },
+    {
+      "from": "app/llm/schemas.py",
+      "to": "tests/unit/test_jd_analyzer_llm.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/llm/schemas.py",
+      "to": "tests/unit/test_llm_client.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/rendering/document_map.py",
+      "to": "app/rendering/document_map.py::DocumentLocation",
+      "type": "contains"
+    },
+    {
+      "from": "app/rendering/document_map.py",
+      "to": "app/rendering/document_map.py::DocumentMap",
+      "type": "contains"
+    },
+    {
+      "from": "app/rendering/document_map.py",
+      "to": "tests/unit/test_docx_parser.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/rendering/docx_patcher.py",
+      "to": "app/analysis/rewriter.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/rendering/docx_patcher.py",
+      "to": "app/rendering/document_map.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/rendering/docx_patcher.py",
+      "to": "app/rendering/docx_patcher.py::DocxPatcher",
+      "type": "contains"
+    },
+    {
+      "from": "app/rendering/docx_patcher.py",
+      "to": "tests/integration/test_preserve_rewrite_end_to_end.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/rendering/docx_patcher.py",
+      "to": "tests/unit/test_docx_renderer.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/rendering/html_renderer.py",
+      "to": "app/domain/resume.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/rendering/html_renderer.py",
+      "to": "app/domain/resume_document.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/rendering/html_renderer.py",
+      "to": "app/rendering/html_renderer.py::HtmlResumeRenderer",
+      "type": "contains"
+    },
+    {
+      "from": "app/rendering/html_renderer.py",
+      "to": "tests/integration/test_preserve_rewrite_end_to_end.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/rendering/html_renderer.py",
+      "to": "tests/unit/test_html_renderer.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/rendering/pdf_converter.py",
+      "to": "app/rendering/pdf_converter.py::PdfConverter",
+      "type": "contains"
+    },
+    {
+      "from": "app/rendering/pdf_converter.py",
+      "to": "tests/integration/test_preserve_rewrite_end_to_end.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/rendering/pdf_converter.py",
+      "to": "tests/unit/test_pdf_converter.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/rendering/template_renderer.py",
+      "to": "app/domain/resume.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/rendering/template_renderer.py",
+      "to": "app/domain/resume_document.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/rendering/template_renderer.py",
+      "to": "app/rendering/template_renderer.py::TemplateRenderer",
+      "type": "contains"
+    },
+    {
+      "from": "app/rendering/template_renderer.py",
+      "to": "tests/unit/test_docx_renderer.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/rendering/template_renderer.py",
+      "to": "tests/unit/test_template_renderer_standalone.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/services/run_manager.py",
+      "to": "app/services/run_manager.py::RunManager",
+      "type": "contains"
+    },
+    {
+      "from": "app/services/tailor.py",
+      "to": "app/analysis/jd_analyzer.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/services/tailor.py",
+      "to": "app/analysis/matcher.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/services/tailor.py",
+      "to": "app/analysis/resume_normalizer.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/services/tailor.py",
+      "to": "app/analysis/rewriter.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/services/tailor.py",
+      "to": "app/analysis/scoring.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/services/tailor.py",
+      "to": "app/analysis/semantic_matcher.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/services/tailor.py",
+      "to": "app/analysis/tailor_planner.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/services/tailor.py",
+      "to": "app/domain/evidence.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/services/tailor.py",
+      "to": "app/domain/job.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/services/tailor.py",
+      "to": "app/domain/report.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/services/tailor.py",
+      "to": "app/domain/resume.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/services/tailor.py",
+      "to": "app/domain/resume_document.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/services/tailor.py",
+      "to": "app/domain/tailoring.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/services/tailor.py",
+      "to": "app/ingestion/docx.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/services/tailor.py",
+      "to": "app/ingestion/pdf.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/services/tailor.py",
+      "to": "app/llm/client.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/services/tailor.py",
+      "to": "app/rendering/docx_patcher.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/services/tailor.py",
+      "to": "app/rendering/html_renderer.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/services/tailor.py",
+      "to": "app/rendering/pdf_converter.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/services/tailor.py",
+      "to": "app/rendering/template_renderer.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/services/tailor.py",
+      "to": "app/services/run_manager.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/services/tailor.py",
+      "to": "app/services/tailor.py::TailorService",
+      "type": "contains"
+    },
+    {
+      "from": "app/services/tailor.py",
+      "to": "app/validation/factual.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/services/tailor.py",
+      "to": "app/validation/output.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/services/tailor.py",
+      "to": "app/validation/safety.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/services/tailor.py",
+      "to": "app/validation/structural.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/services/tailor.py",
+      "to": "tests/integration/test_end_to_end.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/services/tailor.py",
+      "to": "tests/unit/test_cli.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/services/tailor.py",
+      "to": "tests/unit/test_tailor_service_addition.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/services/validation_agent.py",
+      "to": "app/analysis/rewriter.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/services/validation_agent.py",
+      "to": "app/domain/resume_document.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/services/validation_agent.py",
+      "to": "app/services/validation_agent.py::ValidationAgent",
+      "type": "contains"
+    },
+    {
+      "from": "app/services/validation_agent.py",
+      "to": "app/validation/factual.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/services/validation_agent.py",
+      "to": "app/validation/output.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/services/validation_agent.py",
+      "to": "app/validation/structural.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/ui.py",
+      "to": "app/config/settings.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/ui.py",
+      "to": "app/llm/client.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/ui.py",
+      "to": "app/services/tailor.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/ui.py",
+      "to": "tests/unit/test_ui.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/validation/factual.py",
+      "to": "app/analysis/rewriter.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/validation/factual.py",
+      "to": "app/domain/evidence.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/validation/factual.py",
+      "to": "app/validation/factual.py::ClaimCheck",
+      "type": "contains"
+    },
+    {
+      "from": "app/validation/factual.py",
+      "to": "app/validation/factual.py::FactualValidator",
+      "type": "contains"
+    },
+    {
+      "from": "app/validation/factual.py",
+      "to": "app/validation/factual.py::ValidationResult",
+      "type": "contains"
+    },
+    {
+      "from": "app/validation/factual.py",
+      "to": "tests/unit/test_validation.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/validation/output.py",
+      "to": "app/validation/output.py::OutputQAValidator",
+      "type": "contains"
+    },
+    {
+      "from": "app/validation/output.py",
+      "to": "tests/integration/test_end_to_end.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/validation/output.py",
+      "to": "tests/integration/test_preserve_rewrite_end_to_end.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/validation/output.py",
+      "to": "tests/unit/test_pdf_converter.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/validation/safety.py",
+      "to": "app/validation/safety.py::SafetyGuard",
+      "type": "contains"
+    },
+    {
+      "from": "app/validation/safety.py",
+      "to": "tests/unit/test_validation.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/validation/structural.py",
+      "to": "app/domain/resume.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/validation/structural.py",
+      "to": "app/validation/structural.py::StructuralValidator",
+      "type": "contains"
+    },
+    {
+      "from": "app/validation/structural.py",
+      "to": "tests/unit/test_validation.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "ollama.py",
+      "to": "ollama.py::Client",
+      "type": "contains"
+    },
+    {
+      "from": "ollama.py",
+      "to": "ollama.py::ResponseError",
+      "type": "contains"
+    },
+    {
+      "from": "scripts/benchmark_model.py",
+      "to": "app/llm/client.py",
+      "type": "imports"
+    },
+    {
+      "from": "scripts/benchmark_model.py",
+      "to": "scripts/benchmark_model.py::SimpleResponse",
+      "type": "contains"
+    },
+    {
+      "from": "tests/unit/test_jd_analyzer_llm.py",
+      "to": "tests/unit/test_jd_analyzer_llm.py::_FakeLLMClient",
+      "type": "contains"
+    },
+    {
+      "from": "tests/unit/test_llm_client.py",
+      "to": "tests/unit/test_llm_client.py::SampleSchema",
+      "type": "contains"
+    }
+  ]
+}
