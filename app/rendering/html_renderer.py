@@ -26,7 +26,8 @@ class HtmlResumeRenderer:
             if section_name == "experience" and resume.experience:
                 entries = "".join(
                     "<article class='entry'>"
-                    f"<h3>{html.escape(item.title)} <span>— {html.escape(item.company)}</span></h3>"
+                    f"<h3>{html.escape(item.title)} <span>— {html.escape(item.company)}"
+                    f"{(' · ' + html.escape(item.location)) if item.location else ''}</span></h3>"
                     f"<p class='dates'>{html.escape(' — '.join(v for v in (item.start_date, item.end_date) if v))}</p>"
                     f"<ul>{self._items(bullet.text for bullet in item.bullets)}</ul></article>"
                     for item in resume.experience
@@ -50,10 +51,21 @@ class HtmlResumeRenderer:
             elif section_name == "education" and resume.education:
                 entries = "".join(
                     f"<article class='entry'><h3>{html.escape(item.degree)}</h3>"
-                    f"<p>{html.escape(item.institution)} {html.escape(item.dates or '')}</p></article>"
+                    f"<p>{html.escape(item.institution)}"
+                    f"{(' · ' + html.escape(item.location)) if item.location else ''} "
+                    f"{html.escape(item.dates or '')}</p></article>"
                     for item in resume.education
                 )
                 sections.append(f"<section><h2>Education</h2>{entries}</section>")
+            elif section_name == "certifications" and resume.certifications:
+                cert_names = [c.get("name", "") if isinstance(c, dict) else str(c) for c in resume.certifications]
+                sections.append(
+                    "<section><h2>Certifications</h2><p>"
+                    + html.escape(" · ".join(n for n in cert_names if n))
+                    + "</p></section>"
+                )
+        if resume.interests:
+            sections.append(f"<section><h2>Interests</h2><p>{html.escape(', '.join(resume.interests))}</p></section>")
 
         return f"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><title>{html.escape(resume.candidate.name)} — Resume</title>

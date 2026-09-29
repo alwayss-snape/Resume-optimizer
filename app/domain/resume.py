@@ -17,6 +17,7 @@ class Experience(BaseModel):
     id: str
     company: str
     title: str
+    location: Optional[str] = None
     start_date: Optional[str] = None
     end_date: Optional[str] = None
     bullets: List[ResumeBullet] = Field(default_factory=list)
@@ -32,6 +33,7 @@ class Education(BaseModel):
     id: str
     institution: str
     degree: str
+    location: Optional[str] = None
     field_of_study: Optional[str] = None
     dates: Optional[str] = None
 
@@ -44,3 +46,4 @@ class Resume(BaseModel):
     skills: Dict[str, List[str]] = Field(default_factory=dict)
     certifications: List[Dict[str, str]] = Field(default_factory=list)
     achievements: List[str] = Field(default_factory=list)
+    interests: List[str] = Field(default_factory=list)

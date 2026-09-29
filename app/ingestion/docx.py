@@ -20,7 +20,10 @@ class RawDocument(BaseModel):
     raw_text: str = ""
 
 class DocxParser:
-    BULLET_PREFIXES = ("•", "-", "*", "▪", "–", "—", "o ")
+    # "●" (U+25CF) and friends are common Word bullet glyphs that are NOT the
+    # same character as "•" (U+2022) — missing them here left the raw glyph
+    # baked into bullet text (double-bulleted output: "• ● Built...").
+    BULLET_PREFIXES = ("•", "●", "◦", "‣", "▸", "▪", "-", "*", "–", "—", "o ")
 
     def parse(self, file_path: str) -> RawDocument:
         if not os.path.exists(file_path):

@@ -49,13 +49,22 @@ class TemplateRenderer:
         if getattr(resume, "experience", None):
             doc.add_heading("Work Experience", level=1)
             for exp in resume.experience:
-                heading = " — ".join(value for value in (getattr(exp, "title", None), getattr(exp, "company", None)) if value)
+                company_line = getattr(exp, "company", None) or ""
+                if getattr(exp, "location", None):
+                    company_line = f"{company_line} — {exp.location}" if company_line else exp.location
+                if company_line:
+                    p = doc.add_paragraph(company_line)
+                    if p.runs:
+                        p.runs[0].bold = True
+
+                title_line = getattr(exp, "title", None) or ""
                 dates = [getattr(exp, "start_date", None), getattr(exp, "end_date", None)]
                 if any(dates):
-                    heading += f" | {' — '.join(value for value in dates if value)}"
-                p = doc.add_paragraph(heading)
-                if p.runs:
-                    p.runs[0].bold = True
+                    date_str = " – ".join(value for value in dates if value)
+                    title_line = f"{title_line} | {date_str}" if title_line else date_str
+                if title_line:
+                    doc.add_paragraph(title_line)
+
                 for bullet in getattr(exp, "bullets", []) or []:
                     doc.add_paragraph(getattr(bullet, "text", ""), style="List Bullet")
 
@@ -83,8 +92,18 @@ class TemplateRenderer:
         if getattr(resume, "education", None):
             doc.add_heading("Education", level=1)
             for education in resume.education:
-                values = [getattr(education, "degree", None), getattr(education, "institution", None), getattr(education, "dates", None)]
-                doc.add_paragraph(" — ".join(value for value in values if value))
+                inst_line = getattr(education, "institution", None) or ""
+                if getattr(education, "location", None):
+                    inst_line = f"{inst_line} — {education.location}" if inst_line else education.location
+                if inst_line:
+                    p = doc.add_paragraph(inst_line)
+                    if p.runs:
+                        p.runs[0].bold = True
+
+                degree_line_parts = [getattr(education, "degree", None), getattr(education, "dates", None)]
+                degree_line = " | ".join(value for value in degree_line_parts if value)
+                if degree_line:
+                    doc.add_paragraph(degree_line)
 
         # Certifications
         if getattr(resume, "certifications", None):
@@ -102,6 +121,11 @@ class TemplateRenderer:
             doc.add_heading("Achievements", level=1)
             for achievement in resume.achievements:
                 doc.add_paragraph(achievement, style="List Bullet")
+
+        # Interests
+        if getattr(resume, "interests", None):
+            doc.add_heading("Interests", level=1)
+            doc.add_paragraph(", ".join(resume.interests))
 
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
         doc.save(output_path)
