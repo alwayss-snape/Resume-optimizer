@@ -28,3 +28,6 @@ id_*
 
 # Personal output (tailored resumes) — never commit
 Claude outputs/
+
+# Local editor settings
+.vscode/
