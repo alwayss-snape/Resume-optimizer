@@ -36,7 +36,9 @@ JD-aligned rewrites, a Novoresume-style ATS layout that fits the right length, a
 
 **Exit gate:** a run on the real resume + a real JD shows rewrites that actually change; baseline metrics recorded (P4.1).
 
-**Gate status (2026-09-30):** 🟡 Live Groq verified: `check-llm` OK (0.7 s); a full fixture run gave 2/2 genuinely rewritten bullets, 8 calls, ~8.6K tokens. Found and fixed: gpt-oss emits non-breaking spaces/hyphens ("50 M"), which broke the number check. Validator fixed in P1.8: the same live run now keeps 2/2 rewrites. **Still open:** real-resume run + baseline.
+**Gate status (2026-09-30):** 🟡 Live Groq verified: `check-llm` OK (0.7 s); a full fixture run gave 2/2 genuinely rewritten bullets, 8 calls, ~8.6K tokens. Found and fixed: gpt-oss emits non-breaking spaces/hyphens ("50 M"), which broke the number check. Validator fixed in P1.8: the same live run now keeps 2/2 rewrites.
+
+**Real-resume baseline (2026-09-30, user's PDF + FOX "SDE L2 / Senior Engineer, ML" JD, Groq gpt-oss-120b):** score 8.0 → 7.1; 3 rewrites proposed, 3 PASS; 5 suggestions (all invent metrics, e.g. "NDCG +12%"); 19 LLM calls, 28.6K tokens, 69 s, 4 rate-limit (429) retries; output 2 pages. **The output is unusable because of PDF parsing (P1.9):** the name was read as a project heading, the company became "Professional Experience" / title "Role", project headings became bullets, `●` glyphs and wrapped lines leaked through, skills/education were garbled, and certifications were filed as interests. JD analysis (P1.1): no title/company, junk requirements from "and"-splitting, and "Nice To Have" items marked required. → **P1.9 and P1.1 moved to the front of Phase 1.** Phase 0's own goal (a working LLM path) is met ✅.
 
 | ID | Action | Files | Resolves | Status | Notes |
 |---|---|---|---|---|---|
