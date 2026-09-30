@@ -15,9 +15,9 @@ JD-aligned rewrites, a Novoresume-style ATS layout that fits the right length, a
 | 0: Make the LLM path work | 10 | 10 | 0 | 0 |
 | 1: Content quality | 14 | 6 | 0 | 8 |
 | 2: Template, ATS, page-fit | 6 | 0 | 0 | 6 |
-| 3: Gap questions + UX | 6 | 0 | 0 | 6 |
+| 3: Gap questions + UX | 6 | 1 | 0 | 5 |
 | 4: Evaluation harness | 3 | 0 | 0 | 3 |
-| **Total** | **39** | **16** | **0** | **23** |
+| **Total** | **39** | **17** | **0** | **22** |
 
 ## Decisions (fixed by the user, 2026-09-30)
 
@@ -128,7 +128,7 @@ anonymized replica of the layout.
 | P3.2 | Profile store: confirmed answers become `user_confirmed` evidence, pre-filled on future JDs | new `services/profile_store.py`, `domain/evidence.py`, `.gitignore` | F19 | ⬜ | |
 | P3.3 | "Add a job role" form → new Experience in date order, bullets polished from the input | `tailor.py`, `ui.py` | F20 | ⬜ | Design in PROJECT_OVERVIEW.md |
 | P3.4 | Review UI: side-by-side diff + highlighted keywords, status badges, accept-all, match rate recomputed on edit, keyword gap table, score breakdown | `ui.py` | F17, F31 | ⬜ | |
-| P3.5 | "Check parsed resume" step before tailoring (edit name, headline, links, roles, dates) | `ui.py` | F21, F22 | ⬜ | |
+| P3.5 | "Check parsed resume" step before tailoring (edit name, headline, links, roles, dates) | `ui.py` | F21, F22 | ✅ | "Tailor" now parses first (stage `check_parse`): parse problems shown as warnings, editable name / headline / email / phone / location / links and per job company, location, each role's title + start/end. `TailorService.apply_parse_corrections()` applies them to a copy (bullets untouched, evidence prefix follows a company rename, user revision recorded). The checked parse is passed to `generate_proposals(parsed=…)` and `tailor_resume(parsed=…)`, so the file isn't re-parsed (no second structure LLM call) and corrections survive; any correction switches PRESERVE output to the ATS template. Tested with Streamlit `AppTest` |
 | P3.6 | `st.status` progress per stage; CLI parity | `ui.py`, `cli.py` | F31 | ⬜ | |
 
 ## Phase 4: Evaluation harness

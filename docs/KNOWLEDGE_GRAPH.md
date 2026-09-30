@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**36 app modules · 29 test files · 67 classes · 378 functions/methods · 9,784 lines of Python** · source hash `c3b0039df4885dfd`
+**36 app modules · 30 test files · 67 classes · 386 functions/methods · 10,052 lines of Python** · source hash `957467cc3d03e241`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -106,6 +106,7 @@ tests/
     test_parse_golden.py                         Parse a resume and compare it, field by field, with a hand-checked gol…
     test_preserve_rewrite_end_to_end.py          test_approved_rewrite_appears_in_all_outputs()
   unit/
+    test_check_parsed_resume.py                  P3.5: "Check parsed resume" step: corrections applied by the service,
     test_cli.py                                  test_tailor_service_analyze_only(), test_tailor_service_end_to_end_doc…
     test_docx_parser.py                          test_docx_parser_sample(), test_docx_parser_file_not_found()
     test_docx_renderer.py                        test_docx_patcher_preserve_mode(), test_template_renderer_ats_mode(), …
@@ -558,21 +559,23 @@ _LLM-assisted resume structure extraction with a verbatim guard (P1.13)._
 
 ### `app/services/tailor.py`
 
-**Layer:** Services · **Stage:** all · **Lines:** 617
+**Layer:** Services · **Stage:** all · **Lines:** 696
 
 - class **`TailorService`** ([app/services/tailor.py:34](../app/services/tailor.py#L34))
   - `__init__()` :35
   - `generate_preview_md()` :62
   - `parse_resume()` :107 — File -> (raw document, ResumeDocument, evidence). The deterministic
   - `normalize_raw()` :117
-  - `analyze_only()` :124
-  - `generate_proposals()` :147 — Generate rewrite proposals without applying them, plus advisory
-  - `incorporate_user_addition()` :202 — Fold a user-supplied free-text addition (a project, an
-  - `tailor_resume()` :276
-- function **`_merge_usage()`** ([app/services/tailor.py:608](../app/services/tailor.py#L608)) — Combine two LLMClient.get_usage_summary() dicts into one.
+  - `_copy_parsed()` :125 — Deep copies, so a parse kept in UI session state is never mutated.
+  - `apply_parse_corrections()` :130 — Apply the user's fixes from the "Check parsed resume" step (P3.5).
+  - `analyze_only()` :191
+  - `generate_proposals()` :214 — Generate rewrite proposals without applying them, plus advisory
+  - `incorporate_user_addition()` :273 — Fold a user-supplied free-text addition (a project, an
+  - `tailor_resume()` :347
+- function **`_merge_usage()`** ([app/services/tailor.py:687](../app/services/tailor.py#L687)) — Combine two LLMClient.get_usage_summary() dicts into one.
 - **Imports:** `analysis/jd_analyzer.py`, `analysis/matcher.py`, `analysis/resume_normalizer.py`, `analysis/rewriter.py`, `analysis/scoring.py`, `analysis/semantic_matcher.py`, `analysis/structure_extractor.py`, `analysis/tailor_planner.py`, `domain/evidence.py`, `domain/job.py`, `domain/report.py`, `domain/resume.py`, `domain/resume_document.py`, `domain/tailoring.py`, `ingestion/docx.py`, `ingestion/pdf.py`, `llm/client.py`, `rendering/docx_patcher.py`, `rendering/html_renderer.py`, `rendering/pdf_converter.py`, `rendering/template_renderer.py`, `services/run_manager.py`, `validation/factual.py`, `validation/output.py`, `validation/safety.py`, `validation/structural.py`
 - **Imported by:** `cli.py`, `ui.py`
-- **Tested by:** `tests/integration/test_end_to_end.py`, `tests/unit/test_cli.py`, `tests/unit/test_tailor_resume_flow.py`, `tests/unit/test_tailor_service_addition.py`
+- **Tested by:** `tests/integration/test_end_to_end.py`, `tests/unit/test_check_parsed_resume.py`, `tests/unit/test_cli.py`, `tests/unit/test_tailor_resume_flow.py`, `tests/unit/test_tailor_service_addition.py`
 
 ### `app/services/validation_agent.py`
 
@@ -585,12 +588,13 @@ _LLM-assisted resume structure extraction with a verbatim guard (P1.13)._
 
 ### `app/ui.py`
 
-**Layer:** Entry points · **Stage:** all · **Lines:** 554
+**Layer:** Entry points · **Stage:** all · **Lines:** 641
 
 - function **`get_local_pdf_preview_url()`** ([app/ui.py:25](../app/ui.py#L25)) — Serve a PDF from a temporary HTTP endpoint so Chrome can render it in an iframe.
 - function **`display_pdf_with_fallback()`** ([app/ui.py:42](../app/ui.py#L42)) — Try to use Streamlit's native PDF display if available, otherwise fall back
 - function **`_cleanup_session_state()`** ([app/ui.py:79](../app/ui.py#L79)) — Remove temp files from a previous run and reset to a clean 'idle' state.
 - function **`model_options()`** ([app/ui.py:136](../app/ui.py#L136)) — Models offered in the sidebar for the configured provider. The
+- function **`_draft_proposals()`** ([app/ui.py:265](../app/ui.py#L265))
 - **Imports:** `config/settings.py`, `llm/client.py`, `services/tailor.py`
 - **Tested by:** `tests/unit/test_ui.py`
 

@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "c3b0039df4885dfd",
+  "source_hash": "957467cc3d03e241",
   "stats": {
-    "files": 95,
-    "python_files": 72,
+    "files": 96,
+    "python_files": 73,
     "app_modules": 36,
-    "test_files": 29,
+    "test_files": 30,
     "classes": 67,
-    "functions": 378,
-    "lines_of_python": 9784
+    "functions": 386,
+    "lines_of_python": 10052
   },
   "axes": {
     "x": "location (path)",
@@ -1644,7 +1644,7 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 617,
+      "lines": 696,
       "doc": "",
       "classes": [
         {
@@ -1673,23 +1673,33 @@
               "doc": ""
             },
             {
+              "name": "_copy_parsed",
+              "line": 125,
+              "doc": "Deep copies, so a parse kept in UI session state is never mutated."
+            },
+            {
+              "name": "apply_parse_corrections",
+              "line": 130,
+              "doc": "Apply the user's fixes from the \"Check parsed resume\" step (P3.5)."
+            },
+            {
               "name": "analyze_only",
-              "line": 124,
+              "line": 191,
               "doc": ""
             },
             {
               "name": "generate_proposals",
-              "line": 147,
+              "line": 214,
               "doc": "Generate rewrite proposals without applying them, plus advisory"
             },
             {
               "name": "incorporate_user_addition",
-              "line": 202,
+              "line": 273,
               "doc": "Fold a user-supplied free-text addition (a project, an"
             },
             {
               "name": "tailor_resume",
-              "line": 276,
+              "line": 347,
               "doc": ""
             }
           ]
@@ -1698,7 +1708,7 @@
       "functions": [
         {
           "name": "_merge_usage",
-          "line": 608,
+          "line": 687,
           "doc": "Combine two LLMClient.get_usage_summary() dicts into one."
         }
       ]
@@ -1749,7 +1759,7 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 554,
+      "lines": 641,
       "doc": "",
       "classes": [],
       "functions": [
@@ -1772,6 +1782,11 @@
           "name": "model_options",
           "line": 136,
           "doc": "Models offered in the sidebar for the configured provider. The"
+        },
+        {
+          "name": "_draft_proposals",
+          "line": 265,
+          "doc": ""
         }
       ]
     },
@@ -2276,6 +2291,42 @@
         {
           "name": "test_approved_rewrite_appears_in_all_outputs",
           "line": 14,
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "tests/unit/test_check_parsed_resume.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 102,
+      "doc": "P3.5: \"Check parsed resume\" step: corrections applied by the service,",
+      "classes": [],
+      "functions": [
+        {
+          "name": "_service",
+          "line": 15,
+          "doc": ""
+        },
+        {
+          "name": "test_corrections_change_header_and_roles_but_not_the_input",
+          "line": 19,
+          "doc": ""
+        },
+        {
+          "name": "test_unchanged_form_is_not_a_correction",
+          "line": 44,
+          "doc": ""
+        },
+        {
+          "name": "test_promotion_roles_can_be_edited",
+          "line": 59,
+          "doc": ""
+        },
+        {
+          "name": "test_ui_check_parse_stage_end_to_end",
+          "line": 72,
           "doc": ""
         }
       ]
@@ -4717,6 +4768,11 @@
     {
       "from": "app/services/tailor.py",
       "to": "tests/integration/test_end_to_end.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/services/tailor.py",
+      "to": "tests/unit/test_check_parsed_resume.py",
       "type": "tested_by"
     },
     {

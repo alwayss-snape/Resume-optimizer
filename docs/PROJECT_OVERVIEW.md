@@ -48,6 +48,7 @@ Semantic matching uses a local embedding model (`all-MiniLM-L6-v2`).
 | JD requirement extraction | ✅ Works | One structured LLM call (title, company, seniority, years, whole-line requirements with priority, skills), every value checked against the JD; deterministic fallback (P1.1) |
 | Matching + score | ✅ Works | Deterministic + semantic; score breakdown in `ScoreComponents` |
 | Rewrite experience bullets | ⚠️ Partial | Only experience bullets. Summary and skills are never rewritten. See issues 2–3 re: LLM actually firing |
+| Check parsed resume in UI | ✅ Works | Edit name, headline, contact, links, companies, roles and dates before tailoring (P3.5) |
 | Review / edit proposals in UI | ✅ Works | Checkbox + editable text per proposal |
 | Suggestions for missing requirements | ✅ Works | Illustrative only, clearly labeled |
 | Add free-text content | ✅ Works | Append to an existing role or create a new project |

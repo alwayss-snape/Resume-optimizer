@@ -93,7 +93,7 @@ def _cleanup_session_state():
         "proposals", "missing_suggestions", "llm_available", "pre_score",
         "resume_path", "jd_text", "model_choice", "render_mode", "strict_factual",
         "results", "output_dir", "analysis_report", "experience_options",
-        "llm_status", "proposal_usage",
+        "llm_status", "proposal_usage", "parsed", "parse_issues", "parse_corrected",
     ):
         st.session_state.pop(key, None)
 
@@ -237,17 +237,12 @@ if btn_analyze or btn_tailor:
                 os.remove(tmp_resume_path)
 
             elif btn_tailor:
-                with st.spinner("Ingesting document, analyzing the job description, and drafting proposals..."):
-                    generated = service.generate_proposals(tmp_resume_path, jd_input)
-
-                st.session_state.stage = "proposals"
-                st.session_state.proposals = generated["proposals"]
-                st.session_state.missing_suggestions = generated["missing_suggestions"]
-                st.session_state.llm_available = generated["llm_available"]
-                st.session_state.llm_status = generated.get("llm_status") or {}
-                st.session_state.proposal_usage = generated.get("llm_usage")
-                st.session_state.pre_score = generated["alignment_score"]
-                st.session_state.experience_options = generated["experience_options"]
+                # Step 1 of tailoring: read the resume and let the user check
+                # what was parsed before any rewriting (P3.5).
+                with st.spinner("Reading your resume..."):
+                    st.session_state.parsed = service.parse_resume(tmp_resume_path)
+                st.session_state.parse_issues = list(service.last_parse_issues)
+                st.session_state.stage = "check_parse"
                 # Keep the temp resume file alive — it's needed again when
                 # "Apply & Generate" runs, on a LATER script rerun.
                 st.session_state.resume_path = tmp_resume_path
@@ -261,6 +256,96 @@ if btn_analyze or btn_tailor:
             st.error(f"Execution Error: {e}")
             if os.path.exists(tmp_resume_path):
                 os.remove(tmp_resume_path)
+
+
+# ---------------------------------------------------------------------------
+# Check parsed resume (P3.5): confirm or fix what was read from the file
+# before any rewriting. Bullet text is reviewed later, with the proposals.
+# ---------------------------------------------------------------------------
+def _draft_proposals(parsed, parse_corrected: bool) -> None:
+    llm_client = LLMClient(model=st.session_state.model_choice)
+    service = TailorService(llm_client=llm_client)
+    with st.spinner("Analyzing the job description and drafting proposals..."):
+        generated = service.generate_proposals(
+            st.session_state.resume_path, st.session_state.jd_text, parsed=parsed,
+        )
+    st.session_state.parsed = parsed
+    st.session_state.parse_corrected = parse_corrected
+    st.session_state.stage = "proposals"
+    st.session_state.proposals = generated["proposals"]
+    st.session_state.missing_suggestions = generated["missing_suggestions"]
+    st.session_state.llm_available = generated["llm_available"]
+    st.session_state.llm_status = generated.get("llm_status") or {}
+    st.session_state.proposal_usage = generated.get("llm_usage")
+    st.session_state.pre_score = generated["alignment_score"]
+    st.session_state.experience_options = generated["experience_options"]
+
+
+if st.session_state.stage == "check_parse" and st.session_state.get("parsed") is not None:
+    parsed_resume = st.session_state.parsed[1].resume
+    cand = parsed_resume.candidate
+
+    st.markdown("### Check your parsed resume")
+    st.caption("This is what was read from your file. Fix anything that's wrong, then continue. "
+               "Bullets are reviewed in the next step.")
+    for issue in st.session_state.get("parse_issues") or []:
+        st.warning(f"Possible parsing problem: {issue}")
+
+    with st.form("check_parse_form"):
+        c1, c2 = st.columns(2)
+        with c1:
+            f_name = st.text_input("Name", value=cand.name if cand.name != "Candidate" else "")
+            f_headline = st.text_input("Headline (optional)", value=cand.headline or "",
+                                       placeholder="e.g. Senior Data Scientist")
+            f_location = st.text_input("Location", value=cand.location or "")
+        with c2:
+            f_email = st.text_input("Email", value=cand.email or "")
+            f_phone = st.text_input("Phone", value=cand.phone or "")
+            f_links = st.text_area("Links (one per line)", value="\n".join(cand.links), height=80,
+                                   placeholder="linkedin.com/in/you\ngithub.com/you")
+
+        exp_fixes = []
+        for i, exp in enumerate(parsed_resume.experience):
+            st.markdown(f"**Job {i + 1}** · {len(exp.bullets)} bullet(s)"
+                        + (f" in {len({b.group for b in exp.bullets if b.group})} sub-section(s)"
+                           if any(b.group for b in exp.bullets) else ""))
+            e1, e2 = st.columns(2)
+            with e1:
+                f_company = st.text_input("Company", value=exp.company, key=f"pc_company_{i}")
+            with e2:
+                f_exp_loc = st.text_input("Location", value=exp.location or "", key=f"pc_loc_{i}")
+            roles = exp.all_roles() or [None]
+            role_fixes = []
+            for j, role in enumerate(roles):
+                r1, r2, r3 = st.columns([2, 1, 1])
+                with r1:
+                    t = st.text_input("Title" if j == 0 else "Earlier title", value=role.title if role else "",
+                                      key=f"pc_title_{i}_{j}")
+                with r2:
+                    sd = st.text_input("Start", value=(role.start_date or "") if role else "",
+                                       key=f"pc_start_{i}_{j}")
+                with r3:
+                    ed = st.text_input("End", value=(role.end_date or "") if role else "", key=f"pc_end_{i}_{j}")
+                role_fixes.append({"title": t, "start_date": sd, "end_date": ed})
+            exp_fixes.append({"id": exp.id, "company": f_company, "location": f_exp_loc, "roles": role_fixes})
+
+        confirm_btn = st.form_submit_button("✅ Looks right — draft rewrites", type="primary")
+
+    if confirm_btn:
+        corrections = {
+            "candidate": {
+                "name": f_name, "headline": f_headline, "email": f_email, "phone": f_phone,
+                "location": f_location, "links": f_links.splitlines(),
+            },
+            "experience": exp_fixes,
+        }
+        try:
+            service = TailorService(llm_client=LLMClient(model=st.session_state.model_choice))
+            corrected, changed = service.apply_parse_corrections(st.session_state.parsed, corrections)
+            _draft_proposals(corrected, changed)
+            st.rerun()
+        except Exception as e:
+            st.error(f"Execution Error: {e}")
 
 
 # ---------------------------------------------------------------------------
@@ -447,6 +532,8 @@ if st.session_state.stage == "proposals":
                     addition_text=addition_text,
                     addition_target=addition_target,
                     proposal_usage=st.session_state.get("proposal_usage"),
+                    parsed=st.session_state.get("parsed"),
+                    parse_corrected=bool(st.session_state.get("parse_corrected")),
                 )
             st.session_state.results = results
             st.session_state.output_dir = output_dir

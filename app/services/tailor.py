@@ -15,7 +15,7 @@ from app.analysis.tailor_planner import TailoringPlanner
 from app.domain.evidence import Evidence
 from app.domain.job import JobDescription
 from app.domain.report import TailoringReport
-from app.domain.resume import Project, Resume, ResumeBullet
+from app.domain.resume import Project, Resume, ResumeBullet, Role
 from app.domain.resume_document import ResumeDocument, ResumeSource
 from app.domain.tailoring import TailoringPlan
 from app.ingestion.docx import DocxParser
@@ -121,6 +121,73 @@ class TailorService:
         )
         return resume_doc, evidence_list
 
+    @staticmethod
+    def _copy_parsed(parsed):
+        """Deep copies, so a parse kept in UI session state is never mutated."""
+        raw_doc, resume_doc, evidence_list = parsed
+        return raw_doc, resume_doc.model_copy(deep=True), [e.model_copy(deep=True) for e in evidence_list]
+
+    def apply_parse_corrections(self, parsed, corrections: Dict):
+        """Apply the user's fixes from the "Check parsed resume" step (P3.5).
+
+        `corrections` = {"candidate": {name, headline, email, phone, location,
+        links: [...]}, "experience": [{id, company, location, roles: [{title,
+        start_date, end_date}, ...]}]}. Only header/structure fields change;
+        bullet text is never touched here. Returns (parsed, changed)."""
+        raw_doc, resume_doc, evidence_list = self._copy_parsed(parsed)
+        resume = resume_doc.resume
+        changed: List[str] = []
+
+        cand = corrections.get("candidate") or {}
+        for field in ("name", "headline", "email", "phone", "location"):
+            if field in cand:
+                value = (cand[field] or "").strip() or None
+                if field == "name":
+                    value = value or resume.candidate.name
+                if value != getattr(resume.candidate, field):
+                    setattr(resume.candidate, field, value)
+                    changed.append(f"candidate.{field}")
+        if "links" in cand:
+            links = [l.strip() for l in cand["links"] if l and l.strip()]
+            if links != resume.candidate.links:
+                resume.candidate.links = links
+                changed.append("candidate.links")
+
+        by_id = {e.id: e for e in resume.experience}
+        for fix in corrections.get("experience") or []:
+            exp = by_id.get(fix.get("id"))
+            if exp is None:
+                continue
+            old_context = exp.company or exp.title or "Experience"
+            for field in ("company", "location"):
+                if field in fix:
+                    value = (fix[field] or "").strip()
+                    value = value if field == "company" else (value or None)
+                    if value != getattr(exp, field):
+                        setattr(exp, field, value)
+                        changed.append(f"{exp.id}.{field}")
+            if "roles" in fix:
+                roles = [Role(title=(r.get("title") or "").strip(),
+                              start_date=(r.get("start_date") or "").strip() or None,
+                              end_date=(r.get("end_date") or "").strip() or None)
+                         for r in fix["roles"] if (r.get("title") or "").strip()]
+                if [r.model_dump() for r in roles] != [r.model_dump() for r in exp.all_roles()]:
+                    first = roles[0] if roles else Role(title="")
+                    exp.title, exp.start_date, exp.end_date = first.title, first.start_date, first.end_date
+                    exp.roles = roles if len(roles) > 1 else []
+                    changed.append(f"{exp.id}.roles")
+            # Experience evidence reads "<company>: <bullet>"; keep it in step.
+            new_context = exp.company or exp.title or "Experience"
+            if new_context != old_context:
+                bullet_ids = {b.id for b in exp.bullets}
+                for ev in evidence_list:
+                    if ev.source_id in bullet_ids and ev.text.startswith(old_context):
+                        ev.text = new_context + ev.text[len(old_context):]
+
+        if changed:
+            resume_doc.record_revision("Parsed resume corrected by the user", changed, actor="user")
+        return (raw_doc, resume_doc, evidence_list), bool(changed)
+
     def analyze_only(self, resume_path: str, jd_text: str) -> TailoringReport:
         clean_jd_text = self.safety_guard.sanitize(jd_text)
         
@@ -144,7 +211,8 @@ class TailorService:
             score_components=dict(score_components),
         )
 
-    def generate_proposals(self, resume_path: str, jd_text: str, suggestion_limit: int = 5) -> Dict:
+    def generate_proposals(self, resume_path: str, jd_text: str, suggestion_limit: int = 5,
+                           parsed=None) -> Dict:
         """Generate rewrite proposals without applying them, plus advisory
         suggestions for JD requirements the résumé doesn't address at all.
 
@@ -153,7 +221,10 @@ class TailorService:
         """
         clean_jd_text = self.safety_guard.sanitize(jd_text)
 
-        raw_doc, resume_doc, evidence_list = self.parse_resume(resume_path)
+        # `parsed`: the (raw, resume, evidence) the user checked in the UI.
+        raw_doc, resume_doc, evidence_list = (
+            self._copy_parsed(parsed) if parsed is not None else self.parse_resume(resume_path)
+        )
         resume = resume_doc.resume
         job_desc = self.jd_analyzer.analyze(clean_jd_text)
         matches = self.matcher.match(job_desc, evidence_list)
@@ -284,6 +355,8 @@ class TailorService:
         addition_text: Optional[str] = None,
         addition_target: str = "auto",
         proposal_usage: Optional[Dict] = None,
+        parsed=None,
+        parse_corrected: bool = False,
     ) -> Dict[str, str]:
         run_dir = self.run_manager.create_run(resume_path, jd_text)
         clean_jd_text = self.safety_guard.sanitize(jd_text)
@@ -308,12 +381,15 @@ class TailorService:
         
         _append_progress("Run created: " + run_dir)
 
-        is_pdf = resume_path.endswith(".pdf")
+        is_pdf = resume_path.lower().endswith(".pdf")
         if is_pdf:
-            raw_doc = self.pdf_parser.parse(resume_path)
             mode = "ATS_DEFAULT"  # Force ATS reconstruction for PDF inputs
-        else:
-            raw_doc = self.docx_parser.parse(resume_path)
+        if parse_corrected and mode == "PRESERVE":
+            # Header/role corrections have no place to go in an in-place
+            # patch of the original file; only the template shows them.
+            mode = "ATS_DEFAULT"
+        if parsed is None:
+            raw_doc = self.pdf_parser.parse(resume_path) if is_pdf else self.docx_parser.parse(resume_path)
 
         if addition_text and (addition_text or "").strip() and mode == "PRESERVE":
             # A brand-new bullet has no corresponding block in the original
@@ -323,7 +399,10 @@ class TailorService:
             mode = "ATS_DEFAULT"
 
         # Normalizer returns a canonical ResumeDocument and the extracted evidence
-        resume_doc, evidence_list = self.normalize_raw(raw_doc)
+        if parsed is not None:
+            raw_doc, resume_doc, evidence_list = self._copy_parsed(parsed)
+        else:
+            resume_doc, evidence_list = self.normalize_raw(raw_doc)
         resume = resume_doc.resume
         _append_progress("Imported and normalized resume")
         # Record import as a revision (best-effort)
