@@ -31,3 +31,6 @@ Claude outputs/
 
 # Local editor settings
 .vscode/
+
+# Private evaluation data (real resumes, golden files) — never commit
+data/eval/private/
