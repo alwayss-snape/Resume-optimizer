@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**35 app modules · 23 test files · 61 classes · 219 functions/methods · 7,147 lines of Python** · source hash `2c91ca1bf84a1724`
+**35 app modules · 23 test files · 61 classes · 219 functions/methods · 7,147 lines of Python** · source hash `83ea0f9541884dfe`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 

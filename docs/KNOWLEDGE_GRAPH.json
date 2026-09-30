@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "source_hash": "2c91ca1bf84a1724",
+  "source_hash": "83ea0f9541884dfe",
   "stats": {
     "files": 84,
     "python_files": 64,
@@ -169,14 +169,14 @@
       "type": "file",
       "layer": "Root",
       "stages": [],
-      "lines": 25
+      "lines": 28
     },
     {
       "id": "README.md",
       "type": "file",
       "layer": "Root",
       "stages": [],
-      "lines": 37
+      "lines": 38
     },
     {
       "id": "app/analysis/change_proposal.py",

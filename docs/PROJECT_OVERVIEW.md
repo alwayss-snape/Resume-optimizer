@@ -62,9 +62,10 @@ Semantic matching uses a local embedding model (`all-MiniLM-L6-v2`).
 
 Ordered by impact. None are fixed yet; they're recorded so they can be prioritized.
 
-1. **Leaked deploy key:** a private SSH key (`/Resume-optimizer`) was committed in `4054827` and pushed to `origin`.
-   It's now untracked and gitignored, but it's still in git history. **Revoke it on GitHub (Settings → Deploy keys)
-   and generate a new one.**
+1. ~~**Leaked SSH key**~~ (resolved 2026-09-29): a private key (`/Resume-optimizer`) was committed in `4054827` and
+   pushed. It was checked and found to be registered nowhere on GitHub (not as a repo deploy key, not as an account
+   key), so it never granted access. It's now untracked, gitignored and deleted locally. It still exists in git
+   history, so **never register that key anywhere**.
 2. **Local Ollama can never work.** The root-level `ollama.py` (a test stub) shadows the real `ollama` package,
    because `app/ui.py` and `app/cli.py` put the repo root first on `sys.path`. Its `list()` returns no models, so
    `LLMClient.is_available()` is always False on the Ollama path and every rewrite silently returns the original text.
@@ -104,6 +105,7 @@ Gap: `TailorService.incorporate_user_addition()` can only append one bullet to a
 | File | Purpose | Maintained |
 |---|---|---|
 | `docs/PROJECT_OVERVIEW.md` | This file: what/status/issues/next | By hand |
+| `docs/ACTION_ITEMS.md` | Improvement roadmap with live status per item (P0–P4) | By hand, every change |
 | `docs/KNOWLEDGE_GRAPH.md` / `.json` | Where everything is: tree, layer × stage matrix, module cards, deps | Auto (pre-commit) |
 | `docs/CHANGE_LOG.md` | Timestamped log of major commits | Auto (post-commit) |
 | `ARCHITECTURE.md` | Design principles, semantic-matching contract, privacy | By hand |

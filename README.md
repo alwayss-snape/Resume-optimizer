@@ -17,6 +17,7 @@ See [BUILD.md](BUILD.md) for installation and environment setup.
 ## Documentation
 
 - [docs/PROJECT_OVERVIEW.md](docs/PROJECT_OVERVIEW.md): start here. What the tool does, current status, open issues, next work.
+- [docs/ACTION_ITEMS.md](docs/ACTION_ITEMS.md): improvement roadmap with live status per item.
 - [docs/KNOWLEDGE_GRAPH.md](docs/KNOWLEDGE_GRAPH.md): where everything lives (auto-generated on every commit).
 - [docs/CHANGE_LOG.md](docs/CHANGE_LOG.md): timestamped log of major changes (auto-appended on every major commit).
 - [ARCHITECTURE.md](ARCHITECTURE.md): design principles and privacy constraints.

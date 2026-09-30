@@ -5,6 +5,9 @@
 - Read `docs/PROJECT_OVERVIEW.md` first (what the tool does, current status, open issues, next work), then use
   `docs/KNOWLEDGE_GRAPH.md` to find where things live instead of re-exploring the tree.
 - `docs/CHANGE_LOG.md` is the timestamped history of major changes, with the reasoning behind them.
+- `docs/ACTION_ITEMS.md` is the improvement roadmap (items P0.1–P4.3, findings F1–F35). **Whenever you work on an item,
+  update its Status (⬜ → 🟡 → ✅) and Notes, and the Progress table counts, in the same commit.** Mention the item ID
+  in the commit subject (e.g. `P0.9: fix keyword regex…`).
 
 ## Living docs (automated, don't hand-edit the generated parts)
 
