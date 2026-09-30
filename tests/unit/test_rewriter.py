@@ -176,9 +176,10 @@ def test_role_rewrite_is_one_call_and_maps_results():
         RoleBulletRewrite(bullet_id="b1", rewritten="duplicate, ignored"),
         RoleBulletRewrite(bullet_id="zzz", rewritten="unknown id, ignored"),
     ])
-    client = _role_client(result)
+    client = _role_client()
+    client.generate_json.side_effect = [result, RoleRewriteResult(bullets=[])]  # the follow-up returns nothing too
     proposals = {p.target_semantic_id: p for p in LLMRewriter(client).execute_plan(resume, plan, evidence, job)}
-    assert client.generate_json.call_count == 1
+    assert client.generate_json.call_count == 2  # the role, then one follow-up for skipped b2
     assert set(proposals) == {"b1", "b2"}  # b3 is not relevant, so not sent
     assert proposals["b1"].status == "ok" and proposals["b1"].proposed_text.startswith("Developed")
     assert "PyTorch" not in proposals["b1"].rationale  # only allowed keywords are reported
@@ -211,3 +212,20 @@ def test_punctuation_only_change_is_unchanged():
     result = RoleRewriteResult(bullets=[RoleBulletRewrite(bullet_id="b2", rewritten="built Spark pipelines for feature data. ")])
     proposals = {p.target_semantic_id: p for p in LLMRewriter(_role_client(result)).execute_plan(resume, plan, evidence, job)}
     assert proposals["b2"].status == "unchanged"
+
+
+def test_skipped_bullets_get_one_follow_up_call():
+    from unittest.mock import MagicMock
+    from app.analysis.rewriter import LLMRewriter
+    from app.llm.schemas import RoleBulletRewrite, RoleRewriteResult
+    resume, evidence, job, plan = _role_setup()
+    client = _role_client()
+    client.generate_json.side_effect = [
+        RoleRewriteResult(bullets=[RoleBulletRewrite(bullet_id="b1", rewritten="Developed LightGBM fraud models in Python.")]),
+        RoleRewriteResult(bullets=[RoleBulletRewrite(bullet_id="b2", rewritten="Engineered Spark feature pipelines.")]),
+    ]
+    proposals = {p.target_semantic_id: p for p in LLMRewriter(client).execute_plan(resume, plan, evidence, job)}
+    assert client.generate_json.call_count == 2
+    assert "b2" in client.generate_json.call_args_list[1].kwargs["messages"][1]["content"]
+    assert "b1" not in client.generate_json.call_args_list[1].kwargs["messages"][1]["content"]
+    assert proposals["b1"].status == proposals["b2"].status == "ok"

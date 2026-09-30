@@ -320,3 +320,16 @@ def test_groq_client_connects_over_ipv4():
         client = LLMClient(provider="groq", api_key="test-key")
     transport.assert_called_once_with(local_address="0.0.0.0")
     assert client._http is not None
+
+
+def test_groq_daily_limit_fails_fast_with_a_clear_message():
+    """A 429 asking for a wait longer than we'd sleep (the daily token
+    limit says "try again in 15m43s") is not retried."""
+    daily = MagicMock(status_code=429, headers={},
+                      text='{"error":{"message":"Rate limit reached ... on tokens per day (TPD): Limit 200000. '
+                           'Please try again in 15m43.488s."}}')
+    with patch("httpx.Client.post", return_value=daily) as post, patch("time.sleep") as sleep:
+        client = LLMClient(provider="groq", api_key="k", model="openai/gpt-oss-120b")
+        with pytest.raises(LLMError, match="daily token limit reached; try again in about 16 min"):
+            client.generate("hi")
+    assert post.call_count == 1 and not sleep.called

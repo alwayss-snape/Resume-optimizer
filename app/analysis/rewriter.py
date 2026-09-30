@@ -243,16 +243,26 @@ class LLMRewriter:
                     target_keywords=list(action.keywords),
                 ))
 
+        def rewrite_with_follow_up(exp, items, header=None):
+            """One call, plus at most one more for bullets the model skipped
+            (it sometimes returns only the first few of a long role)."""
+            results, error, missing_status = self.rewrite_role(exp, items, header=header)
+            skipped = [i for i in items if i["bullet_id"] not in results]
+            if results and skipped and not error:
+                more, error, missing_status = self.rewrite_role(exp, skipped, header=header)
+                results = {**results, **more}
+            return results, error, missing_status
+
         for exp in resume.experience:
             todo = [b for b in exp.bullets if b.id in actions]
             if todo:
-                collect(todo, *self.rewrite_role(exp, [item_for(b, b.group) for b in todo]))
+                collect(todo, *rewrite_with_follow_up(exp, [item_for(b, b.group) for b in todo]))
 
         # All project bullets in one more call (P1.7), each with its
         # project name as the sub-heading.
         project_todo = [(b, p.name) for p in resume.projects for b in p.bullets if b.id in actions]
         if project_todo:
             header = ["Section: Projects (each bullet's sub-heading is its project name)"]
-            results = self.rewrite_role(None, [item_for(b, name) for b, name in project_todo], header=header)
+            results = rewrite_with_follow_up(None, [item_for(b, name) for b, name in project_todo], header=header)
             collect([b for b, _ in project_todo], *results)
         return proposals

@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "9a3b3e3ab3e95a21",
+  "source_hash": "5ea76fcbf350ae6f",
   "stats": {
     "files": 113,
     "python_files": 88,
     "app_modules": 45,
     "test_files": 36,
     "classes": 79,
-    "functions": 516,
-    "lines_of_python": 12202
+    "functions": 519,
+    "lines_of_python": 12266
   },
   "axes": {
     "x": "location (path)",
@@ -604,7 +604,7 @@
       "stages": [
         "7 Rewrite"
       ],
-      "lines": 258,
+      "lines": 268,
       "doc": "",
       "classes": [
         {
@@ -1580,102 +1580,102 @@
         "3 JD analysis",
         "7 Rewrite"
       ],
-      "lines": 612,
+      "lines": 635,
       "doc": "",
       "classes": [
         {
           "name": "LLMClient",
-          "line": 53,
+          "line": 54,
           "doc": "Unified client for text generation across three interchangeable providers:",
           "methods": [
             {
               "name": "__init__",
-              "line": 69,
+              "line": 70,
               "doc": ""
             },
             {
               "name": "is_available",
-              "line": 138,
+              "line": 139,
               "doc": "Whether the configured provider is reachable AND the configured"
             },
             {
               "name": "_check_available",
-              "line": 150,
+              "line": 151,
               "doc": ""
             },
             {
               "name": "_ollama_check",
-              "line": 157,
+              "line": 158,
               "doc": ""
             },
             {
               "name": "_groq_check",
-              "line": 169,
+              "line": 170,
               "doc": ""
             },
             {
               "name": "_anthropic_check",
-              "line": 190,
+              "line": 191,
               "doc": ""
             },
             {
               "name": "_record",
-              "line": 211,
+              "line": 212,
               "doc": ""
             },
             {
               "name": "generate",
-              "line": 229,
+              "line": 230,
               "doc": "Generate text from the LLM using the chat interface."
             },
             {
               "name": "get_usage_summary",
-              "line": 258,
+              "line": 259,
               "doc": "Aggregate every LLM call made on this client instance so far"
             },
             {
               "name": "_generate_ollama",
-              "line": 280,
+              "line": 281,
               "doc": ""
             },
             {
               "name": "_groq_supports_strict_schema",
-              "line": 325,
+              "line": 326,
               "doc": ""
             },
             {
               "name": "_generate_groq",
-              "line": 329,
+              "line": 330,
               "doc": ""
             },
             {
               "name": "_split_system",
-              "line": 407,
+              "line": 414,
               "doc": "The Messages API takes the system prompt as a top-level field,"
             },
             {
               "name": "_anthropic_request",
-              "line": 414,
+              "line": 421,
               "doc": ""
             },
             {
               "name": "_anthropic_response",
-              "line": 451,
+              "line": 458,
               "doc": ""
             },
             {
               "name": "_generate_anthropic",
-              "line": 468,
+              "line": 475,
               "doc": ""
             },
             {
               "name": "_generate_json_anthropic",
-              "line": 473,
+              "line": 480,
               "doc": "Structured outputs guarantee the response matches the schema, so"
             },
             {
               "name": "generate_json",
-              "line": 494,
+              "line": 501,
               "doc": "Generate structured JSON conforming to a Pydantic model."
             }
           ]
@@ -1683,13 +1683,18 @@
       ],
       "functions": [
         {
+          "name": "_requested_wait",
+          "line": 591,
+          "doc": "How long Groq asks us to wait: the retry-after header, else the"
+        },
+        {
           "name": "_retry_after_seconds",
-          "line": 584,
+          "line": 607,
           "doc": "Seconds to wait before retrying a 429: the server's `retry-after`"
         },
         {
           "name": "strict_json_schema",
-          "line": 599,
+          "line": 622,
           "doc": "Adapt a Pydantic JSON schema for strict structured-output modes: every"
         }
       ]
@@ -3287,7 +3292,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 322,
+      "lines": 335,
       "doc": "",
       "classes": [
         {
@@ -3417,6 +3422,11 @@
           "name": "test_groq_client_connects_over_ipv4",
           "line": 316,
           "doc": "httpx has no happy-eyeballs; with black-holed IPv6 each Groq call"
+        },
+        {
+          "name": "test_groq_daily_limit_fails_fast_with_a_clear_message",
+          "line": 325,
+          "doc": "A 429 asking for a wait longer than we'd sleep (the daily token"
         }
       ]
     },
@@ -3808,7 +3818,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 213,
+      "lines": 231,
       "doc": "",
       "classes": [],
       "functions": [
@@ -3864,17 +3874,22 @@
         },
         {
           "name": "test_role_rewrite_failure_is_visible_per_bullet",
-          "line": 189,
+          "line": 190,
           "doc": ""
         },
         {
           "name": "test_role_rewrite_unchanged_text_is_marked_unchanged",
-          "line": 198,
+          "line": 199,
           "doc": ""
         },
         {
           "name": "test_punctuation_only_change_is_unchanged",
-          "line": 207,
+          "line": 208,
+          "doc": ""
+        },
+        {
+          "name": "test_skipped_bullets_get_one_follow_up_call",
+          "line": 217,
           "doc": ""
         }
       ]

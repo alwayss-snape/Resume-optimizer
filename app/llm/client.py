@@ -1,4 +1,5 @@
 import json
+import re
 import logging
 import time
 from datetime import datetime, timezone
@@ -378,12 +379,18 @@ class LLMClient:
             # Free-tier rate limits (requests/tokens per minute) are routine:
             # wait as instructed and retry instead of failing the rewrite.
             if resp.status_code == 429 and attempt < GROQ_MAX_ATTEMPTS - 1:
+                if _requested_wait(resp) > GROQ_MAX_RETRY_WAIT:
+                    break  # e.g. the daily token limit: retrying now can't succeed
                 wait = _retry_after_seconds(resp, attempt)
                 logger.warning(f"Groq rate limited (429); retrying in {wait:.1f}s")
                 time.sleep(wait)
                 continue
             break
 
+        if resp.status_code == 429 and _requested_wait(resp) > GROQ_MAX_RETRY_WAIT:
+            minutes = max(1, round(_requested_wait(resp) / 60))
+            limit = "daily token limit" if "per day" in (resp.text or "") else "rate limit"
+            raise LLMError(f"Groq free-tier {limit} reached; try again in about {minutes} min. ({resp.text[:200]})")
         if resp.status_code != 200:
             raise LLMError(f"Groq API error ({resp.status_code}): {resp.text}")
 
@@ -579,6 +586,22 @@ class LLMClient:
         raise LLMInvalidJSONError(
             f"Failed to generate valid JSON matching schema {schema_model.__name__} after {max_retries + 1} attempts. Last error: {last_error}"
         )
+
+
+def _requested_wait(resp: Any) -> float:
+    """How long Groq asks us to wait: the retry-after header, else the
+    "Please try again in 15m43.5s" text in the body; 0 if neither."""
+    try:
+        header = resp.headers.get("retry-after")
+        if header is not None:
+            return float(header)
+    except Exception:
+        pass
+    m = re.search(r"try again in (?:(\d+)h)?(?:(\d+)m)?(?:([\d.]+)s)?", getattr(resp, "text", "") or "")
+    if not m or not any(m.groups()):
+        return 0.0
+    h, mnt, sec = (float(g) if g else 0.0 for g in m.groups())
+    return h * 3600 + mnt * 60 + sec
 
 
 def _retry_after_seconds(resp: Any, attempt: int) -> float:
