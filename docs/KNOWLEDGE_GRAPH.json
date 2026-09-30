@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "7e17dd0b2b698547",
+  "source_hash": "665a54eeeaea70c4",
   "stats": {
-    "files": 119,
-    "python_files": 94,
-    "app_modules": 47,
-    "test_files": 40,
-    "classes": 82,
-    "functions": 594,
-    "lines_of_python": 13283
+    "files": 121,
+    "python_files": 96,
+    "app_modules": 48,
+    "test_files": 41,
+    "classes": 84,
+    "functions": 608,
+    "lines_of_python": 13533
   },
   "axes": {
     "x": "location (path)",
@@ -1331,7 +1331,7 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 274,
+      "lines": 277,
       "doc": "Run evaluation cases through the pipeline and collect metrics (P4.1).",
       "classes": [
         {
@@ -1398,22 +1398,22 @@
         },
         {
           "name": "run",
-          "line": 195,
+          "line": 198,
           "doc": ""
         },
         {
           "name": "_flatten",
-          "line": 211,
+          "line": 214,
           "doc": ""
         },
         {
           "name": "compare",
-          "line": 228,
+          "line": 231,
           "doc": "Human-readable differences per case between a report and a baseline."
         },
         {
           "name": "summary_lines",
-          "line": 256,
+          "line": 259,
           "doc": ""
         }
       ]
@@ -2299,102 +2299,102 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 902,
+      "lines": 912,
       "doc": "",
       "classes": [
         {
           "name": "TailorService",
-          "line": 42,
+          "line": 43,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
-              "line": 43,
+              "line": 44,
               "doc": ""
             },
             {
               "name": "generate_preview_md",
-              "line": 75,
+              "line": 76,
               "doc": ""
             },
             {
               "name": "_patchable",
-              "line": 121,
+              "line": 122,
               "doc": "Proposals as in-place DOCX patches. A summary proposal targets the"
             },
             {
               "name": "_apply_gap_answers",
-              "line": 144,
+              "line": 145,
               "doc": "Ticked keywords join the skills section; a typed answer becomes a"
             },
             {
               "name": "_draft_from_answer",
-              "line": 168,
+              "line": 169,
               "doc": "Polish the candidate's answer into one bullet that may use only"
             },
             {
               "name": "_skills_proposals",
-              "line": 184,
+              "line": 185,
               "doc": "The skills section with the JD's skills first, when that changes it (P1.6)."
             },
             {
               "name": "_summary_proposals",
-              "line": 189,
+              "line": 190,
               "doc": "The tailored summary as a proposal, when one was written (P1.5)."
             },
             {
               "name": "_embed",
-              "line": 194,
+              "line": 195,
               "doc": "Sentence embeddings for the planner, loaded lazily; raises when the"
             },
             {
               "name": "_render_template",
-              "line": 202,
+              "line": 203,
               "doc": "One template render plus PDF conversion (the page-fit loop's step)."
             },
             {
               "name": "_apply_bullet_order",
-              "line": 208,
+              "line": 209,
               "doc": "Reorder bullets as planned (most relevant first within each"
             },
             {
               "name": "parse_resume",
-              "line": 223,
+              "line": 224,
               "doc": "File -> (raw document, ResumeDocument, evidence). The deterministic"
             },
             {
               "name": "normalize_raw",
-              "line": 233,
+              "line": 234,
               "doc": ""
             },
             {
               "name": "_copy_parsed",
-              "line": 241,
+              "line": 242,
               "doc": "Deep copies, so a parse kept in UI session state is never mutated."
             },
             {
               "name": "apply_parse_corrections",
-              "line": 246,
+              "line": 247,
               "doc": "Apply the user's fixes from the \"Check parsed resume\" step (P3.5)."
             },
             {
               "name": "analyze_only",
-              "line": 307,
+              "line": 308,
               "doc": ""
             },
             {
               "name": "generate_proposals",
-              "line": 333,
+              "line": 334,
               "doc": "Generate rewrite proposals without applying them, plus questions"
             },
             {
               "name": "incorporate_user_addition",
-              "line": 394,
+              "line": 395,
               "doc": "Fold a user-supplied free-text addition (a project, an"
             },
             {
               "name": "tailor_resume",
-              "line": 473,
+              "line": 474,
               "doc": ""
             }
           ]
@@ -2403,7 +2403,7 @@
       "functions": [
         {
           "name": "_merge_usage",
-          "line": 893,
+          "line": 903,
           "doc": "Combine two LLMClient.get_usage_summary() dicts into one."
         }
       ]
@@ -2454,7 +2454,7 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 690,
+      "lines": 708,
       "doc": "",
       "classes": [],
       "functions": [
@@ -2474,18 +2474,70 @@
           "doc": "Remove temp files from a previous run and reset to a clean 'idle' state."
         },
         {
+          "name": "_show_content_checks",
+          "line": 142,
+          "doc": "P2.6: advice on the finished resume; nothing is changed automatically."
+        },
+        {
           "name": "model_options",
-          "line": 136,
+          "line": 153,
           "doc": "Models offered in the sidebar for the configured provider. The"
         },
         {
           "name": "_show_keyword_match",
-          "line": 265,
+          "line": 282,
           "doc": "Match rate against the target band, then the matched / missing table"
         },
         {
           "name": "_draft_proposals",
-          "line": 294,
+          "line": 311,
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "app/validation/content_lint.py",
+      "type": "python",
+      "layer": "Validation",
+      "stages": [
+        "8 Validate"
+      ],
+      "lines": 126,
+      "doc": "Content checks on the finished resume (P2.6). Deterministic, no LLM.",
+      "classes": [
+        {
+          "name": "LintIssue",
+          "line": 34,
+          "doc": "",
+          "methods": []
+        },
+        {
+          "name": "ContentReport",
+          "line": 40,
+          "doc": "",
+          "methods": [
+            {
+              "name": "metric_share",
+              "line": 46,
+              "doc": ""
+            }
+          ]
+        }
+      ],
+      "functions": [
+        {
+          "name": "_short",
+          "line": 50,
+          "doc": ""
+        },
+        {
+          "name": "_is_present",
+          "line": 55,
+          "doc": ""
+        },
+        {
+          "name": "lint",
+          "line": 59,
           "doc": ""
         }
       ]
@@ -2753,118 +2805,118 @@
       "type": "python",
       "layer": "Tooling",
       "stages": [],
-      "lines": 729,
+      "lines": 730,
       "doc": "Regenerate the repo's living docs: the knowledge graph and the change log.",
       "classes": [],
       "functions": [
         {
           "name": "git",
-          "line": 127,
+          "line": 128,
           "doc": ""
         },
         {
           "name": "layer_of",
-          "line": 134,
+          "line": 135,
           "doc": ""
         },
         {
           "name": "module_name",
-          "line": 141,
+          "line": 142,
           "doc": ""
         },
         {
           "name": "first_line",
-          "line": 148,
+          "line": 149,
           "doc": ""
         },
         {
           "name": "list_files",
-          "line": 157,
+          "line": 158,
           "doc": "Tracked + new (not ignored) files, restricted to the project map."
         },
         {
           "name": "parse_python",
-          "line": 175,
+          "line": 176,
           "doc": ""
         },
         {
           "name": "symbols_of",
-          "line": 203,
+          "line": 204,
           "doc": ""
         },
         {
           "name": "settings_fields",
-          "line": 216,
+          "line": 217,
           "doc": ""
         },
         {
           "name": "build_graph",
-          "line": 235,
+          "line": 236,
           "doc": ""
         },
         {
           "name": "render_graph_md",
-          "line": 309,
+          "line": 310,
           "doc": ""
         },
         {
           "name": "write_graph",
-          "line": 507,
+          "line": 508,
           "doc": ""
         },
         {
           "name": "commit_info",
-          "line": 550,
+          "line": 551,
           "doc": ""
         },
         {
           "name": "changed_files",
-          "line": 561,
+          "line": 562,
           "doc": ""
         },
         {
           "name": "is_major",
-          "line": 574,
+          "line": 575,
           "doc": ""
         },
         {
           "name": "blob",
-          "line": 583,
+          "line": 584,
           "doc": ""
         },
         {
           "name": "structure_delta",
-          "line": 588,
+          "line": 589,
           "doc": ""
         },
         {
           "name": "render_entry",
-          "line": 611,
+          "line": 612,
           "doc": ""
         },
         {
           "name": "_split_entries",
-          "line": 654,
+          "line": 655,
           "doc": ""
         },
         {
           "name": "_join",
-          "line": 666,
+          "line": 667,
           "doc": ""
         },
         {
           "name": "log_entry",
-          "line": 670,
+          "line": 671,
           "doc": ""
         },
         {
           "name": "backfill",
-          "line": 688,
+          "line": 689,
           "doc": ""
         },
         {
           "name": "main",
-          "line": 705,
+          "line": 706,
           "doc": ""
         }
       ]
@@ -3124,6 +3176,57 @@
         {
           "name": "test_check_llm_reports_success_and_failure",
           "line": 34,
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "tests/unit/test_content_lint.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 73,
+      "doc": "P2.6: deterministic content checks on the finished resume.",
+      "classes": [],
+      "functions": [
+        {
+          "name": "_job",
+          "line": 10,
+          "doc": ""
+        },
+        {
+          "name": "_checks",
+          "line": 21,
+          "doc": ""
+        },
+        {
+          "name": "test_clean_resume_has_no_issues",
+          "line": 25,
+          "doc": ""
+        },
+        {
+          "name": "test_flags_pronouns_buzzwords_length_and_gerunds",
+          "line": 31,
+          "doc": ""
+        },
+        {
+          "name": "test_past_role_present_tense_and_repeated_verbs",
+          "line": 41,
+          "doc": ""
+        },
+        {
+          "name": "test_bullets_per_role_and_promotions",
+          "line": 48,
+          "doc": ""
+        },
+        {
+          "name": "test_dates",
+          "line": 57,
+          "doc": ""
+        },
+        {
+          "name": "test_metric_share_counts_projects_too",
+          "line": 67,
           "doc": ""
         }
       ]
@@ -4889,7 +4992,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 22,
+      "lines": 41,
       "doc": "",
       "classes": [],
       "functions": [
@@ -4902,6 +5005,11 @@
           "name": "test_ats_template_is_the_default_output",
           "line": 9,
           "doc": "P2.2: the ATS template is the default; PRESERVE is an opt-in under Advanced."
+        },
+        {
+          "name": "test_results_show_content_checks",
+          "line": 25,
+          "doc": "P2.6: the results screen lists the content checks."
         }
       ]
     },
@@ -5825,6 +5933,11 @@
     },
     {
       "from": "app/domain/resume.py",
+      "to": "tests/unit/test_content_lint.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/resume.py",
       "to": "tests/unit/test_docx_renderer.py",
       "type": "tested_by"
     },
@@ -6730,6 +6843,11 @@
     },
     {
       "from": "app/services/tailor.py",
+      "to": "app/validation/content_lint.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/services/tailor.py",
       "to": "app/validation/factual.py",
       "type": "imports"
     },
@@ -6845,6 +6963,41 @@
     },
     {
       "from": "app/ui.py",
+      "to": "tests/unit/test_ui.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/validation/content_lint.py",
+      "to": "app/analysis/experience.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/validation/content_lint.py",
+      "to": "app/analysis/rewriter.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/validation/content_lint.py",
+      "to": "app/domain/resume.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/validation/content_lint.py",
+      "to": "app/validation/content_lint.py::ContentReport",
+      "type": "contains"
+    },
+    {
+      "from": "app/validation/content_lint.py",
+      "to": "app/validation/content_lint.py::LintIssue",
+      "type": "contains"
+    },
+    {
+      "from": "app/validation/content_lint.py",
+      "to": "tests/unit/test_content_lint.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/validation/content_lint.py",
       "to": "tests/unit/test_ui.py",
       "type": "tested_by"
     },

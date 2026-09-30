@@ -14,10 +14,10 @@ JD-aligned rewrites, a Novoresume-style ATS layout that fits the right length, a
 |---|---|---|---|---|
 | 0: Make the LLM path work | 10 | 10 | 0 | 0 |
 | 1: Content quality | 14 | 13 | 0 | 1 |
-| 2: Template, ATS, page-fit | 6 | 5 | 0 | 1 |
+| 2: Template, ATS, page-fit | 6 | 6 | 0 | 0 |
 | 3: Gap questions + UX | 6 | 2 | 0 | 4 |
 | 4: Evaluation harness | 3 | 1 | 0 | 2 |
-| **Total** | **39** | **31** | **0** | **8** |
+| **Total** | **39** | **32** | **0** | **7** |
 
 ## Decisions (fixed by the user, 2026-09-30)
 
@@ -107,7 +107,7 @@ anonymized replica of the layout.
 | P2.3 | Years of experience from date ranges (merges overlaps) → target 1 or 2 pages | new `analysis/experience.py` | F27 | ✅ | Years part done in P1.5 (`years_of_experience()`, overlaps merged). `target_pages(resume)` = 1 under 8 years, 2 from 8 years (fixed decision); returned by `tailor_resume()` and recorded by the eval harness as `tailor.target_pages`. Real resume: 1 page |
 | P2.4 | Page-fit loop: render → PDF → count pages; trim in order Interests → low-relevance older bullets (keep ≥3 on the current role, ≥2 on others) → low-relevance projects → compact spacing; at most 4 renders; trims reported | new `rendering/page_fit.py`, `tailor.py` | F27 | ✅ | `PageFitter`: render → PDF → `measure_pdf()` (pages + height used on the last page); the overflow in points decides how much to trim before the next render, so it usually takes 2 renders (max 4). Order: Interests → least relevant bullets (planner `trim_candidate` first, older roles before the current one, lowest relevance; ≥3 on the current role, ≥2 on other roles/projects; a sub-heading whose only bullet goes is removed with it) → least relevant multi-bullet sub-section or project → compact spacing (`presentation.compact`: 10pt, spacing halved). Nothing is reworded, only removed; every step is logged in `changes.md` and shown as a warning, and the keyword rate is recomputed after trims. No LibreOffice → one render, "page length not checked". Real resume: 2 → **1 page** in 2 renders (Interests + 4 lowest-relevance bullets), keyword rate unchanged |
 | P2.5 | ATS round-trip QA: re-parse the output and check contact info, headings, roles, dates, bullets; fail loudly | `validation/output.py` | F29 | ✅ | `OutputQAValidator.round_trip(path, resume)` re-parses the rendered DOCX and PDF with our own parser (no LLM) and compares name, email, phone, links, recognised sections, job count, company, every role title + dates, every bullet, skills and education. Each problem is an "ATS round-trip (DOCX/PDF): …" warning and a critical signal (the run reports failure). Runs on template output; eval records `tailor.ats_round_trip`. It found real parser gaps, now fixed: dates in a right-aligned column were dropped, "Company · Location" wasn't split, a company line after the title line started a new job or became a bullet, a degree-first education line was read as the institution, and a DOCX "Tools: …" line with a bold label was taken for a section heading. All 4 eval cases (incl. the real resume) round-trip cleanly |
-| P2.6 | Content checks: bullets per role, length, pronouns, buzzwords, tense, dates, % of bullets with metrics | new `validation/content_lint.py`, `ui.py` | F30 | ⬜ | |
+| P2.6 | Content checks: bullets per role, length, pronouns, buzzwords, tense, dates, % of bullets with metrics | new `validation/content_lint.py`, `ui.py` | F30 | ✅ | `content_lint.lint(resume)` (no LLM) on the rendered resume: bullets per role (current 3–6, older 2–4; each extra role at the same company adds 3), > 28 or < 6 words, pronouns, buzzwords (the rewrite prompt's filler list plus common clichés), gerund openers and present tense in past roles, repeated opening verbs per role, dates (missing, in the future, end before start), and a nudge when < 30% of bullets carry a number. Advice only, nothing auto-changed. Shown in a "Content checks" expander on the results screen, written to `changes.md`, recorded by the eval harness (`tailor.content_lint`, `tailor.metric_share`) |
 
 **Template spec (P2.1):**
 - **Page:** A4 with 0.7"/0.6" margins, single column. No tables, text boxes, icons or Word header/footer. Font: Arial.

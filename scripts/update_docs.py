@@ -100,6 +100,7 @@ STAGE_MAP: Dict[str, List[str]] = {
     "app/validation/factual.py": ["8 Validate"],
     "app/validation/structural.py": ["8 Validate"],
     "app/validation/output.py": ["8 Validate"],
+    "app/validation/content_lint.py": ["8 Validate"],
     "app/services/validation_agent.py": ["8 Validate"],
     "app/rendering/docx_patcher.py": ["9 Render"],
     "app/rendering/document_map.py": ["1 Ingest", "9 Render"],

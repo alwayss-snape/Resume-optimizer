@@ -188,6 +188,9 @@ def _tailor_metrics(service, case: Case, jd_text: str, parsed, generated: Dict, 
         "target_pages": result.get("target_pages"),
         # P2.5: problems found re-parsing the rendered DOCX / PDF (0 = passes)
         "ats_round_trip": [w for w in result.get("warnings", []) if w.startswith("ATS round-trip")],
+        # P2.6: content checks on the rendered resume, counted per check
+        "content_lint": dict(Counter(i.check for i in result["content_lint"].issues)) if result.get("content_lint") else {},
+        "metric_share": round(result["content_lint"].metric_share, 2) if result.get("content_lint") else None,
         "output_dir": case_dir,
     }
 

@@ -34,6 +34,7 @@ from app.rendering.page_fit import PageFitter
 from app.rendering.pdf_converter import PdfConverter
 from app.rendering.template_renderer import TemplateRenderer
 from app.services.run_manager import RunManager
+from app.validation.content_lint import lint as content_lint
 from app.validation.factual import FactualValidator
 from app.validation.output import OutputQAValidator
 from app.validation.structural import StructuralValidator
@@ -735,6 +736,9 @@ class TailorService:
                 score = keyword_report.rate
                 _append_progress(f"Keyword match rate after page fit: {score:.1f}%")
 
+        # Content checks on what was rendered (P2.6): advice, never auto-applied.
+        content_report = content_lint(resume)
+
         # Canonical ATS HTML is available for browser preview and print workflows.
         try:
             self.html_renderer.write_html(resume_doc, html_output_path)
@@ -812,6 +816,11 @@ class TailorService:
                     found_in = ", ".join(row.where) if row.found else "❌ missing"
                     f.write(f"| {row.keyword} | {row.kind} | {'yes' if row.required else 'no'} | {found_in} |\n")
                 f.write("\n")
+                f.write(f"## Content Checks\n\n{content_report.bullets_with_metrics} of {content_report.bullets} "
+                        f"bullets include a number.\n\n")
+                for issue in content_report.issues:
+                    f.write(f"- **{issue.check}** ({issue.where}): {issue.message}\n")
+                f.write("\n")
                 f.write(f"## Accepted Rewrites ({len(approved_proposals)})\n\n")
                 for prop in approved_proposals:
                     f.write(f"### Bullet ({_prop_key(prop) or 'unknown'})\n")
@@ -875,6 +884,7 @@ class TailorService:
             "pdf": pdf_output_path if pdf_res else "",
             "html": html_output_path,
             "target_pages": target_pages(resume),
+            "content_lint": content_report,
             "changes_md": report_md_path,
             "alignment_score": f"{score:.1f}",
             "initial_alignment_score": f"{initial_score:.1f}",

@@ -133,6 +133,23 @@ st.markdown("""
 st.markdown('<div class="main-header">Local Resume Tailor</div>', unsafe_allow_html=True)
 st.markdown('<div class="sub-header">Privacy-first, evidence-based local AI resume optimization</div>', unsafe_allow_html=True)
 
+CHECK_LABELS = {
+    "bullets_per_role": "Bullets per role", "length": "Length", "pronoun": "Pronouns", "buzzword": "Buzzwords",
+    "tense": "Tense", "dates": "Dates", "repeated_verb": "Repeated verbs", "metrics": "Numbers",
+}
+
+
+def _show_content_checks(report) -> None:
+    """P2.6: advice on the finished resume; nothing is changed automatically."""
+    if report is None:
+        return
+    title = f"Content checks: {len(report.issues)} suggestion(s)" if report.issues else "Content checks: all clear"
+    with st.expander(title):
+        st.caption(f"{report.bullets_with_metrics} of {report.bullets} bullets include a number.")
+        for issue in report.issues:
+            st.markdown(f"- **{CHECK_LABELS.get(issue.check, issue.check)}** · {issue.where}: {issue.message}")
+
+
 def model_options(provider: str) -> list:
     """Models offered in the sidebar for the configured provider. The
     configured default always comes first; a model name from one provider
@@ -611,6 +628,7 @@ if st.session_state.stage == "results" and st.session_state.get("results") is no
         st.error(f"Resume Tailoring Completed with Warnings. Keyword match: {results['alignment_score']}%{score_suffix}")
     with st.expander("Keyword match details"):
         _show_keyword_match(results.get("keyword_match"), heading="Keyword match after tailoring")
+    _show_content_checks(results.get("content_lint"))
 
     if results.get("addition_note"):
         st.caption(f"➕ Your addition was incorporated: {results['addition_note']}")
