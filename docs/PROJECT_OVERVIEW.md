@@ -53,11 +53,11 @@ Semantic matching uses a local embedding model (`all-MiniLM-L6-v2`).
 | Gap questions for missing JD keywords | ✅ Works | Suggest-and-confirm: only ticked skills and the user's own answers are added (P3.1) |
 | Content checks on the result | ✅ Works | Bullets per role, length, pronouns, buzzwords, tense, dates, share of bullets with numbers (P2.6); advice only |
 | Add free-text content | ✅ Works | Append to an existing role or create a new project |
-| Add a **new job role** | ❌ Not built | Designed, see "Open work" |
+| Add a **new job role** | ✅ Works | Company, title, location, dates or "currently here", description → fact-checked bullets, placed in date order (P3.3) |
 | Strict Factual Mode | ⚠️ Cosmetic | See issue 4 |
 | DOCX / PDF / HTML output | ✅ Works | Re-parsed after rendering to prove it reads back intact (ATS round-trip, P2.5). ATS template (P2.1): A4, Arial, standard headings, section order by experience, "Jan 2022 – Present" dates; files named `First_Last_Resume_<Company>`. Auto page-fit to 1 page (< 8 years) or 2, trimming the least relevant content and reporting it (P2.3–P2.4). PDF and page-fit need LibreOffice installed |
 | CLI | ✅ Works | `analyze` and `tailor` only; no review step, no addition text |
-| Tests | ✅ 272 passing | `pytest -q` (~35 s, loads the cached embedding model) |
+| Tests | ✅ 285 passing | `pytest -q` (~35 s, loads the cached embedding model) |
 | Multiple JDs / history / cover letter | ❌ Not built | — |
 
 ## Open issues
@@ -75,21 +75,6 @@ and unused prompts (P0.8, P1.10) are all fixed. What remains:
 3. **Live measurement pending** for the P1.4 unchanged-bullet retry and Stage D content (see ACTION_ITEMS.md).
 4. **User's source resume** has "LinkedIn | Email | Leetcode" placeholder text with no hyperlinks (to fix in their
    own file).
-
-## Open work: "Add as a new Job Role" (designed, approved, not coded)
-
-Gap: `TailorService.incorporate_user_addition()` can only append one bullet to an existing `Experience` or create a
-`Project`; there's no way to create a new `Experience`.
-
-- **Backend** (`app/services/tailor.py`): new `add_new_role(resume, evidence_list, job_desc, role_data, description_text)`
-  that builds an `Experience` (add it to the `app.domain.resume` import), splits the pasted description into chunks and
-  polishes each into its own grounded bullet. Wire it into `tailor_resume()` next to the `addition_text` handling via a
-  new `new_role_data: Optional[dict]`, and force `mode = "ATS_DEFAULT"` when present.
-- **Frontend** (`app/ui.py`): add "➕ Add as a new Job Role" to `target_labels`. The target selectbox must move
-  **outside** `st.form("proposal_review_form")` (forms don't rerun until submit, and the reveal needs an immediate
-  rerun). Fields: Company (structurally required, so confirm with the user), Job Title, Location, "currently working
-  here" checkbox, Start/End date (`st.date_input`, formatted `%b %Y`; End shows "Present" when current), description
-  text area.
 
 ## Repo map (docs)
 

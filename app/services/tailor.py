@@ -1,11 +1,11 @@
 import os
 import re
 import shutil
-from datetime import datetime
+from datetime import date, datetime
 from typing import Dict, List, Optional, Tuple
 from uuid import uuid4
 
-from app.analysis.experience import target_pages
+from app.analysis.experience import parse_month, target_pages
 from app.analysis.gap_questions import GapAnswer, build_questions
 from app.analysis.jd_analyzer import JDAnalyzer
 from app.analysis.keyword_match import KeywordMatcher
@@ -21,7 +21,7 @@ from app.analysis.tailor_planner import TailoringPlanner
 from app.domain.evidence import Evidence
 from app.domain.job import JobDescription
 from app.domain.report import TailoringReport
-from app.domain.resume import Project, Resume, ResumeBullet, Role
+from app.domain.resume import Experience, Project, Resume, ResumeBullet, Role
 from app.domain.resume_document import ResumeDocument, ResumeSource
 from app.domain.tailoring import TailoringPlan
 from app.ingestion.docx import DocxParser
@@ -182,6 +182,69 @@ class TailorService:
             resume, evidence_list, JobDescription(), text, ans.target, polish=False)
         return resume, updated, text
 
+    MAX_NEW_ROLE_BULLETS = 6
+
+    @staticmethod
+    def _split_description(text: str) -> List[str]:
+        """Pasted role description -> bullet-sized chunks: one per line (list
+        markers removed), or one per sentence for a single paragraph."""
+        lines = [re.sub(r"^\s*(?:[-*•●▪◦]|\d+[.)])\s*", "", l).strip() for l in (text or "").splitlines()]
+        lines = [l for l in lines if l]
+        if len(lines) == 1:
+            lines = [c.strip() for c in re.split(r"(?<=[.!?])\s+(?=[A-Z])", lines[0]) if c.strip()]
+        return lines
+
+    def add_new_role(self, resume: Resume, evidence_list: List, job_desc: JobDescription,
+                     role_data: Dict, description_text: str) -> Tuple[Resume, List, List[str]]:
+        """Add a job the resume doesn't have yet (P3.3). Each chunk of the
+        user's description is polished into a bullet that may use only JD
+        keywords already in that chunk, then fact-checked against it; if the
+        polish adds anything, the user's own wording is used. The job goes
+        in date order (current jobs first, then most recent start).
+        Mutates `resume`; returns (resume, evidence_list, notes)."""
+        company = (role_data.get("company") or "").strip()
+        title = (role_data.get("title") or "").strip()
+        if not company or not title:
+            raise ValueError("A new job needs both a company and a job title.")
+        start = (role_data.get("start_date") or "").strip() or None
+        end = "Present" if role_data.get("current") else ((role_data.get("end_date") or "").strip() or None)
+        exp = Experience(id=f"exp_user_{uuid4().hex[:6]}", company=company, title=title,
+                         location=(role_data.get("location") or "").strip() or None,
+                         start_date=start, end_date=end, roles=[Role(title=title, start_date=start, end_date=end)])
+
+        notes = []
+        chunks = self._split_description(description_text)
+        if len(chunks) > self.MAX_NEW_ROLE_BULLETS:
+            notes.append(f"Only the first {self.MAX_NEW_ROLE_BULLETS} of {len(chunks)} description lines were used.")
+        for n, chunk in enumerate(chunks[:self.MAX_NEW_ROLE_BULLETS], start=1):
+            user_ev = Evidence(id=f"ev_user_{uuid4().hex[:6]}", source_type="general", source_id="new_role",
+                               text=chunk)
+            allowed = [k for k in job_desc.keywords if k.lower() in chunk.lower()]
+            polished, _ = self.rewriter.rewrite_bullet(chunk, evidence=[user_ev], jd_requirements=[],
+                                                       target_keywords=allowed)
+            check = RewriteProposal(target_semantic_id="new_role", original_text=chunk,
+                                    proposed_text=polished or chunk, evidence_ids=[user_ev.id])
+            verdict = self.validator.validate_proposal(check, [user_ev]).verdict
+            text = polished if polished and verdict == "PASS" else chunk
+            bullet = ResumeBullet(id=f"{exp.id}_b{n:02d}", text=text)
+            exp.bullets.append(bullet)
+            evidence_list.append(Evidence(id=f"ev_user_{uuid4().hex[:6]}", source_type="experience",
+                                          source_id=bullet.id, text=f"{company}: {text}"))
+
+        today = date.today()
+        def sort_key(e: Experience):
+            first = (e.all_roles() or [Role(title="")])[0]
+            ongoing = (first.end_date or "").strip().lower() in ("present", "current", "now")
+            started = parse_month(first.start_date, is_end=False, today=today) or (0, 0)
+            return (not ongoing, (-started[0], -started[1]))
+        new_key = sort_key(exp)
+        position = next((i for i, e in enumerate(resume.experience) if sort_key(e) > new_key), len(resume.experience))
+        resume.experience.insert(position, exp)
+        dates = " – ".join(v for v in (start, end) if v)
+        notes.insert(0, f"Added a new job: {title} at {company}" + (f" ({dates})" if dates else "")
+                     + f" with {len(exp.bullets)} bullet(s) from your description.")
+        return resume, evidence_list, notes
+
     def _skills_proposals(self, resume, keyword_report) -> List[RewriteProposal]:
         """The skills section with the JD's skills first, when that changes it (P1.6)."""
         proposal = self.skills_tailor.propose(resume, keyword_report)
@@ -199,6 +262,17 @@ class TailorService:
         if encode is None:
             raise RuntimeError("embedding model unavailable")
         return encode(texts)
+
+    @staticmethod
+    def _fit_relevance(resume: Resume, plan: TailoringPlan) -> Dict[str, float]:
+        """Planner relevance per bullet for the page-fit loop. Bullets the user
+        added in this run (gap answers, additions, a new job) aren't in the
+        plan; they count as fully relevant so they're never trimmed first."""
+        relevance = {a.source_id: a.relevance for a in plan.actions if a.source_id}
+        for section in [*resume.experience, *resume.projects]:
+            for b in section.bullets:
+                relevance.setdefault(b.id, 1.0)
+        return relevance
 
     def _render_template(self, resume_doc: ResumeDocument, docx_path: str, output_dir: str) -> Optional[str]:
         """One template render plus PDF conversion (the page-fit loop's step)."""
@@ -509,6 +583,7 @@ class TailorService:
         parse_corrected: bool = False,
         job_desc: Optional[JobDescription] = None,
         gap_answers: Optional[List] = None,
+        new_role: Optional[Dict] = None,
     ) -> Dict[str, str]:
         run_dir = self.run_manager.create_run(resume_path, jd_text)
         clean_jd_text = self.safety_guard.sanitize(jd_text)
@@ -543,6 +618,8 @@ class TailorService:
         if parsed is None:
             raw_doc = self.pdf_parser.parse(resume_path) if is_pdf else self.docx_parser.parse(resume_path)
 
+        if new_role and mode == "PRESERVE":
+            mode = "ATS_DEFAULT"  # a new job has no place in the original layout
         if addition_text and (addition_text or "").strip() and mode == "PRESERVE":
             # A brand-new bullet has no corresponding block in the original
             # layout, so it cannot be positionally patched in place — fall
@@ -715,6 +792,13 @@ class TailorService:
             _append_progress(note)
             warnings.append(note)
 
+        if new_role:  # "Add a job" (P3.3)
+            resume, evidence_list, role_notes = self.add_new_role(
+                resume, evidence_list, job_desc, new_role, new_role.get("description", ""))
+            for note in role_notes:
+                _append_progress(note)
+                warnings.append(note)
+
         addition_note = None
         if addition_text and (addition_text or "").strip():
             resume, evidence_list, addition_note = self.incorporate_user_addition(
@@ -746,7 +830,7 @@ class TailorService:
             page_target = target_pages(resume)
             fit = PageFitter(self._render_template).fit(
                 resume_doc, docx_output_path, output_dir, page_target,
-                relevance={a.source_id: a.relevance for a in plan.actions if a.source_id},
+                relevance=self._fit_relevance(resume, plan),
                 trim_candidates={a.source_id for a in plan.actions if a.trim_candidate},
             )
             _append_progress(f"DOCX reconstructed via template renderer at {docx_output_path} "

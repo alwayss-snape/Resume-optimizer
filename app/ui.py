@@ -2,6 +2,7 @@ import os
 import shutil
 import sys
 import tempfile
+from datetime import date
 import threading
 from functools import partial
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
@@ -578,6 +579,21 @@ if st.session_state.stage == "proposals":
         )
         target_choice = st.selectbox("Where should this go?", options=target_labels, key="addition_target_choice")
 
+        # A job that isn't on the resume yet (P3.3). Company and title are
+        # required; bullets are drafted only from the description.
+        with st.expander("➕ Add a job that isn't on your resume"):
+            n1, n2 = st.columns(2)
+            nr_company = n1.text_input("Company *", key="nr_company")
+            nr_title = n2.text_input("Job title *", key="nr_title")
+            nr_location = n1.text_input("Location", key="nr_location", placeholder="City, Country")
+            nr_current = n2.checkbox("I currently work here", key="nr_current")
+            nr_start = n1.date_input("Start date", value=None, min_value=date(1970, 1, 1), key="nr_start")
+            nr_end = n2.date_input("End date (ignored if you currently work here)", value=None,
+                                   min_value=date(1970, 1, 1), key="nr_end")
+            nr_desc = st.text_area("What did you do there? One point per line, in your own words",
+                                   key="nr_desc", height=120,
+                                   placeholder="Built the billing service in Go; cut failed payments by 20%.")
+
         f1, f2 = st.columns(2)
         recalc_btn = f1.form_submit_button("🔄 Recalculate match rate")
         apply_btn = f2.form_submit_button("Apply & Generate", type="primary")
@@ -628,6 +644,16 @@ if st.session_state.stage == "proposals":
 
         preapproved = _preapproved()
 
+        new_role = None
+        if any((v or "").strip() for v in (nr_company, nr_title, nr_desc)):
+            if not (nr_company or "").strip() or not (nr_title or "").strip():
+                st.error("To add a job, fill in both the company and the job title (or clear the job fields).")
+                st.stop()
+            new_role = {"company": nr_company, "title": nr_title, "location": nr_location,
+                        "current": nr_current, "description": nr_desc,
+                        "start_date": nr_start.strftime("%b %Y") if nr_start else "",
+                        "end_date": nr_end.strftime("%b %Y") if (nr_end and not nr_current) else ""}
+
         output_dir = tempfile.mkdtemp()
         try:
             with st.spinner("Applying changes, regenerating your résumé, and rescoring..."):
@@ -647,6 +673,7 @@ if st.session_state.stage == "proposals":
                     parse_corrected=bool(st.session_state.get("parse_corrected")),
                     job_desc=st.session_state.get("job_description"),
                     gap_answers=gap_answers,
+                    new_role=new_role,
                 )
             st.session_state.results = results
             st.session_state.output_dir = output_dir
