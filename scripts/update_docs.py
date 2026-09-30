@@ -565,7 +565,7 @@ def is_major(rev: str) -> bool:
         return False  # merge commits
     if SKIP_LOG_MARKER in (info["subject"] + info["body"]).lower():
         return False
-    return any(p.startswith(MAJOR_PREFIXES) for _, p in changed_files(rev, info["parents"]))
+    return any(p.startswith(MAJOR_PREFIXES) or p.endswith(".py") for _, p in changed_files(rev, info["parents"]))
 
 
 def blob(rev: str, path: str) -> Optional[str]:
