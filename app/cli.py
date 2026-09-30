@@ -48,7 +48,10 @@ PROPOSALS_HELP = """Edit this file, then run:
   tool's original draft, for reference only.
 - gap_questions: list in "confirmed_keywords" only what you have really used;
   "answer" (your own words) becomes a bullet; "target" is "auto", "new_project"
-  or a job id from "jobs".
+  or a job id from "jobs". Keywords and answers you confirmed for an earlier
+  application are pre-filled ("saved_keywords" / "saved_answer"): remove any
+  that don't apply to this job. An unchanged saved answer is only used while
+  one of its keywords stays listed.
 - addition: optional free text and where it goes (same targets).
 - new_role: optional job that isn't on the resume (company, title, start_date,
   end_date or current: true, location, description)."""
@@ -65,13 +68,14 @@ def write_proposals(service: TailorService, resume_path: str, jd_text: str, out_
         "keyword_match_rate": generated["alignment_score"],
         "jobs": [{"id": o["id"], "label": o["label"]} for o in generated["experience_options"]],
         "proposals": [
-            {**p.model_dump(mode="json"), "apply": getattr(p, "validation", None) != "REJECT",
+            {**_without_mirrors(p.model_dump(mode="json")), "apply": getattr(p, "validation", None) != "REJECT",
              "draft_text": p.proposed_text or ""}
             for p in generated["proposals"]
         ],
         "gap_questions": [
             {"question_id": q.id, "requirement": q.requirement, "priority": q.priority, "keywords": q.keywords,
-             "confirmed_keywords": list(q.saved_keywords), "answer": q.saved_answer, "target": "auto"}
+             "confirmed_keywords": list(q.saved_keywords), "answer": q.saved_answer, "target": "auto",
+             "saved_keywords": list(q.saved_keywords), "saved_answer": q.saved_answer}
             for q in generated["gap_questions"]
         ],
         "addition": {"text": "", "target": "auto"},
@@ -85,37 +89,82 @@ def write_proposals(service: TailorService, resume_path: str, jd_text: str, out_
     return data
 
 
+# ChangeProposal.model_dump() mirrors proposed_text under legacy names; in an
+# editable file they'd be a second, silently ignored copy of the text.
+_MIRROR_KEYS = ("rewritten_text", "semantic_id", "source_id")
+
+
+def _without_mirrors(d: dict) -> dict:
+    return {k: v for k, v in d.items() if k not in _MIRROR_KEYS}
+
+
 def read_proposals(path: str) -> dict:
-    """The edited proposals file -> tailor_resume keyword arguments."""
+    """The edited proposals file -> tailor_resume keyword arguments, with
+    the same rules as the UI's Apply. Raises ValueError with a readable
+    reason for a bad file, before any work is done."""
     import json
 
+    from pydantic import ValidationError
+
+    from app.analysis.gap_questions import GapQuestion
     from app.domain.job import JobDescription
 
-    with open(path, encoding="utf-8") as f:
-        data = json.load(f)
+    try:
+        with open(path, encoding="utf-8") as f:
+            data = json.load(f)
+    except FileNotFoundError:
+        raise ValueError(f"proposals file not found: {path}")
+    except json.JSONDecodeError as e:
+        raise ValueError(f"{path} is not valid JSON (line {e.lineno}, column {e.colno}): {e.msg}")
+    if not isinstance(data, dict):
+        raise ValueError(f"{path} doesn't look like a file written by `propose`")
+
     preapproved = []
-    for p in data.get("proposals", []):
-        if not p.get("apply", True):
-            continue
-        p = dict(p)
+    for p in data.get("proposals") or []:
+        if p.get("apply", True) not in (True, "true", "yes", 1):
+            continue  # anything but an explicit yes ("false", false, 0) rejects it
+        p = _without_mirrors(dict(p))
         draft = p.pop("draft_text", p.get("proposed_text") or "")
         p.pop("apply", None)
         p["user_edited"] = (p.get("proposed_text") or "").strip() != (draft or "").strip()
         preapproved.append(p)
+
+    def counts(q):
+        """As in the UI: an unchanged pre-filled answer needs a listed keyword."""
+        answer = (q.get("answer") or "").strip()
+        return bool(q.get("confirmed_keywords")) or (answer and answer != (q.get("saved_answer") or "").strip())
+
+    questions = data.get("gap_questions") or []
     gap_answers = [
         {"question_id": q.get("question_id", ""), "confirmed_keywords": q.get("confirmed_keywords") or [],
          "answer": q.get("answer") or "", "target": q.get("target") or "auto"}
-        for q in data.get("gap_questions", []) if q.get("confirmed_keywords") or (q.get("answer") or "").strip()
+        for q in questions if counts(q)
     ]
+    gap_questions = [GapQuestion(id=q.get("question_id", ""), requirement=q.get("requirement", ""),
+                                 priority=q.get("priority", "required"), keywords=q.get("keywords") or [],
+                                 question="") for q in questions]
+
+    new_role = data.get("new_role") or None
+    if new_role:
+        from app.services.tailor import TailorService
+        TailorService.validate_new_role(new_role, new_role.get("description", ""))
+
+    job_desc = None
+    if data.get("job_description"):
+        try:
+            job_desc = JobDescription.model_validate(data["job_description"])
+        except ValidationError:
+            job_desc = None  # older file: the JD is analysed again
+
     addition = data.get("addition") or {}
-    job = data.get("job_description")
     return {
         "preapproved_proposals": preapproved,
         "gap_answers": gap_answers,
+        "gap_questions": gap_questions,
         "addition_text": addition.get("text") or None,
         "addition_target": addition.get("target") or "auto",
-        "new_role": data.get("new_role") or None,
-        "job_desc": JobDescription.model_validate(job) if job else None,
+        "new_role": new_role,
+        "job_desc": job_desc,
     }
 
 
@@ -204,10 +253,14 @@ def main():
 
     elif args.command == "tailor":
         print(f"Tailoring resume ({args.mode} mode)...")
-        extra = read_proposals(args.proposals) if args.proposals else {}
-        results = service.tailor_resume(args.resume, jd_text, args.output, mode=args.mode,
-                                        strict_factual=args.strict, remember_answers=not args.no_remember,
-                                        progress=_print_progress, **extra)
+        try:
+            extra = read_proposals(args.proposals) if args.proposals else {}
+            results = service.tailor_resume(args.resume, jd_text, args.output, mode=args.mode,
+                                            strict_factual=args.strict, remember_answers=not args.no_remember,
+                                            progress=_print_progress, **extra)
+        except ValueError as e:
+            print(f"Error: {e}")
+            sys.exit(1)
         print("\n" + "=" * 50)
         print("TAILORING COMPLETE")
         print("=" * 50)

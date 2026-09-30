@@ -219,14 +219,10 @@ class TailorService:
             lines = [c.strip() for c in re.split(r"(?<=[.!?])\s+(?=[A-Z])", lines[0]) if c.strip()]
         return lines
 
-    def add_new_role(self, resume: Resume, evidence_list: List, job_desc: JobDescription,
-                     role_data: Dict, description_text: str) -> Tuple[Resume, List, List[str]]:
-        """Add a job the resume doesn't have yet (P3.3). Each chunk of the
-        user's description is polished into a bullet that may use only JD
-        keywords already in that chunk, then fact-checked against it; if the
-        polish adds anything, the user's own wording is used. The job goes
-        in date order (current jobs first, then most recent start).
-        Mutates `resume`; returns (resume, evidence_list, notes)."""
+    @classmethod
+    def validate_new_role(cls, role_data: Dict, description_text: str) -> Tuple[str, str, str, str]:
+        """Check a new job before any work is done; raises ValueError with a
+        user-facing reason. Returns (company, title, start, end)."""
         company = (role_data.get("company") or "").strip()
         title = (role_data.get("title") or "").strip()
         if not company or not title:
@@ -244,8 +240,20 @@ class TailorService:
             raise ValueError("A new job needs an end date, or tick \"I currently work here\".")
         if end_month < start_month:
             raise ValueError("The new job's end date is before its start date.")
-        if not self._split_description(description_text):
+        if not cls._split_description(description_text):
             raise ValueError("Describe at least one thing you did in the new job.")
+        return company, title, start, end
+
+    def add_new_role(self, resume: Resume, evidence_list: List, job_desc: JobDescription,
+                     role_data: Dict, description_text: str) -> Tuple[Resume, List, List[str]]:
+        """Add a job the resume doesn't have yet (P3.3). Each chunk of the
+        user's description is polished into a bullet that may use only JD
+        keywords already in that chunk, then fact-checked against it; if the
+        polish adds anything, the user's own wording is used. The job goes
+        in date order (current jobs first, then most recent start).
+        Mutates `resume`; returns (resume, evidence_list, notes)."""
+        company, title, start, end = self.validate_new_role(role_data, description_text)
+        today = date.today()
         exp = Experience(id=f"exp_user_{uuid4().hex[:6]}", company=company, title=title,
                          location=(role_data.get("location") or "").strip() or None,
                          start_date=start, end_date=end, roles=[Role(title=title, start_date=start, end_date=end)])

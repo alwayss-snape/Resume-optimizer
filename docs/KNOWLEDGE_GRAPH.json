@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "01ef1ac0a7efe2a1",
+  "source_hash": "8d5f2acaaaa856ab",
   "stats": {
-    "files": 123,
-    "python_files": 101,
+    "files": 124,
+    "python_files": 102,
     "app_modules": 49,
     "test_files": 45,
     "classes": 86,
-    "functions": 694,
-    "lines_of_python": 14849
+    "functions": 708,
+    "lines_of_python": 15386
   },
   "axes": {
     "x": "location (path)",
@@ -999,7 +999,7 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 224,
+      "lines": 277,
       "doc": "",
       "classes": [],
       "functions": [
@@ -1010,22 +1010,27 @@
         },
         {
           "name": "write_proposals",
-          "line": 57,
+          "line": 60,
           "doc": "Draft proposals and gap questions into an editable JSON file (P3.6),"
         },
         {
+          "name": "_without_mirrors",
+          "line": 97,
+          "doc": ""
+        },
+        {
           "name": "read_proposals",
-          "line": 88,
-          "doc": "The edited proposals file -> tailor_resume keyword arguments."
+          "line": 101,
+          "doc": "The edited proposals file -> tailor_resume keyword arguments, with"
         },
         {
           "name": "_print_progress",
-          "line": 122,
+          "line": 171,
           "doc": ""
         },
         {
           "name": "main",
-          "line": 126,
+          "line": 175,
           "doc": ""
         }
       ]
@@ -2424,7 +2429,7 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 1078,
+      "lines": 1086,
       "doc": "",
       "classes": [
         {
@@ -2468,83 +2473,88 @@
               "doc": "Pasted role description -> bullet-sized chunks: one per line (list"
             },
             {
+              "name": "validate_new_role",
+              "line": 223,
+              "doc": "Check a new job before any work is done; raises ValueError with a"
+            },
+            {
               "name": "add_new_role",
-              "line": 222,
+              "line": 247,
               "doc": "Add a job the resume doesn't have yet (P3.3). Each chunk of the"
             },
             {
               "name": "_skills_proposals",
-              "line": 286,
+              "line": 294,
               "doc": "The skills section with the JD's skills first, when that changes it (P1.6)."
             },
             {
               "name": "_summary_proposals",
-              "line": 291,
+              "line": 299,
               "doc": "The tailored summary as a proposal, when one was written (P1.5)."
             },
             {
               "name": "_embed",
-              "line": 296,
+              "line": 304,
               "doc": "Sentence embeddings for the planner, loaded lazily; raises when the"
             },
             {
               "name": "_fit_relevance",
-              "line": 305,
+              "line": 313,
               "doc": "Planner relevance per bullet for the page-fit loop. Bullets the user"
             },
             {
               "name": "_render_template",
-              "line": 315,
+              "line": 323,
               "doc": "One template render plus PDF conversion (the page-fit loop's step)."
             },
             {
               "name": "_apply_bullet_order",
-              "line": 321,
+              "line": 329,
               "doc": "Reorder bullets as planned (most relevant first within each"
             },
             {
               "name": "parse_resume",
-              "line": 336,
+              "line": 344,
               "doc": "File -> (raw document, ResumeDocument, evidence). The deterministic"
             },
             {
               "name": "normalize_raw",
-              "line": 346,
+              "line": 354,
               "doc": ""
             },
             {
               "name": "_copy_parsed",
-              "line": 354,
+              "line": 362,
               "doc": "Deep copies, so a parse kept in UI session state is never mutated."
             },
             {
               "name": "preview_keyword_match",
-              "line": 359,
+              "line": 367,
               "doc": "Match rate if these proposals were applied (P3.4 \"recalculate\"):"
             },
             {
               "name": "apply_parse_corrections",
-              "line": 382,
+              "line": 390,
               "doc": "Apply the user's fixes from the \"Check parsed resume\" step (P3.5)."
             },
             {
               "name": "analyze_only",
-              "line": 443,
+              "line": 451,
               "doc": ""
             },
             {
               "name": "generate_proposals",
-              "line": 469,
+              "line": 477,
               "doc": "Generate rewrite proposals without applying them, plus questions"
             },
             {
               "name": "incorporate_user_addition",
-              "line": 538,
+              "line": 546,
               "doc": "Fold a user-supplied free-text addition (a project, an"
             },
             {
               "name": "tailor_resume",
-              "line": 617,
+              "line": 625,
               "doc": ""
             }
           ]
@@ -2558,7 +2568,7 @@
         },
         {
           "name": "_merge_usage",
-          "line": 1069,
+          "line": 1077,
           "doc": "Combine two LLMClient.get_usage_summary() dicts into one."
         }
       ]
@@ -2939,6 +2949,47 @@
       "layer": "Tooling",
       "stages": [],
       "lines": 8
+    },
+    {
+      "id": "scripts/make_eval_cases.py",
+      "type": "python",
+      "layer": "Tooling",
+      "stages": [],
+      "lines": 415,
+      "doc": "Generate the anonymized evaluation cases (P4.2).",
+      "classes": [],
+      "functions": [
+        {
+          "name": "_heading",
+          "line": 286,
+          "doc": ""
+        },
+        {
+          "name": "_bullets",
+          "line": 293,
+          "doc": ""
+        },
+        {
+          "name": "_job_lines",
+          "line": 298,
+          "doc": ""
+        },
+        {
+          "name": "write_docx",
+          "line": 320,
+          "doc": ""
+        },
+        {
+          "name": "expected_for",
+          "line": 367,
+          "doc": ""
+        },
+        {
+          "name": "main",
+          "line": 385,
+          "doc": ""
+        }
+      ]
     },
     {
       "id": "scripts/update_docs.py",
@@ -3325,7 +3376,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 96,
+      "lines": 157,
       "doc": "P3.6: progress reporting, and the CLI doing what the UI does (review,",
       "classes": [],
       "functions": [
@@ -3357,6 +3408,36 @@
         {
           "name": "test_cli_propose_and_tailor_end_to_end",
           "line": 82,
+          "doc": ""
+        },
+        {
+          "name": "_file",
+          "line": 101,
+          "doc": ""
+        },
+        {
+          "name": "test_emptied_keywords_withdraw_an_unchanged_saved_answer",
+          "line": 109,
+          "doc": ""
+        },
+        {
+          "name": "test_gap_questions_are_passed_on_for_requirement_context",
+          "line": 117,
+          "doc": ""
+        },
+        {
+          "name": "test_mirror_keys_are_not_written_and_string_false_rejects",
+          "line": 124,
+          "doc": ""
+        },
+        {
+          "name": "test_bad_files_fail_early_with_a_readable_error",
+          "line": 135,
+          "doc": ""
+        },
+        {
+          "name": "test_cli_prints_error_instead_of_traceback",
+          "line": 149,
           "doc": ""
         }
       ]
@@ -6197,6 +6278,11 @@
     },
     {
       "from": "app/cli.py",
+      "to": "app/analysis/gap_questions.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/cli.py",
       "to": "app/domain/job.py",
       "type": "imports"
     },
@@ -7769,6 +7855,11 @@
       "from": "scripts/benchmark_model.py",
       "to": "scripts/benchmark_model.py::SimpleResponse",
       "type": "contains"
+    },
+    {
+      "from": "scripts/make_eval_cases.py",
+      "to": "app/rendering/pdf_converter.py",
+      "type": "imports"
     },
     {
       "from": "tests/unit/test_jd_analyzer_llm.py",

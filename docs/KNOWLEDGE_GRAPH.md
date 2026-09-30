@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**49 app modules · 45 test files · 86 classes · 694 functions/methods · 14,849 lines of Python** · source hash `01ef1ac0a7efe2a1`
+**49 app modules · 45 test files · 86 classes · 708 functions/methods · 15,386 lines of Python** · source hash `8d5f2acaaaa856ab`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -30,7 +30,7 @@ pyproject.toml
   post-commit
   pre-commit
 app/
-  cli.py                                         check_llm(), write_proposals(), read_proposals(), _print_progress(), m…
+  cli.py                                         check_llm(), write_proposals(), _without_mirrors(), read_proposals(), …
   ui.py                                          get_local_pdf_preview_url(), display_pdf_with_fallback(), _cleanup_ses…
   analysis/
     change_proposal.py                           ChangeProposal
@@ -101,6 +101,7 @@ scripts/
   create_sample_docx.py                          Generate sample fixture DOCX resume for testing.
   create_sample_pdf.py                           Generate sample PDF resume fixture using PyMuPDF.
   install_hooks.sh
+  make_eval_cases.py                             Generate the anonymized evaluation cases (P4.2).
   update_docs.py                                 Regenerate the repo's living docs: the knowledge graph and the change …
 tests/
   conftest.py                                    Test-wide isolation from the developer's .env.
@@ -219,7 +220,7 @@ _Suggest-and-confirm gaps (P3.1): ask, never assume._
 - class **`GapAnswer`** ([app/analysis/gap_questions.py:31](../app/analysis/gap_questions.py#L31))
 - function **`build_questions()`** ([app/analysis/gap_questions.py:38](../app/analysis/gap_questions.py#L38))
 - **Imports:** `analysis/keyword_match.py`, `domain/job.py`, `domain/report.py`
-- **Imported by:** `services/tailor.py`
+- **Imported by:** `cli.py`, `services/tailor.py`
 - **Tested by:** `tests/unit/test_gap_questions.py`, `tests/unit/test_profile_store.py`
 
 ### `app/analysis/jd_analyzer.py`
@@ -427,14 +428,15 @@ _Tailored professional summary (P1.5)._
 
 ### `app/cli.py`
 
-**Layer:** Entry points · **Stage:** all · **Lines:** 224
+**Layer:** Entry points · **Stage:** all · **Lines:** 277
 
 - function **`check_llm()`** ([app/cli.py:11](../app/cli.py#L11)) — One live, structured call to the configured provider. Returns an exit
-- function **`write_proposals()`** ([app/cli.py:57](../app/cli.py#L57)) — Draft proposals and gap questions into an editable JSON file (P3.6),
-- function **`read_proposals()`** ([app/cli.py:88](../app/cli.py#L88)) — The edited proposals file -> tailor_resume keyword arguments.
-- function **`_print_progress()`** ([app/cli.py:122](../app/cli.py#L122))
-- function **`main()`** ([app/cli.py:126](../app/cli.py#L126))
-- **Imports:** `domain/job.py`, `llm/client.py`, `llm/schemas.py`, `services/tailor.py`
+- function **`write_proposals()`** ([app/cli.py:60](../app/cli.py#L60)) — Draft proposals and gap questions into an editable JSON file (P3.6),
+- function **`_without_mirrors()`** ([app/cli.py:97](../app/cli.py#L97))
+- function **`read_proposals()`** ([app/cli.py:101](../app/cli.py#L101)) — The edited proposals file -> tailor_resume keyword arguments, with
+- function **`_print_progress()`** ([app/cli.py:171](../app/cli.py#L171))
+- function **`main()`** ([app/cli.py:175](../app/cli.py#L175))
+- **Imports:** `analysis/gap_questions.py`, `domain/job.py`, `llm/client.py`, `llm/schemas.py`, `services/tailor.py`
 - **Tested by:** `tests/unit/test_cli.py`, `tests/unit/test_cli_parity.py`
 
 ### `app/config/settings.py`
@@ -752,7 +754,7 @@ _Page-fit loop (P2.4): render, count pages, trim, render again._
 - class **`PdfConverter`** ([app/rendering/pdf_converter.py:9](../app/rendering/pdf_converter.py#L9))
   - `find_libreoffice_binary()` :10
   - `convert_docx_to_pdf()` :27
-- **Imported by:** `services/tailor.py`
+- **Imported by:** `services/tailor.py`, `scripts/make_eval_cases.py`
 - **Tested by:** `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_ats_round_trip.py`, `tests/unit/test_pdf_converter.py`
 
 ### `app/rendering/review_view.py`
@@ -832,7 +834,7 @@ _Local profile of facts the user has confirmed (P3.2)._
 
 ### `app/services/tailor.py`
 
-**Layer:** Services · **Stage:** all · **Lines:** 1078
+**Layer:** Services · **Stage:** all · **Lines:** 1086
 
 - class **`TailorService`** ([app/services/tailor.py:55](../app/services/tailor.py#L55))
   - `__init__()` :56
@@ -842,24 +844,25 @@ _Local profile of facts the user has confirmed (P3.2)._
   - `_prefill_from_profile()` :182 — Answers confirmed for an earlier JD pre-fill the same questions
   - `_draft_from_answer()` :194 — Polish the candidate's answer into one bullet that may use only
   - `_split_description()` :213 — Pasted role description -> bullet-sized chunks: one per line (list
-  - `add_new_role()` :222 — Add a job the resume doesn't have yet (P3.3). Each chunk of the
-  - `_skills_proposals()` :286 — The skills section with the JD's skills first, when that changes it (P1.6).
-  - `_summary_proposals()` :291 — The tailored summary as a proposal, when one was written (P1.5).
-  - `_embed()` :296 — Sentence embeddings for the planner, loaded lazily; raises when the
-  - `_fit_relevance()` :305 — Planner relevance per bullet for the page-fit loop. Bullets the user
-  - `_render_template()` :315 — One template render plus PDF conversion (the page-fit loop's step).
-  - `_apply_bullet_order()` :321 — Reorder bullets as planned (most relevant first within each
-  - `parse_resume()` :336 — File -> (raw document, ResumeDocument, evidence). The deterministic
-  - `normalize_raw()` :346
-  - `_copy_parsed()` :354 — Deep copies, so a parse kept in UI session state is never mutated.
-  - `preview_keyword_match()` :359 — Match rate if these proposals were applied (P3.4 "recalculate"):
-  - `apply_parse_corrections()` :382 — Apply the user's fixes from the "Check parsed resume" step (P3.5).
-  - `analyze_only()` :443
-  - `generate_proposals()` :469 — Generate rewrite proposals without applying them, plus questions
-  - `incorporate_user_addition()` :538 — Fold a user-supplied free-text addition (a project, an
-  - `tailor_resume()` :617
+  - `validate_new_role()` :223 — Check a new job before any work is done; raises ValueError with a
+  - `add_new_role()` :247 — Add a job the resume doesn't have yet (P3.3). Each chunk of the
+  - `_skills_proposals()` :294 — The skills section with the JD's skills first, when that changes it (P1.6).
+  - `_summary_proposals()` :299 — The tailored summary as a proposal, when one was written (P1.5).
+  - `_embed()` :304 — Sentence embeddings for the planner, loaded lazily; raises when the
+  - `_fit_relevance()` :313 — Planner relevance per bullet for the page-fit loop. Bullets the user
+  - `_render_template()` :323 — One template render plus PDF conversion (the page-fit loop's step).
+  - `_apply_bullet_order()` :329 — Reorder bullets as planned (most relevant first within each
+  - `parse_resume()` :344 — File -> (raw document, ResumeDocument, evidence). The deterministic
+  - `normalize_raw()` :354
+  - `_copy_parsed()` :362 — Deep copies, so a parse kept in UI session state is never mutated.
+  - `preview_keyword_match()` :367 — Match rate if these proposals were applied (P3.4 "recalculate"):
+  - `apply_parse_corrections()` :390 — Apply the user's fixes from the "Check parsed resume" step (P3.5).
+  - `analyze_only()` :451
+  - `generate_proposals()` :477 — Generate rewrite proposals without applying them, plus questions
+  - `incorporate_user_addition()` :546 — Fold a user-supplied free-text addition (a project, an
+  - `tailor_resume()` :625
 - function **`_progress()`** ([app/services/tailor.py:44](../app/services/tailor.py#L44)) — A progress reporter that can never break a run (P3.6).
-- function **`_merge_usage()`** ([app/services/tailor.py:1069](../app/services/tailor.py#L1069)) — Combine two LLMClient.get_usage_summary() dicts into one.
+- function **`_merge_usage()`** ([app/services/tailor.py:1077](../app/services/tailor.py#L1077)) — Combine two LLMClient.get_usage_summary() dicts into one.
 - **Imports:** `analysis/experience.py`, `analysis/gap_questions.py`, `analysis/jd_analyzer.py`, `analysis/keyword_match.py`, `analysis/matcher.py`, `analysis/resume_normalizer.py`, `analysis/rewriter.py`, `analysis/scoring.py`, `analysis/semantic_matcher.py`, `analysis/skills_tailor.py`, `analysis/structure_extractor.py`, `analysis/summary_writer.py`, `analysis/tailor_planner.py`, `domain/evidence.py`, `domain/job.py`, `domain/report.py`, `domain/resume.py`, `domain/resume_document.py`, `domain/tailoring.py`, `ingestion/docx.py`, `ingestion/pdf.py`, `llm/client.py`, `rendering/docx_patcher.py`, `rendering/html_renderer.py`, `rendering/layout.py`, `rendering/page_fit.py`, `rendering/pdf_converter.py`, `rendering/template_renderer.py`, `services/profile_store.py`, `services/run_manager.py`, `validation/content_lint.py`, `validation/factual.py`, `validation/output.py`, `validation/safety.py`, `validation/structural.py`
 - **Imported by:** `cli.py`, `eval/harness.py`, `ui.py`
 - **Tested by:** `tests/integration/test_end_to_end.py`, `tests/unit/test_check_parsed_resume.py`, `tests/unit/test_cli.py`, `tests/unit/test_cli_parity.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_new_role.py`, `tests/unit/test_profile_store.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_review_view.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_tailor_resume_flow.py`, `tests/unit/test_tailor_service_addition.py`, `tests/unit/test_ui.py`
@@ -1040,6 +1043,7 @@ flowchart LR
   analysis_summary_writer --> llm_schemas
   analysis_tailor_planner --> analysis_keyword_match
   analysis_tailor_planner --> llm_client
+  cli --> analysis_gap_questions
   cli --> llm_client
   cli --> llm_schemas
   cli --> services_tailor

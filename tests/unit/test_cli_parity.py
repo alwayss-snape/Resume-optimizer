@@ -94,3 +94,64 @@ def test_cli_propose_and_tailor_end_to_end(tmp_path):
     assert out.returncode == 0, out.stderr[-2000:]
     assert "Keyword match rate:" in out.stdout and "TAILORING COMPLETE" in out.stdout
     assert not (tmp_path / "facts.json").exists()  # --no-remember
+
+
+# -- review fixes ----------------------------------------------------------------
+
+def _file(tmp_path, **overrides):
+    data = {"proposals": [], "gap_questions": [], "addition": {"text": "", "target": "auto"}, "new_role": None,
+            "job_description": None, **overrides}
+    path = tmp_path / "p.json"
+    path.write_text(json.dumps(data), encoding="utf-8")
+    return str(path)
+
+
+def test_emptied_keywords_withdraw_an_unchanged_saved_answer(tmp_path):
+    q = {"question_id": "gap_1", "requirement": "Kafka", "keywords": ["Kafka"], "confirmed_keywords": [],
+         "answer": "Ran Kafka.", "saved_keywords": ["Kafka"], "saved_answer": "Ran Kafka."}
+    assert read_proposals(_file(tmp_path, gap_questions=[q]))["gap_answers"] == []
+    q["answer"] = "Ran Kafka and Flink at Acme."  # changed: the user means it
+    assert len(read_proposals(_file(tmp_path, gap_questions=[q]))["gap_answers"]) == 1
+
+
+def test_gap_questions_are_passed_on_for_requirement_context(tmp_path):
+    q = {"question_id": "gap_1", "requirement": "Streaming with Kafka", "keywords": ["Kafka"],
+         "confirmed_keywords": ["Kafka"], "answer": ""}
+    extra = read_proposals(_file(tmp_path, gap_questions=[q]))
+    assert extra["gap_questions"][0].requirement == "Streaming with Kafka"
+
+
+def test_mirror_keys_are_not_written_and_string_false_rejects(tmp_path):
+    data = write_proposals(_service(tmp_path), RESUME, JD, str(tmp_path / "w.json"))
+    assert not any(k in p for p in data["proposals"] for k in ("rewritten_text", "semantic_id", "source_id"))
+    p = {"kind": "bullet", "target_semantic_id": "b1", "original_text": "a", "proposed_text": "b",
+         "draft_text": "b", "apply": "false", "rewritten_text": "stale"}
+    assert read_proposals(_file(tmp_path, proposals=[p]))["preapproved_proposals"] == []
+    p["apply"] = True
+    applied = read_proposals(_file(tmp_path, proposals=[p]))["preapproved_proposals"][0]
+    assert "rewritten_text" not in applied and applied["user_edited"] is False
+
+
+def test_bad_files_fail_early_with_a_readable_error(tmp_path):
+    import pytest
+    with pytest.raises(ValueError, match="not found"):
+        read_proposals(str(tmp_path / "missing.json"))
+    bad = tmp_path / "bad.json"
+    bad.write_text("{oops", encoding="utf-8")
+    with pytest.raises(ValueError, match="not valid JSON"):
+        read_proposals(str(bad))
+    with pytest.raises(ValueError, match="start date"):
+        read_proposals(_file(tmp_path, new_role={"company": "X", "title": "Y", "description": "Did Z."}))
+    old_schema = read_proposals(_file(tmp_path, job_description={"requirements": "not a list"}))
+    assert old_schema["job_desc"] is None
+
+
+def test_cli_prints_error_instead_of_traceback(tmp_path):
+    jd_path = tmp_path / "jd.txt"
+    jd_path.write_text(JD, encoding="utf-8")
+    bad = tmp_path / "bad.json"
+    bad.write_text("{oops", encoding="utf-8")
+    out = subprocess.run([sys.executable, "-m", "app.cli", "tailor", "--resume", RESUME, "--jd", str(jd_path),
+                          "--proposals", str(bad), "--output", str(tmp_path / "out")],
+                         capture_output=True, text=True, timeout=300)
+    assert out.returncode == 1 and "Error:" in out.stdout and "Traceback" not in out.stderr
