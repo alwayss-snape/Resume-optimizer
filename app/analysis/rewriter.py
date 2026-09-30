@@ -1,4 +1,5 @@
 import os
+import re
 from typing import Dict, List, Optional, Tuple
 from uuid import uuid4
 
@@ -11,6 +12,23 @@ from app.domain.resume import Resume
 from app.domain.tailoring import TailoringAction, TailoringPlan
 from app.llm.client import LLMClient
 from app.llm.schemas import BulletRewriteResult, MissingRequirementSuggestion
+
+
+# Typographic Unicode that some models (e.g. gpt-oss) emit: non-breaking /
+# narrow / thin spaces and non-breaking hyphens. They look identical but
+# break keyword matching, number checks and ATS parsing, so LLM output is
+# normalised to plain ASCII spaces and hyphens.
+_UNICODE_SPACES = re.compile(r"[\u00a0\u2007\u2009\u200a\u202f\u205f]")
+_UNICODE_HYPHENS = re.compile(r"[\u2010\u2011\u2012]")
+# A number split from its unit by a space ("50 M" -> "50M").
+_SPLIT_UNIT = re.compile(r"(\d)\s+([KMBkmb])(?![A-Za-z])")
+
+
+def normalize_llm_text(text: str) -> str:
+    text = _UNICODE_SPACES.sub(" ", text or "")
+    text = _UNICODE_HYPHENS.sub("-", text)
+    text = _SPLIT_UNIT.sub(r"\1\2", text)
+    return re.sub(r"[ \t]{2,}", " ", text).strip()
 
 
 # Outcome of one rewrite attempt (stored on ChangeProposal.status).
@@ -100,7 +118,7 @@ class LLMRewriter:
                 schema_model=BulletRewriteResult,
                 temperature=0.1,
             )
-            rewritten = (result.rewritten or "").strip()
+            rewritten = normalize_llm_text(result.rewritten or "")
             if rewritten.startswith("•") or rewritten.startswith("-"):
                 rewritten = rewritten.lstrip("•- ").strip()
             if not rewritten or rewritten == original_text.strip():
@@ -149,7 +167,8 @@ class LLMRewriter:
                 schema_model=MissingRequirementSuggestion,
                 temperature=0.2,
             )
-            if not (result.suggested_phrasing or "").strip():
+            result.suggested_phrasing = normalize_llm_text(result.suggested_phrasing or "")
+            if not result.suggested_phrasing:
                 return None
             result.requirement_text = requirement_text
             return result

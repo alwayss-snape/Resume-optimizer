@@ -160,3 +160,11 @@ def test_rewrite_status_ok_and_unchanged():
     assert LLMRewriter(client).rewrite_bullet_with_status("Built X.", [], [])[2] == STATUS_OK
     client.generate_json.return_value = BulletRewriteResult(rewritten="Built X.", rationale="r")
     assert LLMRewriter(client).rewrite_bullet_with_status("Built X.", [], [])[2] == STATUS_UNCHANGED
+
+
+def test_normalize_llm_text_fixes_typographic_unicode():
+    from app.analysis.rewriter import normalize_llm_text
+    raw = "Architected high‑throughput services processing over 50 M daily requests, cutting cost 2 x."
+    out = normalize_llm_text(raw)
+    assert out == "Architected high-throughput services processing over 50M daily requests, cutting cost 2 x."
+    assert all(ord(c) < 128 for c in out)

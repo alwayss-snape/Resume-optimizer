@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "3b58660e4d583b77",
+  "source_hash": "dc6c8fe69448f245",
   "stats": {
     "files": 85,
     "python_files": 65,
     "app_modules": 35,
     "test_files": 24,
     "classes": 59,
-    "functions": 262,
-    "lines_of_python": 7939
+    "functions": 264,
+    "lines_of_python": 7966
   },
   "axes": {
     "x": "location (path)",
@@ -392,43 +392,49 @@
       "stages": [
         "7 Rewrite"
       ],
-      "lines": 210,
+      "lines": 229,
       "doc": "",
       "classes": [
         {
           "name": "LLMRewriter",
-          "line": 30,
+          "line": 48,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
-              "line": 31,
+              "line": 49,
               "doc": ""
             },
             {
               "name": "rewrite_bullet",
-              "line": 34,
+              "line": 52,
               "doc": "Rewrite (or, given a single free-text `original_text` with no"
             },
             {
               "name": "rewrite_bullet_with_status",
-              "line": 54,
+              "line": 72,
               "doc": "Like rewrite_bullet, plus what happened, so failures are visible"
             },
             {
               "name": "suggest_for_missing_requirement",
-              "line": 112,
+              "line": 130,
               "doc": "Advisory only. For a JD requirement the resume doesn't currently"
             },
             {
               "name": "execute_plan",
-              "line": 159,
+              "line": 178,
               "doc": ""
             }
           ]
         }
       ],
-      "functions": []
+      "functions": [
+        {
+          "name": "normalize_llm_text",
+          "line": 27,
+          "doc": ""
+        }
+      ]
     },
     {
       "id": "app/analysis/scoring.py",
@@ -1073,7 +1079,7 @@
       "type": "prompt",
       "layer": "LLM",
       "stages": [],
-      "lines": 30
+      "lines": 31
     },
     {
       "id": "app/llm/prompts/tailoring_plan.txt",
@@ -2425,7 +2431,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 162,
+      "lines": 170,
       "doc": "",
       "classes": [],
       "functions": [
@@ -2467,6 +2473,11 @@
         {
           "name": "test_rewrite_status_ok_and_unchanged",
           "line": 154,
+          "doc": ""
+        },
+        {
+          "name": "test_normalize_llm_text_fixes_typographic_unicode",
+          "line": 165,
           "doc": ""
         }
       ]

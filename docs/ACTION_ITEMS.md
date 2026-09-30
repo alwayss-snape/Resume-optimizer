@@ -28,13 +28,15 @@ JD-aligned rewrites, a Novoresume-style ATS layout that fits the right length, a
 | Layout | Clean ATS single column following Novoresume's layout conventions (our own implementation, not their assets or text) |
 | Gaps | Suggest-and-confirm: the tool asks, and drafts only from the user's answer. Never fabricate |
 | Confirmed facts | Saved locally (`data/profile/facts.json`, gitignored) and reused across JDs |
-| LLM | Claude API (`anthropic` SDK, `claude-opus-5-5`, structured outputs) as primary; Groq as free fallback. Claude Pro does **not** include API access, so this needs a pay-as-you-go API key (~$0.15–0.30 per resume) |
+| LLM | **Groq free tier only** (`openai/gpt-oss-120b`), with no paid APIs (decided 2026-09-30). The Claude provider (P0.1) stays in the code but is shelved: not used, not even as a fallback. Claude Pro does not include API access |
 
 ---
 
 ## Phase 0: Make the LLM path work, stop silent failures
 
 **Exit gate:** a run on the real resume + a real JD shows rewrites that actually change; baseline metrics recorded (P4.1).
+
+**Gate status (2026-09-30):** 🟡 Live Groq verified: `check-llm` OK (0.7 s); a full fixture run gave 2/2 genuinely rewritten bullets, 8 calls, ~8.6K tokens. Found and fixed: gpt-oss emits non-breaking spaces/hyphens ("50 M"), which broke the number check. **Still open:** the validator rejects both good rewrites for new verbs ("cutting", "processed"), so P1.8 is next. Real-resume run + baseline pending.
 
 | ID | Action | Files | Resolves | Status | Notes |
 |---|---|---|---|---|---|

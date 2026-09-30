@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**35 app modules · 24 test files · 59 classes · 262 functions/methods · 7,939 lines of Python** · source hash `3b58660e4d583b77`
+**35 app modules · 24 test files · 59 classes · 264 functions/methods · 7,966 lines of Python** · source hash `dc6c8fe69448f245`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -201,14 +201,15 @@ Spanning all stages: `app/cli.py`, `app/services/tailor.py`, `app/ui.py`
 
 ### `app/analysis/rewriter.py`
 
-**Layer:** Analysis · **Stage:** 7 Rewrite · **Lines:** 210
+**Layer:** Analysis · **Stage:** 7 Rewrite · **Lines:** 229
 
-- class **`LLMRewriter`** ([app/analysis/rewriter.py:30](../app/analysis/rewriter.py#L30))
-  - `__init__()` :31
-  - `rewrite_bullet()` :34 — Rewrite (or, given a single free-text `original_text` with no
-  - `rewrite_bullet_with_status()` :54 — Like rewrite_bullet, plus what happened, so failures are visible
-  - `suggest_for_missing_requirement()` :112 — Advisory only. For a JD requirement the resume doesn't currently
-  - `execute_plan()` :159
+- class **`LLMRewriter`** ([app/analysis/rewriter.py:48](../app/analysis/rewriter.py#L48))
+  - `__init__()` :49
+  - `rewrite_bullet()` :52 — Rewrite (or, given a single free-text `original_text` with no
+  - `rewrite_bullet_with_status()` :72 — Like rewrite_bullet, plus what happened, so failures are visible
+  - `suggest_for_missing_requirement()` :130 — Advisory only. For a JD requirement the resume doesn't currently
+  - `execute_plan()` :178
+- function **`normalize_llm_text()`** ([app/analysis/rewriter.py:27](../app/analysis/rewriter.py#L27))
 - **Imports:** `analysis/change_proposal.py`, `domain/evidence.py`, `domain/job.py`, `domain/resume.py`, `domain/tailoring.py`, `llm/client.py`, `llm/schemas.py`
 - **Imported by:** `rendering/docx_patcher.py`, `services/tailor.py`, `services/validation_agent.py`, `validation/factual.py`
 - **Tested by:** `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_docx_renderer.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_tailor_resume_flow.py`, `tests/unit/test_validation.py`
