@@ -492,6 +492,8 @@ if st.session_state.stage == "proposals":
             with col2:
                 if getattr(p, "kind", "bullet") == "summary":
                     st.markdown("**Professional summary**")
+                elif getattr(p, "kind", "bullet") == "skills":
+                    st.markdown("**Skills** (one \"Category: a, b, c\" line each; reordering only, nothing is added)")
                 st.markdown(f"**Original:** {orig or '(no summary)'}")
                 edt = st.text_area(f"Proposed ({i+1})", value=prop_text, key=keybase + "_edit", height=80)
                 if rationale:

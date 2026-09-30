@@ -83,3 +83,9 @@ def test_split_skill_line_single_space_before_label():
         ("Languages", ["Python", "SQL"]), ("Frameworks", ["Pandas", "XGBoost"]),
     ]
     assert n._split_skill_line("Python, Java") == [("Skills", ["Python", "Java"])]
+
+
+def test_ampersand_label_is_one_skill_category():
+    n = ResumeNormalizer()
+    assert n._split_skill_line("Frameworks & Tools: FastAPI, Docker") == [("Frameworks & Tools", ["FastAPI", "Docker"])]
+    assert n._split_skill_line("Cloud and DevOps: AWS") == [("Cloud and DevOps", ["AWS"])]

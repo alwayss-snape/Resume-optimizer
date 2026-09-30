@@ -93,8 +93,11 @@ def test_generate_proposals_reports_llm_status_when_unavailable(tmp_path):
     status = out["llm_status"]
     assert out["llm_available"] is False and status["available"] is False
     assert status["reason"]  # a human-readable cause, shown in the UI
-    assert status["failed"] == status["attempted"] == len(out["proposals"])
-    assert all(p.status == "llm_unavailable" for p in out["proposals"])
+    # The skills reorder (P1.6) is deterministic, so it's offered without an LLM.
+    llm_made = [p for p in out["proposals"] if p.kind != "skills"]
+    assert status["failed"] == status["attempted"] - 1 == len(llm_made)
+    assert all(p.status == "llm_unavailable" for p in llm_made)
+    assert [p.kind for p in out["proposals"] if p.status == "ok"] == ["skills"]
     assert out["llm_usage"] is not None
 
 

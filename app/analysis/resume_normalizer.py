@@ -94,7 +94,8 @@ class ResumeNormalizer:
     # "Frameworks:" in "Languages: Python, SQL<tab>Frameworks: Pandas". A single
     # capitalised word right before the colon, so "SQL Frameworks:" splits
     # before "Frameworks", not before "SQL".
-    _SKILL_LABEL_SPLIT_RE = re.compile(r"\t+|\s{2,}|\s(?=[A-Z][A-Za-z/&+-]*:\s)")
+    # Never right after "&", "/" or "and": "Frameworks & Tools:" is one label.
+    _SKILL_LABEL_SPLIT_RE = re.compile(r"\t+|\s{2,}|(?<![&/])(?<!\band)\s(?=[A-Z][A-Za-z/&+-]*:\s)")
     _LABEL_RE = re.compile(r"^([A-Za-z][\w &/+-]{0,30}):\s*(.*)$", re.DOTALL)
 
     def _split_skill_line(self, text: str) -> List[Tuple[str, List[str]]]:

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-30T12:46:58+00:00",
+  "generated_at": "2026-09-30T14:10:41+00:00",
   "mode": "offline",
   "tailor": false,
   "cases": {
@@ -63,7 +63,7 @@
         "llm_seconds": 0.0,
         "retries_429": 0
       },
-      "elapsed_s": 0.1
+      "elapsed_s": 6.6
     },
     "sample-docx": {
       "private": false,
@@ -72,7 +72,7 @@
         "experience": 2,
         "roles": 2,
         "bullets": 5,
-        "skills": 13
+        "skills": 12
       },
       "jd": {
         "source": "heuristic",
@@ -91,8 +91,9 @@
         "score": 77.8,
         "evidence_score": 10.3,
         "statuses": {
-          "MISSING": 5,
-          "PARTIAL": 1
+          "SEMANTIC_PARTIAL": 3,
+          "PARTIAL": 1,
+          "MISSING": 2
         },
         "keywords_matched": 10,
         "keywords_missing": [
@@ -118,7 +119,7 @@
         "llm_seconds": 0.0,
         "retries_429": 0
       },
-      "elapsed_s": 0.1
+      "elapsed_s": 0.4
     },
     "sample-pdf": {
       "private": false,
@@ -149,7 +150,8 @@
         "evidence_score": 5.1,
         "statuses": {
           "PARTIAL": 1,
-          "MISSING": 5
+          "SEMANTIC_PARTIAL": 1,
+          "MISSING": 4
         },
         "keywords_matched": 5,
         "keywords_missing": [
@@ -185,7 +187,7 @@
         "llm_seconds": 0.0,
         "retries_429": 0
       },
-      "elapsed_s": 0.0
+      "elapsed_s": 0.2
     }
   }
 }

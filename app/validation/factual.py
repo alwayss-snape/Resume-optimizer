@@ -180,6 +180,18 @@ class FactualValidator:
 
     # ------------------------------------------------------------------
 
+    def _validate_skills(self, proposal) -> ValidationResult:
+        """The skills section may be reordered and respelled, never extended (P1.6)."""
+        from app.analysis.skills_tailor import parse_skills, unknown_skills
+        added = unknown_skills(parse_skills(getattr(proposal, "original_text", "")),
+                               parse_skills(getattr(proposal, "proposed_text", None) or ""))
+        warnings = ["Skills rejected: not in your resume: " + ", ".join(added)] if added else []
+        verdict: Verdict = "REJECT" if added else "PASS"
+        check = ClaimCheck(claim=getattr(proposal, "proposed_text", "") or "", status="SUPPORTED" if not added
+                           else "UNSUPPORTED", explanation=" ".join(warnings) or "Same skills, reordered.")
+        return ValidationResult(approved=not added, proposal=proposal, verdict=verdict,
+                                claim_checks=[check], warnings=warnings)
+
     def _validate_summary(self, proposal, evidence_list: List[Evidence],
                           jd_keywords: Optional[List[str]]) -> ValidationResult:
         """A summary may draw on the whole resume (P1.5): every factual term
@@ -230,6 +242,8 @@ class FactualValidator:
 
         if getattr(proposal, "kind", "bullet") == "summary":
             return self._validate_summary(proposal, evidence_list, jd_keywords)
+        if getattr(proposal, "kind", "bullet") == "skills":
+            return self._validate_skills(proposal)
 
         # The cited evidence that belongs to this bullet (by semantic id or raw location id).
         source_evidence = []

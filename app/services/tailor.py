@@ -12,6 +12,7 @@ from app.analysis.rewriter import FAILED_STATUSES, LLMRewriter, RewriteProposal
 from app.analysis.scoring import AlignmentScorer
 from app.analysis.semantic_matcher import SemanticMatcher
 from app.analysis.structure_extractor import StructureExtractor
+from app.analysis.skills_tailor import SkillsTailor, parse_skills
 from app.analysis.summary_writer import SummaryWriter
 from app.analysis.tailor_planner import TailoringPlanner
 from app.domain.evidence import Evidence
@@ -55,6 +56,7 @@ class TailorService:
         self.planner = TailoringPlanner(self.llm_client, embedder=self._embed)
         self.rewriter = LLMRewriter(self.llm_client)
         self.summary_writer = SummaryWriter(self.llm_client)
+        self.skills_tailor = SkillsTailor()
         self.validator = FactualValidator()
         self.struct_validator = StructuralValidator()
         self.docx_patcher = DocxPatcher()
@@ -117,6 +119,8 @@ class TailorService:
         emptied so the old summary doesn't remain."""
         out = []
         for p in proposals:
+            if getattr(p, "kind", "bullet") == "skills":
+                continue  # skills order can't be patched in place; the template shows it
             if getattr(p, "kind", "bullet") != "summary":
                 out.append(p)
                 continue
@@ -128,6 +132,11 @@ class TailorService:
                     "proposed_text": p.proposed_text if i == 0 else "",
                 }))
         return out
+
+    def _skills_proposals(self, resume, keyword_report) -> List[RewriteProposal]:
+        """The skills section with the JD's skills first, when that changes it (P1.6)."""
+        proposal = self.skills_tailor.propose(resume, keyword_report)
+        return [proposal] if proposal is not None else []
 
     def _summary_proposals(self, resume, job_desc, keyword_report, evidence_list) -> List[RewriteProposal]:
         """The tailored summary as a proposal, when one was written (P1.5)."""
@@ -290,6 +299,7 @@ class TailorService:
         score = keyword_report.rate
         plan = self.planner.create_plan(resume, job_desc, evidence_list, matches)
         proposals = self._summary_proposals(resume, job_desc, keyword_report, evidence_list)
+        proposals += self._skills_proposals(resume, keyword_report)
         proposals += self.rewriter.execute_plan(resume, plan, evidence_list, job_desc)
         # Fact-check now so the review UI can show each proposal's verdict
         # (and what would be dropped) before the user applies anything.
@@ -493,6 +503,7 @@ class TailorService:
             _append_progress(f"Using {len(proposals)} user-approved proposals (rewriter skipped)")
         else:
             proposals = self._summary_proposals(resume, job_desc, initial_keywords, evidence_list)
+            proposals += self._skills_proposals(resume, initial_keywords)
             proposals += self.rewriter.execute_plan(resume, plan, evidence_list, job_desc)
             _append_progress(f"Planner created plan with {len(plan.actions)} actions; generated {len(proposals)} proposals")
 
@@ -546,6 +557,11 @@ class TailorService:
                     for ev in summary_ev[1:]:
                         evidence_list.remove(ev)
 
+        # Reordered / respelled skills (P1.6), from the (possibly edited) text.
+        for p in approved_proposals:
+            if getattr(p, "kind", "bullet") == "skills" and parse_skills(_prop_text(p)):
+                resume.skills = parse_skills(_prop_text(p))
+
         # Apply approved rewrites to the canonical resume model (semantic ids).
         prop_dict = {_prop_key(p): _prop_text(p) for p in approved_proposals
                      if getattr(p, "kind", "bullet") == "bullet"}
@@ -578,6 +594,7 @@ class TailorService:
                     if b.id in original_text:
                         b.text = original_text[b.id]
             resume.summary = original_resume.summary
+            resume.skills = original_resume.skills
             evidence_list[:] = original_evidence
             approved_proposals = []
             warnings.append(

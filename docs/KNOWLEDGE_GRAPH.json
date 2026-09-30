@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "1201c2e4d9483221",
+  "source_hash": "8f454ae208a64137",
   "stats": {
-    "files": 108,
-    "python_files": 83,
-    "app_modules": 43,
-    "test_files": 33,
-    "classes": 77,
-    "functions": 485,
-    "lines_of_python": 11762
+    "files": 110,
+    "python_files": 85,
+    "app_modules": 44,
+    "test_files": 34,
+    "classes": 78,
+    "functions": 503,
+    "lines_of_python": 11983
   },
   "axes": {
     "x": "location (path)",
@@ -488,7 +488,7 @@
       "stages": [
         "2 Normalize"
       ],
-      "lines": 601,
+      "lines": 602,
       "doc": "",
       "classes": [
         {
@@ -508,57 +508,57 @@
             },
             {
               "name": "_split_skill_line",
-              "line": 100,
+              "line": 101,
               "doc": "'Languages: Python, SQL<tab>Frameworks: Pandas, and XGBoost' ->"
             },
             {
               "name": "_skill_items",
-              "line": 121,
+              "line": 122,
               "doc": ""
             },
             {
               "name": "_is_dated_line",
-              "line": 131,
+              "line": 132,
               "doc": "A job title/company line carrying a date range or year."
             },
             {
               "name": "_experience_line_kind",
-              "line": 138,
+              "line": 139,
               "doc": "'dated' (title and/or company with dates), 'header_line' (a short"
             },
             {
               "name": "_add_role",
-              "line": 157,
+              "line": 158,
               "doc": "Record a role; the first one also fills the entry's title/dates."
             },
             {
               "name": "_merge_links",
-              "line": 167,
+              "line": 168,
               "doc": "Profile links from the file's hyperlinks and from URLs written in"
             },
             {
               "name": "_extract_date_range",
-              "line": 181,
+              "line": 182,
               "doc": ""
             },
             {
               "name": "_strip_date_range",
-              "line": 185,
+              "line": 186,
               "doc": ""
             },
             {
               "name": "_parse_title_and_dates",
-              "line": 189,
+              "line": 190,
               "doc": "'Data Scientist II | August 2024 - Present' ->"
             },
             {
               "name": "_split_respecting_parens",
-              "line": 198,
+              "line": 199,
               "doc": "Split on sep_chars, but never inside ( ) or [ ] groups \u2014 so"
             },
             {
               "name": "normalize",
-              "line": 221,
+              "line": 222,
               "doc": ""
             }
           ]
@@ -706,6 +706,57 @@
           "name": "_cosine_similarity",
           "line": 33,
           "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "app/analysis/skills_tailor.py",
+      "type": "python",
+      "layer": "Analysis",
+      "stages": [
+        "7 Rewrite"
+      ],
+      "lines": 91,
+      "doc": "Skills tailoring (P1.6), deterministic: no LLM, nothing added.",
+      "classes": [
+        {
+          "name": "SkillsTailor",
+          "line": 43,
+          "doc": "",
+          "methods": [
+            {
+              "name": "tailor",
+              "line": 44,
+              "doc": ""
+            },
+            {
+              "name": "propose",
+              "line": 71,
+              "doc": "A skills proposal, or None when nothing would change."
+            }
+          ]
+        }
+      ],
+      "functions": [
+        {
+          "name": "format_skills",
+          "line": 21,
+          "doc": "One \"Category: a, b, c\" line per category (the editable form)."
+        },
+        {
+          "name": "parse_skills",
+          "line": 26,
+          "doc": "Inverse of format_skills; a line without a label goes under \"Skills\"."
+        },
+        {
+          "name": "_key",
+          "line": 39,
+          "doc": ""
+        },
+        {
+          "name": "unknown_skills",
+          "line": 88,
+          "doc": "Skills in `proposed` that aren't in `original` under any spelling."
         }
       ]
     },
@@ -2012,82 +2063,87 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 795,
+      "lines": 812,
       "doc": "",
       "classes": [
         {
           "name": "TailorService",
-          "line": 36,
+          "line": 37,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
-              "line": 37,
+              "line": 38,
               "doc": ""
             },
             {
               "name": "generate_preview_md",
-              "line": 68,
+              "line": 70,
               "doc": ""
             },
             {
               "name": "_patchable",
-              "line": 114,
+              "line": 116,
               "doc": "Proposals as in-place DOCX patches. A summary proposal targets the"
             },
             {
+              "name": "_skills_proposals",
+              "line": 136,
+              "doc": "The skills section with the JD's skills first, when that changes it (P1.6)."
+            },
+            {
               "name": "_summary_proposals",
-              "line": 132,
+              "line": 141,
               "doc": "The tailored summary as a proposal, when one was written (P1.5)."
             },
             {
               "name": "_embed",
-              "line": 137,
+              "line": 146,
               "doc": "Sentence embeddings for the planner, loaded lazily; raises when the"
             },
             {
               "name": "_apply_bullet_order",
-              "line": 146,
+              "line": 155,
               "doc": "Reorder bullets as planned (most relevant first within each"
             },
             {
               "name": "parse_resume",
-              "line": 161,
+              "line": 170,
               "doc": "File -> (raw document, ResumeDocument, evidence). The deterministic"
             },
             {
               "name": "normalize_raw",
-              "line": 171,
+              "line": 180,
               "doc": ""
             },
             {
               "name": "_copy_parsed",
-              "line": 179,
+              "line": 188,
               "doc": "Deep copies, so a parse kept in UI session state is never mutated."
             },
             {
               "name": "apply_parse_corrections",
-              "line": 184,
+              "line": 193,
               "doc": "Apply the user's fixes from the \"Check parsed resume\" step (P3.5)."
             },
             {
               "name": "analyze_only",
-              "line": 245,
+              "line": 254,
               "doc": ""
             },
             {
               "name": "generate_proposals",
-              "line": 271,
+              "line": 280,
               "doc": "Generate rewrite proposals without applying them, plus advisory"
             },
             {
               "name": "incorporate_user_addition",
-              "line": 334,
+              "line": 344,
               "doc": "Fold a user-supplied free-text addition (a project, an"
             },
             {
               "name": "tailor_resume",
-              "line": 408,
+              "line": 418,
               "doc": ""
             }
           ]
@@ -2096,7 +2152,7 @@
       "functions": [
         {
           "name": "_merge_usage",
-          "line": 786,
+          "line": 803,
           "doc": "Combine two LLMClient.get_usage_summary() dicts into one."
         }
       ]
@@ -2147,7 +2203,7 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 678,
+      "lines": 680,
       "doc": "",
       "classes": [],
       "functions": [
@@ -2190,7 +2246,7 @@
       "stages": [
         "8 Validate"
       ],
-      "lines": 307,
+      "lines": 321,
       "doc": "",
       "classes": [
         {
@@ -2251,13 +2307,18 @@
               "doc": "(token, starts_a_sentence) pairs, so the capital of every"
             },
             {
-              "name": "_validate_summary",
+              "name": "_validate_skills",
               "line": 183,
+              "doc": "The skills section may be reordered and respelled, never extended (P1.6)."
+            },
+            {
+              "name": "_validate_summary",
+              "line": 195,
               "doc": "A summary may draw on the whole resume (P1.5): every factual term"
             },
             {
               "name": "validate_proposal",
-              "line": 220,
+              "line": 232,
               "doc": ""
             }
           ]
@@ -2436,118 +2497,118 @@
       "type": "python",
       "layer": "Tooling",
       "stages": [],
-      "lines": 725,
+      "lines": 726,
       "doc": "Regenerate the repo's living docs: the knowledge graph and the change log.",
       "classes": [],
       "functions": [
         {
           "name": "git",
-          "line": 123,
+          "line": 124,
           "doc": ""
         },
         {
           "name": "layer_of",
-          "line": 130,
+          "line": 131,
           "doc": ""
         },
         {
           "name": "module_name",
-          "line": 137,
+          "line": 138,
           "doc": ""
         },
         {
           "name": "first_line",
-          "line": 144,
+          "line": 145,
           "doc": ""
         },
         {
           "name": "list_files",
-          "line": 153,
+          "line": 154,
           "doc": "Tracked + new (not ignored) files, restricted to the project map."
         },
         {
           "name": "parse_python",
-          "line": 171,
+          "line": 172,
           "doc": ""
         },
         {
           "name": "symbols_of",
-          "line": 199,
+          "line": 200,
           "doc": ""
         },
         {
           "name": "settings_fields",
-          "line": 212,
+          "line": 213,
           "doc": ""
         },
         {
           "name": "build_graph",
-          "line": 231,
+          "line": 232,
           "doc": ""
         },
         {
           "name": "render_graph_md",
-          "line": 305,
+          "line": 306,
           "doc": ""
         },
         {
           "name": "write_graph",
-          "line": 503,
+          "line": 504,
           "doc": ""
         },
         {
           "name": "commit_info",
-          "line": 546,
+          "line": 547,
           "doc": ""
         },
         {
           "name": "changed_files",
-          "line": 557,
+          "line": 558,
           "doc": ""
         },
         {
           "name": "is_major",
-          "line": 570,
+          "line": 571,
           "doc": ""
         },
         {
           "name": "blob",
-          "line": 579,
+          "line": 580,
           "doc": ""
         },
         {
           "name": "structure_delta",
-          "line": 584,
+          "line": 585,
           "doc": ""
         },
         {
           "name": "render_entry",
-          "line": 607,
+          "line": 608,
           "doc": ""
         },
         {
           "name": "_split_entries",
-          "line": 650,
+          "line": 651,
           "doc": ""
         },
         {
           "name": "_join",
-          "line": 662,
+          "line": 663,
           "doc": ""
         },
         {
           "name": "log_entry",
-          "line": 666,
+          "line": 667,
           "doc": ""
         },
         {
           "name": "backfill",
-          "line": 684,
+          "line": 685,
           "doc": ""
         },
         {
           "name": "main",
-          "line": 701,
+          "line": 702,
           "doc": ""
         }
       ]
@@ -3579,7 +3640,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 85,
+      "lines": 91,
       "doc": "",
       "classes": [],
       "functions": [
@@ -3616,6 +3677,11 @@
         {
           "name": "test_split_skill_line_single_space_before_label",
           "line": 80,
+          "doc": ""
+        },
+        {
+          "name": "test_ampersand_label_is_one_skill_category",
+          "line": 88,
           "doc": ""
         }
       ]
@@ -3825,6 +3891,62 @@
           "name": "test_model_loads_from_local_cache_first",
           "line": 147,
           "doc": "An online load does Hub update checks on every start (~90 s on a"
+        }
+      ]
+    },
+    {
+      "id": "tests/unit/test_skills_tailor.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 86,
+      "doc": "Skills tailoring (P1.6): reorder by JD relevance, JD spelling, never add.",
+      "classes": [],
+      "functions": [
+        {
+          "name": "_report",
+          "line": 22,
+          "doc": ""
+        },
+        {
+          "name": "test_jd_skills_first_and_jd_spelling_only_for_the_same_term",
+          "line": 29,
+          "doc": ""
+        },
+        {
+          "name": "test_category_with_most_jd_skills_moves_up",
+          "line": 37,
+          "doc": ""
+        },
+        {
+          "name": "test_nothing_is_added_or_removed",
+          "line": 41,
+          "doc": ""
+        },
+        {
+          "name": "test_format_and_parse_round_trip_keeps_parenthetical_lists",
+          "line": 46,
+          "doc": ""
+        },
+        {
+          "name": "test_validator_rejects_added_skills",
+          "line": 51,
+          "doc": ""
+        },
+        {
+          "name": "test_no_proposal_when_order_already_fits",
+          "line": 60,
+          "doc": ""
+        },
+        {
+          "name": "_service",
+          "line": 66,
+          "doc": ""
+        },
+        {
+          "name": "test_applied_in_template_mode_and_skipped_in_preserve",
+          "line": 73,
+          "doc": ""
         }
       ]
     },
@@ -4049,7 +4171,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 146,
+      "lines": 149,
       "doc": "tailor_resume orchestration: pre-approved proposals and Strict Factual Mode.",
       "classes": [],
       "functions": [
@@ -4090,17 +4212,17 @@
         },
         {
           "name": "test_user_edited_text_is_kept_not_silently_dropped",
-          "line": 101,
+          "line": 104,
           "doc": "Regression (F17): the user's own wording went through the fact-checker"
         },
         {
           "name": "test_generate_proposals_attaches_validation_verdicts",
-          "line": 115,
+          "line": 118,
           "doc": ""
         },
         {
           "name": "test_jd_analysis_is_reused_and_scores_are_keyword_match_rates",
-          "line": 131,
+          "line": 134,
           "doc": "The JD analysed for the proposals is passed on, so Apply & Generate"
         }
       ]
@@ -4293,6 +4415,11 @@
     },
     {
       "from": "app/analysis/change_proposal.py",
+      "to": "tests/unit/test_skills_tailor.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/analysis/change_proposal.py",
       "to": "tests/unit/test_summary_writer.py",
       "type": "tested_by"
     },
@@ -4379,6 +4506,11 @@
     {
       "from": "app/analysis/keyword_match.py",
       "to": "tests/unit/test_keyword_match.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/analysis/keyword_match.py",
+      "to": "tests/unit/test_skills_tailor.py",
       "type": "tested_by"
     },
     {
@@ -4614,6 +4746,36 @@
     {
       "from": "app/analysis/semantic_matcher.py",
       "to": "tests/unit/test_semantic_matcher.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/analysis/skills_tailor.py",
+      "to": "app/analysis/change_proposal.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/analysis/skills_tailor.py",
+      "to": "app/analysis/keyword_match.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/analysis/skills_tailor.py",
+      "to": "app/analysis/skills_tailor.py::SkillsTailor",
+      "type": "contains"
+    },
+    {
+      "from": "app/analysis/skills_tailor.py",
+      "to": "app/domain/report.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/analysis/skills_tailor.py",
+      "to": "app/domain/resume.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/analysis/skills_tailor.py",
+      "to": "tests/unit/test_skills_tailor.py",
       "type": "tested_by"
     },
     {
@@ -4893,6 +5055,11 @@
     },
     {
       "from": "app/domain/job.py",
+      "to": "tests/unit/test_skills_tailor.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/job.py",
       "to": "tests/unit/test_summary_writer.py",
       "type": "tested_by"
     },
@@ -5029,6 +5196,11 @@
     {
       "from": "app/domain/resume.py",
       "to": "tests/unit/test_rewriter.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/resume.py",
+      "to": "tests/unit/test_skills_tailor.py",
       "type": "tested_by"
     },
     {
@@ -5588,6 +5760,11 @@
     },
     {
       "from": "app/services/run_manager.py",
+      "to": "tests/unit/test_skills_tailor.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/services/run_manager.py",
       "to": "tests/unit/test_summary_writer.py",
       "type": "tested_by"
     },
@@ -5629,6 +5806,11 @@
     {
       "from": "app/services/tailor.py",
       "to": "app/analysis/semantic_matcher.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/services/tailor.py",
+      "to": "app/analysis/skills_tailor.py",
       "type": "imports"
     },
     {
@@ -5758,6 +5940,11 @@
     },
     {
       "from": "app/services/tailor.py",
+      "to": "tests/unit/test_skills_tailor.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/services/tailor.py",
       "to": "tests/unit/test_summary_writer.py",
       "type": "tested_by"
     },
@@ -5828,6 +6015,11 @@
     },
     {
       "from": "app/validation/factual.py",
+      "to": "app/analysis/skills_tailor.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/validation/factual.py",
       "to": "app/analysis/terminology.py",
       "type": "imports"
     },
@@ -5850,6 +6042,11 @@
       "from": "app/validation/factual.py",
       "to": "app/validation/factual.py::ValidationResult",
       "type": "contains"
+    },
+    {
+      "from": "app/validation/factual.py",
+      "to": "tests/unit/test_skills_tailor.py",
+      "type": "tested_by"
     },
     {
       "from": "app/validation/factual.py",
