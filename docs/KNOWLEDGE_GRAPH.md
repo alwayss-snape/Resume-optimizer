@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**49 app modules · 44 test files · 86 classes · 679 functions/methods · 14,527 lines of Python** · source hash `89a6450050db3b52`
+**49 app modules · 44 test files · 86 classes · 684 functions/methods · 14,612 lines of Python** · source hash `141f78b66b693a4e`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -435,7 +435,7 @@ _Tailored professional summary (P1.5)._
 
 ### `app/config/settings.py`
 
-**Layer:** Config · **Stage:** — · **Lines:** 50
+**Layer:** Config · **Stage:** — · **Lines:** 53
 
 - class **`Settings`** ([app/config/settings.py:4](../app/config/settings.py#L4))
 - **Imported by:** `analysis/semantic_matcher.py`, `llm/client.py`, `services/profile_store.py`, `ui.py`
@@ -798,19 +798,19 @@ _What the proposal review screen shows (P3.4), as plain functions so the_
 
 ### `app/services/profile_store.py`
 
-**Layer:** Services · **Stage:** 7 Rewrite · **Lines:** 102
+**Layer:** Services · **Stage:** 7 Rewrite · **Lines:** 120
 
 _Local profile of facts the user has confirmed (P3.2)._
 
-- class **`ConfirmedFact`** ([app/services/profile_store.py:22](../app/services/profile_store.py#L22))
-- class **`Profile`** ([app/services/profile_store.py:29](../app/services/profile_store.py#L29))
-- class **`ProfileStore`** ([app/services/profile_store.py:34](../app/services/profile_store.py#L34))
-  - `__init__()` :35
-  - `load()` :38
-  - `save()` :53
-  - `record()` :60 — Save the confirmed keywords (and answer text) from gap answers.
-  - `known()` :88 — Saved facts for these keywords (case-insensitive), keyed as given.
-  - `forget()` :93 — Forget one keyword, or everything when keyword is None. Returns how many were removed.
+- class **`ConfirmedFact`** ([app/services/profile_store.py:26](../app/services/profile_store.py#L26))
+- class **`Profile`** ([app/services/profile_store.py:33](../app/services/profile_store.py#L33))
+- class **`ProfileStore`** ([app/services/profile_store.py:38](../app/services/profile_store.py#L38))
+  - `__init__()` :39
+  - `load()` :42
+  - `save()` :63
+  - `record()` :70 — Save the confirmed keywords (and answer text) from gap answers.
+  - `known()` :105 — Saved facts for these keywords (case-insensitive), keyed as given.
+  - `forget()` :110 — Forget one keyword, or everything when keyword is None. Returns how many were removed.
 - **Imports:** `config/settings.py`
 - **Imported by:** `services/tailor.py`, `ui.py`
 - **Tested by:** `tests/unit/test_profile_store.py`
@@ -861,15 +861,15 @@ _Local profile of facts the user has confirmed (P3.2)._
 
 ### `app/ui.py`
 
-**Layer:** Entry points · **Stage:** all · **Lines:** 809
+**Layer:** Entry points · **Stage:** all · **Lines:** 821
 
 - function **`get_local_pdf_preview_url()`** ([app/ui.py:28](../app/ui.py#L28)) — Serve a PDF from a temporary HTTP endpoint so Chrome can render it in an iframe.
 - function **`display_pdf_with_fallback()`** ([app/ui.py:45](../app/ui.py#L45)) — Try to use Streamlit's native PDF display if available, otherwise fall back
 - function **`_cleanup_session_state()`** ([app/ui.py:82](../app/ui.py#L82)) — Remove temp files from a previous run and reset to a clean 'idle' state.
-- function **`_show_content_checks()`** ([app/ui.py:145](../app/ui.py#L145)) — P2.6: advice on the finished resume; nothing is changed automatically.
-- function **`model_options()`** ([app/ui.py:156](../app/ui.py#L156)) — Models offered in the sidebar for the configured provider. The
-- function **`_show_keyword_match()`** ([app/ui.py:295](../app/ui.py#L295)) — Match rate against the target band, then the matched / missing table
-- function **`_draft_proposals()`** ([app/ui.py:327](../app/ui.py#L327))
+- function **`_show_content_checks()`** ([app/ui.py:148](../app/ui.py#L148)) — P2.6: advice on the finished resume; nothing is changed automatically.
+- function **`model_options()`** ([app/ui.py:159](../app/ui.py#L159)) — Models offered in the sidebar for the configured provider. The
+- function **`_show_keyword_match()`** ([app/ui.py:301](../app/ui.py#L301)) — Match rate against the target band, then the matched / missing table
+- function **`_draft_proposals()`** ([app/ui.py:333](../app/ui.py#L333))
 - **Imports:** `config/settings.py`, `llm/client.py`, `rendering/review_view.py`, `services/profile_store.py`, `services/tailor.py`
 - **Tested by:** `tests/unit/test_ui.py`
 
@@ -1124,7 +1124,7 @@ From `app/config/settings.py`; each can be overridden by the env var of the same
 | `GROQ_FORCE_IPV4` | bool | `True` |
 | `ANTHROPIC_API_KEY` | str | `''` |
 | `ANTHROPIC_MODEL` | str | `'claude-opus-5-5'` |
-| `PROFILE_PATH` | str | `'data/profile/facts.json'` |
+| `PROFILE_PATH` | str | `os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), 'data', 'profile', 'facts.json')` |
 | `SEMANTIC_MATCH_ENABLED` | bool | `True` |
 | `SEMANTIC_MATCH_MODEL` | str | `'all-MiniLM-L6-v2'` |
 | `SEMANTIC_MATCH_THRESHOLD` | float | `0.58` |

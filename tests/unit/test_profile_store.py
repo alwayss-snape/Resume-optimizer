@@ -122,3 +122,55 @@ def test_ui_prefills_and_forgets(tmp_path):
     at.run()
     next(b for b in at.sidebar.button if b.label.startswith("Forget")).click().run()
     assert ProfileStore().load().facts == {}
+
+
+# -- review fixes ----------------------------------------------------------------
+
+def test_prefilled_answer_is_not_copied_to_other_ticked_keywords(tmp_path):
+    store = ProfileStore(str(tmp_path / "facts.json"))
+    store.record([{"question_id": "q", "confirmed_keywords": ["Kafka"], "answer": "Ran Kafka at Acme."}], [])
+    # Next JD: question [Kafka, Flink] pre-filled with Kafka's answer; user ticks both, leaves text.
+    store.record([{"question_id": "q2", "confirmed_keywords": ["Kafka", "Flink"], "answer": "Ran Kafka at Acme."}],
+                 [])
+    known = store.known(["Kafka", "Flink"])
+    assert known["Kafka"].answer == "Ran Kafka at Acme." and known["Flink"].answer == ""
+
+
+def test_unreadable_profile_is_left_alone(tmp_path):
+    folder = tmp_path / "is_a_dir"
+    folder.mkdir()
+    assert ProfileStore(str(folder)).load().facts == {}
+    assert folder.is_dir() and not (tmp_path / "is_a_dir.corrupt").exists()
+
+
+def test_forget_on_empty_profile_writes_nothing(tmp_path):
+    path = tmp_path / "facts.json"
+    assert ProfileStore(str(path)).forget() == 0 and not path.exists()
+
+
+def test_unticked_question_withdraws_the_prefilled_answer(tmp_path):
+    from app.services.tailor import TailorService
+    question = GapQuestion(id="gap_1", requirement="PyTorch", priority="required", keywords=["PyTorch"],
+                           question="?", saved_keywords=["PyTorch"], saved_answer="Trained CNNs.")
+    resume_copy = tmp_path / "upload.docx"
+    shutil.copy("tests/fixtures/resumes/sample.docx", resume_copy)
+    at = AppTest.from_file(os.path.abspath("app/ui.py"), default_timeout=60)
+    for key, value in {"stage": "proposals", "proposals": [], "gap_questions": [question], "experience_options": [],
+                       "resume_path": str(resume_copy), "jd_text": "x", "model_choice": "m",
+                       "render_mode": "ATS_DEFAULT", "strict_factual": False, "pre_score": 10.0}.items():
+        at.session_state[key] = value
+    at.run()
+    next(c for c in at.checkbox if c.label == "I have used PyTorch").uncheck()
+    with patch.object(TailorService, "tailor_resume", return_value={"success": True}) as tailor:
+        next(b for b in at.button if b.label == "Apply & Generate").click().run()
+    assert tailor.call_args.kwargs["gap_answers"] == []
+
+
+def test_start_over_clears_gap_widgets(tmp_path):
+    at = AppTest.from_file(os.path.abspath("app/ui.py"), default_timeout=60)
+    at.session_state["stage"] = "proposals"
+    at.session_state["gap_1_Kafka"] = True
+    at.session_state["gap_1_answer"] = "old answer"
+    at.run()
+    next(b for b in at.sidebar.button if b.label == "🔄 Start Over").click().run()
+    assert "gap_1_Kafka" not in at.session_state and "gap_1_answer" not in at.session_state

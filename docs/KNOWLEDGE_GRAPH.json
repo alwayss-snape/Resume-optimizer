@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "89a6450050db3b52",
+  "source_hash": "141f78b66b693a4e",
   "stats": {
     "files": 122,
     "python_files": 100,
     "app_modules": 49,
     "test_files": 44,
     "classes": 86,
-    "functions": 679,
-    "lines_of_python": 14527
+    "functions": 684,
+    "lines_of_python": 14612
   },
   "axes": {
     "x": "location (path)",
@@ -124,7 +124,7 @@
       "name": "profile_path",
       "env": "PROFILE_PATH",
       "type": "str",
-      "default": "'data/profile/facts.json'"
+      "default": "os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), 'data', 'profile', 'facts.json')"
     },
     {
       "name": "semantic_match_enabled",
@@ -1020,7 +1020,7 @@
       "type": "python",
       "layer": "Config",
       "stages": [],
-      "lines": 50,
+      "lines": 53,
       "doc": "",
       "classes": [
         {
@@ -2303,54 +2303,54 @@
       "stages": [
         "7 Rewrite"
       ],
-      "lines": 102,
+      "lines": 120,
       "doc": "Local profile of facts the user has confirmed (P3.2).",
       "classes": [
         {
           "name": "ConfirmedFact",
-          "line": 22,
+          "line": 26,
           "doc": "",
           "methods": []
         },
         {
           "name": "Profile",
-          "line": 29,
+          "line": 33,
           "doc": "",
           "methods": []
         },
         {
           "name": "ProfileStore",
-          "line": 34,
+          "line": 38,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
-              "line": 35,
+              "line": 39,
               "doc": ""
             },
             {
               "name": "load",
-              "line": 38,
+              "line": 42,
               "doc": ""
             },
             {
               "name": "save",
-              "line": 53,
+              "line": 63,
               "doc": ""
             },
             {
               "name": "record",
-              "line": 60,
+              "line": 70,
               "doc": "Save the confirmed keywords (and answer text) from gap answers."
             },
             {
               "name": "known",
-              "line": 88,
+              "line": 105,
               "doc": "Saved facts for these keywords (case-insensitive), keyed as given."
             },
             {
               "name": "forget",
-              "line": 93,
+              "line": 110,
               "doc": "Forget one keyword, or everything when keyword is None. Returns how many were removed."
             }
           ]
@@ -2559,7 +2559,7 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 809,
+      "lines": 821,
       "doc": "",
       "classes": [],
       "functions": [
@@ -2580,22 +2580,22 @@
         },
         {
           "name": "_show_content_checks",
-          "line": 145,
+          "line": 148,
           "doc": "P2.6: advice on the finished resume; nothing is changed automatically."
         },
         {
           "name": "model_options",
-          "line": 156,
+          "line": 159,
           "doc": "Models offered in the sidebar for the configured provider. The"
         },
         {
           "name": "_show_keyword_match",
-          "line": 295,
+          "line": 301,
           "doc": "Match rate against the target band, then the matched / missing table"
         },
         {
           "name": "_draft_proposals",
-          "line": 327,
+          "line": 333,
           "doc": ""
         }
       ]
@@ -4350,7 +4350,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 124,
+      "lines": 176,
       "doc": "P3.2: confirmed gap answers are saved locally and offered on the next JD.",
       "classes": [],
       "functions": [
@@ -4407,6 +4407,31 @@
         {
           "name": "test_ui_prefills_and_forgets",
           "line": 100,
+          "doc": ""
+        },
+        {
+          "name": "test_prefilled_answer_is_not_copied_to_other_ticked_keywords",
+          "line": 129,
+          "doc": ""
+        },
+        {
+          "name": "test_unreadable_profile_is_left_alone",
+          "line": 139,
+          "doc": ""
+        },
+        {
+          "name": "test_forget_on_empty_profile_writes_nothing",
+          "line": 146,
+          "doc": ""
+        },
+        {
+          "name": "test_unticked_question_withdraws_the_prefilled_answer",
+          "line": 151,
+          "doc": ""
+        },
+        {
+          "name": "test_start_over_clears_gap_widgets",
+          "line": 169,
           "doc": ""
         }
       ]

@@ -99,6 +99,9 @@ def _cleanup_session_state():
         "llm_status", "proposal_usage", "parsed", "parse_issues", "parse_corrected", "live_match",
     ):
         st.session_state.pop(key, None)
+    # Gap question widgets (gap_1_Kafka, gap_1_answer, ...): a new JD reuses the ids.
+    for key in [k for k in st.session_state.keys() if str(k).startswith("gap_")]:
+        st.session_state.pop(key, None)
 
     st.session_state.stage = "idle"
 
@@ -198,10 +201,13 @@ with st.sidebar.expander("Advanced"):
         help="Skills you confirm and what you wrote about them are saved locally and pre-filled "
         "next time. Nothing is added without you keeping it ticked.",
     )
-    saved_count = len(ProfileStore().load().facts)
+    saved_count = len(ProfileStore().load().facts)  # load() never raises
     if saved_count and st.button(f"Forget {saved_count} saved answer(s)"):
-        ProfileStore().forget()
-        st.rerun()
+        try:
+            ProfileStore().forget()
+            st.rerun()
+        except OSError as e:
+            st.warning(f"Couldn't clear the saved answers: {e}")
 render_mode = "PRESERVE" if keep_layout else "ATS_DEFAULT"
 strict_factual = st.sidebar.checkbox(
     "Strict Factual Mode",
@@ -652,9 +658,15 @@ if st.session_state.stage == "proposals":
             return experience_options[target_labels.index(choice) - 1]["id"]
 
         addition_target = _target_id(target_choice)
+        def _answer_counts(q, ticked, answer):
+            """Unticking every keyword also withdraws a pre-filled answer the
+            user didn't change: nothing is added without their confirmation."""
+            answer = (answer or "").strip()
+            return bool(ticked) or (answer and answer != (q.saved_answer or "").strip())
+
         gap_answers = [
             {"question_id": q.id, "confirmed_keywords": ticked, "answer": answer or "", "target": _target_id(where)}
-            for q, ticked, answer, where in gap_inputs if ticked or (answer or "").strip()
+            for q, ticked, answer, where in gap_inputs if _answer_counts(q, ticked, answer)
         ]
 
         preapproved = _preapproved()

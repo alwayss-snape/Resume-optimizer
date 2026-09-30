@@ -33,7 +33,10 @@ class Settings(BaseSettings):
 
     # Facts the user confirmed in gap questions, reused across JDs (P3.2).
     # Personal data: gitignored, never sent anywhere.
-    profile_path: str = "data/profile/facts.json"
+    # Absolute under the repo, so it's always the gitignored folder no matter
+    # where Streamlit / the CLI is started from.
+    profile_path: str = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+                                     "data", "profile", "facts.json")
 
     # Semantic matching (local sentence-transformers embedding layer).
     # Only applied to requirements the deterministic EvidenceMatcher leaves MISSING.
