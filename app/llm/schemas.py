@@ -36,15 +36,6 @@ class BulletRewriteResult(BaseModel):
     evidence_ids: List[str] = Field(default_factory=list)
 
 
-class MissingRequirementSuggestion(BaseModel):
-    """Advisory-only suggestion for a JD requirement the resume doesn't
-    currently address. Never applied automatically — surfaced to the
-    candidate as an example phrasing to adapt with their own real facts."""
-    requirement_text: str = ""
-    suggested_phrasing: str = ""
-    keywords: List[str] = Field(default_factory=list)
-
-
 class JDRequirementLine(BaseModel):
     """One JD line the LLM judged to be a candidate requirement, by index."""
     index: int

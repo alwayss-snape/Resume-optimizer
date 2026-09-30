@@ -47,10 +47,10 @@ Semantic matching uses a local embedding model (`all-MiniLM-L6-v2`).
 | PDF parsing | ✅ Works | Layout-aware (font size, bold, indent, right columns; P1.11). Several roles per company and project sub-sections inside a job (P1.12). The user's resume matches its golden file. Text PDFs only; `ocr.py` is a stub path. PDF input always uses the ATS template |
 | JD requirement extraction | ✅ Works | One structured LLM call (title, company, seniority, years, whole-line requirements with priority, skills), every value checked against the JD; deterministic fallback (P1.1) |
 | Matching + score | ✅ Works | Headline = keyword match rate with a matched/missing table (P1.2); requirement-level evidence score kept as secondary |
-| Rewrite experience bullets | ⚠️ Partial | Only experience bullets. Summary and skills are never rewritten. See issues 2–3 re: LLM actually firing |
+| Tailor content | ✅ Works | All relevant job and project bullets (one call per role), summary, skills order; nothing invented, dropped details flagged (P1.3–P1.7, P1.14) |
 | Check parsed resume in UI | ✅ Works | Edit name, headline, contact, links, companies, roles and dates before tailoring (P3.5) |
 | Review / edit proposals in UI | ✅ Works | Checkbox + editable text per proposal |
-| Suggestions for missing requirements | ✅ Works | Illustrative only, clearly labeled |
+| Gap questions for missing JD keywords | ✅ Works | Suggest-and-confirm: only ticked skills and the user's own answers are added (P3.1) |
 | Add free-text content | ✅ Works | Append to an existing role or create a new project |
 | Add a **new job role** | ❌ Not built | Designed, see "Open work" |
 | Strict Factual Mode | ⚠️ Cosmetic | See issue 4 |

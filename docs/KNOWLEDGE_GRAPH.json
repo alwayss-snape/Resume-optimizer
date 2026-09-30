@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "1181ec7869523b1e",
+  "source_hash": "9a3b3e3ab3e95a21",
   "stats": {
-    "files": 111,
-    "python_files": 86,
-    "app_modules": 44,
-    "test_files": 35,
-    "classes": 78,
-    "functions": 507,
-    "lines_of_python": 12076
+    "files": 113,
+    "python_files": 88,
+    "app_modules": 45,
+    "test_files": 36,
+    "classes": 79,
+    "functions": 516,
+    "lines_of_python": 12202
   },
   "axes": {
     "x": "location (path)",
@@ -267,6 +267,37 @@
           "name": "years_phrase",
           "line": 68,
           "doc": "How a resume states it: '4+ years', '1 year', or None under 1 year."
+        }
+      ]
+    },
+    {
+      "id": "app/analysis/gap_questions.py",
+      "type": "python",
+      "layer": "Analysis",
+      "stages": [
+        "6 Plan"
+      ],
+      "lines": 54,
+      "doc": "Suggest-and-confirm gaps (P3.1): ask, never assume.",
+      "classes": [
+        {
+          "name": "GapQuestion",
+          "line": 19,
+          "doc": "",
+          "methods": []
+        },
+        {
+          "name": "GapAnswer",
+          "line": 27,
+          "doc": "",
+          "methods": []
+        }
+      ],
+      "functions": [
+        {
+          "name": "build_questions",
+          "line": 34,
+          "doc": ""
         }
       ]
     },
@@ -573,7 +604,7 @@
       "stages": [
         "7 Rewrite"
       ],
-      "lines": 306,
+      "lines": 258,
       "doc": "",
       "classes": [
         {
@@ -597,18 +628,13 @@
               "doc": "Like rewrite_bullet, plus what happened, so failures are visible"
             },
             {
-              "name": "suggest_for_missing_requirement",
-              "line": 137,
-              "doc": "Advisory only. For a JD requirement the resume doesn't currently"
-            },
-            {
               "name": "rewrite_role",
-              "line": 185,
+              "line": 137,
               "doc": "Rewrite several bullets of one role in ONE call (P1.4)."
             },
             {
               "name": "execute_plan",
-              "line": 243,
+              "line": 195,
               "doc": "One LLM call per role (P1.4): all of a job's bullets that the"
             }
           ]
@@ -1732,7 +1758,7 @@
         "3 JD analysis",
         "7 Rewrite"
       ],
-      "lines": 89,
+      "lines": 80,
       "doc": "",
       "classes": [
         {
@@ -1772,38 +1798,32 @@
           "methods": []
         },
         {
-          "name": "MissingRequirementSuggestion",
-          "line": 39,
-          "doc": "Advisory-only suggestion for a JD requirement the resume doesn't",
-          "methods": []
-        },
-        {
           "name": "JDRequirementLine",
-          "line": 48,
+          "line": 39,
           "doc": "One JD line the LLM judged to be a candidate requirement, by index.",
           "methods": []
         },
         {
           "name": "JDAnalysisResult",
-          "line": 55,
+          "line": 46,
           "doc": "One structured JD analysis call (P1.1). Requirement lines are chosen",
           "methods": []
         },
         {
           "name": "RoleBulletRewrite",
-          "line": 72,
+          "line": 63,
           "doc": "One rewritten bullet from a per-role rewrite call (P1.4).",
           "methods": []
         },
         {
           "name": "RoleRewriteResult",
-          "line": 80,
+          "line": 71,
           "doc": "All bullets of one role rewritten in a single call (P1.4).",
           "methods": []
         },
         {
           "name": "SummaryResult",
-          "line": 85,
+          "line": 76,
           "doc": "A tailored professional summary (P1.5).",
           "methods": []
         }
@@ -2063,87 +2083,97 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 813,
+      "lines": 868,
       "doc": "",
       "classes": [
         {
           "name": "TailorService",
-          "line": 37,
+          "line": 39,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
-              "line": 38,
+              "line": 40,
               "doc": ""
             },
             {
               "name": "generate_preview_md",
-              "line": 70,
+              "line": 72,
               "doc": ""
             },
             {
               "name": "_patchable",
-              "line": 116,
+              "line": 118,
               "doc": "Proposals as in-place DOCX patches. A summary proposal targets the"
             },
             {
+              "name": "_apply_gap_answers",
+              "line": 141,
+              "doc": "Ticked keywords join the skills section; a typed answer becomes a"
+            },
+            {
+              "name": "_draft_from_answer",
+              "line": 165,
+              "doc": "Polish the candidate's answer into one bullet that may use only"
+            },
+            {
               "name": "_skills_proposals",
-              "line": 136,
+              "line": 181,
               "doc": "The skills section with the JD's skills first, when that changes it (P1.6)."
             },
             {
               "name": "_summary_proposals",
-              "line": 141,
+              "line": 186,
               "doc": "The tailored summary as a proposal, when one was written (P1.5)."
             },
             {
               "name": "_embed",
-              "line": 146,
+              "line": 191,
               "doc": "Sentence embeddings for the planner, loaded lazily; raises when the"
             },
             {
               "name": "_apply_bullet_order",
-              "line": 155,
+              "line": 200,
               "doc": "Reorder bullets as planned (most relevant first within each"
             },
             {
               "name": "parse_resume",
-              "line": 170,
+              "line": 215,
               "doc": "File -> (raw document, ResumeDocument, evidence). The deterministic"
             },
             {
               "name": "normalize_raw",
-              "line": 180,
+              "line": 225,
               "doc": ""
             },
             {
               "name": "_copy_parsed",
-              "line": 188,
+              "line": 233,
               "doc": "Deep copies, so a parse kept in UI session state is never mutated."
             },
             {
               "name": "apply_parse_corrections",
-              "line": 193,
+              "line": 238,
               "doc": "Apply the user's fixes from the \"Check parsed resume\" step (P3.5)."
             },
             {
               "name": "analyze_only",
-              "line": 254,
+              "line": 299,
               "doc": ""
             },
             {
               "name": "generate_proposals",
-              "line": 280,
-              "doc": "Generate rewrite proposals without applying them, plus advisory"
+              "line": 325,
+              "doc": "Generate rewrite proposals without applying them, plus questions"
             },
             {
               "name": "incorporate_user_addition",
-              "line": 344,
+              "line": 386,
               "doc": "Fold a user-supplied free-text addition (a project, an"
             },
             {
               "name": "tailor_resume",
-              "line": 418,
+              "line": 465,
               "doc": ""
             }
           ]
@@ -2152,7 +2182,7 @@
       "functions": [
         {
           "name": "_merge_usage",
-          "line": 804,
+          "line": 859,
           "doc": "Combine two LLMClient.get_usage_summary() dicts into one."
         }
       ]
@@ -2203,7 +2233,7 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 680,
+      "lines": 686,
       "doc": "",
       "classes": [],
       "functions": [
@@ -2497,118 +2527,118 @@
       "type": "python",
       "layer": "Tooling",
       "stages": [],
-      "lines": 726,
+      "lines": 727,
       "doc": "Regenerate the repo's living docs: the knowledge graph and the change log.",
       "classes": [],
       "functions": [
         {
           "name": "git",
-          "line": 124,
+          "line": 125,
           "doc": ""
         },
         {
           "name": "layer_of",
-          "line": 131,
+          "line": 132,
           "doc": ""
         },
         {
           "name": "module_name",
-          "line": 138,
+          "line": 139,
           "doc": ""
         },
         {
           "name": "first_line",
-          "line": 145,
+          "line": 146,
           "doc": ""
         },
         {
           "name": "list_files",
-          "line": 154,
+          "line": 155,
           "doc": "Tracked + new (not ignored) files, restricted to the project map."
         },
         {
           "name": "parse_python",
-          "line": 172,
+          "line": 173,
           "doc": ""
         },
         {
           "name": "symbols_of",
-          "line": 200,
+          "line": 201,
           "doc": ""
         },
         {
           "name": "settings_fields",
-          "line": 213,
+          "line": 214,
           "doc": ""
         },
         {
           "name": "build_graph",
-          "line": 232,
+          "line": 233,
           "doc": ""
         },
         {
           "name": "render_graph_md",
-          "line": 306,
+          "line": 307,
           "doc": ""
         },
         {
           "name": "write_graph",
-          "line": 504,
+          "line": 505,
           "doc": ""
         },
         {
           "name": "commit_info",
-          "line": 547,
+          "line": 548,
           "doc": ""
         },
         {
           "name": "changed_files",
-          "line": 558,
+          "line": 559,
           "doc": ""
         },
         {
           "name": "is_major",
-          "line": 571,
+          "line": 572,
           "doc": ""
         },
         {
           "name": "blob",
-          "line": 580,
+          "line": 581,
           "doc": ""
         },
         {
           "name": "structure_delta",
-          "line": 585,
+          "line": 586,
           "doc": ""
         },
         {
           "name": "render_entry",
-          "line": 608,
+          "line": 609,
           "doc": ""
         },
         {
           "name": "_split_entries",
-          "line": 651,
+          "line": 652,
           "doc": ""
         },
         {
           "name": "_join",
-          "line": 663,
+          "line": 664,
           "doc": ""
         },
         {
           "name": "log_entry",
-          "line": 667,
+          "line": 668,
           "doc": ""
         },
         {
           "name": "backfill",
-          "line": 685,
+          "line": 686,
           "doc": ""
         },
         {
           "name": "main",
-          "line": 702,
+          "line": 703,
           "doc": ""
         }
       ]
@@ -2921,6 +2951,62 @@
         {
           "name": "test_saved_committed_report_never_contains_private_cases",
           "line": 45,
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "tests/unit/test_gap_questions.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 103,
+      "doc": "Suggest-and-confirm gaps (P3.1).",
+      "classes": [],
+      "functions": [
+        {
+          "name": "_resume",
+          "line": 16,
+          "doc": ""
+        },
+        {
+          "name": "_job",
+          "line": 22,
+          "doc": ""
+        },
+        {
+          "name": "test_questions_group_missing_keywords_by_jd_line_required_first",
+          "line": 32,
+          "doc": ""
+        },
+        {
+          "name": "_service",
+          "line": 41,
+          "doc": ""
+        },
+        {
+          "name": "test_only_ticked_keywords_are_added_to_skills",
+          "line": 49,
+          "doc": ""
+        },
+        {
+          "name": "test_answer_becomes_a_bullet_and_an_embellished_polish_is_refused",
+          "line": 60,
+          "doc": ""
+        },
+        {
+          "name": "test_faithful_polish_is_used",
+          "line": 73,
+          "doc": ""
+        },
+        {
+          "name": "test_generate_proposals_asks_instead_of_suggesting",
+          "line": 81,
+          "doc": ""
+        },
+        {
+          "name": "test_ui_sends_ticked_answers_to_tailor",
+          "line": 88,
           "doc": ""
         }
       ]
@@ -3722,7 +3808,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 249,
+      "lines": 213,
       "doc": "",
       "classes": [],
       "functions": [
@@ -3742,63 +3828,53 @@
           "doc": ""
         },
         {
-          "name": "test_suggest_for_missing_requirement_returns_labeled_example",
-          "line": 101,
-          "doc": ""
-        },
-        {
-          "name": "test_suggest_for_missing_requirement_none_without_llm",
-          "line": 128,
-          "doc": ""
-        },
-        {
           "name": "test_rewrite_status_reports_unavailable_llm_with_reason",
-          "line": 136,
+          "line": 100,
           "doc": ""
         },
         {
           "name": "test_rewrite_status_reports_llm_error",
-          "line": 145,
+          "line": 109,
           "doc": ""
         },
         {
           "name": "test_rewrite_status_ok_and_unchanged",
-          "line": 154,
+          "line": 118,
           "doc": ""
         },
         {
           "name": "test_normalize_llm_text_fixes_typographic_unicode",
-          "line": 165,
+          "line": 129,
           "doc": ""
         },
         {
           "name": "_role_setup",
-          "line": 175,
+          "line": 139,
           "doc": ""
         },
         {
           "name": "_role_client",
-          "line": 194,
+          "line": 158,
           "doc": ""
         },
         {
           "name": "test_role_rewrite_is_one_call_and_maps_results",
-          "line": 205,
+          "line": 169,
           "doc": ""
         },
         {
           "name": "test_role_rewrite_failure_is_visible_per_bullet",
-          "line": 225,
+          "line": 189,
           "doc": ""
         },
         {
           "name": "test_role_rewrite_unchanged_text_is_marked_unchanged",
-          "line": 234,
+          "line": 198,
           "doc": ""
         },
         {
           "name": "test_punctuation_only_change_is_unchanged",
-          "line": 243,
+          "line": 207,
           "doc": ""
         }
       ]
@@ -4465,6 +4541,36 @@
       "type": "tested_by"
     },
     {
+      "from": "app/analysis/gap_questions.py",
+      "to": "app/analysis/gap_questions.py::GapAnswer",
+      "type": "contains"
+    },
+    {
+      "from": "app/analysis/gap_questions.py",
+      "to": "app/analysis/gap_questions.py::GapQuestion",
+      "type": "contains"
+    },
+    {
+      "from": "app/analysis/gap_questions.py",
+      "to": "app/analysis/keyword_match.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/analysis/gap_questions.py",
+      "to": "app/domain/job.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/analysis/gap_questions.py",
+      "to": "app/domain/report.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/analysis/gap_questions.py",
+      "to": "tests/unit/test_gap_questions.py",
+      "type": "tested_by"
+    },
+    {
       "from": "app/analysis/jd_analyzer.py",
       "to": "app/analysis/jd_analyzer.py::JDAnalyzer",
       "type": "contains"
@@ -4533,6 +4639,11 @@
       "from": "app/analysis/keyword_match.py",
       "to": "app/domain/resume.py",
       "type": "imports"
+    },
+    {
+      "from": "app/analysis/keyword_match.py",
+      "to": "tests/unit/test_gap_questions.py",
+      "type": "tested_by"
     },
     {
       "from": "app/analysis/keyword_match.py",
@@ -5071,6 +5182,11 @@
     },
     {
       "from": "app/domain/job.py",
+      "to": "tests/unit/test_gap_questions.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/job.py",
       "to": "tests/unit/test_jd_analyzer.py",
       "type": "tested_by"
     },
@@ -5212,6 +5328,11 @@
     {
       "from": "app/domain/resume.py",
       "to": "tests/unit/test_docx_renderer.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/resume.py",
+      "to": "tests/unit/test_gap_questions.py",
       "type": "tested_by"
     },
     {
@@ -5440,6 +5561,11 @@
       "type": "tested_by"
     },
     {
+      "from": "app/eval/harness.py",
+      "to": "tests/unit/test_gap_questions.py",
+      "type": "tested_by"
+    },
+    {
       "from": "app/ingestion/docx.py",
       "to": "app/ingestion/docx.py::DocxParser",
       "type": "contains"
@@ -5617,11 +5743,6 @@
     {
       "from": "app/llm/schemas.py",
       "to": "app/llm/schemas.py::LLMTimeoutError",
-      "type": "contains"
-    },
-    {
-      "from": "app/llm/schemas.py",
-      "to": "app/llm/schemas.py::MissingRequirementSuggestion",
       "type": "contains"
     },
     {
@@ -5826,6 +5947,11 @@
     },
     {
       "from": "app/services/run_manager.py",
+      "to": "tests/unit/test_gap_questions.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/services/run_manager.py",
       "to": "tests/unit/test_project_rewrites.py",
       "type": "tested_by"
     },
@@ -5843,6 +5969,11 @@
       "from": "app/services/run_manager.py",
       "to": "tests/unit/test_tailor_resume_flow.py",
       "type": "tested_by"
+    },
+    {
+      "from": "app/services/tailor.py",
+      "to": "app/analysis/gap_questions.py",
+      "type": "imports"
     },
     {
       "from": "app/services/tailor.py",
@@ -6007,6 +6138,11 @@
     {
       "from": "app/services/tailor.py",
       "to": "tests/unit/test_cli.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/services/tailor.py",
+      "to": "tests/unit/test_gap_questions.py",
       "type": "tested_by"
     },
     {

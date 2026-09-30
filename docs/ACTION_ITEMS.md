@@ -15,9 +15,9 @@ JD-aligned rewrites, a Novoresume-style ATS layout that fits the right length, a
 | 0: Make the LLM path work | 10 | 10 | 0 | 0 |
 | 1: Content quality | 14 | 13 | 0 | 1 |
 | 2: Template, ATS, page-fit | 6 | 0 | 1 | 5 |
-| 3: Gap questions + UX | 6 | 1 | 0 | 5 |
+| 3: Gap questions + UX | 6 | 2 | 0 | 4 |
 | 4: Evaluation harness | 3 | 1 | 0 | 2 |
-| **Total** | **39** | **25** | **1** | **13** |
+| **Total** | **39** | **26** | **1** | **12** |
 
 ## Decisions (fixed by the user, 2026-09-30)
 
@@ -128,7 +128,7 @@ anonymized replica of the layout.
 
 | ID | Action | Files | Resolves | Status | Notes |
 |---|---|---|---|---|---|
-| P3.1 | Gap questions replace the "illustrative" suggestions ("JD requires X. Have you used it?"). A bullet is drafted only from the answer; the skill is added only if the user ticks it | `rewriter.py:88-133`, `tailor.py`, `ui.py:295-311` | F19 | ⬜ | |
+| P3.1 | Gap questions replace the "illustrative" suggestions ("JD requires X. Have you used it?"). A bullet is drafted only from the answer; the skill is added only if the user ticks it | `rewriter.py:88-133`, `tailor.py`, `ui.py:295-311` | F19 | ✅ | New `analysis/gap_questions.py` (no LLM): JD keywords the resume lacks, grouped by the JD line that asks for them, required first, ≤ 6 questions. UI (inside the review form): "I have used X" checkboxes, an optional "where and how" answer and where to add it. `tailor_resume(gap_answers=…)`: ticked keywords join a matching skills category (recorded as `user_confirmed` skill evidence); an answer is polished into a bullet that may use only the ticked keywords and is fact-checked against the answer (the candidate's wording is used if the polish adds anything). The illustrative suggestions (5 LLM calls, invented metrics) and `suggest_for_missing_requirement` are removed |
 | P3.2 | Profile store: confirmed answers become `user_confirmed` evidence, pre-filled on future JDs | new `services/profile_store.py`, `domain/evidence.py`, `.gitignore` | F19 | ⬜ | |
 | P3.3 | "Add a job role" form → new Experience in date order, bullets polished from the input | `tailor.py`, `ui.py` | F20 | ⬜ | Design in PROJECT_OVERVIEW.md |
 | P3.4 | Review UI: side-by-side diff + highlighted keywords, status badges, accept-all, match rate recomputed on edit, keyword gap table, score breakdown | `ui.py` | F17, F31 | ⬜ | |

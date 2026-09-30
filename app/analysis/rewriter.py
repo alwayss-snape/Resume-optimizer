@@ -11,7 +11,7 @@ from app.domain.job import JobDescription
 from app.domain.resume import Experience, Resume
 from app.domain.tailoring import TailoringAction, TailoringPlan
 from app.llm.client import LLMClient
-from app.llm.schemas import BulletRewriteResult, MissingRequirementSuggestion, RoleRewriteResult
+from app.llm.schemas import BulletRewriteResult, RoleRewriteResult
 
 
 # Typographic Unicode that some models (e.g. gpt-oss) emit: non-breaking /
@@ -133,54 +133,6 @@ class LLMRewriter:
             return rewritten, (result.rationale or "").strip(), STATUS_OK, None
         except Exception as e:
             return original_text, "", STATUS_LLM_ERROR, str(e)
-
-    def suggest_for_missing_requirement(
-        self,
-        requirement_text: str,
-        jd_keywords: Optional[List[str]] = None,
-    ) -> Optional[MissingRequirementSuggestion]:
-        """Advisory only. For a JD requirement the resume doesn't currently
-        support, draft ONE example bullet phrasing the candidate could adapt
-        IF they actually have matching experience — never inserted into the
-        resume automatically, since nothing here is evidence-backed.
-        """
-        if not self.llm_client or not self.llm_client.is_available():
-            return None
-
-        system_prompt = (
-            "You help candidates see exactly what a job requirement is looking for. "
-            "Given ONE requirement their résumé does not currently address, write a "
-            "single example résumé bullet (as if the candidate already had this "
-            "experience) that a strong, ATS-friendly résumé for this exact requirement "
-            "might contain. Naturally use the requirement's own terminology and any "
-            "relevant keywords supplied so the phrasing would parse well against an "
-            "ATS keyword scan. This is a template for the candidate to adapt with their "
-            "own real facts, evidence, and numbers — it must read as an illustrative "
-            "example, not as a factual claim about the candidate. Keep it to one "
-            "concise sentence (8-25 words)."
-        )
-        keywords_text = "\n".join(f"- {k}" for k in (jd_keywords or [])) or "(none provided)"
-        messages = [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": (
-                f"Missing requirement:\n{requirement_text}\n\n"
-                f"Job description keywords (use only the ones relevant to this "
-                f"requirement):\n{keywords_text}"
-            )},
-        ]
-        try:
-            result = self.llm_client.generate_json(
-                messages=messages,
-                schema_model=MissingRequirementSuggestion,
-                temperature=0.2,
-            )
-            result.suggested_phrasing = normalize_llm_text(result.suggested_phrasing or "")
-            if not result.suggested_phrasing:
-                return None
-            result.requirement_text = requirement_text
-            return result
-        except Exception:
-            return None
 
     def rewrite_role(
         self,

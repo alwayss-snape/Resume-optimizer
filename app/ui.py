@@ -90,7 +90,7 @@ def _cleanup_session_state():
                 pass
 
     for key in (
-        "proposals", "missing_suggestions", "llm_available", "pre_score", "keyword_match", "job_description",
+        "proposals", "gap_questions", "llm_available", "pre_score", "keyword_match", "job_description",
         "resume_path", "jd_text", "model_choice", "render_mode", "strict_factual",
         "results", "output_dir", "analysis_report", "experience_options",
         "llm_status", "proposal_usage", "parsed", "parse_issues", "parse_corrected",
@@ -298,7 +298,7 @@ def _draft_proposals(parsed, parse_corrected: bool) -> None:
     st.session_state.parse_corrected = parse_corrected
     st.session_state.stage = "proposals"
     st.session_state.proposals = generated["proposals"]
-    st.session_state.missing_suggestions = generated["missing_suggestions"]
+    st.session_state.gap_questions = generated.get("gap_questions") or []
     st.session_state.llm_available = generated["llm_available"]
     st.session_state.llm_status = generated.get("llm_status") or {}
     st.session_state.proposal_usage = generated.get("llm_usage")
@@ -443,23 +443,6 @@ if st.session_state.stage in ("proposals", "results"):
             "original text. " + (f"Reason: {errors[0]}" if errors else "")
         )
 
-    missing_suggestions = st.session_state.get("missing_suggestions", [])
-    if missing_suggestions:
-        with st.expander(
-            f"📝 Suggested Additions — {len(missing_suggestions)} requirement(s) your résumé doesn't address yet",
-            expanded=(st.session_state.stage == "proposals"),
-        ):
-            st.caption(
-                "These are illustrative examples only, not facts about you — adapt them with your "
-                "own real experience, then paste your version into the box below to have it added "
-                "and phrased consistently."
-            )
-            for s in missing_suggestions:
-                st.markdown(f"**Targets:** {s.requirement_text}")
-                st.info(s.suggested_phrasing)
-                if s.keywords:
-                    st.caption("Keywords to work in: " + ", ".join(s.keywords))
-                st.write("")
 
 if st.session_state.stage == "proposals":
     proposals = st.session_state.get("proposals", [])
@@ -513,6 +496,22 @@ if st.session_state.stage == "proposals":
                 selected.append(p)
                 edits[p.id if hasattr(p, 'id') else i] = edt
 
+        # Suggest-and-confirm (P3.1): only what you confirm is used.
+        gap_questions = st.session_state.get("gap_questions") or []
+        gap_inputs = []
+        if gap_questions:
+            st.markdown("---")
+            st.markdown(f"**❓ {len(gap_questions)} question(s) about what the job asks for**")
+            st.caption("Your resume doesn't show these yet. Tick only what you have really used; nothing is "
+                       "added unless you tick it or describe it.")
+            for q in gap_questions:
+                st.markdown(f"*{q.requirement}*" + (" (nice to have)" if q.priority == "preferred" else ""))
+                ticked = [k for k in q.keywords if st.checkbox(f"I have used {k}", key=f"{q.id}_{k}")]
+                answer = st.text_area("Where and how? (optional, your own words; becomes a bullet)",
+                                      key=f"{q.id}_answer", height=68)
+                where = st.selectbox("Add the bullet to", options=target_labels, key=f"{q.id}_target")
+                gap_inputs.append((q, ticked, answer, where))
+
         st.markdown("---")
         st.markdown("**Add anything else** — a project, achievement, or skill you'd like included.")
         addition_text = st.text_area(
@@ -529,12 +528,18 @@ if st.session_state.stage == "proposals":
     if not apply_btn:
         st.info("Review the proposals and press 'Apply & Generate' when ready.")
     else:
-        if target_choice.startswith("Auto"):
-            addition_target = "auto"
-        elif target_choice == "Add as a new Project":
-            addition_target = "new_project"
-        else:
-            addition_target = experience_options[target_labels.index(target_choice) - 1]["id"]
+        def _target_id(choice):
+            if choice.startswith("Auto"):
+                return "auto"
+            if choice == "Add as a new Project":
+                return "new_project"
+            return experience_options[target_labels.index(choice) - 1]["id"]
+
+        addition_target = _target_id(target_choice)
+        gap_answers = [
+            {"question_id": q.id, "confirmed_keywords": ticked, "answer": answer or "", "target": _target_id(where)}
+            for q, ticked, answer, where in gap_inputs if ticked or (answer or "").strip()
+        ]
 
         preapproved = []
         for p in selected:
@@ -571,6 +576,7 @@ if st.session_state.stage == "proposals":
                     parsed=st.session_state.get("parsed"),
                     parse_corrected=bool(st.session_state.get("parse_corrected")),
                     job_desc=st.session_state.get("job_description"),
+                    gap_answers=gap_answers,
                 )
             st.session_state.results = results
             st.session_state.output_dir = output_dir

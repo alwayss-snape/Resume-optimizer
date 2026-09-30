@@ -97,42 +97,6 @@ def test_rewrite_bullet_falls_back_when_llm_unreachable(mock_ollama):
     assert rationale == ""
 
 
-@patch("ollama.Client")
-def test_suggest_for_missing_requirement_returns_labeled_example(mock_ollama):
-    mock_inst = MagicMock()
-    mock_inst.list.return_value = {"models": [{"name": "qwen3:4b"}]}
-    mock_inst.chat.return_value = {
-        "message": {
-            "content": (
-                '{"suggested_phrasing": "Configured Loan Origination Systems '
-                '(Mortgage Cadence) for a fintech implementation team.", '
-                '"keywords": ["Loan Origination Systems", "Mortgage Cadence"]}'
-            )
-        },
-    }
-    mock_ollama.return_value = mock_inst
-
-    client = LLMClient(model="qwen3:4b", provider="ollama")
-    rewriter = LLMRewriter(llm_client=client)
-
-    suggestion = rewriter.suggest_for_missing_requirement(
-        "Familiarity with Loan Origination Systems (LOS), especially Mortgage Cadence.",
-        jd_keywords=["Loan Origination Systems", "Mortgage Cadence"],
-    )
-
-    assert suggestion is not None
-    assert "Mortgage Cadence" in suggestion.suggested_phrasing
-    assert suggestion.requirement_text.startswith("Familiarity with Loan Origination Systems")
-
-
-def test_suggest_for_missing_requirement_none_without_llm():
-    rewriter = LLMRewriter(llm_client=None)
-    assert rewriter.suggest_for_missing_requirement("Some requirement") is None
-
-
-
-# --- P0.4: rewrite outcomes are reported, not swallowed ---
-
 def test_rewrite_status_reports_unavailable_llm_with_reason():
     from app.analysis.rewriter import STATUS_LLM_UNAVAILABLE
     client = MagicMock()

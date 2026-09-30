@@ -90,7 +90,7 @@ def test_ui_check_parse_stage_end_to_end(tmp_path):
     assert titles == ["Senior Data Scientist", "Data Scientist", "Analytics Intern"]
 
     at.text_input[1].set_value("Senior Data Scientist")  # headline
-    fake = {"proposals": [], "missing_suggestions": [], "llm_available": True, "llm_status": {},
+    fake = {"proposals": [], "gap_questions": [], "llm_available": True, "llm_status": {},
             "llm_usage": None, "alignment_score": 50.0, "experience_options": []}
     with patch.object(TailorService, "generate_proposals", return_value=fake) as gen:
         confirm = next(b for b in at.button if b.label.startswith("✅ Looks right"))

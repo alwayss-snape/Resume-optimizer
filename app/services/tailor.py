@@ -1,9 +1,11 @@
 import os
+import re
 import shutil
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple
 from uuid import uuid4
 
+from app.analysis.gap_questions import GapAnswer, build_questions
 from app.analysis.jd_analyzer import JDAnalyzer
 from app.analysis.keyword_match import KeywordMatcher
 from app.analysis.matcher import EvidenceMatcher
@@ -132,6 +134,49 @@ class TailorService:
                     "proposed_text": p.proposed_text if i == 0 else "",
                 }))
         return out
+
+    # Where a newly confirmed skill goes when the resume has such a category.
+    SKILL_CATEGORY_RE = re.compile(r"tool|framework|librar|technolog|platform|skill", re.IGNORECASE)
+
+    def _apply_gap_answers(self, resume: Resume, evidence_list: List, job_desc: JobDescription,
+                           answers: List) -> List[str]:
+        """Ticked keywords join the skills section; a typed answer becomes a
+        bullet drafted only from the candidate's words (P3.1). Returns notes
+        for the change log."""
+        notes: List[str] = []
+        known = {k.lower() for items in resume.skills.values() for k in items}
+        for raw in answers:
+            ans = raw if isinstance(raw, GapAnswer) else GapAnswer(**raw)
+            added = [k for k in ans.confirmed_keywords if k.strip() and k.lower() not in known]
+            if added:
+                category = next((c for c in resume.skills if self.SKILL_CATEGORY_RE.search(c)), None) or "Skills"
+                resume.skills.setdefault(category, []).extend(added)
+                known.update(k.lower() for k in added)
+                for k in added:
+                    evidence_list.append(Evidence(id=f"ev_user_{uuid4().hex[:6]}", source_type="skill",
+                                                  source_id="user_confirmed", text=k))
+                notes.append(f"You confirmed: {', '.join(added)} (added to {category})")
+            if ans.answer.strip():
+                _, updated, text = self._draft_from_answer(resume, evidence_list, ans)
+                evidence_list[:] = updated
+                notes.append(f"Added from your answer: {text}")
+        return notes
+
+    def _draft_from_answer(self, resume: Resume, evidence_list: List, ans: GapAnswer):
+        """Polish the candidate's answer into one bullet that may use only
+        the keywords they ticked, then fact-check it against the answer.
+        If the polish adds anything, their own wording is used instead."""
+        answer = ans.answer.strip()
+        user_ev = Evidence(id=f"ev_user_{uuid4().hex[:6]}", source_type="general", source_id="user_answer", text=answer)
+        polished, _ = self.rewriter.rewrite_bullet(answer, evidence=[user_ev], jd_requirements=[],
+                                                   target_keywords=ans.confirmed_keywords)
+        check = RewriteProposal(target_semantic_id="user_answer", original_text=answer,
+                                proposed_text=polished or answer, evidence_ids=[user_ev.id])
+        verdict = self.validator.validate_proposal(check, [user_ev]).verdict
+        text = polished if polished and verdict == "PASS" else answer
+        resume, updated, _ = self.incorporate_user_addition(
+            resume, evidence_list, JobDescription(), text, ans.target, polish=False)
+        return resume, updated, text
 
     def _skills_proposals(self, resume, keyword_report) -> List[RewriteProposal]:
         """The skills section with the JD's skills first, when that changes it (P1.6)."""
@@ -279,11 +324,11 @@ class TailorService:
 
     def generate_proposals(self, resume_path: str, jd_text: str, suggestion_limit: int = 5,
                            parsed=None) -> Dict:
-        """Generate rewrite proposals without applying them, plus advisory
-        suggestions for JD requirements the résumé doesn't address at all.
+        """Generate rewrite proposals without applying them, plus questions
+        about JD keywords the resume doesn't show (P3.1).
 
-        Returns {"proposals": [...], "missing_suggestions": [...],
-        "alignment_score": float}. Useful for UI review flows.
+        Returns {"proposals": [...], "gap_questions": [...],
+        "alignment_score": float, ...}. Useful for UI review flows.
         """
         clean_jd_text = self.safety_guard.sanitize(jd_text)
 
@@ -308,19 +353,16 @@ class TailorService:
             prop.validation = res.verdict
             prop.validation_note = "; ".join(res.warnings) or None
 
-        missing_matches = [m for m in matches if m.status == "MISSING"]
-        ranked_missing = self.planner.rank_missing_requirements(missing_matches, job_desc, limit=suggestion_limit)
-        missing_suggestions = []
-        for m in ranked_missing:
-            suggestion = self.rewriter.suggest_for_missing_requirement(m.requirement_text, job_desc.keywords)
-            if suggestion:
-                missing_suggestions.append(suggestion)
+        # Suggest-and-confirm (P3.1): ask about what the JD wants and the
+        # resume doesn't show, instead of drafting experience the candidate
+        # may not have. Built in code, no LLM call.
+        gap_questions = build_questions(job_desc, keyword_report, limit=suggestion_limit)
 
         llm_available = bool(self.llm_client and self.llm_client.is_available())
         failed = [p for p in proposals if getattr(p, "status", None) in FAILED_STATUSES]
         return {
             "proposals": proposals,
-            "missing_suggestions": missing_suggestions,
+            "gap_questions": gap_questions,
             "alignment_score": score,
             "keyword_match": keyword_report,
             "job_description": job_desc,
@@ -348,6 +390,7 @@ class TailorService:
         job_desc: JobDescription,
         addition_text: str,
         target: str = "auto",
+        polish: bool = True,
     ) -> Tuple[Resume, List, Optional[str]]:
         """Fold a user-supplied free-text addition (a project, an
         achievement, a skill, anything they typed in) into the résumé as one
@@ -373,12 +416,15 @@ class TailorService:
             source_id="user_addition",
             text=addition_text,
         )
-        polished_text, rationale = self.rewriter.rewrite_bullet(
-            addition_text,
-            evidence=[user_evidence],
-            jd_requirements=jd_req_texts,
-            target_keywords=job_desc.keywords,
-        )
+        if polish:
+            polished_text, rationale = self.rewriter.rewrite_bullet(
+                addition_text,
+                evidence=[user_evidence],
+                jd_requirements=jd_req_texts,
+                target_keywords=job_desc.keywords,
+            )
+        else:  # already drafted and checked by the caller
+            polished_text, rationale = addition_text, None
         polished_text = polished_text or addition_text
 
         if target == "new_project":
@@ -398,7 +444,8 @@ class TailorService:
             if exp is None:
                 # No experience section to attach to at all — fall back to a
                 # new project rather than silently dropping the addition.
-                return self.incorporate_user_addition(resume, evidence_list, job_desc, addition_text, target="new_project")
+                return self.incorporate_user_addition(resume, evidence_list, job_desc, addition_text,
+                                                      target="new_project", polish=polish)
 
             bullet_id = f"{exp.id}_b_user_{uuid4().hex[:6]}"
             bullet = ResumeBullet(id=bullet_id, text=polished_text)
@@ -429,6 +476,7 @@ class TailorService:
         parsed=None,
         parse_corrected: bool = False,
         job_desc: Optional[JobDescription] = None,
+        gap_answers: Optional[List] = None,
     ) -> Dict[str, str]:
         run_dir = self.run_manager.create_run(resume_path, jd_text)
         clean_jd_text = self.safety_guard.sanitize(jd_text)
@@ -626,6 +674,13 @@ class TailorService:
         # project, an achievement, a skill) as one more polished, evidence-
         # grounded bullet, then recompute the alignment score so it reflects
         # everything just applied — the rewrites above and this addition.
+        # Answers to the gap questions (P3.1): only what the candidate
+        # confirmed, in their own words.
+        gap_notes = self._apply_gap_answers(resume, evidence_list, job_desc, gap_answers or [])
+        for note in gap_notes:
+            _append_progress(note)
+            warnings.append(note)
+
         addition_note = None
         if addition_text and (addition_text or "").strip():
             resume, evidence_list, addition_note = self.incorporate_user_addition(
