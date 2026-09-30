@@ -27,7 +27,7 @@ class KeywordRow(BaseModel):
     weight: float
     found: bool = False
     credit: float = 0.0  # 0..1 (the title can match partially)
-    where: List[str] = Field(default_factory=list)  # e.g. "skills", "summary", "Epsilon (bullet)"
+    where: List[str] = Field(default_factory=list)  # e.g. "skills", "summary", "Acme Corp (bullet)"
     jd_count: int = 0
 
 
