@@ -94,7 +94,7 @@ def _cleanup_session_state():
         "proposals", "gap_questions", "llm_available", "pre_score", "keyword_match", "job_description",
         "resume_path", "jd_text", "model_choice", "render_mode", "strict_factual",
         "results", "output_dir", "analysis_report", "experience_options",
-        "llm_status", "proposal_usage", "parsed", "parse_issues", "parse_corrected",
+        "llm_status", "proposal_usage", "parsed", "parse_issues", "parse_corrected", "live_match",
     ):
         st.session_state.pop(key, None)
 
@@ -313,6 +313,7 @@ def _show_keyword_match(keyword_report, heading: str = "Keyword match") -> None:
 # before any rewriting. Bullet text is reviewed later, with the proposals.
 # ---------------------------------------------------------------------------
 def _draft_proposals(parsed, parse_corrected: bool) -> None:
+    st.session_state.pop("live_match", None)  # belongs to the previous proposals
     llm_client = LLMClient(model=st.session_state.model_choice)
     service = TailorService(llm_client=llm_client)
     with st.spinner("Analyzing the job description and drafting proposals..."):
@@ -478,6 +479,8 @@ if st.session_state.stage == "proposals":
     if live is not None:
         st.metric("Match rate with your current selection", f"{live.rate:.1f}%",
                   delta=f"{live.rate - st.session_state.get('pre_score', 0):+.1f} pts vs before")
+        st.caption("Rewrites marked ⛔ aren't counted unless you edited them. With Strict Factual Mode on, "
+                   "one failed rewrite withholds them all.")
         with st.expander("Details for your current selection"):
             _show_keyword_match(live, heading="Selected rewrites")
 

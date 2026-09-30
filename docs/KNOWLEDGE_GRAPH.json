@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "56ca990f2d9a513e",
+  "source_hash": "56a768d6a49a902b",
   "stats": {
     "files": 119,
     "python_files": 97,
     "app_modules": 48,
     "test_files": 42,
     "classes": 83,
-    "functions": 635,
-    "lines_of_python": 13878
+    "functions": 640,
+    "lines_of_python": 13928
   },
   "axes": {
     "x": "location (path)",
@@ -2124,43 +2124,48 @@
       "stages": [
         "7 Rewrite"
       ],
-      "lines": 107,
+      "lines": 120,
       "doc": "What the proposal review screen shows (P3.4), as plain functions so the",
       "classes": [],
       "functions": [
         {
           "name": "_words",
           "line": 20,
+          "doc": "Words, with each line break kept as its own token (skills are lines)."
+        },
+        {
+          "name": "_escape",
+          "line": 30,
           "doc": ""
         },
         {
           "name": "_keyword_spans",
-          "line": 24,
+          "line": 34,
           "doc": "Indexes of words that are part of a JD keyword (case-insensitive,"
         },
         {
           "name": "_render",
-          "line": 38,
+          "line": 48,
           "doc": ""
         },
         {
           "name": "diff_html",
-          "line": 50,
+          "line": 63,
           "doc": "(original_html, proposed_html): removed words struck through on the"
         },
         {
           "name": "status_badge",
-          "line": 67,
+          "line": 80,
           "doc": "(badge, meaning) for one proposal. A failed call or a REJECT verdict"
         },
         {
           "name": "score_breakdown",
-          "line": 81,
+          "line": 94,
           "doc": "Per keyword kind: how many found and how much of the rate it earns."
         },
         {
           "name": "gap_table",
-          "line": 98,
+          "line": 111,
           "doc": "Missing JD keywords, required and heaviest first, and whether a gap"
         }
       ]
@@ -2326,7 +2331,7 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 933,
+      "lines": 935,
       "doc": "",
       "classes": [
         {
@@ -2406,27 +2411,27 @@
             },
             {
               "name": "apply_parse_corrections",
-              "line": 268,
+              "line": 270,
               "doc": "Apply the user's fixes from the \"Check parsed resume\" step (P3.5)."
             },
             {
               "name": "analyze_only",
-              "line": 329,
+              "line": 331,
               "doc": ""
             },
             {
               "name": "generate_proposals",
-              "line": 355,
+              "line": 357,
               "doc": "Generate rewrite proposals without applying them, plus questions"
             },
             {
               "name": "incorporate_user_addition",
-              "line": 416,
+              "line": 418,
               "doc": "Fold a user-supplied free-text addition (a project, an"
             },
             {
               "name": "tailor_resume",
-              "line": 495,
+              "line": 497,
               "doc": ""
             }
           ]
@@ -2435,7 +2440,7 @@
       "functions": [
         {
           "name": "_merge_usage",
-          "line": 924,
+          "line": 926,
           "doc": "Combine two LLMClient.get_usage_summary() dicts into one."
         }
       ]
@@ -2456,7 +2461,7 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 754,
+      "lines": 757,
       "doc": "",
       "classes": [],
       "functions": [
@@ -4325,7 +4330,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 131,
+      "lines": 163,
       "doc": "P3.4: the proposal review screen (diff, badges, breakdown, gap table,",
       "classes": [],
       "functions": [
@@ -4397,6 +4402,26 @@
         {
           "name": "test_recalculate_uses_ticked_edited_text_and_generates_nothing",
           "line": 123,
+          "doc": ""
+        },
+        {
+          "name": "test_diff_neutralises_markdown_and_latex_and_keeps_lines",
+          "line": 134,
+          "doc": ""
+        },
+        {
+          "name": "test_dotnet_highlights",
+          "line": 142,
+          "doc": ""
+        },
+        {
+          "name": "test_preview_skips_rejected_unless_edited",
+          "line": 147,
+          "doc": ""
+        },
+        {
+          "name": "test_new_proposals_clear_the_old_live_rate",
+          "line": 158,
           "doc": ""
         }
       ]

@@ -18,13 +18,23 @@ _KEY_STYLE = "font-weight:700;border-bottom:2px solid #1f4e79"
 
 
 def _words(text: str) -> List[str]:
-    return re.findall(r"\S+", text or "")
+    """Words, with each line break kept as its own token (skills are lines)."""
+    return re.findall(r"\S+|\n", text or "")
+
+
+# st.markdown still reads Markdown and LaTeX inside HTML: "$2M to $1M" would
+# become math and "*" emphasis. These become numeric entities after escaping.
+_MARKDOWN_CHARS = {c: f"&#{ord(c)};" for c in "$*_`[]#~\\|"}
+
+
+def _escape(word: str) -> str:
+    return "".join(_MARKDOWN_CHARS.get(c, c) for c in html.escape(word))
 
 
 def _keyword_spans(words: List[str], keywords: Iterable[str]) -> set:
     """Indexes of words that are part of a JD keyword (case-insensitive,
     punctuation around a word ignored), multi-word keywords included."""
-    clean = [re.sub(r"^[^\w+#]+|[^\w+#]+$", "", w).lower() for w in words]
+    clean = [re.sub(r"^[^\w+#.]+|[^\w+#]+$", "", w).lower() for w in words]  # keep ".NET"
     hits = set()
     for kw in keywords or []:
         parts = [p.lower() for p in kw.split()]
@@ -38,13 +48,16 @@ def _keyword_spans(words: List[str], keywords: Iterable[str]) -> set:
 def _render(words: List[str], marked: set, style: str, keywords: set) -> str:
     out = []
     for i, w in enumerate(words):
-        piece = html.escape(w)
+        if w == "\n":
+            out.append("<br>")
+            continue
+        piece = _escape(w)
         if i in keywords:
             piece = f'<span style="{_KEY_STYLE}">{piece}</span>'
         if i in marked:
             piece = f'<span style="{style}">{piece}</span>'
         out.append(piece)
-    return " ".join(out)
+    return " ".join(out).replace(" <br> ", "<br>")
 
 
 def diff_html(original: str, proposed: str, keywords: Optional[Iterable[str]] = None) -> Tuple[str, str]:

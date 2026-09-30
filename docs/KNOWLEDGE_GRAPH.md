@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**48 app modules · 42 test files · 83 classes · 635 functions/methods · 13,878 lines of Python** · source hash `56ca990f2d9a513e`
+**48 app modules · 42 test files · 83 classes · 640 functions/methods · 13,928 lines of Python** · source hash `56a768d6a49a902b`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -747,17 +747,18 @@ _Page-fit loop (P2.4): render, count pages, trim, render again._
 
 ### `app/rendering/review_view.py`
 
-**Layer:** Rendering · **Stage:** 7 Rewrite · **Lines:** 107
+**Layer:** Rendering · **Stage:** 7 Rewrite · **Lines:** 120
 
 _What the proposal review screen shows (P3.4), as plain functions so the_
 
-- function **`_words()`** ([app/rendering/review_view.py:20](../app/rendering/review_view.py#L20))
-- function **`_keyword_spans()`** ([app/rendering/review_view.py:24](../app/rendering/review_view.py#L24)) — Indexes of words that are part of a JD keyword (case-insensitive,
-- function **`_render()`** ([app/rendering/review_view.py:38](../app/rendering/review_view.py#L38))
-- function **`diff_html()`** ([app/rendering/review_view.py:50](../app/rendering/review_view.py#L50)) — (original_html, proposed_html): removed words struck through on the
-- function **`status_badge()`** ([app/rendering/review_view.py:67](../app/rendering/review_view.py#L67)) — (badge, meaning) for one proposal. A failed call or a REJECT verdict
-- function **`score_breakdown()`** ([app/rendering/review_view.py:81](../app/rendering/review_view.py#L81)) — Per keyword kind: how many found and how much of the rate it earns.
-- function **`gap_table()`** ([app/rendering/review_view.py:98](../app/rendering/review_view.py#L98)) — Missing JD keywords, required and heaviest first, and whether a gap
+- function **`_words()`** ([app/rendering/review_view.py:20](../app/rendering/review_view.py#L20)) — Words, with each line break kept as its own token (skills are lines).
+- function **`_escape()`** ([app/rendering/review_view.py:30](../app/rendering/review_view.py#L30))
+- function **`_keyword_spans()`** ([app/rendering/review_view.py:34](../app/rendering/review_view.py#L34)) — Indexes of words that are part of a JD keyword (case-insensitive,
+- function **`_render()`** ([app/rendering/review_view.py:48](../app/rendering/review_view.py#L48))
+- function **`diff_html()`** ([app/rendering/review_view.py:63](../app/rendering/review_view.py#L63)) — (original_html, proposed_html): removed words struck through on the
+- function **`status_badge()`** ([app/rendering/review_view.py:80](../app/rendering/review_view.py#L80)) — (badge, meaning) for one proposal. A failed call or a REJECT verdict
+- function **`score_breakdown()`** ([app/rendering/review_view.py:94](../app/rendering/review_view.py#L94)) — Per keyword kind: how many found and how much of the rate it earns.
+- function **`gap_table()`** ([app/rendering/review_view.py:111](../app/rendering/review_view.py#L111)) — Missing JD keywords, required and heaviest first, and whether a gap
 - **Imports:** `domain/report.py`
 - **Imported by:** `ui.py`
 - **Tested by:** `tests/unit/test_review_view.py`
@@ -802,7 +803,7 @@ _What the proposal review screen shows (P3.4), as plain functions so the_
 
 ### `app/services/tailor.py`
 
-**Layer:** Services · **Stage:** all · **Lines:** 933
+**Layer:** Services · **Stage:** all · **Lines:** 935
 
 - class **`TailorService`** ([app/services/tailor.py:43](../app/services/tailor.py#L43))
   - `__init__()` :44
@@ -819,19 +820,19 @@ _What the proposal review screen shows (P3.4), as plain functions so the_
   - `normalize_raw()` :234
   - `_copy_parsed()` :242 — Deep copies, so a parse kept in UI session state is never mutated.
   - `preview_keyword_match()` :247 — Match rate if these proposals were applied (P3.4 "recalculate"):
-  - `apply_parse_corrections()` :268 — Apply the user's fixes from the "Check parsed resume" step (P3.5).
-  - `analyze_only()` :329
-  - `generate_proposals()` :355 — Generate rewrite proposals without applying them, plus questions
-  - `incorporate_user_addition()` :416 — Fold a user-supplied free-text addition (a project, an
-  - `tailor_resume()` :495
-- function **`_merge_usage()`** ([app/services/tailor.py:924](../app/services/tailor.py#L924)) — Combine two LLMClient.get_usage_summary() dicts into one.
+  - `apply_parse_corrections()` :270 — Apply the user's fixes from the "Check parsed resume" step (P3.5).
+  - `analyze_only()` :331
+  - `generate_proposals()` :357 — Generate rewrite proposals without applying them, plus questions
+  - `incorporate_user_addition()` :418 — Fold a user-supplied free-text addition (a project, an
+  - `tailor_resume()` :497
+- function **`_merge_usage()`** ([app/services/tailor.py:926](../app/services/tailor.py#L926)) — Combine two LLMClient.get_usage_summary() dicts into one.
 - **Imports:** `analysis/experience.py`, `analysis/gap_questions.py`, `analysis/jd_analyzer.py`, `analysis/keyword_match.py`, `analysis/matcher.py`, `analysis/resume_normalizer.py`, `analysis/rewriter.py`, `analysis/scoring.py`, `analysis/semantic_matcher.py`, `analysis/skills_tailor.py`, `analysis/structure_extractor.py`, `analysis/summary_writer.py`, `analysis/tailor_planner.py`, `domain/evidence.py`, `domain/job.py`, `domain/report.py`, `domain/resume.py`, `domain/resume_document.py`, `domain/tailoring.py`, `ingestion/docx.py`, `ingestion/pdf.py`, `llm/client.py`, `rendering/docx_patcher.py`, `rendering/html_renderer.py`, `rendering/layout.py`, `rendering/page_fit.py`, `rendering/pdf_converter.py`, `rendering/template_renderer.py`, `services/run_manager.py`, `validation/content_lint.py`, `validation/factual.py`, `validation/output.py`, `validation/safety.py`, `validation/structural.py`
 - **Imported by:** `cli.py`, `eval/harness.py`, `ui.py`
 - **Tested by:** `tests/integration/test_end_to_end.py`, `tests/unit/test_check_parsed_resume.py`, `tests/unit/test_cli.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_review_view.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_tailor_resume_flow.py`, `tests/unit/test_tailor_service_addition.py`, `tests/unit/test_ui.py`
 
 ### `app/ui.py`
 
-**Layer:** Entry points · **Stage:** all · **Lines:** 754
+**Layer:** Entry points · **Stage:** all · **Lines:** 757
 
 - function **`get_local_pdf_preview_url()`** ([app/ui.py:26](../app/ui.py#L26)) — Serve a PDF from a temporary HTTP endpoint so Chrome can render it in an iframe.
 - function **`display_pdf_with_fallback()`** ([app/ui.py:43](../app/ui.py#L43)) — Try to use Streamlit's native PDF display if available, otherwise fall back

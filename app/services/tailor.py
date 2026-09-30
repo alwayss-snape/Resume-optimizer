@@ -253,12 +253,14 @@ class TailorService:
             text = (p.get("proposed_text") or "").strip()
             if not text:
                 continue
+            if p.get("validation") == "REJECT" and not p.get("user_edited"):
+                continue  # Apply drops these too (unless the user edited them)
             kind = p.get("kind", "bullet")
             if kind == "summary":
                 resume.summary = text
             elif kind == "skills" and parse_skills(text):
                 resume.skills = parse_skills(text)
-            else:
+            elif kind == "bullet":
                 for section in [*resume.experience, *resume.projects]:
                     for b in section.bullets:
                         if b.id == p.get("target_semantic_id"):

@@ -129,3 +129,35 @@ def test_recalculate_uses_ticked_edited_text_and_generates_nothing(tmp_path):
     live = at.session_state["live_match"]
     assert any(r.keyword == "Kafka" and r.found for r in live.rows)
     assert any(m.label == "Match rate with your current selection" for m in at.metric)
+
+
+def test_diff_neutralises_markdown_and_latex_and_keeps_lines():
+    left, right = diff_html("Cut cost from $2M to $1M", "Cut *cost* from $2M to $1M_x\nTools: Git",
+                            keywords=[".NET"])
+    for html_out in (left, right):
+        assert "$" not in html_out and "*" not in html_out and "_" not in html_out.replace("line-through", "")
+    assert "&#36;2M" in left and "<br>" in right
+
+
+def test_dotnet_highlights():
+    _, right = diff_html("", "Built .NET services.", keywords=[".NET"])
+    assert "font-weight:700" in right
+
+
+def test_preview_skips_rejected_unless_edited():
+    parsed, service = _parsed(), TailorService(llm_client=None)
+    rejected = {"kind": "bullet", "target_semantic_id": "b1", "proposed_text": "Built Kafka pipelines.",
+                "validation": "REJECT"}
+    assert not any(r.keyword == "Kafka" and r.found
+                   for r in service.preview_keyword_match(parsed, _job(), [rejected]).rows)
+    edited = {**rejected, "user_edited": True}
+    assert any(r.keyword == "Kafka" and r.found
+               for r in service.preview_keyword_match(parsed, _job(), [edited]).rows)
+
+
+def test_new_proposals_clear_the_old_live_rate(tmp_path):
+    at = _app(tmp_path, [_proposal(1, "Built pipelines.", "Built pipelines.")])
+    next(b for b in at.button if b.label == "🔄 Recalculate match rate").click().run()
+    assert "live_match" in at.session_state
+    next(b for b in at.sidebar.button if b.label == "🔄 Start Over").click().run()
+    assert "live_match" not in at.session_state
