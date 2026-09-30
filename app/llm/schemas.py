@@ -80,3 +80,10 @@ class RoleBulletRewrite(BaseModel):
 class RoleRewriteResult(BaseModel):
     """All bullets of one role rewritten in a single call (P1.4)."""
     bullets: List[RoleBulletRewrite] = Field(default_factory=list)
+
+
+class SummaryResult(BaseModel):
+    """A tailored professional summary (P1.5)."""
+    summary: str
+    skills_used: List[str] = Field(default_factory=list)
+    result_used: Optional[str] = None

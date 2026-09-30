@@ -33,6 +33,9 @@ class ChangeProposal(BaseModel):
     # Planner v2 (P1.3): relevance of the bullet to the JD (0-1) and the JD
     # keywords the rewrite was allowed to use.
     relevance: Optional[float] = None
+    # What the proposal rewrites: "bullet" (an experience bullet, by
+    # target_semantic_id), "summary" (P1.5) or "skills" (P1.6).
+    kind: str = "bullet"
     target_keywords: Optional[List[str]] = None
 
     id: str = Field(default_factory=lambda: f"prop_{uuid4().hex[:8]}")

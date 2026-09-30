@@ -490,7 +490,9 @@ if st.session_state.stage == "proposals":
             with col1:
                 sel = st.checkbox("Apply", value=True, key=keybase + "_apply")
             with col2:
-                st.markdown(f"**Original:** {orig}")
+                if getattr(p, "kind", "bullet") == "summary":
+                    st.markdown("**Professional summary**")
+                st.markdown(f"**Original:** {orig or '(no summary)'}")
                 edt = st.text_area(f"Proposed ({i+1})", value=prop_text, key=keybase + "_edit", height=80)
                 if rationale:
                     st.caption(f"🎯 {rationale}")

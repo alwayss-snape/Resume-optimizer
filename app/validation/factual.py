@@ -171,7 +171,51 @@ class FactualValidator:
             return True  # FastAPI, PostgreSQL, Google (not a sentence-initial capital)
         return bool(self._keys(token) & vocab)  # a known skill written in lowercase
 
+    def _positioned_tokens(self, text: str):
+        """(token, starts_a_sentence) pairs, so the capital of every
+        sentence's first word isn't mistaken for a proper noun."""
+        for sentence in re.split(r"(?<=[.!?;:])\s+", text):
+            for i, token in enumerate(self.TOKEN_RE.findall(sentence)):
+                yield token, i == 0
+
     # ------------------------------------------------------------------
+
+    def _validate_summary(self, proposal, evidence_list: List[Evidence],
+                          jd_keywords: Optional[List[str]]) -> ValidationResult:
+        """A summary may draw on the whole resume (P1.5): every factual term
+        must appear somewhere in it, and every number must be in it or be
+        one of the proposal's allowed facts (the computed years)."""
+        text = getattr(proposal, "proposed_text", None) or ""
+        warnings: List[str] = []
+        all_text = [ev.text for ev in evidence_list] + [getattr(proposal, "original_text", "") or ""] + list(
+            getattr(proposal, "allowed_facts", None) or [])
+        resume_numbers = set()
+        for t in all_text:
+            resume_numbers |= self.extract_numbers(t)
+        allowed = set()
+        for fact in getattr(proposal, "allowed_facts", None) or []:
+            allowed |= self.extract_numbers(fact)
+        new_numbers = self.extract_numbers(text) - resume_numbers - allowed
+        resume_keys = self._term_keys(all_text)
+        vocab = self._term_keys(jd_keywords or []) | set(self._canon.values()) | set(self._canon)
+        unsupported = []
+        for token, starts_sentence in self._positioned_tokens(text):
+            if not self._is_factual(token, is_first=starts_sentence, vocab=vocab):
+                continue
+            if not all(self._keys(p) & resume_keys for p in token.split("/") if p) and token not in unsupported:
+                unsupported.append(token)
+        verdict: Verdict = "PASS"
+        if new_numbers:
+            verdict = "REJECT"
+            warnings.append("Summary rejected: numbers not found in your resume: " + ", ".join(sorted(new_numbers)))
+        if unsupported:
+            verdict = "REJECT"
+            warnings.append("Summary rejected: terms not found anywhere in your resume: " + ", ".join(unsupported))
+        check = ClaimCheck(claim=text, evidence_ids=getattr(proposal, "evidence_ids", None) or [],
+                           status="SUPPORTED" if verdict == "PASS" else "UNSUPPORTED",
+                           explanation=" ".join(warnings) or "Every term and number appears in the resume.")
+        return ValidationResult(approved=verdict != "REJECT", proposal=proposal, verdict=verdict,
+                                claim_checks=[check], warnings=warnings)
 
     def validate_proposal(
         self,
@@ -183,6 +227,9 @@ class FactualValidator:
         confirm_terms: List[str] = []
         rewritten_text = getattr(proposal, "rewritten_text", None) or getattr(proposal, "proposed_text", None) or ""
         verdict: Verdict = "PASS"
+
+        if getattr(proposal, "kind", "bullet") == "summary":
+            return self._validate_summary(proposal, evidence_list, jd_keywords)
 
         # The cited evidence that belongs to this bullet (by semantic id or raw location id).
         source_evidence = []

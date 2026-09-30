@@ -12,6 +12,7 @@ from app.analysis.rewriter import FAILED_STATUSES, LLMRewriter, RewriteProposal
 from app.analysis.scoring import AlignmentScorer
 from app.analysis.semantic_matcher import SemanticMatcher
 from app.analysis.structure_extractor import StructureExtractor
+from app.analysis.summary_writer import SummaryWriter
 from app.analysis.tailor_planner import TailoringPlanner
 from app.domain.evidence import Evidence
 from app.domain.job import JobDescription
@@ -53,6 +54,7 @@ class TailorService:
         self.keyword_matcher = KeywordMatcher()
         self.planner = TailoringPlanner(self.llm_client, embedder=self._embed)
         self.rewriter = LLMRewriter(self.llm_client)
+        self.summary_writer = SummaryWriter(self.llm_client)
         self.validator = FactualValidator()
         self.struct_validator = StructuralValidator()
         self.docx_patcher = DocxPatcher()
@@ -107,6 +109,30 @@ class TailorService:
                 lines.append(f"- **{edu.degree}** — {edu.institution}")
 
         return "\n".join(lines)
+
+    @staticmethod
+    def _patchable(proposals, evidence_list) -> List[RewriteProposal]:
+        """Proposals as in-place DOCX patches. A summary proposal targets the
+        summary paragraph(s): the first gets the new text, any others are
+        emptied so the old summary doesn't remain."""
+        out = []
+        for p in proposals:
+            if getattr(p, "kind", "bullet") != "summary":
+                out.append(p)
+                continue
+            blocks = [ev.source_location_id for ev in evidence_list
+                      if ev.source_type == "summary" and ev.source_location_id]
+            for i, block in enumerate(dict.fromkeys(blocks)):
+                out.append(p.model_copy(update={
+                    "target_source_location_id": block, "target_semantic_id": block,
+                    "proposed_text": p.proposed_text if i == 0 else "",
+                }))
+        return out
+
+    def _summary_proposals(self, resume, job_desc, keyword_report, evidence_list) -> List[RewriteProposal]:
+        """The tailored summary as a proposal, when one was written (P1.5)."""
+        proposal = self.summary_writer.propose(resume, job_desc, keyword_report, evidence_list)
+        return [proposal] if proposal is not None and proposal.status == "ok" else []
 
     def _embed(self, texts):
         """Sentence embeddings for the planner, loaded lazily; raises when the
@@ -263,7 +289,8 @@ class TailorService:
         keyword_report = self.keyword_matcher.match(job_desc, resume)
         score = keyword_report.rate
         plan = self.planner.create_plan(resume, job_desc, evidence_list, matches)
-        proposals = self.rewriter.execute_plan(resume, plan, evidence_list, job_desc)
+        proposals = self._summary_proposals(resume, job_desc, keyword_report, evidence_list)
+        proposals += self.rewriter.execute_plan(resume, plan, evidence_list, job_desc)
         # Fact-check now so the review UI can show each proposal's verdict
         # (and what would be dropped) before the user applies anything.
         for prop in proposals:
@@ -465,7 +492,8 @@ class TailorService:
             proposals = [RewriteProposal(**p) if isinstance(p, dict) else p for p in preapproved_proposals]
             _append_progress(f"Using {len(proposals)} user-approved proposals (rewriter skipped)")
         else:
-            proposals = self.rewriter.execute_plan(resume, plan, evidence_list, job_desc)
+            proposals = self._summary_proposals(resume, job_desc, initial_keywords, evidence_list)
+            proposals += self.rewriter.execute_plan(resume, plan, evidence_list, job_desc)
             _append_progress(f"Planner created plan with {len(plan.actions)} actions; generated {len(proposals)} proposals")
 
         approved_proposals: List[RewriteProposal] = []
@@ -508,8 +536,19 @@ class TailorService:
         def _prop_text(p):
             return getattr(p, "rewritten_text", None) or getattr(p, "proposed_text", None) or ""
 
+        # The tailored summary (P1.5) replaces the summary text and its evidence.
+        for p in approved_proposals:
+            if getattr(p, "kind", "bullet") == "summary" and _prop_text(p).strip():
+                resume.summary = _prop_text(p).strip()
+                summary_ev = [ev for ev in evidence_list if ev.source_type == "summary"]
+                if summary_ev:
+                    summary_ev[0].text = resume.summary
+                    for ev in summary_ev[1:]:
+                        evidence_list.remove(ev)
+
         # Apply approved rewrites to the canonical resume model (semantic ids).
-        prop_dict = {_prop_key(p): _prop_text(p) for p in approved_proposals}
+        prop_dict = {_prop_key(p): _prop_text(p) for p in approved_proposals
+                     if getattr(p, "kind", "bullet") == "bullet"}
         for exp in resume.experience:
             for b in exp.bullets:
                 if b.id in prop_dict:
@@ -538,6 +577,7 @@ class TailorService:
                 for b in exp.bullets:
                     if b.id in original_text:
                         b.text = original_text[b.id]
+            resume.summary = original_resume.summary
             evidence_list[:] = original_evidence
             approved_proposals = []
             warnings.append(
@@ -586,7 +626,8 @@ class TailorService:
         _append_progress(f"Recomputed keyword match rate after applying changes: {score:.1f}% (was {initial_score:.1f}%)")
 
         if mode == "PRESERVE" and not is_pdf:
-            self.docx_patcher.patch(resume_path, raw_doc.document_map, approved_proposals, docx_output_path)
+            self.docx_patcher.patch(resume_path, raw_doc.document_map,
+                                    self._patchable(approved_proposals, original_evidence), docx_output_path)
             _append_progress(f"DOCX preserve-mode patch applied to {docx_output_path}")
         else:
             # Pass the ResumeDocument so renderers can access revisions and metadata

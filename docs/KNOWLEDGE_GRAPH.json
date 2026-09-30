@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "d13ee80c68fa0968",
+  "source_hash": "1201c2e4d9483221",
   "stats": {
-    "files": 104,
-    "python_files": 80,
-    "app_modules": 41,
-    "test_files": 32,
-    "classes": 75,
-    "functions": 460,
-    "lines_of_python": 11334
+    "files": 108,
+    "python_files": 83,
+    "app_modules": 43,
+    "test_files": 33,
+    "classes": 77,
+    "functions": 485,
+    "lines_of_python": 11762
   },
   "axes": {
     "x": "location (path)",
@@ -203,7 +203,7 @@
       "stages": [
         "7 Rewrite"
       ],
-      "lines": 82,
+      "lines": 85,
       "doc": "",
       "classes": [
         {
@@ -213,28 +213,62 @@
           "methods": [
             {
               "name": "model_dump",
-              "line": 42,
+              "line": 45,
               "doc": ""
             },
             {
               "name": "semantic_id",
-              "line": 57,
+              "line": 60,
               "doc": ""
             },
             {
               "name": "source_id",
-              "line": 67,
+              "line": 70,
               "doc": ""
             },
             {
               "name": "rewritten_text",
-              "line": 76,
+              "line": 79,
               "doc": ""
             }
           ]
         }
       ],
       "functions": []
+    },
+    {
+      "id": "app/analysis/experience.py",
+      "type": "python",
+      "layer": "Analysis",
+      "stages": [
+        "2 Normalize",
+        "7 Rewrite"
+      ],
+      "lines": 73,
+      "doc": "Years of experience from role date ranges (P1.5, reused by P2.3).",
+      "classes": [],
+      "functions": [
+        {
+          "name": "parse_month",
+          "line": 18,
+          "doc": "'August 2024' / 'Aug. 2024' / '08/2024' / '2024' / 'Present' -> (year, month)."
+        },
+        {
+          "name": "role_intervals",
+          "line": 39,
+          "doc": "Each dated role as [start, end] in absolute months (year*12 + month)."
+        },
+        {
+          "name": "years_of_experience",
+          "line": 56,
+          "doc": "Total months covered by any role (overlaps merged), in years."
+        },
+        {
+          "name": "years_phrase",
+          "line": 68,
+          "doc": "How a resume states it: '4+ years', '1 year', or None under 1 year."
+        }
+      ]
     },
     {
       "id": "app/analysis/jd_analyzer.py",
@@ -726,6 +760,41 @@
               "name": "improve",
               "line": 152,
               "doc": "Return the better of the deterministic parse and an LLM-guided"
+            }
+          ]
+        }
+      ],
+      "functions": []
+    },
+    {
+      "id": "app/analysis/summary_writer.py",
+      "type": "python",
+      "layer": "Analysis",
+      "stages": [
+        "7 Rewrite"
+      ],
+      "lines": 112,
+      "doc": "Tailored professional summary (P1.5).",
+      "classes": [
+        {
+          "name": "SummaryWriter",
+          "line": 33,
+          "doc": "",
+          "methods": [
+            {
+              "name": "__init__",
+              "line": 34,
+              "doc": ""
+            },
+            {
+              "name": "facts",
+              "line": 38,
+              "doc": "The inputs code decides; the LLM only phrases them."
+            },
+            {
+              "name": "propose",
+              "line": 55,
+              "doc": "A summary proposal, or None when there's nothing to write from"
             }
           ]
         }
@@ -1584,6 +1653,13 @@
       "lines": 19
     },
     {
+      "id": "app/llm/prompts/summary.txt",
+      "type": "prompt",
+      "layer": "LLM",
+      "stages": [],
+      "lines": 15
+    },
+    {
       "id": "app/llm/prompts/tailoring_plan.txt",
       "type": "prompt",
       "layer": "LLM",
@@ -1605,7 +1681,7 @@
         "3 JD analysis",
         "7 Rewrite"
       ],
-      "lines": 82,
+      "lines": 89,
       "doc": "",
       "classes": [
         {
@@ -1672,6 +1748,12 @@
           "name": "RoleRewriteResult",
           "line": 80,
           "doc": "All bullets of one role rewritten in a single call (P1.4).",
+          "methods": []
+        },
+        {
+          "name": "SummaryResult",
+          "line": 85,
+          "doc": "A tailored professional summary (P1.5).",
           "methods": []
         }
       ],
@@ -1930,72 +2012,82 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 754,
+      "lines": 795,
       "doc": "",
       "classes": [
         {
           "name": "TailorService",
-          "line": 35,
+          "line": 36,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
-              "line": 36,
+              "line": 37,
               "doc": ""
             },
             {
               "name": "generate_preview_md",
-              "line": 66,
+              "line": 68,
               "doc": ""
             },
             {
+              "name": "_patchable",
+              "line": 114,
+              "doc": "Proposals as in-place DOCX patches. A summary proposal targets the"
+            },
+            {
+              "name": "_summary_proposals",
+              "line": 132,
+              "doc": "The tailored summary as a proposal, when one was written (P1.5)."
+            },
+            {
               "name": "_embed",
-              "line": 111,
+              "line": 137,
               "doc": "Sentence embeddings for the planner, loaded lazily; raises when the"
             },
             {
               "name": "_apply_bullet_order",
-              "line": 120,
+              "line": 146,
               "doc": "Reorder bullets as planned (most relevant first within each"
             },
             {
               "name": "parse_resume",
-              "line": 135,
+              "line": 161,
               "doc": "File -> (raw document, ResumeDocument, evidence). The deterministic"
             },
             {
               "name": "normalize_raw",
-              "line": 145,
+              "line": 171,
               "doc": ""
             },
             {
               "name": "_copy_parsed",
-              "line": 153,
+              "line": 179,
               "doc": "Deep copies, so a parse kept in UI session state is never mutated."
             },
             {
               "name": "apply_parse_corrections",
-              "line": 158,
+              "line": 184,
               "doc": "Apply the user's fixes from the \"Check parsed resume\" step (P3.5)."
             },
             {
               "name": "analyze_only",
-              "line": 219,
+              "line": 245,
               "doc": ""
             },
             {
               "name": "generate_proposals",
-              "line": 245,
+              "line": 271,
               "doc": "Generate rewrite proposals without applying them, plus advisory"
             },
             {
               "name": "incorporate_user_addition",
-              "line": 307,
+              "line": 334,
               "doc": "Fold a user-supplied free-text addition (a project, an"
             },
             {
               "name": "tailor_resume",
-              "line": 381,
+              "line": 408,
               "doc": ""
             }
           ]
@@ -2004,7 +2096,7 @@
       "functions": [
         {
           "name": "_merge_usage",
-          "line": 745,
+          "line": 786,
           "doc": "Combine two LLMClient.get_usage_summary() dicts into one."
         }
       ]
@@ -2055,7 +2147,7 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 676,
+      "lines": 678,
       "doc": "",
       "classes": [],
       "functions": [
@@ -2098,7 +2190,7 @@
       "stages": [
         "8 Validate"
       ],
-      "lines": 260,
+      "lines": 307,
       "doc": "",
       "classes": [
         {
@@ -2154,8 +2246,18 @@
               "doc": ""
             },
             {
+              "name": "_positioned_tokens",
+              "line": 174,
+              "doc": "(token, starts_a_sentence) pairs, so the capital of every"
+            },
+            {
+              "name": "_validate_summary",
+              "line": 183,
+              "doc": "A summary may draw on the whole resume (P1.5): every factual term"
+            },
+            {
               "name": "validate_proposal",
-              "line": 176,
+              "line": 220,
               "doc": ""
             }
           ]
@@ -2334,118 +2436,118 @@
       "type": "python",
       "layer": "Tooling",
       "stages": [],
-      "lines": 723,
+      "lines": 725,
       "doc": "Regenerate the repo's living docs: the knowledge graph and the change log.",
       "classes": [],
       "functions": [
         {
           "name": "git",
-          "line": 121,
+          "line": 123,
           "doc": ""
         },
         {
           "name": "layer_of",
-          "line": 128,
+          "line": 130,
           "doc": ""
         },
         {
           "name": "module_name",
-          "line": 135,
+          "line": 137,
           "doc": ""
         },
         {
           "name": "first_line",
-          "line": 142,
+          "line": 144,
           "doc": ""
         },
         {
           "name": "list_files",
-          "line": 151,
+          "line": 153,
           "doc": "Tracked + new (not ignored) files, restricted to the project map."
         },
         {
           "name": "parse_python",
-          "line": 169,
+          "line": 171,
           "doc": ""
         },
         {
           "name": "symbols_of",
-          "line": 197,
+          "line": 199,
           "doc": ""
         },
         {
           "name": "settings_fields",
-          "line": 210,
+          "line": 212,
           "doc": ""
         },
         {
           "name": "build_graph",
-          "line": 229,
+          "line": 231,
           "doc": ""
         },
         {
           "name": "render_graph_md",
-          "line": 303,
+          "line": 305,
           "doc": ""
         },
         {
           "name": "write_graph",
-          "line": 501,
+          "line": 503,
           "doc": ""
         },
         {
           "name": "commit_info",
-          "line": 544,
+          "line": 546,
           "doc": ""
         },
         {
           "name": "changed_files",
-          "line": 555,
+          "line": 557,
           "doc": ""
         },
         {
           "name": "is_major",
-          "line": 568,
+          "line": 570,
           "doc": ""
         },
         {
           "name": "blob",
-          "line": 577,
+          "line": 579,
           "doc": ""
         },
         {
           "name": "structure_delta",
-          "line": 582,
+          "line": 584,
           "doc": ""
         },
         {
           "name": "render_entry",
-          "line": 605,
+          "line": 607,
           "doc": ""
         },
         {
           "name": "_split_entries",
-          "line": 648,
+          "line": 650,
           "doc": ""
         },
         {
           "name": "_join",
-          "line": 660,
+          "line": 662,
           "doc": ""
         },
         {
           "name": "log_entry",
-          "line": 664,
+          "line": 666,
           "doc": ""
         },
         {
           "name": "backfill",
-          "line": 682,
+          "line": 684,
           "doc": ""
         },
         {
           "name": "main",
-          "line": 699,
+          "line": 701,
           "doc": ""
         }
       ]
@@ -3796,6 +3898,87 @@
       ]
     },
     {
+      "id": "tests/unit/test_summary_writer.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 141,
+      "doc": "Summary tailoring (P1.5) and years of experience from dates.",
+      "classes": [],
+      "functions": [
+        {
+          "name": "_resume",
+          "line": 22,
+          "doc": ""
+        },
+        {
+          "name": "_job",
+          "line": 40,
+          "doc": ""
+        },
+        {
+          "name": "_evidence",
+          "line": 46,
+          "doc": ""
+        },
+        {
+          "name": "test_years_merge_overlaps_and_parse_formats",
+          "line": 54,
+          "doc": ""
+        },
+        {
+          "name": "test_facts_are_decided_in_code",
+          "line": 63,
+          "doc": ""
+        },
+        {
+          "name": "_writer",
+          "line": 72,
+          "doc": ""
+        },
+        {
+          "name": "test_propose_returns_a_summary_proposal",
+          "line": 79,
+          "doc": ""
+        },
+        {
+          "name": "test_overlong_summary_is_not_proposed",
+          "line": 91,
+          "doc": ""
+        },
+        {
+          "name": "_summary_prop",
+          "line": 98,
+          "doc": ""
+        },
+        {
+          "name": "test_summary_validation_allows_computed_years_and_resume_facts",
+          "line": 103,
+          "doc": ""
+        },
+        {
+          "name": "test_summary_validation_rejects_invented_numbers_and_terms",
+          "line": 110,
+          "doc": ""
+        },
+        {
+          "name": "_service",
+          "line": 117,
+          "doc": ""
+        },
+        {
+          "name": "test_tailor_applies_summary_in_template_and_preserve_modes",
+          "line": 124,
+          "doc": ""
+        },
+        {
+          "name": "test_capital_at_start_of_any_sentence_is_not_a_proper_noun",
+          "line": 137,
+          "doc": ""
+        }
+      ]
+    },
+    {
       "id": "tests/unit/test_tailor_planner.py",
       "type": "python",
       "layer": "Tests",
@@ -4109,6 +4292,21 @@
       "type": "contains"
     },
     {
+      "from": "app/analysis/change_proposal.py",
+      "to": "tests/unit/test_summary_writer.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/analysis/experience.py",
+      "to": "app/domain/resume.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/analysis/experience.py",
+      "to": "tests/unit/test_summary_writer.py",
+      "type": "tested_by"
+    },
+    {
       "from": "app/analysis/jd_analyzer.py",
       "to": "app/analysis/jd_analyzer.py::JDAnalyzer",
       "type": "contains"
@@ -4181,6 +4379,11 @@
     {
       "from": "app/analysis/keyword_match.py",
       "to": "tests/unit/test_keyword_match.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/analysis/keyword_match.py",
+      "to": "tests/unit/test_summary_writer.py",
       "type": "tested_by"
     },
     {
@@ -4469,6 +4672,66 @@
       "type": "tested_by"
     },
     {
+      "from": "app/analysis/summary_writer.py",
+      "to": "app/analysis/change_proposal.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/analysis/summary_writer.py",
+      "to": "app/analysis/experience.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/analysis/summary_writer.py",
+      "to": "app/analysis/rewriter.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/analysis/summary_writer.py",
+      "to": "app/analysis/summary_writer.py::SummaryWriter",
+      "type": "contains"
+    },
+    {
+      "from": "app/analysis/summary_writer.py",
+      "to": "app/domain/evidence.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/analysis/summary_writer.py",
+      "to": "app/domain/job.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/analysis/summary_writer.py",
+      "to": "app/domain/report.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/analysis/summary_writer.py",
+      "to": "app/domain/resume.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/analysis/summary_writer.py",
+      "to": "app/llm/client.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/analysis/summary_writer.py",
+      "to": "app/llm/prompts/summary.txt",
+      "type": "uses_prompt"
+    },
+    {
+      "from": "app/analysis/summary_writer.py",
+      "to": "app/llm/schemas.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/analysis/summary_writer.py",
+      "to": "tests/unit/test_summary_writer.py",
+      "type": "tested_by"
+    },
+    {
       "from": "app/analysis/tailor_planner.py",
       "to": "app/analysis/keyword_match.py",
       "type": "imports"
@@ -4570,6 +4833,11 @@
     },
     {
       "from": "app/domain/evidence.py",
+      "to": "tests/unit/test_summary_writer.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/evidence.py",
       "to": "tests/unit/test_tailor_planner.py",
       "type": "tested_by"
     },
@@ -4621,6 +4889,11 @@
     {
       "from": "app/domain/job.py",
       "to": "tests/unit/test_semantic_matcher.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/job.py",
+      "to": "tests/unit/test_summary_writer.py",
       "type": "tested_by"
     },
     {
@@ -4756,6 +5029,11 @@
     {
       "from": "app/domain/resume.py",
       "to": "tests/unit/test_rewriter.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/resume.py",
+      "to": "tests/unit/test_summary_writer.py",
       "type": "tested_by"
     },
     {
@@ -5125,6 +5403,11 @@
     },
     {
       "from": "app/llm/schemas.py",
+      "to": "app/llm/schemas.py::SummaryResult",
+      "type": "contains"
+    },
+    {
+      "from": "app/llm/schemas.py",
       "to": "tests/unit/test_cli.py",
       "type": "tested_by"
     },
@@ -5146,6 +5429,11 @@
     {
       "from": "app/llm/schemas.py",
       "to": "tests/unit/test_rewriter.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/llm/schemas.py",
+      "to": "tests/unit/test_summary_writer.py",
       "type": "tested_by"
     },
     {
@@ -5300,6 +5588,11 @@
     },
     {
       "from": "app/services/run_manager.py",
+      "to": "tests/unit/test_summary_writer.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/services/run_manager.py",
       "to": "tests/unit/test_tailor_resume_flow.py",
       "type": "tested_by"
     },
@@ -5341,6 +5634,11 @@
     {
       "from": "app/services/tailor.py",
       "to": "app/analysis/structure_extractor.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/services/tailor.py",
+      "to": "app/analysis/summary_writer.py",
       "type": "imports"
     },
     {
@@ -5460,6 +5758,11 @@
     },
     {
       "from": "app/services/tailor.py",
+      "to": "tests/unit/test_summary_writer.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/services/tailor.py",
       "to": "tests/unit/test_tailor_resume_flow.py",
       "type": "tested_by"
     },
@@ -5547,6 +5850,11 @@
       "from": "app/validation/factual.py",
       "to": "app/validation/factual.py::ValidationResult",
       "type": "contains"
+    },
+    {
+      "from": "app/validation/factual.py",
+      "to": "tests/unit/test_summary_writer.py",
+      "type": "tested_by"
     },
     {
       "from": "app/validation/factual.py",
