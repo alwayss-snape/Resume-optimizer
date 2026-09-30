@@ -17,6 +17,10 @@ class RawBlock(BaseModel):
     # project sub-heading from a bullet or a company line.
     bold: bool = False
     font_size: Optional[float] = None
+    # Structural role set by the LLM structure extractor (P1.13): "name",
+    # "company", "job_title", "subheading", "bullet" or "section:<Name>".
+    # Overrides the normalizer's own layout guesses; the text is untouched.
+    hint: Optional[str] = None
 
 class RawDocument(BaseModel):
     filename: str

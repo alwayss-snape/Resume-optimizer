@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**35 app modules · 26 test files · 61 classes · 322 functions/methods · 8,901 lines of Python** · source hash `671cecd7067dd694`
+**36 app modules · 27 test files · 65 classes · 340 functions/methods · 9,208 lines of Python** · source hash `b4e28658ab5ecac7`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -40,6 +40,7 @@ app/
     rewriter.py                                  LLMRewriter
     scoring.py                                   ScoreComponents, AlignmentScorer
     semantic_matcher.py                          Semantic (embedding-based) matching layer.
+    structure_extractor.py                       LLM-assisted resume structure extraction with a verbatim guard (P1.13).
     tailor_planner.py                            TailoringPlanner
     terminology.py                               flat_alias_to_canonical(), normalize_phrase()
   config/
@@ -121,6 +122,7 @@ tests/
     test_rewriter.py                             test_rewriter_deterministic_fallback(), test_rewrite_bullet_parses_str…
     test_scoring.py                              _req(), _match(), test_semantic_partial_excluded_from_headline_score()…
     test_semantic_matcher.py                     Tests for SemanticMatcher.
+    test_structure_extractor.py                  LLM-assisted structure extraction with a verbatim guard (P1.13).
     test_tailor_planner.py                       test_tailor_planner(), test_semantic_only_match_produces_rewrite_with_…
     test_tailor_resume_flow.py                   tailor_resume orchestration: pre-approved proposals and Strict Factual…
     test_tailor_service_addition.py              _service(), test_incorporate_user_addition_appends_bullet_to_most_rece…
@@ -136,7 +138,7 @@ Rows = layer (what kind of code), columns = pipeline stage (when it runs during 
 | Layer | 1 Ingest | 2 Normalize | 3 JD analysis | 4 Match | 5 Score | 6 Plan | 7 Rewrite | 8 Validate | 9 Render | 10 Report |
 |---|---|---|---|---|---|---|---|---|---|---|
 | **Ingestion** | `docx`<br>`ocr`<br>`pdf` | · | · | · | · | · | · | · | · | · |
-| **Analysis** | · | `resume_normalizer` | `jd_analyzer` | `matcher`<br>`semantic_matcher`<br>`terminology` | `scoring` | `tailor_planner` | `change_proposal`<br>`rewriter` | · | · | · |
+| **Analysis** | · | `resume_normalizer`<br>`structure_extractor` | `jd_analyzer` | `matcher`<br>`semantic_matcher`<br>`terminology` | `scoring` | `tailor_planner` | `change_proposal`<br>`rewriter` | · | · | · |
 | **LLM** | · | · | `client`<br>`schemas` | · | · | · | `client`<br>`schemas` | · | · | · |
 | **Validation** | · | · | `safety` | · | · | · | · | `factual`<br>`output`<br>`structural` | · | · |
 | **Rendering** | `document_map` | · | · | · | · | · | · | · | `document_map`<br>`docx_patcher`<br>`html_renderer`<br>`pdf_converter`<br>`template_renderer` | · |
@@ -192,22 +194,22 @@ Spanning all stages: `app/cli.py`, `app/services/tailor.py`, `app/ui.py`
 
 ### `app/analysis/resume_normalizer.py`
 
-**Layer:** Analysis · **Stage:** 2 Normalize · **Lines:** 511
+**Layer:** Analysis · **Stage:** 2 Normalize · **Lines:** 521
 
 - class **`ResumeNormalizer`** ([app/analysis/resume_normalizer.py:8](../app/analysis/resume_normalizer.py#L8))
-  - `_split_skill_line()` :66 — 'Languages: Python, SQL<tab>Frameworks: Pandas, and XGBoost' ->
-  - `_skill_items()` :87
-  - `_is_dated_line()` :94 — A job title/company line carrying a date range or year.
-  - `_experience_line_kind()` :101 — 'dated' (title and/or company with dates), 'header_line' (a short
-  - `_add_role()` :117 — Record a role; the first one also fills the entry's title/dates.
-  - `_extract_date_range()` :126
-  - `_strip_date_range()` :130
-  - `_parse_title_and_dates()` :134 — 'Data Scientist II | August 2024 - Present' ->
-  - `_split_respecting_parens()` :143 — Split on sep_chars, but never inside ( ) or [ ] groups — so
-  - `normalize()` :166
+  - `_split_skill_line()` :67 — 'Languages: Python, SQL<tab>Frameworks: Pandas, and XGBoost' ->
+  - `_skill_items()` :88
+  - `_is_dated_line()` :98 — A job title/company line carrying a date range or year.
+  - `_experience_line_kind()` :105 — 'dated' (title and/or company with dates), 'header_line' (a short
+  - `_add_role()` :121 — Record a role; the first one also fills the entry's title/dates.
+  - `_extract_date_range()` :130
+  - `_strip_date_range()` :134
+  - `_parse_title_and_dates()` :138 — 'Data Scientist II | August 2024 - Present' ->
+  - `_split_respecting_parens()` :147 — Split on sep_chars, but never inside ( ) or [ ] groups — so
+  - `normalize()` :170
 - **Imports:** `domain/evidence.py`, `domain/resume.py`, `domain/resume_document.py`, `ingestion/docx.py`
-- **Imported by:** `services/tailor.py`
-- **Tested by:** `tests/integration/test_parse_golden.py`, `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_tailor_resume_flow.py`
+- **Imported by:** `analysis/structure_extractor.py`, `services/tailor.py`
+- **Tested by:** `tests/integration/test_parse_golden.py`, `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_structure_extractor.py`, `tests/unit/test_tailor_resume_flow.py`
 
 ### `app/analysis/rewriter.py`
 
@@ -253,6 +255,24 @@ _Semantic (embedding-based) matching layer._
 - **Imported by:** `services/tailor.py`
 - **Tested by:** `tests/unit/test_semantic_matcher.py`
 
+### `app/analysis/structure_extractor.py`
+
+**Layer:** Analysis · **Stage:** 2 Normalize · **Lines:** 173
+
+_LLM-assisted resume structure extraction with a verbatim guard (P1.13)._
+
+- class **`LineLabel`** ([app/analysis/structure_extractor.py:43](../app/analysis/structure_extractor.py#L43))
+- class **`ResumeLineLabels`** ([app/analysis/structure_extractor.py:48](../app/analysis/structure_extractor.py#L48)) — Structural role of each numbered resume line, selected by INDEX. The
+- class **`StructureExtractor`** ([app/analysis/structure_extractor.py:71](../app/analysis/structure_extractor.py#L71))
+  - `__init__()` :76
+  - `problems()` :82 — Signs that the deterministic parse misread the layout.
+  - `label_lines()` :108 — Ask the LLM for a label per block index. None if unavailable or
+  - `apply_labels()` :138 — A copy of raw_doc with each labelled block carrying a hint. Text
+  - `improve()` :152 — Return the better of the deterministic parse and an LLM-guided
+- **Imports:** `analysis/resume_normalizer.py`, `domain/evidence.py`, `domain/resume.py`, `domain/resume_document.py`, `ingestion/docx.py`, `llm/client.py`
+- **Imported by:** `services/tailor.py`
+- **Tested by:** `tests/unit/test_structure_extractor.py`
+
 ### `app/analysis/tailor_planner.py`
 
 **Layer:** Analysis · **Stage:** 6 Plan · **Lines:** 103
@@ -294,7 +314,7 @@ _Semantic (embedding-based) matching layer._
 **Layer:** Domain models · **Stage:** 2 Normalize, 4 Match · **Lines:** 21
 
 - class **`Evidence`** ([app/domain/evidence.py:4](../app/domain/evidence.py#L4))
-- **Imported by:** `analysis/matcher.py`, `analysis/resume_normalizer.py`, `analysis/rewriter.py`, `analysis/semantic_matcher.py`, `analysis/tailor_planner.py`, `services/tailor.py`, `validation/factual.py`
+- **Imported by:** `analysis/matcher.py`, `analysis/resume_normalizer.py`, `analysis/rewriter.py`, `analysis/semantic_matcher.py`, `analysis/structure_extractor.py`, `analysis/tailor_planner.py`, `services/tailor.py`, `validation/factual.py`
 - **Tested by:** `tests/unit/test_matcher.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_semantic_matcher.py`, `tests/unit/test_tailor_planner.py`, `tests/unit/test_tailor_service_addition.py`, `tests/unit/test_validation.py`
 
 ### `app/domain/job.py`
@@ -328,7 +348,7 @@ _Semantic (embedding-based) matching layer._
 - class **`Project`** ([app/domain/resume.py:57](../app/domain/resume.py#L57))
 - class **`Education`** ([app/domain/resume.py:64](../app/domain/resume.py#L64))
 - class **`Resume`** ([app/domain/resume.py:72](../app/domain/resume.py#L72))
-- **Imported by:** `analysis/resume_normalizer.py`, `analysis/rewriter.py`, `analysis/tailor_planner.py`, `domain/resume_document.py`, `rendering/html_renderer.py`, `rendering/template_renderer.py`, `services/tailor.py`, `validation/structural.py`
+- **Imported by:** `analysis/resume_normalizer.py`, `analysis/rewriter.py`, `analysis/structure_extractor.py`, `analysis/tailor_planner.py`, `domain/resume_document.py`, `rendering/html_renderer.py`, `rendering/template_renderer.py`, `services/tailor.py`, `validation/structural.py`
 - **Tested by:** `tests/unit/test_docx_renderer.py`, `tests/unit/test_html_renderer.py`, `tests/unit/test_resume_document.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_tailor_planner.py`, `tests/unit/test_tailor_service_addition.py`, `tests/unit/test_template_renderer_standalone.py`
 
 ### `app/domain/resume_document.py`
@@ -342,7 +362,7 @@ _Semantic (embedding-based) matching layer._
   - `record_revision()` :48
   - `snapshot()` :73 — Return a JSON-serializable, versioned document for storage or export.
 - **Imports:** `domain/resume.py`
-- **Imported by:** `analysis/resume_normalizer.py`, `rendering/html_renderer.py`, `rendering/template_renderer.py`, `services/tailor.py`, `services/validation_agent.py`
+- **Imported by:** `analysis/resume_normalizer.py`, `analysis/structure_extractor.py`, `rendering/html_renderer.py`, `rendering/template_renderer.py`, `services/tailor.py`, `services/validation_agent.py`
 - **Tested by:** `tests/unit/test_docx_renderer.py`, `tests/unit/test_html_renderer.py`, `tests/unit/test_resume_document.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_template_renderer_standalone.py`
 
 ### `app/domain/tailoring.py`
@@ -356,15 +376,15 @@ _Semantic (embedding-based) matching layer._
 
 ### `app/ingestion/docx.py`
 
-**Layer:** Ingestion · **Stage:** 1 Ingest · **Lines:** 135
+**Layer:** Ingestion · **Stage:** 1 Ingest · **Lines:** 139
 
 - class **`RawBlock`** ([app/ingestion/docx.py:9](../app/ingestion/docx.py#L9))
-- class **`RawDocument`** ([app/ingestion/docx.py:21](../app/ingestion/docx.py#L21))
-- class **`DocxParser`** ([app/ingestion/docx.py:29](../app/ingestion/docx.py#L29))
-  - `parse()` :35
+- class **`RawDocument`** ([app/ingestion/docx.py:25](../app/ingestion/docx.py#L25))
+- class **`DocxParser`** ([app/ingestion/docx.py:33](../app/ingestion/docx.py#L33))
+  - `parse()` :39
 - **Imports:** `rendering/document_map.py`
-- **Imported by:** `analysis/resume_normalizer.py`, `ingestion/pdf.py`, `services/tailor.py`
-- **Tested by:** `tests/integration/test_parse_golden.py`, `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_docx_parser.py`, `tests/unit/test_docx_renderer.py`, `tests/unit/test_pdf_parser.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_tailor_resume_flow.py`
+- **Imported by:** `analysis/resume_normalizer.py`, `analysis/structure_extractor.py`, `ingestion/pdf.py`, `services/tailor.py`
+- **Tested by:** `tests/integration/test_parse_golden.py`, `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_docx_parser.py`, `tests/unit/test_docx_renderer.py`, `tests/unit/test_pdf_parser.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_structure_extractor.py`, `tests/unit/test_tailor_resume_flow.py`
 
 ### `app/ingestion/ocr.py`
 
@@ -397,7 +417,7 @@ _Semantic (embedding-based) matching layer._
 - function **`_is_bold_span()`** ([app/ingestion/pdf.py:60](../app/ingestion/pdf.py#L60))
 - **Imports:** `ingestion/docx.py`, `ingestion/ocr.py`, `rendering/document_map.py`
 - **Imported by:** `services/tailor.py`
-- **Tested by:** `tests/integration/test_parse_golden.py`, `tests/unit/test_pdf_parser.py`, `tests/unit/test_resume_normalizer.py`
+- **Tested by:** `tests/integration/test_parse_golden.py`, `tests/unit/test_pdf_parser.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_structure_extractor.py`
 
 ### `app/llm/client.py`
 
@@ -425,7 +445,7 @@ _Semantic (embedding-based) matching layer._
 - function **`_retry_after_seconds()`** ([app/llm/client.py:579](../app/llm/client.py#L579)) — Seconds to wait before retrying a 429: the server's `retry-after`
 - function **`strict_json_schema()`** ([app/llm/client.py:594](../app/llm/client.py#L594)) — Adapt a Pydantic JSON schema for strict structured-output modes: every
 - **Imports:** `config/settings.py`, `llm/schemas.py`
-- **Imported by:** `analysis/jd_analyzer.py`, `analysis/matcher.py`, `analysis/rewriter.py`, `analysis/tailor_planner.py`, `cli.py`, `services/tailor.py`, `ui.py`, `scripts/benchmark_model.py`
+- **Imported by:** `analysis/jd_analyzer.py`, `analysis/matcher.py`, `analysis/rewriter.py`, `analysis/structure_extractor.py`, `analysis/tailor_planner.py`, `cli.py`, `services/tailor.py`, `ui.py`, `scripts/benchmark_model.py`
 - **Tested by:** `tests/unit/test_llm_client.py`, `tests/unit/test_rewriter.py`
 
 ### `app/llm/schemas.py`
@@ -452,7 +472,7 @@ _Semantic (embedding-based) matching layer._
   - `add_location()` :18
   - `get_location()` :21
 - **Imported by:** `ingestion/docx.py`, `ingestion/pdf.py`, `rendering/docx_patcher.py`
-- **Tested by:** `tests/unit/test_docx_parser.py`, `tests/unit/test_resume_model_v2.py`
+- **Tested by:** `tests/unit/test_docx_parser.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_structure_extractor.py`
 
 ### `app/rendering/docx_patcher.py`
 
@@ -519,17 +539,19 @@ _Semantic (embedding-based) matching layer._
 
 ### `app/services/tailor.py`
 
-**Layer:** Services · **Stage:** all · **Lines:** 602
+**Layer:** Services · **Stage:** all · **Lines:** 614
 
-- class **`TailorService`** ([app/services/tailor.py:33](../app/services/tailor.py#L33))
-  - `__init__()` :34
-  - `generate_preview_md()` :58
-  - `analyze_only()` :100
-  - `generate_proposals()` :128 — Generate rewrite proposals without applying them, plus advisory
-  - `incorporate_user_addition()` :187 — Fold a user-supplied free-text addition (a project, an
-  - `tailor_resume()` :261
-- function **`_merge_usage()`** ([app/services/tailor.py:593](../app/services/tailor.py#L593)) — Combine two LLMClient.get_usage_summary() dicts into one.
-- **Imports:** `analysis/jd_analyzer.py`, `analysis/matcher.py`, `analysis/resume_normalizer.py`, `analysis/rewriter.py`, `analysis/scoring.py`, `analysis/semantic_matcher.py`, `analysis/tailor_planner.py`, `domain/evidence.py`, `domain/job.py`, `domain/report.py`, `domain/resume.py`, `domain/resume_document.py`, `domain/tailoring.py`, `ingestion/docx.py`, `ingestion/pdf.py`, `llm/client.py`, `rendering/docx_patcher.py`, `rendering/html_renderer.py`, `rendering/pdf_converter.py`, `rendering/template_renderer.py`, `services/run_manager.py`, `validation/factual.py`, `validation/output.py`, `validation/safety.py`, `validation/structural.py`
+- class **`TailorService`** ([app/services/tailor.py:34](../app/services/tailor.py#L34))
+  - `__init__()` :35
+  - `generate_preview_md()` :62
+  - `parse_resume()` :104 — File -> (raw document, ResumeDocument, evidence). The deterministic
+  - `normalize_raw()` :114
+  - `analyze_only()` :121
+  - `generate_proposals()` :144 — Generate rewrite proposals without applying them, plus advisory
+  - `incorporate_user_addition()` :199 — Fold a user-supplied free-text addition (a project, an
+  - `tailor_resume()` :273
+- function **`_merge_usage()`** ([app/services/tailor.py:605](../app/services/tailor.py#L605)) — Combine two LLMClient.get_usage_summary() dicts into one.
+- **Imports:** `analysis/jd_analyzer.py`, `analysis/matcher.py`, `analysis/resume_normalizer.py`, `analysis/rewriter.py`, `analysis/scoring.py`, `analysis/semantic_matcher.py`, `analysis/structure_extractor.py`, `analysis/tailor_planner.py`, `domain/evidence.py`, `domain/job.py`, `domain/report.py`, `domain/resume.py`, `domain/resume_document.py`, `domain/tailoring.py`, `ingestion/docx.py`, `ingestion/pdf.py`, `llm/client.py`, `rendering/docx_patcher.py`, `rendering/html_renderer.py`, `rendering/pdf_converter.py`, `rendering/template_renderer.py`, `services/run_manager.py`, `validation/factual.py`, `validation/output.py`, `validation/safety.py`, `validation/structural.py`
 - **Imported by:** `cli.py`, `ui.py`
 - **Tested by:** `tests/integration/test_end_to_end.py`, `tests/unit/test_cli.py`, `tests/unit/test_tailor_resume_flow.py`, `tests/unit/test_tailor_service_addition.py`
 
@@ -614,6 +636,7 @@ flowchart LR
     analysis_rewriter[rewriter]
     analysis_scoring[scoring]
     analysis_semantic_matcher[semantic_matcher]
+    analysis_structure_extractor[structure_extractor]
     analysis_tailor_planner[tailor_planner]
     analysis_terminology[terminology]
   end
@@ -661,6 +684,9 @@ flowchart LR
   analysis_rewriter --> llm_client
   analysis_rewriter --> llm_schemas
   analysis_semantic_matcher --> config_settings
+  analysis_structure_extractor --> analysis_resume_normalizer
+  analysis_structure_extractor --> ingestion_docx
+  analysis_structure_extractor --> llm_client
   analysis_tailor_planner --> llm_client
   cli --> llm_client
   cli --> llm_schemas
@@ -679,6 +705,7 @@ flowchart LR
   services_tailor --> analysis_rewriter
   services_tailor --> analysis_scoring
   services_tailor --> analysis_semantic_matcher
+  services_tailor --> analysis_structure_extractor
   services_tailor --> analysis_tailor_planner
   services_tailor --> ingestion_docx
   services_tailor --> ingestion_pdf

@@ -10,6 +10,7 @@ from app.analysis.resume_normalizer import ResumeNormalizer
 from app.analysis.rewriter import FAILED_STATUSES, LLMRewriter, RewriteProposal
 from app.analysis.scoring import AlignmentScorer
 from app.analysis.semantic_matcher import SemanticMatcher
+from app.analysis.structure_extractor import StructureExtractor
 from app.analysis.tailor_planner import TailoringPlanner
 from app.domain.evidence import Evidence
 from app.domain.job import JobDescription
@@ -36,6 +37,9 @@ class TailorService:
         self.docx_parser = DocxParser()
         self.pdf_parser = PdfParser()
         self.resume_normalizer = ResumeNormalizer()
+        self.structure_extractor = StructureExtractor(self.llm_client, self.resume_normalizer)
+        # Problems left in the last parse (empty = looks right). Shown by the UI.
+        self.last_parse_issues: List[str] = []
         self.jd_analyzer = JDAnalyzer(self.llm_client)
         self.matcher = EvidenceMatcher(self.llm_client)
         # A single reused instance: the embedding model (if enabled) is
@@ -97,15 +101,27 @@ class TailorService:
 
         return "\n".join(lines)
 
-    def analyze_only(self, resume_path: str, jd_text: str) -> TailoringReport:
-        clean_jd_text = self.safety_guard.sanitize(jd_text)
-        
-        if resume_path.endswith(".pdf"):
+    def parse_resume(self, resume_path: str):
+        """File -> (raw document, ResumeDocument, evidence). The deterministic
+        parse runs first; only if it looks wrong is the LLM asked to label
+        lines by index (P1.13), which keeps every value verbatim."""
+        if resume_path.lower().endswith(".pdf"):
             raw_doc = self.pdf_parser.parse(resume_path)
         else:
             raw_doc = self.docx_parser.parse(resume_path)
+        return (raw_doc, *self.normalize_raw(raw_doc))
 
+    def normalize_raw(self, raw_doc):
         resume_doc, evidence_list = self.resume_normalizer.normalize(raw_doc)
+        resume_doc, evidence_list, self.last_parse_issues = self.structure_extractor.improve(
+            raw_doc, resume_doc, evidence_list,
+        )
+        return resume_doc, evidence_list
+
+    def analyze_only(self, resume_path: str, jd_text: str) -> TailoringReport:
+        clean_jd_text = self.safety_guard.sanitize(jd_text)
+        
+        raw_doc, resume_doc, evidence_list = self.parse_resume(resume_path)
         resume = resume_doc.resume
         job_desc = self.jd_analyzer.analyze(clean_jd_text)
         matches = self.matcher.match(job_desc, evidence_list)
@@ -134,12 +150,7 @@ class TailorService:
         """
         clean_jd_text = self.safety_guard.sanitize(jd_text)
 
-        if resume_path.endswith(".pdf"):
-            raw_doc = self.pdf_parser.parse(resume_path)
-        else:
-            raw_doc = self.docx_parser.parse(resume_path)
-
-        resume_doc, evidence_list = self.resume_normalizer.normalize(raw_doc)
+        raw_doc, resume_doc, evidence_list = self.parse_resume(resume_path)
         resume = resume_doc.resume
         job_desc = self.jd_analyzer.analyze(clean_jd_text)
         matches = self.matcher.match(job_desc, evidence_list)
@@ -181,6 +192,7 @@ class TailorService:
                 "errors": sorted({p.error for p in failed if p.error}),
             },
             "llm_usage": self.llm_client.get_usage_summary() if self.llm_client else None,
+            "parse_issues": list(self.last_parse_issues),
             "experience_options": [{"id": e.id, "label": " — ".join(v for v in (e.company, e.title) if v) or e.id} for e in resume.experience],
         }
 
@@ -308,7 +320,7 @@ class TailorService:
             mode = "ATS_DEFAULT"
 
         # Normalizer returns a canonical ResumeDocument and the extracted evidence
-        resume_doc, evidence_list = self.resume_normalizer.normalize(raw_doc)
+        resume_doc, evidence_list = self.normalize_raw(raw_doc)
         resume = resume_doc.resume
         _append_progress("Imported and normalized resume")
         # Record import as a revision (best-effort)

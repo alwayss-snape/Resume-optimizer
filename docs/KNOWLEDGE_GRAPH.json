@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "671cecd7067dd694",
+  "source_hash": "b4e28658ab5ecac7",
   "stats": {
-    "files": 90,
-    "python_files": 68,
-    "app_modules": 35,
-    "test_files": 26,
-    "classes": 61,
-    "functions": 322,
-    "lines_of_python": 8901
+    "files": 92,
+    "python_files": 70,
+    "app_modules": 36,
+    "test_files": 27,
+    "classes": 65,
+    "functions": 340,
+    "lines_of_python": 9208
   },
   "axes": {
     "x": "location (path)",
@@ -347,7 +347,7 @@
       "stages": [
         "2 Normalize"
       ],
-      "lines": 511,
+      "lines": 521,
       "doc": "",
       "classes": [
         {
@@ -357,52 +357,52 @@
           "methods": [
             {
               "name": "_split_skill_line",
-              "line": 66,
+              "line": 67,
               "doc": "'Languages: Python, SQL<tab>Frameworks: Pandas, and XGBoost' ->"
             },
             {
               "name": "_skill_items",
-              "line": 87,
+              "line": 88,
               "doc": ""
             },
             {
               "name": "_is_dated_line",
-              "line": 94,
+              "line": 98,
               "doc": "A job title/company line carrying a date range or year."
             },
             {
               "name": "_experience_line_kind",
-              "line": 101,
+              "line": 105,
               "doc": "'dated' (title and/or company with dates), 'header_line' (a short"
             },
             {
               "name": "_add_role",
-              "line": 117,
+              "line": 121,
               "doc": "Record a role; the first one also fills the entry's title/dates."
             },
             {
               "name": "_extract_date_range",
-              "line": 126,
-              "doc": ""
-            },
-            {
-              "name": "_strip_date_range",
               "line": 130,
               "doc": ""
             },
             {
-              "name": "_parse_title_and_dates",
+              "name": "_strip_date_range",
               "line": 134,
+              "doc": ""
+            },
+            {
+              "name": "_parse_title_and_dates",
+              "line": 138,
               "doc": "'Data Scientist II | August 2024 - Present' ->"
             },
             {
               "name": "_split_respecting_parens",
-              "line": 143,
+              "line": 147,
               "doc": "Split on sep_chars, but never inside ( ) or [ ] groups \u2014 so"
             },
             {
               "name": "normalize",
-              "line": 166,
+              "line": 170,
               "doc": ""
             }
           ]
@@ -542,6 +542,63 @@
           "doc": ""
         }
       ]
+    },
+    {
+      "id": "app/analysis/structure_extractor.py",
+      "type": "python",
+      "layer": "Analysis",
+      "stages": [
+        "2 Normalize"
+      ],
+      "lines": 173,
+      "doc": "LLM-assisted resume structure extraction with a verbatim guard (P1.13).",
+      "classes": [
+        {
+          "name": "LineLabel",
+          "line": 43,
+          "doc": "",
+          "methods": []
+        },
+        {
+          "name": "ResumeLineLabels",
+          "line": 48,
+          "doc": "Structural role of each numbered resume line, selected by INDEX. The",
+          "methods": []
+        },
+        {
+          "name": "StructureExtractor",
+          "line": 71,
+          "doc": "",
+          "methods": [
+            {
+              "name": "__init__",
+              "line": 76,
+              "doc": ""
+            },
+            {
+              "name": "problems",
+              "line": 82,
+              "doc": "Signs that the deterministic parse misread the layout."
+            },
+            {
+              "name": "label_lines",
+              "line": 108,
+              "doc": "Ask the LLM for a label per block index. None if unavailable or"
+            },
+            {
+              "name": "apply_labels",
+              "line": 138,
+              "doc": "A copy of raw_doc with each labelled block carrying a hint. Text"
+            },
+            {
+              "name": "improve",
+              "line": 152,
+              "doc": "Return the better of the deterministic parse and an LLM-guided"
+            }
+          ]
+        }
+      ],
+      "functions": []
     },
     {
       "id": "app/analysis/tailor_planner.py",
@@ -868,7 +925,7 @@
       "stages": [
         "1 Ingest"
       ],
-      "lines": 135,
+      "lines": 139,
       "doc": "",
       "classes": [
         {
@@ -879,18 +936,18 @@
         },
         {
           "name": "RawDocument",
-          "line": 21,
+          "line": 25,
           "doc": "",
           "methods": []
         },
         {
           "name": "DocxParser",
-          "line": 29,
+          "line": 33,
           "doc": "",
           "methods": [
             {
               "name": "parse",
-              "line": 35,
+              "line": 39,
               "doc": ""
             }
           ]
@@ -1504,42 +1561,52 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 602,
+      "lines": 614,
       "doc": "",
       "classes": [
         {
           "name": "TailorService",
-          "line": 33,
+          "line": 34,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
-              "line": 34,
+              "line": 35,
               "doc": ""
             },
             {
               "name": "generate_preview_md",
-              "line": 58,
+              "line": 62,
+              "doc": ""
+            },
+            {
+              "name": "parse_resume",
+              "line": 104,
+              "doc": "File -> (raw document, ResumeDocument, evidence). The deterministic"
+            },
+            {
+              "name": "normalize_raw",
+              "line": 114,
               "doc": ""
             },
             {
               "name": "analyze_only",
-              "line": 100,
+              "line": 121,
               "doc": ""
             },
             {
               "name": "generate_proposals",
-              "line": 128,
+              "line": 144,
               "doc": "Generate rewrite proposals without applying them, plus advisory"
             },
             {
               "name": "incorporate_user_addition",
-              "line": 187,
+              "line": 199,
               "doc": "Fold a user-supplied free-text addition (a project, an"
             },
             {
               "name": "tailor_resume",
-              "line": 261,
+              "line": 273,
               "doc": ""
             }
           ]
@@ -1548,7 +1615,7 @@
       "functions": [
         {
           "name": "_merge_usage",
-          "line": 593,
+          "line": 605,
           "doc": "Combine two LLMClient.get_usage_summary() dicts into one."
         }
       ]
@@ -1863,118 +1930,118 @@
       "type": "python",
       "layer": "Tooling",
       "stages": [],
-      "lines": 717,
+      "lines": 718,
       "doc": "Regenerate the repo's living docs: the knowledge graph and the change log.",
       "classes": [],
       "functions": [
         {
           "name": "git",
-          "line": 115,
+          "line": 116,
           "doc": ""
         },
         {
           "name": "layer_of",
-          "line": 122,
+          "line": 123,
           "doc": ""
         },
         {
           "name": "module_name",
-          "line": 129,
+          "line": 130,
           "doc": ""
         },
         {
           "name": "first_line",
-          "line": 136,
+          "line": 137,
           "doc": ""
         },
         {
           "name": "list_files",
-          "line": 145,
+          "line": 146,
           "doc": "Tracked + new (not ignored) files, restricted to the project map."
         },
         {
           "name": "parse_python",
-          "line": 163,
+          "line": 164,
           "doc": ""
         },
         {
           "name": "symbols_of",
-          "line": 191,
+          "line": 192,
           "doc": ""
         },
         {
           "name": "settings_fields",
-          "line": 204,
+          "line": 205,
           "doc": ""
         },
         {
           "name": "build_graph",
-          "line": 223,
+          "line": 224,
           "doc": ""
         },
         {
           "name": "render_graph_md",
-          "line": 297,
+          "line": 298,
           "doc": ""
         },
         {
           "name": "write_graph",
-          "line": 495,
+          "line": 496,
           "doc": ""
         },
         {
           "name": "commit_info",
-          "line": 538,
+          "line": 539,
           "doc": ""
         },
         {
           "name": "changed_files",
-          "line": 549,
+          "line": 550,
           "doc": ""
         },
         {
           "name": "is_major",
-          "line": 562,
+          "line": 563,
           "doc": ""
         },
         {
           "name": "blob",
-          "line": 571,
+          "line": 572,
           "doc": ""
         },
         {
           "name": "structure_delta",
-          "line": 576,
+          "line": 577,
           "doc": ""
         },
         {
           "name": "render_entry",
-          "line": 599,
+          "line": 600,
           "doc": ""
         },
         {
           "name": "_split_entries",
-          "line": 642,
+          "line": 643,
           "doc": ""
         },
         {
           "name": "_join",
-          "line": 654,
+          "line": 655,
           "doc": ""
         },
         {
           "name": "log_entry",
-          "line": 658,
+          "line": 659,
           "doc": ""
         },
         {
           "name": "backfill",
-          "line": 676,
+          "line": 677,
           "doc": ""
         },
         {
           "name": "main",
-          "line": 693,
+          "line": 694,
           "doc": ""
         }
       ]
@@ -2640,7 +2707,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 115,
+      "lines": 122,
       "doc": "Resume model v2 (P1.12): several roles at one company, project",
       "classes": [],
       "functions": [
@@ -2692,6 +2759,11 @@
         {
           "name": "test_html_renders_roles_and_groups",
           "line": 110,
+          "doc": ""
+        },
+        {
+          "name": "test_date_range_only_takes_month_words",
+          "line": 118,
           "doc": ""
         }
       ]
@@ -2911,6 +2983,75 @@
         {
           "name": "test_no_missing_requirements_short_circuits",
           "line": 135,
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "tests/unit/test_structure_extractor.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 100,
+      "doc": "LLM-assisted structure extraction with a verbatim guard (P1.13).",
+      "classes": [
+        {
+          "name": "FakeLLM",
+          "line": 9,
+          "doc": "",
+          "methods": [
+            {
+              "name": "__init__",
+              "line": 10,
+              "doc": ""
+            },
+            {
+              "name": "is_available",
+              "line": 15,
+              "doc": ""
+            },
+            {
+              "name": "generate_json",
+              "line": 18,
+              "doc": ""
+            }
+          ]
+        }
+      ],
+      "functions": [
+        {
+          "name": "_raw",
+          "line": 24,
+          "doc": ""
+        },
+        {
+          "name": "_parse",
+          "line": 47,
+          "doc": ""
+        },
+        {
+          "name": "test_good_parse_never_calls_the_llm",
+          "line": 53,
+          "doc": ""
+        },
+        {
+          "name": "test_bad_parse_is_relabelled_and_text_stays_verbatim",
+          "line": 61,
+          "doc": ""
+        },
+        {
+          "name": "test_hallucinated_indices_are_dropped",
+          "line": 81,
+          "doc": ""
+        },
+        {
+          "name": "test_llm_unavailable_keeps_deterministic_parse",
+          "line": 88,
+          "doc": ""
+        },
+        {
+          "name": "test_worse_llm_parse_is_rejected",
+          "line": 95,
           "doc": ""
         }
       ]
@@ -3270,6 +3411,11 @@
     },
     {
       "from": "app/analysis/resume_normalizer.py",
+      "to": "tests/unit/test_structure_extractor.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/analysis/resume_normalizer.py",
       "to": "tests/unit/test_tailor_resume_flow.py",
       "type": "tested_by"
     },
@@ -3401,6 +3547,56 @@
     {
       "from": "app/analysis/semantic_matcher.py",
       "to": "tests/unit/test_semantic_matcher.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/analysis/structure_extractor.py",
+      "to": "app/analysis/resume_normalizer.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/analysis/structure_extractor.py",
+      "to": "app/analysis/structure_extractor.py::LineLabel",
+      "type": "contains"
+    },
+    {
+      "from": "app/analysis/structure_extractor.py",
+      "to": "app/analysis/structure_extractor.py::ResumeLineLabels",
+      "type": "contains"
+    },
+    {
+      "from": "app/analysis/structure_extractor.py",
+      "to": "app/analysis/structure_extractor.py::StructureExtractor",
+      "type": "contains"
+    },
+    {
+      "from": "app/analysis/structure_extractor.py",
+      "to": "app/domain/evidence.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/analysis/structure_extractor.py",
+      "to": "app/domain/resume.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/analysis/structure_extractor.py",
+      "to": "app/domain/resume_document.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/analysis/structure_extractor.py",
+      "to": "app/ingestion/docx.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/analysis/structure_extractor.py",
+      "to": "app/llm/client.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/analysis/structure_extractor.py",
+      "to": "tests/unit/test_structure_extractor.py",
       "type": "tested_by"
     },
     {
@@ -3795,6 +3991,11 @@
     },
     {
       "from": "app/ingestion/docx.py",
+      "to": "tests/unit/test_structure_extractor.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/ingestion/docx.py",
       "to": "tests/unit/test_tailor_resume_flow.py",
       "type": "tested_by"
     },
@@ -3841,6 +4042,11 @@
     {
       "from": "app/ingestion/pdf.py",
       "to": "tests/unit/test_resume_normalizer.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/ingestion/pdf.py",
+      "to": "tests/unit/test_structure_extractor.py",
       "type": "tested_by"
     },
     {
@@ -3951,6 +4157,11 @@
     {
       "from": "app/rendering/document_map.py",
       "to": "tests/unit/test_resume_model_v2.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/rendering/document_map.py",
+      "to": "tests/unit/test_structure_extractor.py",
       "type": "tested_by"
     },
     {
@@ -4091,6 +4302,11 @@
     {
       "from": "app/services/tailor.py",
       "to": "app/analysis/semantic_matcher.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/services/tailor.py",
+      "to": "app/analysis/structure_extractor.py",
       "type": "imports"
     },
     {
@@ -4361,6 +4577,11 @@
     {
       "from": "tests/unit/test_llm_client.py",
       "to": "tests/unit/test_llm_client.py::SampleSchema",
+      "type": "contains"
+    },
+    {
+      "from": "tests/unit/test_structure_extractor.py",
+      "to": "tests/unit/test_structure_extractor.py::FakeLLM",
       "type": "contains"
     }
   ]

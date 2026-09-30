@@ -113,3 +113,10 @@ def test_html_renders_roles_and_groups():
     assert "<span>Engineer I</span>" in html and "Aug 2022 – Aug 2024" in html
     assert "<p class='group'>Data Platform</p>" in html
     assert html.index("Data Platform") < html.index("Fraud Detection")
+
+
+def test_date_range_only_takes_month_words():
+    n = ResumeNormalizer()
+    assert n._parse_title_and_dates("Senior Engineer 2019 - 2023") == ("Senior Engineer", "2019", "2023")
+    assert n._parse_title_and_dates("Analyst, Sept. 2020 to Present") == ("Analyst", "Sept. 2020", "Present")
+    assert n._parse_title_and_dates("Data Scientist II, August 2024 - Present") == ("Data Scientist II", "August 2024", "Present")

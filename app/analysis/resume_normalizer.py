@@ -17,10 +17,11 @@ class ResumeNormalizer:
     # A job line's dates always carry a year or "Present".
     YEAR_OR_PRESENT = re.compile(r"\b(?:19|20)\d{2}\b|\b(?:Present|Current|Now)\b", re.IGNORECASE)
     # Trailing "<start> - <end>" / "(<start> - <end>)" date-range pattern, e.g.
-    # "August 2024 - Present" or "(2014 – 2018)".
+    # "August 2024 - Present", "(2014 – 2018)" or "2019 to 2023". Only a month
+    # name may precede the year ("Engineer 2019 - 2023" keeps "Engineer").
     DATE_RANGE_RE = re.compile(
-        r"\(?\s*((?:[A-Za-z]+\.?\s*)?\d{4})\s*[-–—]\s*"
-        r"((?:[A-Za-z]+\.?\s*)?\d{4}|Present|Current)\s*\)?\s*$",
+        r"\(?\s*((?:\b" + _MONTH + r"\.?,?\s*)?\d{4})\s*(?:[-–—]|\bto\b)\s*"
+        r"((?:\b" + _MONTH + r"\.?,?\s*)?\d{4}|Present|Current|Now)\s*\)?\s*$",
         re.IGNORECASE,
     )
     PHONE_RE = re.compile(r'(\+\d{1,3}[-.\s]?)?\d{3}[-.\s]?\d{3}[-.\s]?\d{4}\b')
@@ -90,6 +91,9 @@ class ResumeNormalizer:
         # item often reads "and XGBoost".
         items = self._split_respecting_parens(values, ",;|*•\n")
         return [re.sub(r"^(?:and|&)\s+", "", item, flags=re.IGNORECASE) for item in items]
+
+    # Experience line kinds forced by an LLM structure hint (P1.13).
+    _HINT_KINDS = {"company": "company", "job_title": "dated", "subheading": "subheading", "bullet": "content"}
 
     def _is_dated_line(self, block) -> bool:
         """A job title/company line carrying a date range or year."""
@@ -210,11 +214,15 @@ class ResumeNormalizer:
             if not text:
                 continue
 
-            if block.block_type == "name":
+            if block.block_type == "name" or block.hint == "name":
                 candidate_name = text
                 continue
 
-            if block.block_type == "heading":
+            if block.hint and block.hint.startswith("section:"):
+                current_section = block.hint.split(":", 1)[1]
+                continue
+
+            if block.block_type == "heading" and not block.hint:
                 if self.SECTION_KEYWORDS_RE.search(text):
                     current_section = text
                     continue
@@ -272,9 +280,11 @@ class ResumeNormalizer:
                     left, right_col = [p.strip() for p in text.split("\t", 1)]
                 else:
                     left, right_col = text, None
-                kind = self._experience_line_kind(block, text)
-                if kind == "header_line" and self._is_dated_line(blocks[idx + 1] if idx + 1 < len(blocks) else None):
-                    kind = "company"
+                kind = self._HINT_KINDS.get(block.hint or "")
+                if kind is None:
+                    kind = self._experience_line_kind(block, text)
+                    if kind == "header_line" and self._is_dated_line(blocks[idx + 1] if idx + 1 < len(blocks) else None):
+                        kind = "company"
 
                 if kind == "dated":
                     title, start, end = self._parse_title_and_dates(left)
@@ -314,7 +324,7 @@ class ResumeNormalizer:
                     if right_col and not current_exp.location:
                         current_exp.location = right_col
 
-                elif kind == "header_line":
+                elif kind in ("header_line", "subheading"):
                     # A sub-heading inside the job, e.g. a project name.
                     current_group = re.sub(r"\s+", " ", text).strip()
 
