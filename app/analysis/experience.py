@@ -1,4 +1,5 @@
-"""Years of experience from role date ranges (P1.5, reused by P2.3).
+"""Years of experience from role date ranges (P1.5), and the page target
+that follows from them (P2.3).
 
 Computed in code, never by the LLM: overlapping roles (a promotion listed
 next to the earlier title, two part-time jobs) are merged so a month is
@@ -71,3 +72,12 @@ def years_phrase(years: float) -> Optional[str]:
         return None
     whole = int(years)
     return f"{whole} year" if whole == 1 and years < 1.5 else f"{whole}+ years"
+
+
+# Fixed decision: 1 page under 8 years of experience, 2 pages from 8 years.
+TWO_PAGES_FROM_YEARS = 8.0
+
+
+def target_pages(resume: Resume, today: Optional[date] = None) -> int:
+    """How many A4 pages the tailored resume should fill."""
+    return 2 if years_of_experience(resume, today) >= TWO_PAGES_FROM_YEARS else 1

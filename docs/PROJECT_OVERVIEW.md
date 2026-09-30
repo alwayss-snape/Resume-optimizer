@@ -56,7 +56,7 @@ Semantic matching uses a local embedding model (`all-MiniLM-L6-v2`).
 | Strict Factual Mode | ⚠️ Cosmetic | See issue 4 |
 | DOCX / PDF / HTML output | ✅ Works | ATS template (P2.1): A4, Arial, standard headings, section order by experience, "Jan 2022 – Present" dates; files named `First_Last_Resume_<Company>`. PDF needs LibreOffice installed |
 | CLI | ✅ Works | `analyze` and `tailor` only; no review step, no addition text |
-| Tests | ✅ 234 passing | `pytest -q` (~35 s, loads the cached embedding model) |
+| Tests | ✅ 238 passing | `pytest -q` (~35 s, loads the cached embedding model) |
 | Multiple JDs / history / cover letter | ❌ Not built | — |
 
 ## Open issues (found 2026-09-29, not yet fixed)

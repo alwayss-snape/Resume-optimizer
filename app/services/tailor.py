@@ -5,6 +5,7 @@ from datetime import datetime
 from typing import Dict, List, Optional, Tuple
 from uuid import uuid4
 
+from app.analysis.experience import target_pages
 from app.analysis.gap_questions import GapAnswer, build_questions
 from app.analysis.jd_analyzer import JDAnalyzer
 from app.analysis.keyword_match import KeywordMatcher
@@ -847,6 +848,7 @@ class TailorService:
             "docx": docx_output_path,
             "pdf": pdf_output_path if pdf_res else "",
             "html": html_output_path,
+            "target_pages": target_pages(resume),
             "changes_md": report_md_path,
             "alignment_score": f"{score:.1f}",
             "initial_alignment_score": f"{initial_score:.1f}",

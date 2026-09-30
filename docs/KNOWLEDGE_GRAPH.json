@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "58cd0f746fa46049",
+  "source_hash": "70fc879080fdfcc7",
   "stats": {
-    "files": 115,
-    "python_files": 90,
+    "files": 116,
+    "python_files": 91,
     "app_modules": 46,
-    "test_files": 37,
+    "test_files": 38,
     "classes": 79,
-    "functions": 552,
-    "lines_of_python": 12577
+    "functions": 558,
+    "lines_of_python": 12627
   },
   "axes": {
     "x": "location (path)",
@@ -244,29 +244,34 @@
         "2 Normalize",
         "7 Rewrite"
       ],
-      "lines": 73,
-      "doc": "Years of experience from role date ranges (P1.5, reused by P2.3).",
+      "lines": 83,
+      "doc": "Years of experience from role date ranges (P1.5), and the page target",
       "classes": [],
       "functions": [
         {
           "name": "parse_month",
-          "line": 18,
+          "line": 19,
           "doc": "'August 2024' / 'Aug. 2024' / '08/2024' / '2024' / 'Present' -> (year, month)."
         },
         {
           "name": "role_intervals",
-          "line": 39,
+          "line": 40,
           "doc": "Each dated role as [start, end] in absolute months (year*12 + month)."
         },
         {
           "name": "years_of_experience",
-          "line": 56,
+          "line": 57,
           "doc": "Total months covered by any role (overlaps merged), in years."
         },
         {
           "name": "years_phrase",
-          "line": 68,
+          "line": 69,
           "doc": "How a resume states it: '4+ years', '1 year', or None under 1 year."
+        },
+        {
+          "name": "target_pages",
+          "line": 81,
+          "doc": "How many A4 pages the tailored resume should fill."
         }
       ]
     },
@@ -1316,7 +1321,7 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 271,
+      "lines": 272,
       "doc": "Run evaluation cases through the pipeline and collect metrics (P4.1).",
       "classes": [
         {
@@ -1383,22 +1388,22 @@
         },
         {
           "name": "run",
-          "line": 192,
+          "line": 193,
           "doc": ""
         },
         {
           "name": "_flatten",
-          "line": 208,
+          "line": 209,
           "doc": ""
         },
         {
           "name": "compare",
-          "line": 225,
+          "line": 226,
           "doc": "Human-readable differences per case between a report and a baseline."
         },
         {
           "name": "summary_lines",
-          "line": 253,
+          "line": 254,
           "doc": ""
         }
       ]
@@ -2201,97 +2206,97 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 874,
+      "lines": 876,
       "doc": "",
       "classes": [
         {
           "name": "TailorService",
-          "line": 40,
+          "line": 41,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
-              "line": 41,
+              "line": 42,
               "doc": ""
             },
             {
               "name": "generate_preview_md",
-              "line": 73,
+              "line": 74,
               "doc": ""
             },
             {
               "name": "_patchable",
-              "line": 119,
+              "line": 120,
               "doc": "Proposals as in-place DOCX patches. A summary proposal targets the"
             },
             {
               "name": "_apply_gap_answers",
-              "line": 142,
+              "line": 143,
               "doc": "Ticked keywords join the skills section; a typed answer becomes a"
             },
             {
               "name": "_draft_from_answer",
-              "line": 166,
+              "line": 167,
               "doc": "Polish the candidate's answer into one bullet that may use only"
             },
             {
               "name": "_skills_proposals",
-              "line": 182,
+              "line": 183,
               "doc": "The skills section with the JD's skills first, when that changes it (P1.6)."
             },
             {
               "name": "_summary_proposals",
-              "line": 187,
+              "line": 188,
               "doc": "The tailored summary as a proposal, when one was written (P1.5)."
             },
             {
               "name": "_embed",
-              "line": 192,
+              "line": 193,
               "doc": "Sentence embeddings for the planner, loaded lazily; raises when the"
             },
             {
               "name": "_apply_bullet_order",
-              "line": 201,
+              "line": 202,
               "doc": "Reorder bullets as planned (most relevant first within each"
             },
             {
               "name": "parse_resume",
-              "line": 216,
+              "line": 217,
               "doc": "File -> (raw document, ResumeDocument, evidence). The deterministic"
             },
             {
               "name": "normalize_raw",
-              "line": 226,
+              "line": 227,
               "doc": ""
             },
             {
               "name": "_copy_parsed",
-              "line": 234,
+              "line": 235,
               "doc": "Deep copies, so a parse kept in UI session state is never mutated."
             },
             {
               "name": "apply_parse_corrections",
-              "line": 239,
+              "line": 240,
               "doc": "Apply the user's fixes from the \"Check parsed resume\" step (P3.5)."
             },
             {
               "name": "analyze_only",
-              "line": 300,
+              "line": 301,
               "doc": ""
             },
             {
               "name": "generate_proposals",
-              "line": 326,
+              "line": 327,
               "doc": "Generate rewrite proposals without applying them, plus questions"
             },
             {
               "name": "incorporate_user_addition",
-              "line": 387,
+              "line": 388,
               "doc": "Fold a user-supplied free-text addition (a project, an"
             },
             {
               "name": "tailor_resume",
-              "line": 466,
+              "line": 467,
               "doc": ""
             }
           ]
@@ -2300,7 +2305,7 @@
       "functions": [
         {
           "name": "_merge_usage",
-          "line": 865,
+          "line": 867,
           "doc": "Combine two LLMClient.get_usage_summary() dicts into one."
         }
       ]
@@ -3069,6 +3074,42 @@
         {
           "name": "test_saved_committed_report_never_contains_private_cases",
           "line": 45,
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "tests/unit/test_experience.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 37,
+      "doc": "P2.3: years of experience (overlaps merged) -> 1 or 2 target pages.",
+      "classes": [],
+      "functions": [
+        {
+          "name": "_resume",
+          "line": 10,
+          "doc": ""
+        },
+        {
+          "name": "test_under_eight_years_is_one_page",
+          "line": 15,
+          "doc": ""
+        },
+        {
+          "name": "test_eight_years_or_more_is_two_pages",
+          "line": 21,
+          "doc": ""
+        },
+        {
+          "name": "test_overlapping_roles_are_not_double_counted",
+          "line": 28,
+          "doc": ""
+        },
+        {
+          "name": "test_no_dated_roles_is_one_page",
+          "line": 36,
           "doc": ""
         }
       ]
@@ -4741,6 +4782,11 @@
     },
     {
       "from": "app/analysis/experience.py",
+      "to": "tests/unit/test_experience.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/analysis/experience.py",
       "to": "tests/unit/test_summary_writer.py",
       "type": "tested_by"
     },
@@ -5536,6 +5582,11 @@
     },
     {
       "from": "app/domain/resume.py",
+      "to": "tests/unit/test_experience.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/resume.py",
       "to": "tests/unit/test_gap_questions.py",
       "type": "tested_by"
     },
@@ -6218,6 +6269,11 @@
       "from": "app/services/run_manager.py",
       "to": "tests/unit/test_tailor_resume_flow.py",
       "type": "tested_by"
+    },
+    {
+      "from": "app/services/tailor.py",
+      "to": "app/analysis/experience.py",
+      "type": "imports"
     },
     {
       "from": "app/services/tailor.py",
