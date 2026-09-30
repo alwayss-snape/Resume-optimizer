@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "d348446d4dc6f11d",
+  "source_hash": "3b58660e4d583b77",
   "stats": {
     "files": 85,
     "python_files": 65,
     "app_modules": 35,
     "test_files": 24,
     "classes": 59,
-    "functions": 260,
-    "lines_of_python": 7876
+    "functions": 262,
+    "lines_of_python": 7939
   },
   "axes": {
     "x": "location (path)",
@@ -586,13 +586,18 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 69,
+      "lines": 112,
       "doc": "",
       "classes": [],
       "functions": [
         {
+          "name": "check_llm",
+          "line": 11,
+          "doc": "One live, structured call to the configured provider. Returns an exit"
+        },
+        {
           "name": "main",
-          "line": 10,
+          "line": 44,
           "doc": ""
         }
       ]
@@ -1927,7 +1932,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 31,
+      "lines": 51,
       "doc": "",
       "classes": [],
       "functions": [
@@ -1939,6 +1944,11 @@
         {
           "name": "test_tailor_service_end_to_end_docx",
           "line": 18,
+          "doc": ""
+        },
+        {
+          "name": "test_check_llm_reports_success_and_failure",
+          "line": 34,
           "doc": ""
         }
       ]
@@ -3063,8 +3073,23 @@
     },
     {
       "from": "app/cli.py",
+      "to": "app/llm/client.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/cli.py",
+      "to": "app/llm/schemas.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/cli.py",
       "to": "app/services/tailor.py",
       "type": "imports"
+    },
+    {
+      "from": "app/cli.py",
+      "to": "tests/unit/test_cli.py",
+      "type": "tested_by"
     },
     {
       "from": "app/config/settings.py",
@@ -3470,6 +3495,11 @@
       "from": "app/llm/schemas.py",
       "to": "app/llm/schemas.py::MissingRequirementSuggestion",
       "type": "contains"
+    },
+    {
+      "from": "app/llm/schemas.py",
+      "to": "tests/unit/test_cli.py",
+      "type": "tested_by"
     },
     {
       "from": "app/llm/schemas.py",

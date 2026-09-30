@@ -29,3 +29,23 @@ def test_tailor_service_end_to_end_docx(tmp_path):
     assert os.path.exists(results["docx"])
     assert os.path.exists(results["changes_md"])
     assert float(results["alignment_score"]) > 0.0
+
+
+def test_check_llm_reports_success_and_failure(capsys):
+    from unittest.mock import MagicMock, patch
+    from app.cli import check_llm
+    from app.llm.schemas import BulletRewriteResult
+
+    ok_client = MagicMock(provider="groq", model="m", last_error=None)
+    ok_client.is_available.return_value = True
+    ok_client.generate_json.return_value = BulletRewriteResult(rewritten="Built Python pipelines for 2M events/day.")
+    ok_client.get_usage_summary.return_value = {"total_prompt_tokens": 10, "total_completion_tokens": 5}
+    with patch("app.llm.client.LLMClient", return_value=ok_client):
+        assert check_llm() == 0
+    assert "OK in" in capsys.readouterr().out
+
+    bad_client = MagicMock(provider="groq", model="m", last_error="GROQ_API_KEY is not set")
+    bad_client.is_available.return_value = False
+    with patch("app.llm.client.LLMClient", return_value=bad_client):
+        assert check_llm() == 1
+    assert "GROQ_API_KEY is not set" in capsys.readouterr().out

@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**35 app modules · 24 test files · 59 classes · 260 functions/methods · 7,876 lines of Python** · source hash `d348446d4dc6f11d`
+**35 app modules · 24 test files · 59 classes · 262 functions/methods · 7,939 lines of Python** · source hash `3b58660e4d583b77`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -30,7 +30,7 @@ pyproject.toml
   post-commit
   pre-commit
 app/
-  cli.py                                         main()
+  cli.py                                         check_llm(), main()
   ui.py                                          get_local_pdf_preview_url(), display_pdf_with_fallback(), _cleanup_ses…
   analysis/
     change_proposal.py                           ChangeProposal
@@ -264,10 +264,12 @@ _Semantic (embedding-based) matching layer._
 
 ### `app/cli.py`
 
-**Layer:** Entry points · **Stage:** all · **Lines:** 69
+**Layer:** Entry points · **Stage:** all · **Lines:** 112
 
-- function **`main()`** ([app/cli.py:10](../app/cli.py#L10))
-- **Imports:** `services/tailor.py`
+- function **`check_llm()`** ([app/cli.py:11](../app/cli.py#L11)) — One live, structured call to the configured provider. Returns an exit
+- function **`main()`** ([app/cli.py:44](../app/cli.py#L44))
+- **Imports:** `llm/client.py`, `llm/schemas.py`, `services/tailor.py`
+- **Tested by:** `tests/unit/test_cli.py`
 
 ### `app/config/settings.py`
 
@@ -399,7 +401,7 @@ _Semantic (embedding-based) matching layer._
 - function **`_retry_after_seconds()`** ([app/llm/client.py:579](../app/llm/client.py#L579)) — Seconds to wait before retrying a 429: the server's `retry-after`
 - function **`strict_json_schema()`** ([app/llm/client.py:594](../app/llm/client.py#L594)) — Adapt a Pydantic JSON schema for strict structured-output modes: every
 - **Imports:** `config/settings.py`, `llm/schemas.py`
-- **Imported by:** `analysis/jd_analyzer.py`, `analysis/matcher.py`, `analysis/rewriter.py`, `analysis/tailor_planner.py`, `services/tailor.py`, `ui.py`, `scripts/benchmark_model.py`
+- **Imported by:** `analysis/jd_analyzer.py`, `analysis/matcher.py`, `analysis/rewriter.py`, `analysis/tailor_planner.py`, `cli.py`, `services/tailor.py`, `ui.py`, `scripts/benchmark_model.py`
 - **Tested by:** `tests/unit/test_llm_client.py`, `tests/unit/test_rewriter.py`
 
 ### `app/llm/schemas.py`
@@ -414,8 +416,8 @@ _Semantic (embedding-based) matching layer._
 - class **`BulletRewriteResult`** ([app/llm/schemas.py:32](../app/llm/schemas.py#L32)) — Structured response for a single bullet rewrite/composition call.
 - class **`MissingRequirementSuggestion`** ([app/llm/schemas.py:39](../app/llm/schemas.py#L39)) — Advisory-only suggestion for a JD requirement the resume doesn't
 - class **`JDRequirementSelection`** ([app/llm/schemas.py:48](../app/llm/schemas.py#L48)) — Which job-description line indices (from a numbered list the caller
-- **Imported by:** `analysis/jd_analyzer.py`, `analysis/rewriter.py`, `llm/client.py`
-- **Tested by:** `tests/unit/test_jd_analyzer_llm.py`, `tests/unit/test_llm_client.py`, `tests/unit/test_rewriter.py`
+- **Imported by:** `analysis/jd_analyzer.py`, `analysis/rewriter.py`, `cli.py`, `llm/client.py`
+- **Tested by:** `tests/unit/test_cli.py`, `tests/unit/test_jd_analyzer_llm.py`, `tests/unit/test_llm_client.py`, `tests/unit/test_rewriter.py`
 
 ### `app/rendering/document_map.py`
 
@@ -630,6 +632,8 @@ flowchart LR
   analysis_rewriter --> llm_schemas
   analysis_semantic_matcher --> config_settings
   analysis_tailor_planner --> llm_client
+  cli --> llm_client
+  cli --> llm_schemas
   cli --> services_tailor
   ingestion_docx --> rendering_document_map
   ingestion_pdf --> ingestion_docx
@@ -707,7 +711,6 @@ From `app/config/settings.py`; each can be overridden by the env var of the same
 
 - `app/analysis/change_proposal.py`
 - `app/analysis/terminology.py`
-- `app/cli.py`
 - `app/config/settings.py`
 - `app/ingestion/ocr.py`
 - `app/services/validation_agent.py`

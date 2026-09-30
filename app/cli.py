@@ -7,12 +7,52 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 
 from app.services.tailor import TailorService
 
+
+def check_llm(provider=None, model=None) -> int:
+    """One live, structured call to the configured provider. Returns an exit
+    code: 0 if the model answered with valid structured output, else 1."""
+    import time
+
+    from app.llm.client import LLMClient
+    from app.llm.schemas import BulletRewriteResult
+
+    client = LLMClient(provider=provider, model=model)
+    print(f"Provider: {client.provider}")
+    print(f"Model:    {client.model}")
+    if not client.is_available():
+        print(f"FAILED: not available: {client.last_error}")
+        return 1
+    start = time.time()
+    try:
+        result = client.generate_json(
+            messages=[
+                {"role": "system", "content": "You rewrite resume bullets. Keep every fact; add nothing."},
+                {"role": "user", "content": "Rewrite with a stronger verb: 'Did data pipelines in Python for 2M events a day.'"},
+            ],
+            schema_model=BulletRewriteResult,
+            effort="low",
+        )
+    except Exception as e:
+        print(f"FAILED: call error: {e}")
+        return 1
+    usage = client.get_usage_summary()
+    print(f"OK in {time.time() - start:.1f}s: {usage['total_prompt_tokens']} prompt + "
+          f"{usage['total_completion_tokens']} completion tokens")
+    print(f"Sample output: {result.rewritten}")
+    return 0
+
 def main():
     parser = argparse.ArgumentParser(
         prog="python -m app.cli",
         description="Local Resume Tailor CLI — Privacy-first, evidence-based AI resume tailoring.",
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
+
+    # Subcommand: check-llm
+    check_parser = subparsers.add_parser(
+        "check-llm", help="Make one live structured call to the configured LLM and report the result.")
+    check_parser.add_argument("--provider", choices=["anthropic", "groq", "ollama"], help="Override LLM_PROVIDER")
+    check_parser.add_argument("--model", help="Override the provider's configured model")
 
     # Subcommand: analyze
     analyze_parser = subparsers.add_parser("analyze", help="Analyze resume alignment against JD without generating files.")
@@ -27,6 +67,9 @@ def main():
     tailor_parser.add_argument("--mode", choices=["PRESERVE", "ATS_DEFAULT"], default="PRESERVE", help="Rendering mode")
 
     args = parser.parse_args()
+
+    if args.command == "check-llm":
+        sys.exit(check_llm(args.provider, args.model))
 
     if not os.path.exists(args.resume):
         print(f"Error: Resume file not found: {args.resume}")
