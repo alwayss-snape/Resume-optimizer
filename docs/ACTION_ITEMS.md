@@ -14,10 +14,10 @@ JD-aligned rewrites, a Novoresume-style ATS layout that fits the right length, a
 |---|---|---|---|---|
 | 0: Make the LLM path work | 10 | 10 | 0 | 0 |
 | 1: Content quality | 14 | 13 | 0 | 1 |
-| 2: Template, ATS, page-fit | 6 | 1 | 1 | 4 |
+| 2: Template, ATS, page-fit | 6 | 2 | 1 | 3 |
 | 3: Gap questions + UX | 6 | 2 | 0 | 4 |
 | 4: Evaluation harness | 3 | 1 | 0 | 2 |
-| **Total** | **39** | **27** | **1** | **11** |
+| **Total** | **39** | **28** | **1** | **10** |
 
 ## Decisions (fixed by the user, 2026-09-30)
 
@@ -103,7 +103,7 @@ anonymized replica of the layout.
 | ID | Action | Files | Resolves | Status | Notes |
 |---|---|---|---|---|---|
 | P2.1 | Template spec (see below) in DOCX + HTML, driven by `ResumePresentation` | `template_renderer.py`, `html_renderer.py`, `resume_document.py` | F25, F26 | ✅ | New `rendering/layout.py` shared by both renderers: standard headings (Summary, Work Experience, Skills, …), `section_order_for()` (Education before Experience under 2 dated years or with no jobs), dates as "Aug 2024 – Present" (`format_date` / `date_range`; unrecognised wording kept), contact `email \| phone \| location \| linkedin \| github`, at most 4 skill lines (the rest merged into "Other"), `output_basename()` → `First_Last_Resume_<Company>`. `ResumePresentation` gains A4 page size and 0.7" side / 0.6" top-bottom margins. DOCX: A4, Arial (incl. East-Asian font slot), sections dispatched by `section_order` (F26), titles and headings kept with the next line. HTML: same order and headings (summary no longer forced first), `@page` A4 with the same margins. Output files and UI downloads use the new name. Real resume: renders to spec, ~1.2 A4 pages before page-fit (P2.4) |
-| P2.2 | ATS template becomes the UI default; PRESERVE moves to "advanced" | `ui.py:143-148` | F28 | ⬜ | |
+| P2.2 | ATS template becomes the UI default; PRESERVE moves to "advanced" | `ui.py:143-148` | F28 | ✅ | Sidebar radio replaced by an "Advanced" expander with "Keep my original DOCX layout" (off by default; notes that PRESERVE can't reorder, trim or fit the page). `ATS_DEFAULT` is also the default of `TailorService.tailor_resume(mode=…)` and `cli tailor --mode`. Upload help text updated. `AppTest` check |
 | P2.3 | Years of experience from date ranges (merges overlaps) → target 1 or 2 pages | new `analysis/experience.py` | F27 | 🟡 | Years part done in P1.5 (`years_of_experience()`, `years_phrase()`); page target still to do |
 | P2.4 | Page-fit loop: render → PDF → count pages; trim in order Interests → low-relevance older bullets (keep ≥3 on the current role, ≥2 on others) → low-relevance projects → compact spacing; at most 4 renders; trims reported | new `rendering/page_fit.py`, `tailor.py` | F27 | ⬜ | |
 | P2.5 | ATS round-trip QA: re-parse the output and check contact info, headings, roles, dates, bullets; fail loudly | `validation/output.py` | F29 | ⬜ | |

@@ -33,7 +33,7 @@ Semantic matching uses a local embedding model (`all-MiniLM-L6-v2`).
 | 6 | Plan | `analysis/tailor_planner.py` | Chooses which bullets to rewrite and ranks missing requirements |
 | 7 | Rewrite | `analysis/rewriter.py` + `llm/client.py` | The LLM rewrites each bullet grounded in its evidence; suggests phrasing for gaps |
 | 8 | Validate | `validation/factual.py`, `structural.py`, `output.py` | Rejects rewrites that add new numbers or terms; checks identity and the output files |
-| 9 | Render | `rendering/*` | **PRESERVE** (patches your original DOCX in place) or **ATS_DEFAULT** (clean template); PDF via LibreOffice |
+| 9 | Render | `rendering/*` | **ATS_DEFAULT** (clean A4 template, the default) or **PRESERVE** (patches your original DOCX in place; UI "Advanced" option); PDF via LibreOffice |
 | 10 | Report | `services/tailor.py`, `services/run_manager.py` | `changes.md`, artifacts in `data/runs/<id>/`, LLM token usage |
 
 `services/tailor.py::TailorService` orchestrates all of it through three entry points: `analyze_only`,
@@ -56,7 +56,7 @@ Semantic matching uses a local embedding model (`all-MiniLM-L6-v2`).
 | Strict Factual Mode | ⚠️ Cosmetic | See issue 4 |
 | DOCX / PDF / HTML output | ✅ Works | ATS template (P2.1): A4, Arial, standard headings, section order by experience, "Jan 2022 – Present" dates; files named `First_Last_Resume_<Company>`. PDF needs LibreOffice installed |
 | CLI | ✅ Works | `analyze` and `tailor` only; no review step, no addition text |
-| Tests | ✅ 233 passing | `pytest -q` (~35 s, loads the cached embedding model) |
+| Tests | ✅ 234 passing | `pytest -q` (~35 s, loads the cached embedding model) |
 | Multiple JDs / history / cover letter | ❌ Not built | — |
 
 ## Open issues (found 2026-09-29, not yet fixed)

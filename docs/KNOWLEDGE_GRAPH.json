@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "2cd077641174c1d2",
+  "source_hash": "58cd0f746fa46049",
   "stats": {
     "files": 115,
     "python_files": 90,
     "app_modules": 46,
     "test_files": 37,
     "classes": 79,
-    "functions": 551,
-    "lines_of_python": 12557
+    "functions": 552,
+    "lines_of_python": 12577
   },
   "axes": {
     "x": "location (path)",
@@ -2351,7 +2351,7 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 686,
+      "lines": 690,
       "doc": "",
       "classes": [],
       "functions": [
@@ -2377,12 +2377,12 @@
         },
         {
           "name": "_show_keyword_match",
-          "line": 261,
+          "line": 265,
           "doc": "Match rate against the target band, then the matched / missing table"
         },
         {
           "name": "_draft_proposals",
-          "line": 290,
+          "line": 294,
           "doc": ""
         }
       ]
@@ -4610,7 +4610,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 6,
+      "lines": 22,
       "doc": "",
       "classes": [],
       "functions": [
@@ -4618,6 +4618,11 @@
           "name": "test_ui_importable",
           "line": 3,
           "doc": "Verify Streamlit app module can be imported without error."
+        },
+        {
+          "name": "test_ats_template_is_the_default_output",
+          "line": 9,
+          "doc": "P2.2: the ATS template is the default; PRESERVE is an opt-in under Advanced."
         }
       ]
     },
@@ -6417,6 +6422,11 @@
     {
       "from": "app/services/tailor.py",
       "to": "tests/unit/test_tailor_service_addition.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/services/tailor.py",
+      "to": "tests/unit/test_ui.py",
       "type": "tested_by"
     },
     {

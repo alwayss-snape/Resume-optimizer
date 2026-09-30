@@ -64,7 +64,7 @@ def main():
     tailor_parser.add_argument("--resume", required=True, help="Path to input resume (.docx or .pdf)")
     tailor_parser.add_argument("--jd", required=True, help="Path to JD text file")
     tailor_parser.add_argument("--output", default="data/output", help="Output directory path")
-    tailor_parser.add_argument("--mode", choices=["PRESERVE", "ATS_DEFAULT"], default="PRESERVE", help="Rendering mode")
+    tailor_parser.add_argument("--mode", choices=["PRESERVE", "ATS_DEFAULT"], default="ATS_DEFAULT", help="Rendering mode (PRESERVE patches a DOCX in place)")
 
     args = parser.parse_args()
 

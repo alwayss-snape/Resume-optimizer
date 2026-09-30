@@ -163,12 +163,16 @@ model_choice = st.sidebar.selectbox(
     options=model_options(llm_provider),
     index=0,
 )
-render_mode = st.sidebar.radio(
-    "Output Layout Mode",
-    options=["PRESERVE", "ATS_DEFAULT"],
-    index=0,
-    help="PRESERVE mode patches existing DOCX in-place. ATS_DEFAULT reconstructs standard template."
-)
+# The ATS template is the default output (P2.2); patching the uploaded DOCX
+# in place is an advanced option (it can't reorder, trim or fit the page).
+with st.sidebar.expander("Advanced"):
+    keep_layout = st.checkbox(
+        "Keep my original DOCX layout",
+        value=False,
+        help="Patches the rewritten text into your uploaded DOCX instead of using the ATS template. "
+        "Bullets aren't reordered and the page length isn't adjusted. Ignored for PDF uploads.",
+    )
+render_mode = "PRESERVE" if keep_layout else "ATS_DEFAULT"
 strict_factual = st.sidebar.checkbox(
     "Strict Factual Mode",
     value=False,
@@ -189,7 +193,7 @@ with col1:
     uploaded_file = st.file_uploader(
         "Choose a DOCX or PDF resume",
         type=["docx", "pdf"],
-        help="DOCX output preserves the uploaded layout. PDF layout reproduction is best-effort."
+        help="The tailored resume uses a clean ATS template (A4, single column)."
     )
 
 with col2:

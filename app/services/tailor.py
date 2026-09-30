@@ -468,7 +468,7 @@ class TailorService:
         resume_path: str,
         jd_text: str,
         output_dir: str,
-        mode: str = "PRESERVE",
+        mode: str = "ATS_DEFAULT",
         strict_factual: bool = False,
         preapproved_proposals: Optional[List] = None,
         addition_text: Optional[str] = None,

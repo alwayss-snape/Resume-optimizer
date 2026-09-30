@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**46 app modules · 37 test files · 79 classes · 551 functions/methods · 12,557 lines of Python** · source hash `2cd077641174c1d2`
+**46 app modules · 37 test files · 79 classes · 552 functions/methods · 12,577 lines of Python** · source hash `58cd0f746fa46049`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -151,7 +151,7 @@ tests/
     test_tailor_service_addition.py              _service(), test_incorporate_user_addition_appends_bullet_to_most_rece…
     test_template_layout.py                      P2.1: the ATS template (A4, Arial, standard headings, section order,
     test_template_renderer_standalone.py         _full_text(), test_template_renderer_ats_mode(), test_template_rendere…
-    test_ui.py                                   test_ui_importable()
+    test_ui.py                                   test_ui_importable(), test_ats_template_is_the_default_output()
     test_validation.py                           test_factual_validator_preserves_grounded_claims(), test_factual_valid…
 ```
 
@@ -778,7 +778,7 @@ _Shared layout rules for the ATS template (P2.1)._
 - function **`_merge_usage()`** ([app/services/tailor.py:865](../app/services/tailor.py#L865)) — Combine two LLMClient.get_usage_summary() dicts into one.
 - **Imports:** `analysis/gap_questions.py`, `analysis/jd_analyzer.py`, `analysis/keyword_match.py`, `analysis/matcher.py`, `analysis/resume_normalizer.py`, `analysis/rewriter.py`, `analysis/scoring.py`, `analysis/semantic_matcher.py`, `analysis/skills_tailor.py`, `analysis/structure_extractor.py`, `analysis/summary_writer.py`, `analysis/tailor_planner.py`, `domain/evidence.py`, `domain/job.py`, `domain/report.py`, `domain/resume.py`, `domain/resume_document.py`, `domain/tailoring.py`, `ingestion/docx.py`, `ingestion/pdf.py`, `llm/client.py`, `rendering/docx_patcher.py`, `rendering/html_renderer.py`, `rendering/layout.py`, `rendering/pdf_converter.py`, `rendering/template_renderer.py`, `services/run_manager.py`, `validation/factual.py`, `validation/output.py`, `validation/safety.py`, `validation/structural.py`
 - **Imported by:** `cli.py`, `eval/harness.py`, `ui.py`
-- **Tested by:** `tests/integration/test_end_to_end.py`, `tests/unit/test_check_parsed_resume.py`, `tests/unit/test_cli.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_tailor_resume_flow.py`, `tests/unit/test_tailor_service_addition.py`
+- **Tested by:** `tests/integration/test_end_to_end.py`, `tests/unit/test_check_parsed_resume.py`, `tests/unit/test_cli.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_tailor_resume_flow.py`, `tests/unit/test_tailor_service_addition.py`, `tests/unit/test_ui.py`
 
 ### `app/services/validation_agent.py`
 
@@ -791,14 +791,14 @@ _Shared layout rules for the ATS template (P2.1)._
 
 ### `app/ui.py`
 
-**Layer:** Entry points · **Stage:** all · **Lines:** 686
+**Layer:** Entry points · **Stage:** all · **Lines:** 690
 
 - function **`get_local_pdf_preview_url()`** ([app/ui.py:25](../app/ui.py#L25)) — Serve a PDF from a temporary HTTP endpoint so Chrome can render it in an iframe.
 - function **`display_pdf_with_fallback()`** ([app/ui.py:42](../app/ui.py#L42)) — Try to use Streamlit's native PDF display if available, otherwise fall back
 - function **`_cleanup_session_state()`** ([app/ui.py:79](../app/ui.py#L79)) — Remove temp files from a previous run and reset to a clean 'idle' state.
 - function **`model_options()`** ([app/ui.py:136](../app/ui.py#L136)) — Models offered in the sidebar for the configured provider. The
-- function **`_show_keyword_match()`** ([app/ui.py:261](../app/ui.py#L261)) — Match rate against the target band, then the matched / missing table
-- function **`_draft_proposals()`** ([app/ui.py:290](../app/ui.py#L290))
+- function **`_show_keyword_match()`** ([app/ui.py:265](../app/ui.py#L265)) — Match rate against the target band, then the matched / missing table
+- function **`_draft_proposals()`** ([app/ui.py:294](../app/ui.py#L294))
 - **Imports:** `config/settings.py`, `llm/client.py`, `services/tailor.py`
 - **Tested by:** `tests/unit/test_ui.py`
 
