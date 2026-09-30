@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "93e9b81a02b70da8",
+  "source_hash": "5f520bb38e35a0d4",
   "stats": {
-    "files": 117,
-    "python_files": 95,
-    "app_modules": 47,
+    "files": 118,
+    "python_files": 96,
+    "app_modules": 48,
     "test_files": 41,
     "classes": 83,
-    "functions": 610,
-    "lines_of_python": 13549
+    "functions": 621,
+    "lines_of_python": 13745
   },
   "axes": {
     "x": "location (path)",
@@ -2118,6 +2118,52 @@
       "functions": []
     },
     {
+      "id": "app/rendering/review_view.py",
+      "type": "python",
+      "layer": "Rendering",
+      "stages": [],
+      "lines": 107,
+      "doc": "What the proposal review screen shows (P3.4), as plain functions so the",
+      "classes": [],
+      "functions": [
+        {
+          "name": "_words",
+          "line": 20,
+          "doc": ""
+        },
+        {
+          "name": "_keyword_spans",
+          "line": 24,
+          "doc": "Indexes of words that are part of a JD keyword (case-insensitive,"
+        },
+        {
+          "name": "_render",
+          "line": 38,
+          "doc": ""
+        },
+        {
+          "name": "diff_html",
+          "line": 50,
+          "doc": "(original_html, proposed_html): removed words struck through on the"
+        },
+        {
+          "name": "status_badge",
+          "line": 67,
+          "doc": "(badge, meaning) for one proposal. A failed call or a REJECT verdict"
+        },
+        {
+          "name": "score_breakdown",
+          "line": 81,
+          "doc": "Per keyword kind: how many found and how much of the rate it earns."
+        },
+        {
+          "name": "gap_table",
+          "line": 98,
+          "doc": "Missing JD keywords, required and heaviest first, and whether a gap"
+        }
+      ]
+    },
+    {
       "id": "app/rendering/template_renderer.py",
       "type": "python",
       "layer": "Rendering",
@@ -2278,7 +2324,7 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 912,
+      "lines": 933,
       "doc": "",
       "classes": [
         {
@@ -2352,28 +2398,33 @@
               "doc": "Deep copies, so a parse kept in UI session state is never mutated."
             },
             {
-              "name": "apply_parse_corrections",
+              "name": "preview_keyword_match",
               "line": 247,
+              "doc": "Match rate if these proposals were applied (P3.4 \"recalculate\"):"
+            },
+            {
+              "name": "apply_parse_corrections",
+              "line": 268,
               "doc": "Apply the user's fixes from the \"Check parsed resume\" step (P3.5)."
             },
             {
               "name": "analyze_only",
-              "line": 308,
+              "line": 329,
               "doc": ""
             },
             {
               "name": "generate_proposals",
-              "line": 334,
+              "line": 355,
               "doc": "Generate rewrite proposals without applying them, plus questions"
             },
             {
               "name": "incorporate_user_addition",
-              "line": 395,
+              "line": 416,
               "doc": "Fold a user-supplied free-text addition (a project, an"
             },
             {
               "name": "tailor_resume",
-              "line": 474,
+              "line": 495,
               "doc": ""
             }
           ]
@@ -2382,7 +2433,7 @@
       "functions": [
         {
           "name": "_merge_usage",
-          "line": 903,
+          "line": 924,
           "doc": "Combine two LLMClient.get_usage_summary() dicts into one."
         }
       ]
@@ -2403,43 +2454,43 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 708,
+      "lines": 753,
       "doc": "",
       "classes": [],
       "functions": [
         {
           "name": "get_local_pdf_preview_url",
-          "line": 25,
+          "line": 26,
           "doc": "Serve a PDF from a temporary HTTP endpoint so Chrome can render it in an iframe."
         },
         {
           "name": "display_pdf_with_fallback",
-          "line": 42,
+          "line": 43,
           "doc": "Try to use Streamlit's native PDF display if available, otherwise fall back"
         },
         {
           "name": "_cleanup_session_state",
-          "line": 79,
+          "line": 80,
           "doc": "Remove temp files from a previous run and reset to a clean 'idle' state."
         },
         {
           "name": "_show_content_checks",
-          "line": 142,
+          "line": 143,
           "doc": "P2.6: advice on the finished resume; nothing is changed automatically."
         },
         {
           "name": "model_options",
-          "line": 153,
+          "line": 154,
           "doc": "Models offered in the sidebar for the configured provider. The"
         },
         {
           "name": "_show_keyword_match",
-          "line": 282,
+          "line": 283,
           "doc": "Match rate against the target band, then the matched / missing table"
         },
         {
           "name": "_draft_proposals",
-          "line": 311,
+          "line": 315,
           "doc": ""
         }
       ]
@@ -2620,7 +2671,7 @@
       "stages": [
         "3 JD analysis"
       ],
-      "lines": 69,
+      "lines": 79,
       "doc": "",
       "classes": [
         {
@@ -2629,18 +2680,23 @@
           "doc": "",
           "methods": [
             {
+              "name": "strip_invisible",
+              "line": 38,
+              "doc": ""
+            },
+            {
               "name": "sanitize",
-              "line": 36,
+              "line": 41,
               "doc": "Sanitize JD text by escaping system prompt injection attempts."
             },
             {
               "name": "sanitize_untrusted",
-              "line": 43,
+              "line": 50,
               "doc": "Clean resume / user text before it goes into a prompt: strip"
             },
             {
               "name": "guard_messages",
-              "line": 53,
+              "line": 60,
               "doc": "A copy of chat messages with user content sanitised and the"
             }
           ]
@@ -4977,7 +5033,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 173,
+      "lines": 186,
       "doc": "",
       "classes": [],
       "functions": [
@@ -5069,6 +5125,16 @@
         {
           "name": "test_every_llm_call_is_guarded",
           "line": 160,
+          "doc": ""
+        },
+        {
+          "name": "test_guard_keeps_joiners_and_line_breaks",
+          "line": 176,
+          "doc": ""
+        },
+        {
+          "name": "test_jd_sanitize_strips_invisible_characters",
+          "line": 185,
           "doc": ""
         }
       ]
@@ -6596,6 +6662,11 @@
       "type": "tested_by"
     },
     {
+      "from": "app/rendering/review_view.py",
+      "to": "app/domain/report.py",
+      "type": "imports"
+    },
+    {
       "from": "app/rendering/template_renderer.py",
       "to": "app/domain/resume_document.py",
       "type": "imports"
@@ -6903,6 +6974,11 @@
     {
       "from": "app/ui.py",
       "to": "app/llm/client.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/ui.py",
+      "to": "app/rendering/review_view.py",
       "type": "imports"
     },
     {

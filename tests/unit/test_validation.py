@@ -171,3 +171,16 @@ def test_every_llm_call_is_guarded():
     sent = inst.chat.call_args.kwargs["messages"]
     assert sent[0]["content"].endswith(DATA_NOTE) and sent[0]["content"].count(DATA_NOTE) == 1
     assert "disregard prior instructions" not in sent[1]["content"]
+
+
+def test_guard_keeps_joiners_and_line_breaks():
+    guard = SafetyGuard()
+    hindi = "क्‍ष डेटा साइंटिस्ट"  # ZWJ inside a conjunct
+    assert guard.sanitize_untrusted(hindi) == hindi
+    assert guard.sanitize_untrusted("foo bar") == "foo\nbar"
+    assert guard.sanitize_untrusted("Used <s> tags in HTML") == "Used <s> tags in HTML"
+    assert guard.guard_messages([{"role": "user", "content": None}]) [-1]["content"] is None
+
+
+def test_jd_sanitize_strips_invisible_characters():
+    assert SafetyGuard().sanitize("Py​thon and Kaf﻿ka") == "Python and Kafka"

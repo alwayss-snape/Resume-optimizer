@@ -29,13 +29,20 @@ class SafetyGuard:
         r"\breveal\s+(?:your\s+)?(?:secret|system\s+prompt|instructions)\b",
     ]
     # Chat-template tokens that could fake a new turn: <|im_start|>, [INST], </s>.
-    SPECIAL_TOKENS = re.compile(r"<\|[^|>]{0,40}\|>|\[/?INST\]|</?s>|<<\s*/?SYS\s*>>", re.IGNORECASE)
-    # Control and zero-width characters (tabs and newlines are kept).
-    INVISIBLE = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f​-‏  ‪-‮⁠-⁤﻿]")
+    SPECIAL_TOKENS = re.compile(r"<\|[^|>]{0,40}\|>|\[/?INST\]|</s>|<<\s*/?SYS\s*>>")
+    # Control and invisible formatting characters (tabs and newlines are
+    # kept). ZWNJ / ZWJ (U+200C/D) stay: Devanagari, Persian and emoji need them.
+    INVISIBLE = re.compile("[\\x00-\\x08\\x0b\\x0c\\x0e-\\x1f\\x7f\\u200b\\u200e\\u200f\\u202a-\\u202e\\u2060-\\u2064\\ufeff]")
+    LINE_SEPARATORS = re.compile("[\\u2028\\u2029]")
+
+    def strip_invisible(self, text: str) -> str:
+        return self.INVISIBLE.sub("", self.LINE_SEPARATORS.sub("\n", text or ""))
 
     def sanitize(self, text: str) -> str:
-        """Sanitize JD text by escaping system prompt injection attempts."""
-        sanitized = text
+        """Sanitize JD text by escaping system prompt injection attempts.
+        Invisible characters go first, so the LLM and the verbatim checks
+        against this text see the same words."""
+        sanitized = self.strip_invisible(text)
         for pattern in self.INJECTION_PATTERNS:
             sanitized = re.sub(pattern, FILTERED, sanitized, flags=re.IGNORECASE)
         return sanitized
@@ -44,7 +51,7 @@ class SafetyGuard:
         """Clean resume / user text before it goes into a prompt: strip
         invisible characters and chat-template tokens, and neutralise
         explicit instruction overrides. Ordinary wording is left alone."""
-        cleaned = self.INVISIBLE.sub("", text or "")
+        cleaned = self.strip_invisible(text)
         cleaned = self.SPECIAL_TOKENS.sub(" ", cleaned)
         for pattern in self.OVERRIDE_PATTERNS:
             cleaned = re.sub(pattern, FILTERED, cleaned, flags=re.IGNORECASE)
@@ -59,6 +66,9 @@ class SafetyGuard:
         guarded = []
         for m in messages:
             content = m.get("content", "")
+            if not isinstance(content, str):
+                guarded.append(m)  # list-style / empty content: left as is
+                continue
             if m.get("role") == "user":
                 content = self.sanitize_untrusted(content)
             elif m.get("role") == "system" and DATA_NOTE not in content:

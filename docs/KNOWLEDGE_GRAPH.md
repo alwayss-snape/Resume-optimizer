@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**47 app modules · 41 test files · 83 classes · 610 functions/methods · 13,549 lines of Python** · source hash `93e9b81a02b70da8`
+**48 app modules · 41 test files · 83 classes · 621 functions/methods · 13,745 lines of Python** · source hash `5f520bb38e35a0d4`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -82,6 +82,7 @@ app/
     layout.py                                    Shared layout rules for the ATS template (P2.1).
     page_fit.py                                  Page-fit loop (P2.4): render, count pages, trim, render again.
     pdf_converter.py                             PdfConverter
+    review_view.py                               What the proposal review screen shows (P3.4), as plain functions so the
     template_renderer.py                         TemplateRenderer
   services/
     run_manager.py                               RunManager
@@ -461,7 +462,7 @@ _Tailored professional summary (P1.5)._
   - `matched()` :40
   - `missing()` :44
 - class **`TailoringReport`** ([app/domain/report.py:49](../app/domain/report.py#L49))
-- **Imported by:** `analysis/gap_questions.py`, `analysis/keyword_match.py`, `analysis/matcher.py`, `analysis/scoring.py`, `analysis/semantic_matcher.py`, `analysis/skills_tailor.py`, `analysis/summary_writer.py`, `analysis/tailor_planner.py`, `services/tailor.py`
+- **Imported by:** `analysis/gap_questions.py`, `analysis/keyword_match.py`, `analysis/matcher.py`, `analysis/scoring.py`, `analysis/semantic_matcher.py`, `analysis/skills_tailor.py`, `analysis/summary_writer.py`, `analysis/tailor_planner.py`, `rendering/review_view.py`, `services/tailor.py`
 - **Tested by:** `tests/unit/test_keyword_match.py`, `tests/unit/test_matcher.py`, `tests/unit/test_scoring.py`, `tests/unit/test_semantic_matcher.py`, `tests/unit/test_tailor_planner.py`, `tests/unit/test_tailor_service_addition.py`
 
 ### `app/domain/resume.py`
@@ -743,6 +744,22 @@ _Page-fit loop (P2.4): render, count pages, trim, render again._
 - **Imported by:** `services/tailor.py`
 - **Tested by:** `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_ats_round_trip.py`, `tests/unit/test_pdf_converter.py`
 
+### `app/rendering/review_view.py`
+
+**Layer:** Rendering · **Stage:** — · **Lines:** 107
+
+_What the proposal review screen shows (P3.4), as plain functions so the_
+
+- function **`_words()`** ([app/rendering/review_view.py:20](../app/rendering/review_view.py#L20))
+- function **`_keyword_spans()`** ([app/rendering/review_view.py:24](../app/rendering/review_view.py#L24)) — Indexes of words that are part of a JD keyword (case-insensitive,
+- function **`_render()`** ([app/rendering/review_view.py:38](../app/rendering/review_view.py#L38))
+- function **`diff_html()`** ([app/rendering/review_view.py:50](../app/rendering/review_view.py#L50)) — (original_html, proposed_html): removed words struck through on the
+- function **`status_badge()`** ([app/rendering/review_view.py:67](../app/rendering/review_view.py#L67)) — (badge, meaning) for one proposal. A failed call or a REJECT verdict
+- function **`score_breakdown()`** ([app/rendering/review_view.py:81](../app/rendering/review_view.py#L81)) — Per keyword kind: how many found and how much of the rate it earns.
+- function **`gap_table()`** ([app/rendering/review_view.py:98](../app/rendering/review_view.py#L98)) — Missing JD keywords, required and heaviest first, and whether a gap
+- **Imports:** `domain/report.py`
+- **Imported by:** `ui.py`
+
 ### `app/rendering/template_renderer.py`
 
 **Layer:** Rendering · **Stage:** 9 Render · **Lines:** 279
@@ -783,7 +800,7 @@ _Page-fit loop (P2.4): render, count pages, trim, render again._
 
 ### `app/services/tailor.py`
 
-**Layer:** Services · **Stage:** all · **Lines:** 912
+**Layer:** Services · **Stage:** all · **Lines:** 933
 
 - class **`TailorService`** ([app/services/tailor.py:43](../app/services/tailor.py#L43))
   - `__init__()` :44
@@ -799,28 +816,29 @@ _Page-fit loop (P2.4): render, count pages, trim, render again._
   - `parse_resume()` :224 — File -> (raw document, ResumeDocument, evidence). The deterministic
   - `normalize_raw()` :234
   - `_copy_parsed()` :242 — Deep copies, so a parse kept in UI session state is never mutated.
-  - `apply_parse_corrections()` :247 — Apply the user's fixes from the "Check parsed resume" step (P3.5).
-  - `analyze_only()` :308
-  - `generate_proposals()` :334 — Generate rewrite proposals without applying them, plus questions
-  - `incorporate_user_addition()` :395 — Fold a user-supplied free-text addition (a project, an
-  - `tailor_resume()` :474
-- function **`_merge_usage()`** ([app/services/tailor.py:903](../app/services/tailor.py#L903)) — Combine two LLMClient.get_usage_summary() dicts into one.
+  - `preview_keyword_match()` :247 — Match rate if these proposals were applied (P3.4 "recalculate"):
+  - `apply_parse_corrections()` :268 — Apply the user's fixes from the "Check parsed resume" step (P3.5).
+  - `analyze_only()` :329
+  - `generate_proposals()` :355 — Generate rewrite proposals without applying them, plus questions
+  - `incorporate_user_addition()` :416 — Fold a user-supplied free-text addition (a project, an
+  - `tailor_resume()` :495
+- function **`_merge_usage()`** ([app/services/tailor.py:924](../app/services/tailor.py#L924)) — Combine two LLMClient.get_usage_summary() dicts into one.
 - **Imports:** `analysis/experience.py`, `analysis/gap_questions.py`, `analysis/jd_analyzer.py`, `analysis/keyword_match.py`, `analysis/matcher.py`, `analysis/resume_normalizer.py`, `analysis/rewriter.py`, `analysis/scoring.py`, `analysis/semantic_matcher.py`, `analysis/skills_tailor.py`, `analysis/structure_extractor.py`, `analysis/summary_writer.py`, `analysis/tailor_planner.py`, `domain/evidence.py`, `domain/job.py`, `domain/report.py`, `domain/resume.py`, `domain/resume_document.py`, `domain/tailoring.py`, `ingestion/docx.py`, `ingestion/pdf.py`, `llm/client.py`, `rendering/docx_patcher.py`, `rendering/html_renderer.py`, `rendering/layout.py`, `rendering/page_fit.py`, `rendering/pdf_converter.py`, `rendering/template_renderer.py`, `services/run_manager.py`, `validation/content_lint.py`, `validation/factual.py`, `validation/output.py`, `validation/safety.py`, `validation/structural.py`
 - **Imported by:** `cli.py`, `eval/harness.py`, `ui.py`
 - **Tested by:** `tests/integration/test_end_to_end.py`, `tests/unit/test_check_parsed_resume.py`, `tests/unit/test_cli.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_tailor_resume_flow.py`, `tests/unit/test_tailor_service_addition.py`, `tests/unit/test_ui.py`
 
 ### `app/ui.py`
 
-**Layer:** Entry points · **Stage:** all · **Lines:** 708
+**Layer:** Entry points · **Stage:** all · **Lines:** 753
 
-- function **`get_local_pdf_preview_url()`** ([app/ui.py:25](../app/ui.py#L25)) — Serve a PDF from a temporary HTTP endpoint so Chrome can render it in an iframe.
-- function **`display_pdf_with_fallback()`** ([app/ui.py:42](../app/ui.py#L42)) — Try to use Streamlit's native PDF display if available, otherwise fall back
-- function **`_cleanup_session_state()`** ([app/ui.py:79](../app/ui.py#L79)) — Remove temp files from a previous run and reset to a clean 'idle' state.
-- function **`_show_content_checks()`** ([app/ui.py:142](../app/ui.py#L142)) — P2.6: advice on the finished resume; nothing is changed automatically.
-- function **`model_options()`** ([app/ui.py:153](../app/ui.py#L153)) — Models offered in the sidebar for the configured provider. The
-- function **`_show_keyword_match()`** ([app/ui.py:282](../app/ui.py#L282)) — Match rate against the target band, then the matched / missing table
-- function **`_draft_proposals()`** ([app/ui.py:311](../app/ui.py#L311))
-- **Imports:** `config/settings.py`, `llm/client.py`, `services/tailor.py`
+- function **`get_local_pdf_preview_url()`** ([app/ui.py:26](../app/ui.py#L26)) — Serve a PDF from a temporary HTTP endpoint so Chrome can render it in an iframe.
+- function **`display_pdf_with_fallback()`** ([app/ui.py:43](../app/ui.py#L43)) — Try to use Streamlit's native PDF display if available, otherwise fall back
+- function **`_cleanup_session_state()`** ([app/ui.py:80](../app/ui.py#L80)) — Remove temp files from a previous run and reset to a clean 'idle' state.
+- function **`_show_content_checks()`** ([app/ui.py:143](../app/ui.py#L143)) — P2.6: advice on the finished resume; nothing is changed automatically.
+- function **`model_options()`** ([app/ui.py:154](../app/ui.py#L154)) — Models offered in the sidebar for the configured provider. The
+- function **`_show_keyword_match()`** ([app/ui.py:283](../app/ui.py#L283)) — Match rate against the target band, then the matched / missing table
+- function **`_draft_proposals()`** ([app/ui.py:315](../app/ui.py#L315))
+- **Imports:** `config/settings.py`, `llm/client.py`, `rendering/review_view.py`, `services/tailor.py`
 - **Tested by:** `tests/unit/test_ui.py`
 
 ### `app/validation/content_lint.py`
@@ -875,12 +893,13 @@ _Content checks on the finished resume (P2.6). Deterministic, no LLM._
 
 ### `app/validation/safety.py`
 
-**Layer:** Validation · **Stage:** 3 JD analysis · **Lines:** 69
+**Layer:** Validation · **Stage:** 3 JD analysis · **Lines:** 79
 
 - class **`SafetyGuard`** ([app/validation/safety.py:14](../app/validation/safety.py#L14))
-  - `sanitize()` :36 — Sanitize JD text by escaping system prompt injection attempts.
-  - `sanitize_untrusted()` :43 — Clean resume / user text before it goes into a prompt: strip
-  - `guard_messages()` :53 — A copy of chat messages with user content sanitised and the
+  - `strip_invisible()` :38
+  - `sanitize()` :41 — Sanitize JD text by escaping system prompt injection attempts.
+  - `sanitize_untrusted()` :50 — Clean resume / user text before it goes into a prompt: strip
+  - `guard_messages()` :60 — A copy of chat messages with user content sanitised and the
 - **Imported by:** `llm/client.py`, `services/tailor.py`
 - **Tested by:** `tests/unit/test_validation.py`
 
@@ -940,6 +959,7 @@ flowchart LR
     rendering_layout[layout]
     rendering_page_fit[page_fit]
     rendering_pdf_converter[pdf_converter]
+    rendering_review_view[review_view]
     rendering_template_renderer[template_renderer]
   end
   subgraph Root[Root]
@@ -1035,6 +1055,7 @@ flowchart LR
   services_tailor --> validation_structural
   ui --> config_settings
   ui --> llm_client
+  ui --> rendering_review_view
   ui --> services_tailor
   validation_content_lint --> analysis_experience
   validation_content_lint --> analysis_rewriter
@@ -1087,6 +1108,7 @@ From `app/config/settings.py`; each can be overridden by the env var of the same
 - `app/analysis/terminology.py`
 - `app/config/settings.py`
 - `app/ingestion/ocr.py`
+- `app/rendering/review_view.py`
 
 **Not imported by any app code** (possibly dead code, or only used by tests/scripts):
 
@@ -1094,4 +1116,4 @@ From `app/config/settings.py`; each can be overridden by the env var of the same
 
 **Not in `STAGE_MAP`** (add them in `scripts/update_docs.py`):
 
-- none
+- `app/rendering/review_view.py`
