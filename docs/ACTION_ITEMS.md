@@ -12,12 +12,12 @@ JD-aligned rewrites, a Novoresume-style ATS layout that fits the right length, a
 
 | Phase | Items | ✅ | 🟡 | ⬜ |
 |---|---|---|---|---|
-| 0: Make the LLM path work | 10 | 1 | 0 | 9 |
+| 0: Make the LLM path work | 10 | 2 | 0 | 8 |
 | 1: Content quality | 10 | 0 | 0 | 10 |
 | 2: Template, ATS, page-fit | 6 | 0 | 0 | 6 |
 | 3: Gap questions + UX | 6 | 0 | 0 | 6 |
 | 4: Evaluation harness | 3 | 0 | 0 | 3 |
-| **Total** | **35** | **1** | **0** | **34** |
+| **Total** | **35** | **2** | **0** | **33** |
 
 ## Decisions (fixed by the user, 2026-09-30)
 
@@ -43,7 +43,7 @@ JD-aligned rewrites, a Novoresume-style ATS layout that fits the right length, a
 | P0.3 | One cached health check per run that verifies the model exists; remove per-call `is_available()` | `client.py:95-120`, `rewriter.py:41,98`, `jd_analyzer.py:140`, `tailor.py:157` | F1, F4 | ⬜ | |
 | P0.4 | Visible failures: rewrite status (ok / llm_error / rejected / unchanged) + error on `ChangeProposal`; UI banner; save usage in `generate_proposals` | `rewriter.py`, `change_proposal.py`, `tailor.py:122-159`, `ui.py` | F3, F34 | ⬜ | |
 | P0.5 | Groq fallback robustness: 429 `retry-after` backoff, strict `json_schema` for gpt-oss | `client.py:_generate_groq`, `generate_json` | F5, F6 | ⬜ | |
-| P0.6 | Move the `ollama.py` stub into `tests/conftest.py` so it stops shadowing the real package | `/ollama.py`, `tests/conftest.py` | F2 | ⬜ | |
+| P0.6 | Move the `ollama.py` stub into `tests/conftest.py` so it stops shadowing the real package | `/ollama.py`, `tests/conftest.py` | F2 | ✅ | Stub deleted; no shim needed: tests `@patch("ollama.Client")` on the real package (0.6.2), whose responses are `.get()`-compatible |
 | P0.7 | Skip planner + rewriter when proposals are pre-approved | `tailor.py:298-311` | F7 | ⬜ | |
 | P0.8 | Strict mode decides before rendering; `changes.md` matches the rendered output; remove duplicate and dead writes | `tailor.py:391-539` | F8, F33 | ⬜ | |
 | P0.9 | Quick fixes: keyword regex; `criticality` from priority + "perfect match = 100" test; numeric pattern covers 2M / 10x / 40K / $3.5M / 1,000+ / 5+ years | `jd_analyzer.py:47,239`, `scoring.py`, `factual.py:25` | F9, F10, F16 | ✅ | Score renormalised over non-empty buckets (perfect match = 100); keyword stopgap keeps only technical terms (C++, Node.js, AWS…); numbers include unit suffixes. +9 tests |

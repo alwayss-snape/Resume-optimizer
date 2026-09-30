@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "ccd8b42a9893bb4f",
+  "source_hash": "19b92b6dc9ff55d0",
   "stats": {
-    "files": 84,
-    "python_files": 64,
+    "files": 83,
+    "python_files": 63,
     "app_modules": 35,
     "test_files": 23,
-    "classes": 61,
-    "functions": 229,
-    "lines_of_python": 7287
+    "classes": 59,
+    "functions": 226,
+    "lines_of_python": 7265
   },
   "axes": {
     "x": "location (path)",
@@ -1541,45 +1541,6 @@
             {
               "name": "validate",
               "line": 5,
-              "doc": ""
-            }
-          ]
-        }
-      ],
-      "functions": []
-    },
-    {
-      "id": "ollama.py",
-      "type": "python",
-      "layer": "Root",
-      "stages": [],
-      "lines": 22,
-      "doc": "Lightweight local stub for the `ollama` package used in tests.",
-      "classes": [
-        {
-          "name": "ResponseError",
-          "line": 10,
-          "doc": "",
-          "methods": []
-        },
-        {
-          "name": "Client",
-          "line": 13,
-          "doc": "",
-          "methods": [
-            {
-              "name": "__init__",
-              "line": 14,
-              "doc": ""
-            },
-            {
-              "name": "list",
-              "line": 17,
-              "doc": ""
-            },
-            {
-              "name": "chat",
-              "line": 20,
               "doc": ""
             }
           ]
@@ -3242,11 +3203,6 @@
     },
     {
       "from": "app/llm/client.py",
-      "to": "ollama.py",
-      "type": "imports"
-    },
-    {
-      "from": "app/llm/client.py",
       "to": "tests/unit/test_llm_client.py",
       "type": "tested_by"
     },
@@ -3684,16 +3640,6 @@
       "from": "app/validation/structural.py",
       "to": "tests/unit/test_validation.py",
       "type": "tested_by"
-    },
-    {
-      "from": "ollama.py",
-      "to": "ollama.py::Client",
-      "type": "contains"
-    },
-    {
-      "from": "ollama.py",
-      "to": "ollama.py::ResponseError",
-      "type": "contains"
     },
     {
       "from": "scripts/benchmark_model.py",

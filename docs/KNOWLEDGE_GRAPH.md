@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**35 app modules · 23 test files · 61 classes · 229 functions/methods · 7,287 lines of Python** · source hash `ccd8b42a9893bb4f`
+**35 app modules · 23 test files · 59 classes · 226 functions/methods · 7,265 lines of Python** · source hash `19b92b6dc9ff55d0`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -24,7 +24,6 @@ ARCHITECTURE.md
 BUILD.md
 CLAUDE.md
 README.md
-ollama.py                                        Lightweight local stub for the `ollama` package used in tests.
 pyproject.toml
 .githooks/
   _python
@@ -384,7 +383,7 @@ _Semantic (embedding-based) matching layer._
   - `_generate_ollama()` :185
   - `_generate_groq()` :228
   - `generate_json()` :283 — Generate structured JSON conforming to a Pydantic model with retry logic.
-- **Imports:** `config/settings.py`, `llm/schemas.py`, `ollama.py`
+- **Imports:** `config/settings.py`, `llm/schemas.py`
 - **Imported by:** `analysis/jd_analyzer.py`, `analysis/matcher.py`, `analysis/rewriter.py`, `analysis/tailor_planner.py`, `services/tailor.py`, `ui.py`, `scripts/benchmark_model.py`
 - **Tested by:** `tests/unit/test_llm_client.py`, `tests/unit/test_rewriter.py`
 
