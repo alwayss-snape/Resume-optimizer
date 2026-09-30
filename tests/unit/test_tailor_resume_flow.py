@@ -96,3 +96,33 @@ def test_generate_proposals_reports_llm_status_when_unavailable(tmp_path):
     assert status["failed"] == status["attempted"] == len(out["proposals"])
     assert all(p.status == "llm_unavailable" for p in out["proposals"])
     assert out["llm_usage"] is not None
+
+
+def test_user_edited_text_is_kept_not_silently_dropped(tmp_path):
+    """Regression (F17): the user's own wording went through the fact-checker
+    and was silently dropped when it used a word not in the source bullet."""
+    service = _service(tmp_path)
+    (b, ev), _ = _bullets_with_evidence()[:2]
+    prop = _proposal(b, ev, b.text.rstrip(".") + " for Zanzibar Corp.")
+    prop["user_edited"] = True
+
+    result = service.tailor_resume(SAMPLE_DOCX, SAMPLE_JD, str(tmp_path / "out"), mode="ATS_DEFAULT",
+                                   preapproved_proposals=[prop])
+    assert "Zanzibar Corp" in _docx_text(result["docx"])
+    assert any("not fact-checked" in w for w in result["warnings"])
+
+
+def test_generate_proposals_attaches_validation_verdicts(tmp_path):
+    from app.llm.schemas import BulletRewriteResult
+    service = _service(tmp_path)
+    fake = MagicMock(provider="groq", model="m", last_error=None)
+    fake.is_available.return_value = True
+    fake.generate_json.side_effect = lambda **kw: (
+        BulletRewriteResult(rewritten="Successfully " + kw["messages"][1]["content"].split("\n")[1])
+        if kw["schema_model"] is BulletRewriteResult else (_ for _ in ()).throw(Exception("no"))
+    )
+    fake.get_usage_summary.return_value = {}
+    service.rewriter.llm_client = fake
+    out = service.generate_proposals(SAMPLE_DOCX, SAMPLE_JD)
+    assert out["proposals"] and all(p.validation in ("PASS", "NEEDS_CONFIRM", "REJECT") for p in out["proposals"])
+    assert any(p.validation == "PASS" for p in out["proposals"])

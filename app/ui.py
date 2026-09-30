@@ -377,6 +377,12 @@ if st.session_state.stage == "proposals":
                 edt = st.text_area(f"Proposed ({i+1})", value=prop_text, key=keybase + "_edit", height=80)
                 if rationale:
                     st.caption(f"🎯 {rationale}")
+                verdict = getattr(p, "validation", None)
+                note = getattr(p, "validation_note", None)
+                if verdict == "REJECT":
+                    st.caption(f"⛔ Will be dropped unless you edit it: {note}")
+                elif verdict == "NEEDS_CONFIRM":
+                    st.caption(f"⚠️ {note}")
                 p_status = getattr(p, "status", None)
                 if p_status in ("llm_unavailable", "llm_error"):
                     st.caption(f"❌ Not rewritten: {getattr(p, 'error', None) or 'the AI call failed'}")
@@ -420,7 +426,10 @@ if st.session_state.stage == "proposals":
                 base = p.dict()
             else:
                 base = {}
+            original_proposed = getattr(p, "proposed_text", None) or getattr(p, "rewritten_text", None) or ""
+            base["user_edited"] = edited_text.strip() != original_proposed.strip()
             base["proposed_text"] = edited_text
+            base.pop("rewritten_text", None)  # model_dump mirrors it; the edit must win
             preapproved.append(base)
 
         output_dir = tempfile.mkdtemp()

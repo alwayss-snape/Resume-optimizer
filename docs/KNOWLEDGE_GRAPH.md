@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**35 app modules · 24 test files · 59 classes · 264 functions/methods · 7,966 lines of Python** · source hash `dc6c8fe69448f245`
+**35 app modules · 24 test files · 59 classes · 274 functions/methods · 8,168 lines of Python** · source hash `06a43a2929586a9d`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -144,13 +144,13 @@ Spanning all stages: `app/cli.py`, `app/services/tailor.py`, `app/ui.py`
 
 ### `app/analysis/change_proposal.py`
 
-**Layer:** Analysis · **Stage:** 7 Rewrite · **Lines:** 70
+**Layer:** Analysis · **Stage:** 7 Rewrite · **Lines:** 78
 
 - class **`ChangeProposal`** ([app/analysis/change_proposal.py:6](../app/analysis/change_proposal.py#L6)) — Richer change proposal schema for review and audit.
-  - `model_dump()` :30
-  - `semantic_id()` :45
-  - `source_id()` :55
-  - `rewritten_text()` :64
+  - `model_dump()` :38
+  - `semantic_id()` :53
+  - `source_id()` :63
+  - `rewritten_text()` :72
 - **Imported by:** `analysis/rewriter.py`
 
 ### `app/analysis/jd_analyzer.py`
@@ -261,7 +261,7 @@ _Semantic (embedding-based) matching layer._
 
 - function **`flat_alias_to_canonical()`** ([app/analysis/terminology.py:32](../app/analysis/terminology.py#L32)) — Build a flat alias->canonical map (e.g. 'k8s' -> 'kubernetes') for
 - function **`normalize_phrase()`** ([app/analysis/terminology.py:42](../app/analysis/terminology.py#L42)) — Normalize a phrase to its canonical lowercased form and expand common acronyms.
-- **Imported by:** `analysis/jd_analyzer.py`, `analysis/matcher.py`
+- **Imported by:** `analysis/jd_analyzer.py`, `analysis/matcher.py`, `validation/factual.py`
 
 ### `app/cli.py`
 
@@ -418,7 +418,7 @@ _Semantic (embedding-based) matching layer._
 - class **`MissingRequirementSuggestion`** ([app/llm/schemas.py:39](../app/llm/schemas.py#L39)) — Advisory-only suggestion for a JD requirement the resume doesn't
 - class **`JDRequirementSelection`** ([app/llm/schemas.py:48](../app/llm/schemas.py#L48)) — Which job-description line indices (from a numbered list the caller
 - **Imported by:** `analysis/jd_analyzer.py`, `analysis/rewriter.py`, `cli.py`, `llm/client.py`
-- **Tested by:** `tests/unit/test_cli.py`, `tests/unit/test_jd_analyzer_llm.py`, `tests/unit/test_llm_client.py`, `tests/unit/test_rewriter.py`
+- **Tested by:** `tests/unit/test_cli.py`, `tests/unit/test_jd_analyzer_llm.py`, `tests/unit/test_llm_client.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_tailor_resume_flow.py`
 
 ### `app/rendering/document_map.py`
 
@@ -493,16 +493,16 @@ _Semantic (embedding-based) matching layer._
 
 ### `app/services/tailor.py`
 
-**Layer:** Services · **Stage:** all · **Lines:** 581
+**Layer:** Services · **Stage:** all · **Lines:** 596
 
 - class **`TailorService`** ([app/services/tailor.py:33](../app/services/tailor.py#L33))
   - `__init__()` :34
   - `generate_preview_md()` :58
   - `analyze_only()` :94
   - `generate_proposals()` :122 — Generate rewrite proposals without applying them, plus advisory
-  - `incorporate_user_addition()` :175 — Fold a user-supplied free-text addition (a project, an
-  - `tailor_resume()` :249
-- function **`_merge_usage()`** ([app/services/tailor.py:572](../app/services/tailor.py#L572)) — Combine two LLMClient.get_usage_summary() dicts into one.
+  - `incorporate_user_addition()` :181 — Fold a user-supplied free-text addition (a project, an
+  - `tailor_resume()` :255
+- function **`_merge_usage()`** ([app/services/tailor.py:587](../app/services/tailor.py#L587)) — Combine two LLMClient.get_usage_summary() dicts into one.
 - **Imports:** `analysis/jd_analyzer.py`, `analysis/matcher.py`, `analysis/resume_normalizer.py`, `analysis/rewriter.py`, `analysis/scoring.py`, `analysis/semantic_matcher.py`, `analysis/tailor_planner.py`, `domain/evidence.py`, `domain/job.py`, `domain/report.py`, `domain/resume.py`, `domain/resume_document.py`, `domain/tailoring.py`, `ingestion/docx.py`, `ingestion/pdf.py`, `llm/client.py`, `rendering/docx_patcher.py`, `rendering/html_renderer.py`, `rendering/pdf_converter.py`, `rendering/template_renderer.py`, `services/run_manager.py`, `validation/factual.py`, `validation/output.py`, `validation/safety.py`, `validation/structural.py`
 - **Imported by:** `cli.py`, `ui.py`
 - **Tested by:** `tests/integration/test_end_to_end.py`, `tests/unit/test_cli.py`, `tests/unit/test_tailor_resume_flow.py`, `tests/unit/test_tailor_service_addition.py`
@@ -518,7 +518,7 @@ _Semantic (embedding-based) matching layer._
 
 ### `app/ui.py`
 
-**Layer:** Entry points · **Stage:** all · **Lines:** 545
+**Layer:** Entry points · **Stage:** all · **Lines:** 554
 
 - function **`get_local_pdf_preview_url()`** ([app/ui.py:25](../app/ui.py#L25)) — Serve a PDF from a temporary HTTP endpoint so Chrome can render it in an iframe.
 - function **`display_pdf_with_fallback()`** ([app/ui.py:42](../app/ui.py#L42)) — Try to use Streamlit's native PDF display if available, otherwise fall back
@@ -529,16 +529,19 @@ _Semantic (embedding-based) matching layer._
 
 ### `app/validation/factual.py`
 
-**Layer:** Validation · **Stage:** 8 Validate · **Lines:** 97
+**Layer:** Validation · **Stage:** 8 Validate · **Lines:** 199
 
-- class **`ClaimCheck`** ([app/validation/factual.py:9](../app/validation/factual.py#L9))
-- class **`ValidationResult`** ([app/validation/factual.py:15](../app/validation/factual.py#L15))
-- class **`FactualValidator`** ([app/validation/factual.py:21](../app/validation/factual.py#L21))
-  - `extract_numbers()` :37
-  - `_canonical_term()` :42
-  - `_factual_terms()` :49
-  - `validate_proposal()` :55
-- **Imports:** `analysis/rewriter.py`, `domain/evidence.py`
+- class **`ClaimCheck`** ([app/validation/factual.py:13](../app/validation/factual.py#L13))
+- class **`ValidationResult`** ([app/validation/factual.py:20](../app/validation/factual.py#L20))
+- class **`FactualValidator`** ([app/validation/factual.py:32](../app/validation/factual.py#L32)) — Checks that a rewrite adds no facts beyond the resume's evidence.
+  - `__init__()` :62
+  - `extract_numbers()` :74
+  - `_stem()` :79 — Crude stemmer so inflections compare equal:
+  - `_keys()` :93 — All forms a term can match by: stem plus canonical alias.
+  - `_term_keys()` :101
+  - `_is_factual()` :114
+  - `validate_proposal()` :128
+- **Imports:** `analysis/rewriter.py`, `analysis/terminology.py`, `domain/evidence.py`
 - **Imported by:** `services/tailor.py`, `services/validation_agent.py`
 - **Tested by:** `tests/unit/test_validation.py`
 
@@ -671,6 +674,7 @@ flowchart LR
   ui --> llm_client
   ui --> services_tailor
   validation_factual --> analysis_rewriter
+  validation_factual --> analysis_terminology
 ```
 
 ## 5. Configuration keys

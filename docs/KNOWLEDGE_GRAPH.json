@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "dc6c8fe69448f245",
+  "source_hash": "06a43a2929586a9d",
   "stats": {
     "files": 85,
     "python_files": 65,
     "app_modules": 35,
     "test_files": 24,
     "classes": 59,
-    "functions": 264,
-    "lines_of_python": 7966
+    "functions": 274,
+    "lines_of_python": 8168
   },
   "axes": {
     "x": "location (path)",
@@ -197,7 +197,7 @@
       "stages": [
         "7 Rewrite"
       ],
-      "lines": 70,
+      "lines": 78,
       "doc": "",
       "classes": [
         {
@@ -207,22 +207,22 @@
           "methods": [
             {
               "name": "model_dump",
-              "line": 30,
+              "line": 38,
               "doc": ""
             },
             {
               "name": "semantic_id",
-              "line": 45,
+              "line": 53,
               "doc": ""
             },
             {
               "name": "source_id",
-              "line": 55,
+              "line": 63,
               "doc": ""
             },
             {
               "name": "rewritten_text",
-              "line": 64,
+              "line": 72,
               "doc": ""
             }
           ]
@@ -1395,7 +1395,7 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 581,
+      "lines": 596,
       "doc": "",
       "classes": [
         {
@@ -1425,12 +1425,12 @@
             },
             {
               "name": "incorporate_user_addition",
-              "line": 175,
+              "line": 181,
               "doc": "Fold a user-supplied free-text addition (a project, an"
             },
             {
               "name": "tailor_resume",
-              "line": 249,
+              "line": 255,
               "doc": ""
             }
           ]
@@ -1439,7 +1439,7 @@
       "functions": [
         {
           "name": "_merge_usage",
-          "line": 572,
+          "line": 587,
           "doc": "Combine two LLMClient.get_usage_summary() dicts into one."
         }
       ]
@@ -1490,7 +1490,7 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 545,
+      "lines": 554,
       "doc": "",
       "classes": [],
       "functions": [
@@ -1523,44 +1523,59 @@
       "stages": [
         "8 Validate"
       ],
-      "lines": 97,
+      "lines": 199,
       "doc": "",
       "classes": [
         {
           "name": "ClaimCheck",
-          "line": 9,
+          "line": 13,
           "doc": "",
           "methods": []
         },
         {
           "name": "ValidationResult",
-          "line": 15,
+          "line": 20,
           "doc": "",
           "methods": []
         },
         {
           "name": "FactualValidator",
-          "line": 21,
-          "doc": "",
+          "line": 32,
+          "doc": "Checks that a rewrite adds no facts beyond the resume's evidence.",
           "methods": [
             {
+              "name": "__init__",
+              "line": 62,
+              "doc": ""
+            },
+            {
               "name": "extract_numbers",
-              "line": 37,
+              "line": 74,
               "doc": ""
             },
             {
-              "name": "_canonical_term",
-              "line": 42,
+              "name": "_stem",
+              "line": 79,
+              "doc": "Crude stemmer so inflections compare equal:"
+            },
+            {
+              "name": "_keys",
+              "line": 93,
+              "doc": "All forms a term can match by: stem plus canonical alias."
+            },
+            {
+              "name": "_term_keys",
+              "line": 101,
               "doc": ""
             },
             {
-              "name": "_factual_terms",
-              "line": 49,
+              "name": "_is_factual",
+              "line": 114,
               "doc": ""
             },
             {
               "name": "validate_proposal",
-              "line": 55,
+              "line": 128,
               "doc": ""
             }
           ]
@@ -2630,7 +2645,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 98,
+      "lines": 128,
       "doc": "tailor_resume orchestration: pre-approved proposals and Strict Factual Mode.",
       "classes": [],
       "functions": [
@@ -2667,6 +2682,16 @@
         {
           "name": "test_generate_proposals_reports_llm_status_when_unavailable",
           "line": 90,
+          "doc": ""
+        },
+        {
+          "name": "test_user_edited_text_is_kept_not_silently_dropped",
+          "line": 101,
+          "doc": "Regression (F17): the user's own wording went through the fact-checker"
+        },
+        {
+          "name": "test_generate_proposals_attaches_validation_verdicts",
+          "line": 115,
           "doc": ""
         }
       ]
@@ -2764,7 +2789,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 55,
+      "lines": 93,
       "doc": "",
       "classes": [],
       "functions": [
@@ -2791,6 +2816,31 @@
         {
           "name": "test_factual_validator_rejects_changed_metric_with_suffix",
           "line": 47,
+          "doc": ""
+        },
+        {
+          "name": "_check",
+          "line": 69,
+          "doc": ""
+        },
+        {
+          "name": "test_ordinary_rewording_passes",
+          "line": 74,
+          "doc": "Regression: new verbs like 'cutting'/'implemented' used to be rejected as facts."
+        },
+        {
+          "name": "test_term_from_elsewhere_in_resume_needs_confirmation",
+          "line": 80,
+          "doc": ""
+        },
+        {
+          "name": "test_alias_equivalent_counts_as_evidence",
+          "line": 85,
+          "doc": ""
+        },
+        {
+          "name": "test_unevidenced_tool_or_scope_claim_is_rejected",
+          "line": 90,
           "doc": ""
         }
       ]
@@ -3528,6 +3578,11 @@
       "type": "tested_by"
     },
     {
+      "from": "app/llm/schemas.py",
+      "to": "tests/unit/test_tailor_resume_flow.py",
+      "type": "tested_by"
+    },
+    {
       "from": "app/rendering/document_map.py",
       "to": "app/rendering/document_map.py::DocumentLocation",
       "type": "contains"
@@ -3845,6 +3900,11 @@
     {
       "from": "app/validation/factual.py",
       "to": "app/analysis/rewriter.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/validation/factual.py",
+      "to": "app/analysis/terminology.py",
       "type": "imports"
     },
     {

@@ -53,3 +53,41 @@ def test_factual_validator_rejects_changed_metric_with_suffix():
         rewritten_text="Built data pipelines processing 5M events daily.",
         evidence_ids=["ev_1"])
     assert validator.validate_proposal(inflated, evidence).approved is False
+
+
+# --- P1.8: balanced validator (PASS / NEEDS_CONFIRM / REJECT) ---
+
+_EV = [
+    Evidence(id="e1", source_type="experience", source_id="b1",
+             text="Acme: Reduced database latency by 35% through PostgreSQL index optimization and Redis caching."),
+    Evidence(id="e2", source_type="experience", source_id="b2",
+             text="Senior Backend Engineer at Acme; deployed services on AWS with k8s."),
+]
+_ORIG = "Reduced database latency by 35% through PostgreSQL index optimization and Redis caching."
+
+
+def _check(new_text, jd_keywords=("Terraform", "Backend")):
+    p = RewriteProposal(source_id="b1", original_text=_ORIG, rewritten_text=new_text, evidence_ids=["e1"])
+    return FactualValidator().validate_proposal(p, _EV, jd_keywords=list(jd_keywords))
+
+
+def test_ordinary_rewording_passes():
+    """Regression: new verbs like 'cutting'/'implemented' used to be rejected as facts."""
+    r = _check("Optimized PostgreSQL indexes and implemented Redis caching, cutting database latency by 35%.")
+    assert r.verdict == "PASS" and r.approved
+
+
+def test_term_from_elsewhere_in_resume_needs_confirmation():
+    r = _check("Cut backend database latency by 35% with PostgreSQL indexing and Redis caching.")
+    assert r.verdict == "NEEDS_CONFIRM" and r.approved and r.confirm_terms == ["backend"]
+
+
+def test_alias_equivalent_counts_as_evidence():
+    r = _check("Cut latency by 35% using PostgreSQL indexes and Redis caching on Kubernetes.")
+    assert r.verdict == "NEEDS_CONFIRM"  # "k8s" elsewhere in the resume == Kubernetes
+
+
+def test_unevidenced_tool_or_scope_claim_is_rejected():
+    assert _check("Cut latency by 35% via PostgreSQL, Redis and Terraform.").verdict == "REJECT"
+    assert _check("Led a team to cut latency by 35% via PostgreSQL and Redis caching.").verdict == "REJECT"
+    assert _check("reduced latency by 35% with postgresql, redis and terraform.").verdict == "REJECT"  # lowercase JD skill

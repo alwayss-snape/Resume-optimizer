@@ -22,6 +22,14 @@ class ChangeProposal(BaseModel):
     # instead of silently showing the original text as the proposal.
     status: Optional[str] = None
     error: Optional[str] = None
+    # Fact-check verdict shown in the review UI before applying:
+    # PASS / NEEDS_CONFIRM / REJECT, plus a short human-readable note.
+    validation: Optional[str] = None
+    validation_note: Optional[str] = None
+    # True when the user changed the text in the review form. Their own
+    # wording is accepted as user-attested instead of being fact-checked
+    # (and silently dropped) like model output.
+    user_edited: bool = False
 
     id: str = Field(default_factory=lambda: f"prop_{uuid4().hex[:8]}")
 
