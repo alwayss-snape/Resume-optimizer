@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "0d125da9c377fc6d",
+  "source_hash": "e65452bca19c8ad7",
   "stats": {
-    "files": 120,
-    "python_files": 98,
-    "app_modules": 48,
-    "test_files": 43,
-    "classes": 83,
-    "functions": 655,
-    "lines_of_python": 14176
+    "files": 122,
+    "python_files": 100,
+    "app_modules": 49,
+    "test_files": 44,
+    "classes": 86,
+    "functions": 674,
+    "lines_of_python": 14423
   },
   "axes": {
     "x": "location (path)",
@@ -119,6 +119,12 @@
       "env": "ANTHROPIC_MODEL",
       "type": "str",
       "default": "'claude-opus-5-5'"
+    },
+    {
+      "name": "profile_path",
+      "env": "PROFILE_PATH",
+      "type": "str",
+      "default": "'data/profile/facts.json'"
     },
     {
       "name": "semantic_match_enabled",
@@ -244,33 +250,38 @@
         "2 Normalize",
         "7 Rewrite"
       ],
-      "lines": 83,
+      "lines": 88,
       "doc": "Years of experience from role date ranges (P1.5), and the page target",
       "classes": [],
       "functions": [
         {
-          "name": "parse_month",
+          "name": "is_ongoing",
           "line": 19,
+          "doc": "'Present' / 'Current' / 'Now' / ... : the role hasn't ended."
+        },
+        {
+          "name": "parse_month",
+          "line": 24,
           "doc": "'August 2024' / 'Aug. 2024' / '08/2024' / '2024' / 'Present' -> (year, month)."
         },
         {
           "name": "role_intervals",
-          "line": 40,
+          "line": 45,
           "doc": "Each dated role as [start, end] in absolute months (year*12 + month)."
         },
         {
           "name": "years_of_experience",
-          "line": 57,
+          "line": 62,
           "doc": "Total months covered by any role (overlaps merged), in years."
         },
         {
           "name": "years_phrase",
-          "line": 69,
+          "line": 74,
           "doc": "How a resume states it: '4+ years', '1 year', or None under 1 year."
         },
         {
           "name": "target_pages",
-          "line": 81,
+          "line": 86,
           "doc": "How many A4 pages the tailored resume should fill."
         }
       ]
@@ -282,7 +293,7 @@
       "stages": [
         "6 Plan"
       ],
-      "lines": 54,
+      "lines": 58,
       "doc": "Suggest-and-confirm gaps (P3.1): ask, never assume.",
       "classes": [
         {
@@ -293,7 +304,7 @@
         },
         {
           "name": "GapAnswer",
-          "line": 27,
+          "line": 31,
           "doc": "",
           "methods": []
         }
@@ -301,7 +312,7 @@
       "functions": [
         {
           "name": "build_questions",
-          "line": 34,
+          "line": 38,
           "doc": ""
         }
       ]
@@ -1009,7 +1020,7 @@
       "type": "python",
       "layer": "Config",
       "stages": [],
-      "lines": 46,
+      "lines": 50,
       "doc": "",
       "classes": [
         {
@@ -2011,59 +2022,59 @@
       "stages": [
         "9 Render"
       ],
-      "lines": 206,
+      "lines": 215,
       "doc": "Page-fit loop (P2.4): render, count pages, trim, render again.",
       "classes": [
         {
           "name": "FitResult",
-          "line": 43,
+          "line": 44,
           "doc": "",
           "methods": [
             {
               "name": "trimmed",
-              "line": 51,
+              "line": 52,
               "doc": ""
             },
             {
               "name": "fits",
-              "line": 55,
+              "line": 56,
               "doc": ""
             }
           ]
         },
         {
           "name": "PageFitter",
-          "line": 74,
+          "line": 75,
           "doc": "`render(document, docx_path, out_dir)` writes the DOCX and returns the",
           "methods": [
             {
               "name": "__init__",
-              "line": 79,
+              "line": 80,
               "doc": ""
             },
             {
               "name": "fit",
-              "line": 84,
+              "line": 85,
               "doc": ""
             },
             {
               "name": "_drop_interests",
-              "line": 127,
+              "line": 128,
               "doc": ""
             },
             {
               "name": "_trim_bullets",
-              "line": 134,
+              "line": 135,
               "doc": "Least relevant bullets first, within the per-role minimums."
             },
             {
               "name": "_drop_sections",
-              "line": 163,
+              "line": 165,
               "doc": "Least relevant job sub-section or project, as a whole."
             },
             {
               "name": "_compact",
-              "line": 197,
+              "line": 199,
               "doc": ""
             }
           ]
@@ -2072,17 +2083,22 @@
       "functions": [
         {
           "name": "measure_pdf",
-          "line": 59,
+          "line": 60,
           "doc": "(page count, points of the last page used by text below its top margin)."
         },
         {
           "name": "bullet_height",
-          "line": 70,
+          "line": 71,
           "doc": ""
         },
         {
+          "name": "_is_current",
+          "line": 206,
+          "doc": "The first job, and any other job that hasn't ended, keep the larger"
+        },
+        {
           "name": "_short",
-          "line": 204,
+          "line": 213,
           "doc": ""
         }
       ]
@@ -2281,6 +2297,66 @@
       "functions": []
     },
     {
+      "id": "app/services/profile_store.py",
+      "type": "python",
+      "layer": "Services",
+      "stages": [],
+      "lines": 102,
+      "doc": "Local profile of facts the user has confirmed (P3.2).",
+      "classes": [
+        {
+          "name": "ConfirmedFact",
+          "line": 22,
+          "doc": "",
+          "methods": []
+        },
+        {
+          "name": "Profile",
+          "line": 29,
+          "doc": "",
+          "methods": []
+        },
+        {
+          "name": "ProfileStore",
+          "line": 34,
+          "doc": "",
+          "methods": [
+            {
+              "name": "__init__",
+              "line": 35,
+              "doc": ""
+            },
+            {
+              "name": "load",
+              "line": 38,
+              "doc": ""
+            },
+            {
+              "name": "save",
+              "line": 53,
+              "doc": ""
+            },
+            {
+              "name": "record",
+              "line": 60,
+              "doc": "Save the confirmed keywords (and answer text) from gap answers."
+            },
+            {
+              "name": "known",
+              "line": 88,
+              "doc": "Saved facts for these keywords (case-insensitive), keyed as given."
+            },
+            {
+              "name": "forget",
+              "line": 93,
+              "doc": "Forget one keyword, or everything when keyword is None. Returns how many were removed."
+            }
+          ]
+        }
+      ],
+      "functions": []
+    },
+    {
       "id": "app/services/run_manager.py",
       "type": "python",
       "layer": "Services",
@@ -2331,7 +2407,7 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 1019,
+      "lines": 1032,
       "doc": "",
       "classes": [
         {
@@ -2376,77 +2452,77 @@
             },
             {
               "name": "_skills_proposals",
-              "line": 248,
+              "line": 261,
               "doc": "The skills section with the JD's skills first, when that changes it (P1.6)."
             },
             {
               "name": "_summary_proposals",
-              "line": 253,
+              "line": 266,
               "doc": "The tailored summary as a proposal, when one was written (P1.5)."
             },
             {
               "name": "_embed",
-              "line": 258,
+              "line": 271,
               "doc": "Sentence embeddings for the planner, loaded lazily; raises when the"
             },
             {
               "name": "_fit_relevance",
-              "line": 267,
+              "line": 280,
               "doc": "Planner relevance per bullet for the page-fit loop. Bullets the user"
             },
             {
               "name": "_render_template",
-              "line": 277,
+              "line": 290,
               "doc": "One template render plus PDF conversion (the page-fit loop's step)."
             },
             {
               "name": "_apply_bullet_order",
-              "line": 283,
+              "line": 296,
               "doc": "Reorder bullets as planned (most relevant first within each"
             },
             {
               "name": "parse_resume",
-              "line": 298,
+              "line": 311,
               "doc": "File -> (raw document, ResumeDocument, evidence). The deterministic"
             },
             {
               "name": "normalize_raw",
-              "line": 308,
+              "line": 321,
               "doc": ""
             },
             {
               "name": "_copy_parsed",
-              "line": 316,
+              "line": 329,
               "doc": "Deep copies, so a parse kept in UI session state is never mutated."
             },
             {
               "name": "preview_keyword_match",
-              "line": 321,
+              "line": 334,
               "doc": "Match rate if these proposals were applied (P3.4 \"recalculate\"):"
             },
             {
               "name": "apply_parse_corrections",
-              "line": 344,
+              "line": 357,
               "doc": "Apply the user's fixes from the \"Check parsed resume\" step (P3.5)."
             },
             {
               "name": "analyze_only",
-              "line": 405,
+              "line": 418,
               "doc": ""
             },
             {
               "name": "generate_proposals",
-              "line": 431,
+              "line": 444,
               "doc": "Generate rewrite proposals without applying them, plus questions"
             },
             {
               "name": "incorporate_user_addition",
-              "line": 492,
+              "line": 505,
               "doc": "Fold a user-supplied free-text addition (a project, an"
             },
             {
               "name": "tailor_resume",
-              "line": 571,
+              "line": 584,
               "doc": ""
             }
           ]
@@ -2455,7 +2531,7 @@
       "functions": [
         {
           "name": "_merge_usage",
-          "line": 1010,
+          "line": 1023,
           "doc": "Combine two LLMClient.get_usage_summary() dicts into one."
         }
       ]
@@ -2476,7 +2552,7 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 784,
+      "lines": 792,
       "doc": "",
       "classes": [],
       "functions": [
@@ -2963,7 +3039,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 17,
+      "lines": 20,
       "doc": "Test-wide isolation from the developer's .env.",
       "classes": [],
       "functions": []
@@ -3924,7 +4000,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 137,
+      "lines": 174,
       "doc": "P3.3: add a job that isn't on the resume yet.",
       "classes": [],
       "functions": [
@@ -3986,6 +4062,26 @@
         {
           "name": "test_ui_requires_company_and_title",
           "line": 131,
+          "doc": ""
+        },
+        {
+          "name": "test_dates_and_description_required",
+          "line": 146,
+          "doc": "Review finding: without these the new job reads back wrongly in an ATS."
+        },
+        {
+          "name": "test_keywords_offered_to_the_polish_are_whole_words",
+          "line": 153,
+          "doc": ""
+        },
+        {
+          "name": "test_every_ongoing_job_keeps_the_larger_minimum",
+          "line": 161,
+          "doc": ""
+        },
+        {
+          "name": "test_ui_partial_job_is_not_silently_dropped",
+          "line": 169,
           "doc": ""
         }
       ]
@@ -4238,6 +4334,52 @@
         {
           "name": "test_replica_summary_wrapped_lines_joined_but_labelled_lines_kept_apart",
           "line": 130,
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "tests/unit/test_profile_store.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 62,
+      "doc": "P3.2: confirmed gap answers are saved locally and offered on the next JD.",
+      "classes": [],
+      "functions": [
+        {
+          "name": "_q",
+          "line": 14,
+          "doc": ""
+        },
+        {
+          "name": "test_record_and_known_are_case_insensitive",
+          "line": 18,
+          "doc": ""
+        },
+        {
+          "name": "test_new_answer_replaces_blank_keeps",
+          "line": 29,
+          "doc": ""
+        },
+        {
+          "name": "test_nothing_ticked_writes_nothing",
+          "line": 38,
+          "doc": ""
+        },
+        {
+          "name": "test_forget_one_and_all",
+          "line": 45,
+          "doc": ""
+        },
+        {
+          "name": "test_corrupt_file_starts_fresh_and_is_kept",
+          "line": 52,
+          "doc": ""
+        },
+        {
+          "name": "test_tests_never_touch_the_real_profile",
+          "line": 60,
           "doc": ""
         }
       ]
@@ -5401,6 +5543,11 @@
       "type": "tested_by"
     },
     {
+      "from": "app/analysis/gap_questions.py",
+      "to": "tests/unit/test_profile_store.py",
+      "type": "tested_by"
+    },
+    {
       "from": "app/analysis/jd_analyzer.py",
       "to": "app/analysis/jd_analyzer.py::JDAnalyzer",
       "type": "contains"
@@ -5959,6 +6106,11 @@
       "from": "app/config/settings.py",
       "to": "app/config/settings.py::Settings",
       "type": "contains"
+    },
+    {
+      "from": "app/config/settings.py",
+      "to": "tests/unit/test_profile_store.py",
+      "type": "tested_by"
     },
     {
       "from": "app/domain/evidence.py",
@@ -6852,6 +7004,11 @@
     },
     {
       "from": "app/rendering/page_fit.py",
+      "to": "app/analysis/experience.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/rendering/page_fit.py",
       "to": "app/domain/resume.py",
       "type": "imports"
     },
@@ -6869,6 +7026,11 @@
       "from": "app/rendering/page_fit.py",
       "to": "app/rendering/page_fit.py::PageFitter",
       "type": "contains"
+    },
+    {
+      "from": "app/rendering/page_fit.py",
+      "to": "tests/unit/test_new_role.py",
+      "type": "tested_by"
     },
     {
       "from": "app/rendering/page_fit.py",
@@ -6953,6 +7115,31 @@
     {
       "from": "app/rendering/template_renderer.py",
       "to": "tests/unit/test_template_renderer_standalone.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/services/profile_store.py",
+      "to": "app/config/settings.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/services/profile_store.py",
+      "to": "app/services/profile_store.py::ConfirmedFact",
+      "type": "contains"
+    },
+    {
+      "from": "app/services/profile_store.py",
+      "to": "app/services/profile_store.py::Profile",
+      "type": "contains"
+    },
+    {
+      "from": "app/services/profile_store.py",
+      "to": "app/services/profile_store.py::ProfileStore",
+      "type": "contains"
+    },
+    {
+      "from": "app/services/profile_store.py",
+      "to": "tests/unit/test_profile_store.py",
       "type": "tested_by"
     },
     {

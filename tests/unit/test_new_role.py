@@ -134,4 +134,41 @@ def test_ui_requires_company_and_title(tmp_path):
     with patch.object(TailorService, "tailor_resume") as tailor:
         next(b for b in at.button if b.label == "Apply & Generate").click().run()
     assert not tailor.called
-    assert any("company and the job title" in e.value for e in at.error)
+    assert any("fill in: company, job title, start date" in e.value for e in at.error)
+
+
+@pytest.mark.parametrize("role, desc, message", [
+    ({"start_date": "", "end_date": "Dec 2020"}, "Did X.", "start date"),
+    ({"start_date": "Jan 2019", "end_date": ""}, "Did X.", "end date"),
+    ({"start_date": "Jan 2021", "end_date": "Dec 2020"}, "Did X.", "before its start"),
+    ({"start_date": "Jan 2019", "current": True}, "  ", "at least one thing"),
+])
+def test_dates_and_description_required(tmp_path, role, desc, message):
+    """Review finding: without these the new job reads back wrongly in an ATS."""
+    with pytest.raises(ValueError, match=message):
+        _service(tmp_path).add_new_role(_resume(), [], JobDescription(),
+                                        {"company": "Globex", "title": "Engineer", **role}, desc)
+
+
+def test_keywords_offered_to_the_polish_are_whole_words(tmp_path):
+    service = _service(tmp_path)
+    service.add_new_role(_resume(), [], JobDescription(keywords=["R", "Go", "Java", "SQL"]),
+                         {"company": "Globex", "title": "Engineer", "start_date": "2019", "end_date": "2020"},
+                         "Reduced go-to-market time with SQL and JavaScript.")
+    assert service.rewriter.rewrite_bullet.call_args.kwargs["target_keywords"] == ["SQL"]
+
+
+def test_every_ongoing_job_keeps_the_larger_minimum():
+    from app.rendering.page_fit import _is_current
+    older_ongoing = Experience(id="x", company="Side gig", title="Advisor",
+                               roles=[Role(title="Advisor", start_date="2018", end_date="Ongoing")])
+    ended = Experience(id="y", company="Old", title="Dev", roles=[Role(title="Dev", start_date="2015", end_date="2017")])
+    assert _is_current(older_ongoing, 1) and not _is_current(ended, 2) and _is_current(ended, 0)
+
+
+def test_ui_partial_job_is_not_silently_dropped(tmp_path):
+    at = _app(tmp_path)
+    at.text_input(key="nr_location").input("Pune")
+    with patch.object(TailorService, "tailor_resume") as tailor:
+        next(b for b in at.button if b.label == "Apply & Generate").click().run()
+    assert not tailor.called and any("To add the job" in e.value for e in at.error)

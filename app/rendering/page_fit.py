@@ -5,7 +5,7 @@ longer, content is removed in a fixed order, least important first:
 
 1. the Interests section;
 2. the least JD-relevant bullets (planner flags first, older roles before
-   the current one), keeping at least 3 bullets on the current role and 2
+   the current one), keeping at least 3 bullets on each current role and 2
    on every other role or project (a sub-heading whose only bullet goes
    is removed with it);
 3. the least relevant sub-section of a job, or project, as a whole (the
@@ -21,6 +21,7 @@ import math
 from dataclasses import dataclass, field
 from typing import Callable, Dict, List, Optional, Tuple
 
+from app.analysis.experience import is_ongoing
 from app.domain.resume import Resume
 from app.domain.resume_document import ResumeDocument
 
@@ -135,7 +136,8 @@ class PageFitter:
         """Least relevant bullets first, within the per-role minimums."""
         owners = []  # (section, minimum bullets, is current role)
         for i, exp in enumerate(resume.experience):
-            owners.append((exp, MIN_BULLETS_CURRENT_ROLE if i == 0 else MIN_BULLETS_OTHER, i == 0))
+            current = _is_current(exp, i)
+            owners.append((exp, MIN_BULLETS_CURRENT_ROLE if current else MIN_BULLETS_OTHER, current))
         for project in resume.projects:
             owners.append((project, MIN_BULLETS_OTHER, False))
         candidates = []
@@ -164,7 +166,7 @@ class PageFitter:
         """Least relevant job sub-section or project, as a whole."""
         options = []  # (mean relevance, height, label, remove)
         for i, exp in enumerate(resume.experience):
-            minimum = MIN_BULLETS_CURRENT_ROLE if i == 0 else MIN_BULLETS_OTHER
+            minimum = MIN_BULLETS_CURRENT_ROLE if _is_current(exp, i) else MIN_BULLETS_OTHER
             for group, bullets in exp.bullet_groups():
                 if not group or len(exp.bullets) - len(bullets) < minimum:
                     continue
@@ -199,6 +201,13 @@ class PageFitter:
             return 0.0, []
         document.presentation.compact = True
         return 3 * LINE_PT, ["Used compact spacing to fit the page."]
+
+
+def _is_current(exp, index: int) -> bool:
+    """The first job, and any other job that hasn't ended, keep the larger
+    bullet minimum."""
+    roles = exp.all_roles()
+    return index == 0 or bool(roles and is_ongoing(roles[0].end_date))
 
 
 def _short(text: str, limit: int = 70) -> str:

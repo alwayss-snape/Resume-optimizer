@@ -5,10 +5,10 @@ from datetime import date, datetime
 from typing import Dict, List, Optional, Tuple
 from uuid import uuid4
 
-from app.analysis.experience import parse_month, target_pages
+from app.analysis.experience import is_ongoing, parse_month, target_pages
 from app.analysis.gap_questions import GapAnswer, build_questions
 from app.analysis.jd_analyzer import JDAnalyzer
-from app.analysis.keyword_match import KeywordMatcher
+from app.analysis.keyword_match import KeywordMatcher, _contains_seq, tokens
 from app.analysis.matcher import EvidenceMatcher
 from app.analysis.resume_normalizer import ResumeNormalizer
 from app.analysis.rewriter import FAILED_STATUSES, LLMRewriter, RewriteProposal
@@ -208,6 +208,19 @@ class TailorService:
             raise ValueError("A new job needs both a company and a job title.")
         start = (role_data.get("start_date") or "").strip() or None
         end = "Present" if role_data.get("current") else ((role_data.get("end_date") or "").strip() or None)
+        # A job without dates or bullets reads back wrongly in an ATS (the
+        # parser merges it into its neighbours), so these are required too.
+        today = date.today()
+        start_month = parse_month(start, is_end=False, today=today)
+        end_month = parse_month(end, is_end=True, today=today)
+        if start_month is None:
+            raise ValueError("A new job needs a start date.")
+        if end_month is None:
+            raise ValueError("A new job needs an end date, or tick \"I currently work here\".")
+        if end_month < start_month:
+            raise ValueError("The new job's end date is before its start date.")
+        if not self._split_description(description_text):
+            raise ValueError("Describe at least one thing you did in the new job.")
         exp = Experience(id=f"exp_user_{uuid4().hex[:6]}", company=company, title=title,
                          location=(role_data.get("location") or "").strip() or None,
                          start_date=start, end_date=end, roles=[Role(title=title, start_date=start, end_date=end)])
@@ -219,7 +232,8 @@ class TailorService:
         for n, chunk in enumerate(chunks[:self.MAX_NEW_ROLE_BULLETS], start=1):
             user_ev = Evidence(id=f"ev_user_{uuid4().hex[:6]}", source_type="general", source_id="new_role",
                                text=chunk)
-            allowed = [k for k in job_desc.keywords if k.lower() in chunk.lower()]
+            chunk_tokens = tokens(chunk)  # whole words: "R" doesn't match "Reduced"
+            allowed = [k for k in job_desc.keywords if tokens(k) and _contains_seq(chunk_tokens, tokens(k))]
             polished, _ = self.rewriter.rewrite_bullet(chunk, evidence=[user_ev], jd_requirements=[],
                                                        target_keywords=allowed)
             check = RewriteProposal(target_semantic_id="new_role", original_text=chunk,
@@ -231,10 +245,9 @@ class TailorService:
             evidence_list.append(Evidence(id=f"ev_user_{uuid4().hex[:6]}", source_type="experience",
                                           source_id=bullet.id, text=f"{company}: {text}"))
 
-        today = date.today()
         def sort_key(e: Experience):
             first = (e.all_roles() or [Role(title="")])[0]
-            ongoing = (first.end_date or "").strip().lower() in ("present", "current", "now")
+            ongoing = is_ongoing(first.end_date)
             started = parse_month(first.start_date, is_end=False, today=today) or (0, 0)
             return (not ongoing, (-started[0], -started[1]))
         new_key = sort_key(exp)

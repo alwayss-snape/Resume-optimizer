@@ -16,6 +16,11 @@ _MONTHS = {m: i for i, m in enumerate(
 _PRESENT = {"present", "current", "now", "today", "ongoing"}
 
 
+def is_ongoing(end_date: Optional[str]) -> bool:
+    """'Present' / 'Current' / 'Now' / ... : the role hasn't ended."""
+    return (end_date or "").strip().lower().rstrip(".") in _PRESENT
+
+
 def parse_month(value: Optional[str], *, is_end: bool, today: date) -> Optional[Tuple[int, int]]:
     """'August 2024' / 'Aug. 2024' / '08/2024' / '2024' / 'Present' -> (year, month).
     A bare year starts in January or ends in December."""

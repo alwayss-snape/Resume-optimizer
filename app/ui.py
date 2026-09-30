@@ -645,9 +645,17 @@ if st.session_state.stage == "proposals":
         preapproved = _preapproved()
 
         new_role = None
-        if any((v or "").strip() for v in (nr_company, nr_title, nr_desc)):
-            if not (nr_company or "").strip() or not (nr_title or "").strip():
-                st.error("To add a job, fill in both the company and the job title (or clear the job fields).")
+        if any((v or "").strip() for v in (nr_company, nr_title, nr_desc, nr_location)) or nr_start or nr_end \
+                or nr_current:
+            missing = [label for label, ok in (
+                ("company", (nr_company or "").strip()), ("job title", (nr_title or "").strip()),
+                ("start date", nr_start), ("end date (or tick \"I currently work here\")", nr_end or nr_current),
+                ("what you did there", (nr_desc or "").strip())) if not ok]
+            if missing:
+                st.error("To add the job, fill in: " + ", ".join(missing) + ". Or clear the job fields.")
+                st.stop()
+            if nr_end and not nr_current and nr_end < nr_start:
+                st.error("The new job's end date is before its start date.")
                 st.stop()
             new_role = {"company": nr_company, "title": nr_title, "location": nr_location,
                         "current": nr_current, "description": nr_desc,
