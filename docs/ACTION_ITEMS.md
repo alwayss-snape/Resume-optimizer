@@ -16,8 +16,8 @@ JD-aligned rewrites, a Novoresume-style ATS layout that fits the right length, a
 | 1: Content quality | 14 | 6 | 0 | 8 |
 | 2: Template, ATS, page-fit | 6 | 0 | 0 | 6 |
 | 3: Gap questions + UX | 6 | 1 | 0 | 5 |
-| 4: Evaluation harness | 3 | 0 | 0 | 3 |
-| **Total** | **39** | **17** | **0** | **22** |
+| 4: Evaluation harness | 3 | 1 | 0 | 2 |
+| **Total** | **39** | **18** | **0** | **21** |
 
 ## Decisions (fixed by the user, 2026-09-30)
 
@@ -57,6 +57,8 @@ anonymized replica of the layout.
 **Exit gate:** a run on the real resume + a real JD shows rewrites that actually change; baseline metrics recorded (P4.1).
 
 **Gate status (2026-09-30):** 🟡 Live Groq verified: `check-llm` OK (0.7 s); a full fixture run gave 2/2 genuinely rewritten bullets, 8 calls, ~8.6K tokens. Found and fixed: gpt-oss emits non-breaking spaces/hyphens ("50 M"), which broke the number check. Validator fixed in P1.8: the same live run now keeps 2/2 rewrites.
+
+**After Stage A (2026-09-30, `python -m app.eval run --live --tailor --case real-fox`):** parse = golden match; JD 21 requirements / 4 preferred (LLM); score 0.0 (whole-line requirements never match the sentence matcher, F12); 7/28 JD keywords verbatim in the resume; 0 rewrites (the planner only rewrites matched bullets, F13); 8 LLM calls, 20.6K tokens, 4 × 429; 2 pages. → Stage B.
 
 **Real-resume baseline (2026-09-30, user's PDF + FOX "SDE L2 / Senior Engineer, ML" JD, Groq gpt-oss-120b):** score 8.0 → 7.1; 3 rewrites proposed, 3 PASS; 5 suggestions (all invent metrics, e.g. "NDCG +12%"); 19 LLM calls, 28.6K tokens, 69 s, 4 rate-limit (429) retries; output 2 pages. **The output is unusable because of PDF parsing (P1.9):** the name was read as a project heading, the company became "Professional Experience" / title "Role", project headings became bullets, `●` glyphs and wrapped lines leaked through, skills/education were garbled, and certifications were filed as interests. JD analysis (P1.1): no title/company, junk requirements from "and"-splitting, and "Nice To Have" items marked required. → **P1.9 and P1.1 moved to the front of Phase 1.** Phase 0's own goal (a working LLM path) is met ✅.
 
@@ -135,7 +137,7 @@ anonymized replica of the layout.
 
 | ID | Action | Files | Resolves | Status | Notes |
 |---|---|---|---|---|---|
-| P4.1 | Minimal harness + baseline (built during Phase 0): a few cases, deterministic metrics, `baseline.json` | `app/eval/`, `data/eval/` | — | ⬜ | |
+| P4.1 | Minimal harness + baseline (built during Phase 0): a few cases, deterministic metrics, `baseline.json` | `app/eval/`, `data/eval/` | — | ✅ | `python -m app.eval run [--live] [--tailor] [--case X] [--compare B] [--save B]`. Cases: `data/eval/cases.json` (replica PDF, sample DOCX, sample PDF) + gitignored `data/eval/private/cases.json` (real resume × FOX JD). Metrics: golden parse, parse stats, JD stats, score + match statuses, JD keyword coverage; with `--tailor`: proposals / changed / verdicts, suggestions, score after, pages; LLM calls / tokens / seconds / 429 retries. Offline mode uses no LLM (reproducible). Committed offline baseline `data/eval/baseline.json`; private live baseline `data/eval/private/baseline_stageA.json`. `--save` strips private cases from any file outside `data/eval/private/`. Golden projection moved to `app/eval/golden.py` |
 | P4.2 | Full case set (10–12 anonymized pairs incl. new graduate, 12+ year senior, career changer, PDF, table DOCX, boilerplate JD) with `expected.json`. Metrics: attainable keyword coverage ≥95%, match rate before/after, zero fabrication, ATS round-trip 100%, page count, content checks, stuffing guard, cost per run | `data/eval/cases/`, `app/eval/` | — | ⬜ | |
 | P4.3 | LLM-as-judge (different model family from the generator): 1–5 rubric plus pairwise original-vs-tailored, positions swapped; `python -m app.eval run --live\|--replay` → dated report | `app/eval/`, `prompts/final_review.txt` | — | ⬜ | Live runs cost money, so run only with the user's go-ahead |
 

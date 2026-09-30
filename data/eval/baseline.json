@@ -1,0 +1,162 @@
+{
+  "generated_at": "2026-09-30T12:35:26+00:00",
+  "mode": "offline",
+  "tailor": false,
+  "cases": {
+    "replica-pdf": {
+      "private": false,
+      "parse": {
+        "issues": [],
+        "experience": 2,
+        "roles": 3,
+        "bullets": 7,
+        "skills": 13,
+        "golden": "match",
+        "golden_mismatches": []
+      },
+      "jd": {
+        "source": "heuristic",
+        "title": "Senior Engineer, Search (L3)",
+        "company": "Contoso Media",
+        "seniority": "senior",
+        "years": [
+          4,
+          8
+        ],
+        "requirements": 11,
+        "preferred": 3,
+        "keywords": 10
+      },
+      "match": {
+        "score": 0.0,
+        "statuses": {
+          "MISSING": 11
+        },
+        "keyword_coverage": {
+          "pct": 40.0,
+          "found": 4,
+          "total": 10,
+          "missing": [
+            "Snowflake",
+            "A/B",
+            "FAISS",
+            "Kafka",
+            "ML",
+            "machine learning"
+          ]
+        }
+      },
+      "llm": {
+        "calls": 0,
+        "failures": 0,
+        "tokens": 0,
+        "llm_seconds": 0.0,
+        "retries_429": 0
+      },
+      "elapsed_s": 0.0
+    },
+    "sample-docx": {
+      "private": false,
+      "parse": {
+        "issues": [],
+        "experience": 2,
+        "roles": 2,
+        "bullets": 5,
+        "skills": 13
+      },
+      "jd": {
+        "source": "heuristic",
+        "title": "Senior Backend Engineer",
+        "company": "CloudScale Inc.",
+        "seniority": "senior",
+        "years": [
+          5,
+          null
+        ],
+        "requirements": 6,
+        "preferred": 2,
+        "keywords": 12
+      },
+      "match": {
+        "score": 10.3,
+        "statuses": {
+          "MISSING": 5,
+          "PARTIAL": 1
+        },
+        "keyword_coverage": {
+          "pct": 75.0,
+          "found": 9,
+          "total": 12,
+          "missing": [
+            "ECS",
+            "Lambda",
+            "Kafka"
+          ]
+        }
+      },
+      "llm": {
+        "calls": 0,
+        "failures": 0,
+        "tokens": 0,
+        "llm_seconds": 0.0,
+        "retries_429": 0
+      },
+      "elapsed_s": 0.0
+    },
+    "sample-pdf": {
+      "private": false,
+      "parse": {
+        "issues": [
+          "experience without a company (Acme Corp ? Senior Backend Engineer (2021 ? Present))"
+        ],
+        "experience": 1,
+        "roles": 1,
+        "bullets": 2,
+        "skills": 7
+      },
+      "jd": {
+        "source": "heuristic",
+        "title": "Senior Backend Engineer",
+        "company": "CloudScale Inc.",
+        "seniority": "senior",
+        "years": [
+          5,
+          null
+        ],
+        "requirements": 6,
+        "preferred": 2,
+        "keywords": 12
+      },
+      "match": {
+        "score": 5.1,
+        "statuses": {
+          "PARTIAL": 1,
+          "MISSING": 5
+        },
+        "keyword_coverage": {
+          "pct": 33.3,
+          "found": 4,
+          "total": 12,
+          "missing": [
+            "Django",
+            "Redis",
+            "S3",
+            "ECS",
+            "Lambda",
+            "Kubernetes",
+            "Kafka",
+            "Terraform"
+          ]
+        }
+      },
+      "llm": {
+        "calls": 0,
+        "failures": 0,
+        "tokens": 0,
+        "llm_seconds": 0.0,
+        "retries_429": 0
+      },
+      "elapsed_s": 0.0
+    }
+  }
+}

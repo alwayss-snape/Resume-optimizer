@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "957467cc3d03e241",
+  "source_hash": "cd244367439c5fae",
   "stats": {
-    "files": 96,
-    "python_files": 73,
-    "app_modules": 36,
-    "test_files": 30,
-    "classes": 67,
-    "functions": 386,
-    "lines_of_python": 10052
+    "files": 102,
+    "python_files": 79,
+    "app_modules": 41,
+    "test_files": 31,
+    "classes": 73,
+    "functions": 417,
+    "lines_of_python": 10640
   },
   "axes": {
     "x": "location (path)",
@@ -335,6 +335,88 @@
         }
       ],
       "functions": []
+    },
+    {
+      "id": "app/analysis/keyword_match.py",
+      "type": "python",
+      "layer": "Analysis",
+      "stages": [],
+      "lines": 190,
+      "doc": "Keyword-level match rate, the headline score (P1.2).",
+      "classes": [
+        {
+          "name": "KeywordRow",
+          "line": 40,
+          "doc": "",
+          "methods": []
+        },
+        {
+          "name": "KeywordMatchReport",
+          "line": 51,
+          "doc": "",
+          "methods": [
+            {
+              "name": "matched",
+              "line": 57,
+              "doc": ""
+            },
+            {
+              "name": "missing",
+              "line": 61,
+              "doc": ""
+            }
+          ]
+        },
+        {
+          "name": "KeywordMatcher",
+          "line": 122,
+          "doc": "",
+          "methods": [
+            {
+              "name": "_find",
+              "line": 123,
+              "doc": ""
+            },
+            {
+              "name": "_title_credit",
+              "line": 143,
+              "doc": ""
+            },
+            {
+              "name": "match",
+              "line": 153,
+              "doc": ""
+            }
+          ]
+        }
+      ],
+      "functions": [
+        {
+          "name": "_stem",
+          "line": 65,
+          "doc": ""
+        },
+        {
+          "name": "_alias",
+          "line": 73,
+          "doc": ""
+        },
+        {
+          "name": "tokens",
+          "line": 80,
+          "doc": "Lowercased, alias-canonical, plural-insensitive tokens."
+        },
+        {
+          "name": "_contains_seq",
+          "line": 85,
+          "doc": ""
+        },
+        {
+          "name": "resume_sections",
+          "line": 90,
+          "doc": "(label, text) for every part of the resume a recruiter or ATS reads."
+        }
+      ]
     },
     {
       "id": "app/analysis/matcher.py",
@@ -984,6 +1066,163 @@
         }
       ],
       "functions": []
+    },
+    {
+      "id": "app/eval/__init__.py",
+      "type": "python",
+      "layer": "Root",
+      "stages": [],
+      "lines": 2,
+      "doc": "Evaluation harness (P4.1): run resume + JD cases through the pipeline and",
+      "classes": [],
+      "functions": []
+    },
+    {
+      "id": "app/eval/__main__.py",
+      "type": "python",
+      "layer": "Root",
+      "stages": [],
+      "lines": 62,
+      "doc": "python -m app.eval run [--live] [--tailor] [--case NAME] [--compare BASELINE] [--save PATH]",
+      "classes": [],
+      "functions": [
+        {
+          "name": "main",
+          "line": 20,
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "app/eval/golden.py",
+      "type": "python",
+      "layer": "Root",
+      "stages": [
+        "2 Normalize"
+      ],
+      "lines": 49,
+      "doc": "Canonical projection of a parsed resume, compared against hand-checked",
+      "classes": [],
+      "functions": [
+        {
+          "name": "project_resume",
+          "line": 11,
+          "doc": "The parts of a parsed resume a golden file pins down."
+        },
+        {
+          "name": "project",
+          "line": 41,
+          "doc": "Parse a file deterministically (no LLM) and project it."
+        },
+        {
+          "name": "golden_mismatches",
+          "line": 47,
+          "doc": "Top-level fields where the parse differs from the golden file."
+        }
+      ]
+    },
+    {
+      "id": "app/eval/harness.py",
+      "type": "python",
+      "layer": "Root",
+      "stages": [
+        "1 Ingest",
+        "2 Normalize",
+        "3 JD analysis",
+        "4 Match",
+        "5 Score",
+        "6 Plan",
+        "7 Rewrite",
+        "8 Validate",
+        "9 Render",
+        "10 Report"
+      ],
+      "lines": 264,
+      "doc": "Run evaluation cases through the pipeline and collect metrics (P4.1).",
+      "classes": [
+        {
+          "name": "Case",
+          "line": 32,
+          "doc": "",
+          "methods": []
+        },
+        {
+          "name": "OfflineLLM",
+          "line": 40,
+          "doc": "Stands in for LLMClient when no model should be called: every",
+          "methods": [
+            {
+              "name": "is_available",
+              "line": 47,
+              "doc": ""
+            },
+            {
+              "name": "get_usage_summary",
+              "line": 50,
+              "doc": ""
+            }
+          ]
+        },
+        {
+          "name": "_RetryCounter",
+          "line": 56,
+          "doc": "",
+          "methods": [
+            {
+              "name": "__init__",
+              "line": 57,
+              "doc": ""
+            },
+            {
+              "name": "emit",
+              "line": 61,
+              "doc": ""
+            }
+          ]
+        }
+      ],
+      "functions": [
+        {
+          "name": "load_cases",
+          "line": 66,
+          "doc": ""
+        },
+        {
+          "name": "keyword_coverage",
+          "line": 84,
+          "doc": "Share of the JD's keywords found verbatim (whole term, any case) in"
+        },
+        {
+          "name": "run_case",
+          "line": 93,
+          "doc": ""
+        },
+        {
+          "name": "_tailor_metrics",
+          "line": 158,
+          "doc": ""
+        },
+        {
+          "name": "run",
+          "line": 185,
+          "doc": ""
+        },
+        {
+          "name": "_flatten",
+          "line": 201,
+          "doc": ""
+        },
+        {
+          "name": "compare",
+          "line": 218,
+          "doc": "Human-readable differences per case between a report and a baseline."
+        },
+        {
+          "name": "summary_lines",
+          "line": 246,
+          "doc": ""
+        }
+      ]
     },
     {
       "id": "app/ingestion/docx.py",
@@ -2028,118 +2267,118 @@
       "type": "python",
       "layer": "Tooling",
       "stages": [],
-      "lines": 718,
+      "lines": 722,
       "doc": "Regenerate the repo's living docs: the knowledge graph and the change log.",
       "classes": [],
       "functions": [
         {
           "name": "git",
-          "line": 116,
+          "line": 120,
           "doc": ""
         },
         {
           "name": "layer_of",
-          "line": 123,
+          "line": 127,
           "doc": ""
         },
         {
           "name": "module_name",
-          "line": 130,
+          "line": 134,
           "doc": ""
         },
         {
           "name": "first_line",
-          "line": 137,
+          "line": 141,
           "doc": ""
         },
         {
           "name": "list_files",
-          "line": 146,
+          "line": 150,
           "doc": "Tracked + new (not ignored) files, restricted to the project map."
         },
         {
           "name": "parse_python",
-          "line": 164,
+          "line": 168,
           "doc": ""
         },
         {
           "name": "symbols_of",
-          "line": 192,
+          "line": 196,
           "doc": ""
         },
         {
           "name": "settings_fields",
-          "line": 205,
+          "line": 209,
           "doc": ""
         },
         {
           "name": "build_graph",
-          "line": 224,
+          "line": 228,
           "doc": ""
         },
         {
           "name": "render_graph_md",
-          "line": 298,
+          "line": 302,
           "doc": ""
         },
         {
           "name": "write_graph",
-          "line": 496,
+          "line": 500,
           "doc": ""
         },
         {
           "name": "commit_info",
-          "line": 539,
+          "line": 543,
           "doc": ""
         },
         {
           "name": "changed_files",
-          "line": 550,
+          "line": 554,
           "doc": ""
         },
         {
           "name": "is_major",
-          "line": 563,
+          "line": 567,
           "doc": ""
         },
         {
           "name": "blob",
-          "line": 572,
+          "line": 576,
           "doc": ""
         },
         {
           "name": "structure_delta",
-          "line": 577,
+          "line": 581,
           "doc": ""
         },
         {
           "name": "render_entry",
-          "line": 600,
+          "line": 604,
           "doc": ""
         },
         {
           "name": "_split_entries",
-          "line": 643,
+          "line": 647,
           "doc": ""
         },
         {
           "name": "_join",
-          "line": 655,
-          "doc": ""
-        },
-        {
-          "name": "log_entry",
           "line": 659,
           "doc": ""
         },
         {
+          "name": "log_entry",
+          "line": 663,
+          "doc": ""
+        },
+        {
           "name": "backfill",
-          "line": 677,
+          "line": 681,
           "doc": ""
         },
         {
           "name": "main",
-          "line": 694,
+          "line": 698,
           "doc": ""
         }
       ]
@@ -2263,18 +2502,13 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 71,
+      "lines": 37,
       "doc": "Parse a resume and compare it, field by field, with a hand-checked golden",
       "classes": [],
       "functions": [
         {
-          "name": "project",
-          "line": 27,
-          "doc": "The parts of a parsed resume a golden file pins down."
-        },
-        {
           "name": "test_parse_matches_golden",
-          "line": 60,
+          "line": 26,
           "doc": ""
         }
       ]
@@ -2417,6 +2651,47 @@
           "name": "test_environment_baseline",
           "line": 1,
           "doc": "Simple baseline test to verify pytest framework setup."
+        }
+      ]
+    },
+    {
+      "id": "tests/unit/test_eval_harness.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 51,
+      "doc": "Evaluation harness (P4.1).",
+      "classes": [],
+      "functions": [
+        {
+          "name": "test_committed_cases_load",
+          "line": 9,
+          "doc": ""
+        },
+        {
+          "name": "test_offline_run_metrics_for_replica",
+          "line": 14,
+          "doc": ""
+        },
+        {
+          "name": "test_keyword_coverage_whole_terms",
+          "line": 25,
+          "doc": ""
+        },
+        {
+          "name": "test_compare_marks_regressions",
+          "line": 30,
+          "doc": ""
+        },
+        {
+          "name": "test_error_in_one_case_does_not_stop_the_run",
+          "line": 39,
+          "doc": ""
+        },
+        {
+          "name": "test_saved_committed_report_never_contains_private_cases",
+          "line": 44,
+          "doc": ""
         }
       ]
     },
@@ -3631,6 +3906,36 @@
       "type": "tested_by"
     },
     {
+      "from": "app/analysis/keyword_match.py",
+      "to": "app/analysis/keyword_match.py::KeywordMatchReport",
+      "type": "contains"
+    },
+    {
+      "from": "app/analysis/keyword_match.py",
+      "to": "app/analysis/keyword_match.py::KeywordMatcher",
+      "type": "contains"
+    },
+    {
+      "from": "app/analysis/keyword_match.py",
+      "to": "app/analysis/keyword_match.py::KeywordRow",
+      "type": "contains"
+    },
+    {
+      "from": "app/analysis/keyword_match.py",
+      "to": "app/analysis/terminology.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/analysis/keyword_match.py",
+      "to": "app/domain/job.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/analysis/keyword_match.py",
+      "to": "app/domain/resume.py",
+      "type": "imports"
+    },
+    {
       "from": "app/analysis/matcher.py",
       "to": "app/analysis/matcher.py::EvidenceMatcher",
       "type": "contains"
@@ -3689,11 +3994,6 @@
       "from": "app/analysis/resume_normalizer.py",
       "to": "app/ingestion/docx.py",
       "type": "imports"
-    },
-    {
-      "from": "app/analysis/resume_normalizer.py",
-      "to": "tests/integration/test_parse_golden.py",
-      "type": "tested_by"
     },
     {
       "from": "app/analysis/resume_normalizer.py",
@@ -4256,6 +4556,86 @@
       "type": "tested_by"
     },
     {
+      "from": "app/eval/__init__.py",
+      "to": "tests/unit/test_eval_harness.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/eval/__main__.py",
+      "to": "app/eval/harness.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/eval/__main__.py",
+      "to": "tests/unit/test_eval_harness.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/eval/golden.py",
+      "to": "app/analysis/resume_normalizer.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/eval/golden.py",
+      "to": "app/domain/resume.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/eval/golden.py",
+      "to": "app/ingestion/docx.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/eval/golden.py",
+      "to": "app/ingestion/pdf.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/eval/golden.py",
+      "to": "tests/integration/test_parse_golden.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/eval/harness.py",
+      "to": "app/analysis/jd_analyzer.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/eval/harness.py",
+      "to": "app/eval/golden.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/eval/harness.py",
+      "to": "app/eval/harness.py::Case",
+      "type": "contains"
+    },
+    {
+      "from": "app/eval/harness.py",
+      "to": "app/eval/harness.py::OfflineLLM",
+      "type": "contains"
+    },
+    {
+      "from": "app/eval/harness.py",
+      "to": "app/eval/harness.py::_RetryCounter",
+      "type": "contains"
+    },
+    {
+      "from": "app/eval/harness.py",
+      "to": "app/llm/client.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/eval/harness.py",
+      "to": "app/services/tailor.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/eval/harness.py",
+      "to": "tests/unit/test_eval_harness.py",
+      "type": "tested_by"
+    },
+    {
       "from": "app/ingestion/docx.py",
       "to": "app/ingestion/docx.py::DocxParser",
       "type": "contains"
@@ -4274,11 +4654,6 @@
       "from": "app/ingestion/docx.py",
       "to": "app/rendering/document_map.py",
       "type": "imports"
-    },
-    {
-      "from": "app/ingestion/docx.py",
-      "to": "tests/integration/test_parse_golden.py",
-      "type": "tested_by"
     },
     {
       "from": "app/ingestion/docx.py",
@@ -4354,11 +4729,6 @@
       "from": "app/ingestion/pdf.py",
       "to": "app/rendering/document_map.py",
       "type": "imports"
-    },
-    {
-      "from": "app/ingestion/pdf.py",
-      "to": "tests/integration/test_parse_golden.py",
-      "type": "tested_by"
     },
     {
       "from": "app/ingestion/pdf.py",

@@ -106,6 +106,10 @@ STAGE_MAP: Dict[str, List[str]] = {
     "app/ui.py": STAGES,
     "app/cli.py": STAGES,
     "app/config/settings.py": [],
+    "app/eval/__init__.py": [],
+    "app/eval/__main__.py": [],
+    "app/eval/harness.py": STAGES,  # runs the whole pipeline per case
+    "app/eval/golden.py": ["2 Normalize"],
 }
 
 

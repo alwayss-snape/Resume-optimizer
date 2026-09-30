@@ -14,46 +14,12 @@ import sys
 
 import pytest
 
-from app.analysis.resume_normalizer import ResumeNormalizer
-from app.ingestion.docx import DocxParser
-from app.ingestion.pdf import PdfParser
+from app.eval.golden import project
 
 CASES = [
     ("tests/fixtures/resumes/replica_layout.pdf", "tests/fixtures/resumes/replica_layout.golden.json"),
     ("data/eval/private/resume.pdf", "data/eval/private/resume.golden.json"),
 ]
-
-
-def project(resume_path: str) -> dict:
-    """The parts of a parsed resume a golden file pins down."""
-    parser = PdfParser() if resume_path.lower().endswith(".pdf") else DocxParser()
-    resume = ResumeNormalizer().normalize(parser.parse(resume_path))[0].resume
-    c = resume.candidate
-    return {
-        "candidate": {
-            "name": c.name, "headline": getattr(c, "headline", None), "email": c.email,
-            "phone": c.phone, "location": c.location, "links": list(c.links),
-        },
-        "summary": resume.summary,
-        "experience": [
-            {
-                "company": e.company,
-                "location": e.location,
-                "roles": [[r.title, r.start_date, r.end_date] for r in e.all_roles()],
-                "groups": [[g, [b.text for b in bullets]] for g, bullets in e.bullet_groups()],
-            }
-            for e in resume.experience
-        ],
-        "projects": [{"name": p.name, "bullets": [b.text for b in p.bullets]} for p in resume.projects],
-        "skills": resume.skills,
-        "education": [
-            {"institution": e.institution, "degree": e.degree, "location": e.location, "dates": e.dates}
-            for e in resume.education
-        ],
-        "certifications": [c.get("name") for c in resume.certifications],
-        "achievements": resume.achievements,
-        "interests": resume.interests,
-    }
 
 
 @pytest.mark.parametrize("resume_path,golden_path", CASES, ids=["replica", "private-real-resume"])

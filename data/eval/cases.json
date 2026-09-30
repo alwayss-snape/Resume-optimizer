@@ -1,0 +1,6 @@
+[
+  {"name": "replica-pdf", "resume": "tests/fixtures/resumes/replica_layout.pdf",
+   "jd": "tests/fixtures/jds/replica_layout_jd.txt", "golden": "tests/fixtures/resumes/replica_layout.golden.json"},
+  {"name": "sample-docx", "resume": "tests/fixtures/resumes/sample.docx", "jd": "tests/fixtures/jds/sample.txt"},
+  {"name": "sample-pdf", "resume": "tests/fixtures/resumes/sample.pdf", "jd": "tests/fixtures/jds/sample.txt"}
+]
