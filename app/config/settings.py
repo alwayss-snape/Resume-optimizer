@@ -19,6 +19,13 @@ class Settings(BaseSettings):
     groq_model: str = "openai/gpt-oss-120b"
     groq_base_url: str = "https://api.groq.com/openai/v1"
 
+    # Anthropic (Claude) — LLM_PROVIDER=anthropic. Best rewrite quality;
+    # uses schema-guaranteed structured outputs. Pay-as-you-go API key from
+    # console.anthropic.com (a Claude Pro subscription does not include API
+    # access). Sends resume/JD text to Anthropic — see ARCHITECTURE.md.
+    anthropic_api_key: str = ""
+    anthropic_model: str = "claude-opus-5-5"
+
     # Semantic matching (local sentence-transformers embedding layer).
     # Only applied to requirements the deterministic EvidenceMatcher leaves MISSING.
     semantic_match_enabled: bool = True

@@ -140,10 +140,130 @@ def test_groq_generate_api_error_raises_llm_error(mock_post):
 def test_groq_is_available_true(mock_get):
     mock_response = MagicMock()
     mock_response.status_code = 200
+    mock_response.json.return_value = {"data": [{"id": "openai/gpt-oss-120b"}]}
     mock_get.return_value = mock_response
 
-    client = LLMClient(provider="groq", api_key="test-key")
+    client = LLMClient(provider="groq", model="openai/gpt-oss-120b", api_key="test-key")
     assert client.is_available() is True
+
+@patch("httpx.get")
+def test_groq_is_available_false_for_unknown_model(mock_get):
+    """Regression: the UI used to pass an Ollama tag ("qwen3:4b") to Groq, and
+    the check only looked at HTTP 200, so every rewrite failed silently."""
+    mock_response = MagicMock()
+    mock_response.status_code = 200
+    mock_response.json.return_value = {"data": [{"id": "openai/gpt-oss-120b"}]}
+    mock_get.return_value = mock_response
+
+    client = LLMClient(provider="groq", model="qwen3:4b", api_key="test-key")
+    assert client.is_available() is False
+    assert "qwen3:4b" in client.last_error
+
+@patch("httpx.get")
+def test_availability_is_checked_once_and_cached(mock_get):
+    mock_response = MagicMock()
+    mock_response.status_code = 200
+    mock_response.json.return_value = {"data": [{"id": "openai/gpt-oss-120b"}]}
+    mock_get.return_value = mock_response
+
+    client = LLMClient(provider="groq", model="openai/gpt-oss-120b", api_key="test-key")
+    for _ in range(5):
+        client.is_available()
+    assert mock_get.call_count == 1
+    client.is_available(refresh=True)
+    assert mock_get.call_count == 2
+
+@patch("app.llm.client.time.sleep")
+@patch("httpx.post")
+def test_groq_retries_after_429(mock_post, mock_sleep):
+    limited = MagicMock(status_code=429, text="rate limited", headers={"retry-after": "2"})
+    ok = MagicMock(status_code=200)
+    ok.json.return_value = {"choices": [{"message": {"content": "done"}}], "usage": {}}
+    mock_post.side_effect = [limited, ok]
+
+    client = LLMClient(provider="groq", api_key="test-key")
+    assert client.generate([{"role": "user", "content": "Hi"}]).raw_text == "done"
+    mock_sleep.assert_called_once_with(2.0)
+
+@patch("httpx.post")
+def test_groq_gpt_oss_uses_strict_json_schema(mock_post):
+    ok = MagicMock(status_code=200)
+    ok.json.return_value = {"choices": [{"message": {"content": '{"name": "a", "age": 1}'}}], "usage": {}}
+    mock_post.return_value = ok
+
+    client = LLMClient(provider="groq", model="openai/gpt-oss-120b", api_key="test-key")
+    result = client.generate_json([{"role": "user", "content": "x"}], SampleSchema, effort="low")
+    assert result.name == "a"
+    payload = mock_post.call_args.kwargs["json"]
+    fmt = payload["response_format"]
+    assert fmt["type"] == "json_schema" and fmt["json_schema"]["strict"] is True
+    assert fmt["json_schema"]["schema"]["additionalProperties"] is False
+    assert payload["reasoning_effort"] == "low"
+    assert client.get_usage_summary()["success_count"] == 1
+
+
+def test_strict_json_schema_requires_all_properties_recursively():
+    from pydantic import BaseModel as _BM
+    from app.llm.client import strict_json_schema
+
+    class Inner(_BM):
+        a: int = 1
+
+    class Outer(_BM):
+        inner: Inner
+        tags: list = []
+
+    out = strict_json_schema(Outer.model_json_schema())
+    assert out["additionalProperties"] is False and set(out["required"]) == {"inner", "tags"}
+    inner = out["$defs"]["Inner"]
+    assert inner["additionalProperties"] is False and inner["required"] == ["a"]
+    assert "default" not in inner["properties"]["a"]
+
+
+# --- Anthropic provider ---
+
+def _fake_claude_response(parsed=None, stop_reason="end_turn", text='{"x": 1}'):
+    block = MagicMock(type="text", text=text)
+    usage = MagicMock(input_tokens=100, output_tokens=20, cache_read_input_tokens=0, cache_creation_input_tokens=0)
+    return MagicMock(stop_reason=stop_reason, content=[block], usage=usage, model="claude-opus-5-5",
+                     parsed_output=parsed, stop_details=None)
+
+def test_anthropic_without_key_is_unavailable():
+    client = LLMClient(provider="anthropic", api_key="")
+    assert client.is_available() is False
+    assert "ANTHROPIC_API_KEY" in client.last_error
+    with pytest.raises(LLMConnectionError):
+        client.generate_json([{"role": "user", "content": "x"}], SampleSchema)
+
+def test_anthropic_generate_json_uses_structured_outputs():
+    client = LLMClient(provider="anthropic", api_key="test-key")
+    fake = MagicMock()
+    fake.beta.messages.parse.return_value = _fake_claude_response(parsed=SampleSchema(name="a", age=1))
+    client.client = fake
+
+    result = client.generate_json(
+        [{"role": "system", "content": "Be precise."}, {"role": "user", "content": "x"}], SampleSchema, effort="high",
+    )
+    assert result == SampleSchema(name="a", age=1)
+    kwargs = fake.beta.messages.parse.call_args.kwargs
+    assert kwargs["output_format"] is SampleSchema
+    assert kwargs["system"] == "Be precise."
+    assert kwargs["messages"] == [{"role": "user", "content": "x"}]  # system lifted out of messages
+    assert kwargs["output_config"] == {"effort": "high"}
+    assert "temperature" not in kwargs  # rejected by current Claude models
+    assert kwargs["model"] == "claude-opus-5-5"
+    summary = client.get_usage_summary()
+    assert summary["success_count"] == 1 and summary["total_tokens"] == 120
+
+def test_anthropic_refusal_raises_and_is_recorded():
+    client = LLMClient(provider="anthropic", api_key="test-key")
+    fake = MagicMock()
+    fake.beta.messages.parse.return_value = _fake_claude_response(stop_reason="refusal")
+    client.client = fake
+
+    with pytest.raises(LLMError):
+        client.generate_json([{"role": "user", "content": "x"}], SampleSchema)
+    assert client.get_usage_summary()["failure_count"] == 1
 
 def test_groq_is_available_false_without_key():
     client = LLMClient(provider="groq", api_key="")

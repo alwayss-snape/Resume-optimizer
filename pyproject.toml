@@ -15,6 +15,7 @@ dependencies = [
     "PyMuPDF>=1.23.0",
     "ollama>=0.3.0",
     "httpx>=0.24.0",
+    "anthropic>=1.0",
     "streamlit>=1.30.0",
     "python-dotenv>=1.0.0",
     "sentence-transformers>=2.7.0",

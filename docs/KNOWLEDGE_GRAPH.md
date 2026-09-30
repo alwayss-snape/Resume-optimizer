@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**35 app modules · 24 test files · 59 classes · 232 functions/methods · 7,346 lines of Python** · source hash `d47c86338152897b`
+**35 app modules · 24 test files · 59 classes · 253 functions/methods · 7,734 lines of Python** · source hash `06dc7c35fd80f1d2`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -155,7 +155,7 @@ Spanning all stages: `app/cli.py`, `app/services/tailor.py`, `app/ui.py`
 
 ### `app/analysis/jd_analyzer.py`
 
-**Layer:** Analysis · **Stage:** 3 JD analysis · **Lines:** 306
+**Layer:** Analysis · **Stage:** 3 JD analysis · **Lines:** 307
 
 - class **`JDAnalyzer`** ([app/analysis/jd_analyzer.py:8](../app/analysis/jd_analyzer.py#L8)) — Extract only text that is visibly present in the supplied job description.
   - `__init__()` :36
@@ -165,7 +165,7 @@ Spanning all stages: `app/cli.py`, `app/services/tailor.py`, `app/ui.py`
   - `_segment_line()` :127 — Conservatively split a requirement line into atomic requirement phrases.
   - `_reflow_lines()` :147 — Undo hard line-wrapping from pasted JDs (job boards/PDFs often wrap
   - `_llm_select_requirement_lines()` :182 — Ask the LLM which of the given candidate line indices are genuine
-  - `analyze()` :232
+  - `analyze()` :233
 - **Imports:** `analysis/terminology.py`, `domain/job.py`, `llm/client.py`, `llm/schemas.py`
 - **Imported by:** `services/tailor.py`
 - **Tested by:** `tests/unit/test_jd_analyzer.py`, `tests/unit/test_jd_analyzer_llm.py`
@@ -270,7 +270,7 @@ _Semantic (embedding-based) matching layer._
 
 ### `app/config/settings.py`
 
-**Layer:** Config · **Stage:** — · **Lines:** 34
+**Layer:** Config · **Stage:** — · **Lines:** 41
 
 - class **`Settings`** ([app/config/settings.py:4](../app/config/settings.py#L4))
 - **Imported by:** `analysis/semantic_matcher.py`, `llm/client.py`, `ui.py`
@@ -374,17 +374,29 @@ _Semantic (embedding-based) matching layer._
 
 ### `app/llm/client.py`
 
-**Layer:** LLM · **Stage:** 3 JD analysis, 7 Rewrite · **Lines:** 347
+**Layer:** LLM · **Stage:** 3 JD analysis, 7 Rewrite · **Lines:** 607
 
-- class **`LLMClient`** ([app/llm/client.py:34](../app/llm/client.py#L34)) — Unified client for text generation, across two interchangeable providers:
-  - `__init__()` :50
-  - `is_available()` :95 — Check if the configured provider is reachable and the model is available.
-  - `_groq_is_available()` :108
-  - `generate()` :122 — Generate text from the LLM using the chat interface.
-  - `get_usage_summary()` :161 — Aggregate every generate() call made on this client instance so
-  - `_generate_ollama()` :185
-  - `_generate_groq()` :228
-  - `generate_json()` :283 — Generate structured JSON conforming to a Pydantic model with retry logic.
+- class **`LLMClient`** ([app/llm/client.py:53](../app/llm/client.py#L53)) — Unified client for text generation across three interchangeable providers:
+  - `__init__()` :69
+  - `is_available()` :133 — Whether the configured provider is reachable AND the configured
+  - `_check_available()` :145
+  - `_ollama_check()` :152
+  - `_groq_check()` :164
+  - `_anthropic_check()` :185
+  - `_record()` :206
+  - `generate()` :224 — Generate text from the LLM using the chat interface.
+  - `get_usage_summary()` :253 — Aggregate every LLM call made on this client instance so far
+  - `_generate_ollama()` :275
+  - `_groq_supports_strict_schema()` :320
+  - `_generate_groq()` :324
+  - `_split_system()` :402 — The Messages API takes the system prompt as a top-level field,
+  - `_anthropic_request()` :409
+  - `_anthropic_response()` :446
+  - `_generate_anthropic()` :463
+  - `_generate_json_anthropic()` :468 — Structured outputs guarantee the response matches the schema, so
+  - `generate_json()` :489 — Generate structured JSON conforming to a Pydantic model.
+- function **`_retry_after_seconds()`** ([app/llm/client.py:579](../app/llm/client.py#L579)) — Seconds to wait before retrying a 429: the server's `retry-after`
+- function **`strict_json_schema()`** ([app/llm/client.py:594](../app/llm/client.py#L594)) — Adapt a Pydantic JSON schema for strict structured-output modes: every
 - **Imports:** `config/settings.py`, `llm/schemas.py`
 - **Imported by:** `analysis/jd_analyzer.py`, `analysis/matcher.py`, `analysis/rewriter.py`, `analysis/tailor_planner.py`, `services/tailor.py`, `ui.py`, `scripts/benchmark_model.py`
 - **Tested by:** `tests/unit/test_llm_client.py`, `tests/unit/test_rewriter.py`
@@ -669,6 +681,8 @@ From `app/config/settings.py`; each can be overridden by the env var of the same
 | `GROQ_API_KEY` | str | `''` |
 | `GROQ_MODEL` | str | `'openai/gpt-oss-120b'` |
 | `GROQ_BASE_URL` | str | `'https://api.groq.com/openai/v1'` |
+| `ANTHROPIC_API_KEY` | str | `''` |
+| `ANTHROPIC_MODEL` | str | `'claude-opus-5-5'` |
 | `SEMANTIC_MATCH_ENABLED` | bool | `True` |
 | `SEMANTIC_MATCH_MODEL` | str | `'all-MiniLM-L6-v2'` |
 | `SEMANTIC_MATCH_THRESHOLD` | float | `0.58` |

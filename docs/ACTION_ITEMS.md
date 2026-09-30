@@ -12,12 +12,12 @@ JD-aligned rewrites, a Novoresume-style ATS layout that fits the right length, a
 
 | Phase | Items | ✅ | 🟡 | ⬜ |
 |---|---|---|---|---|
-| 0: Make the LLM path work | 10 | 4 | 0 | 6 |
+| 0: Make the LLM path work | 10 | 7 | 0 | 3 |
 | 1: Content quality | 10 | 0 | 0 | 10 |
 | 2: Template, ATS, page-fit | 6 | 0 | 0 | 6 |
 | 3: Gap questions + UX | 6 | 0 | 0 | 6 |
 | 4: Evaluation harness | 3 | 0 | 0 | 3 |
-| **Total** | **35** | **4** | **0** | **31** |
+| **Total** | **35** | **7** | **0** | **28** |
 
 ## Decisions (fixed by the user, 2026-09-30)
 
@@ -38,11 +38,11 @@ JD-aligned rewrites, a Novoresume-style ATS layout that fits the right length, a
 
 | ID | Action | Files | Resolves | Status | Notes |
 |---|---|---|---|---|---|
-| P0.1 | Add a Claude provider: `LLM_PROVIDER=anthropic`, `ANTHROPIC_MODEL=claude-opus-5-5`; `client.messages.parse()` / `output_config.format` against the `app/llm/schemas.py` models; explicit `effort`; handle `stop_reason` refusal / max_tokens; keep `usage_log`. Add the dependency, `.env.example` keys and a privacy note | `app/llm/client.py`, `pyproject.toml`, `.env.example`, `ARCHITECTURE.md` | F1, F5, F6 | ⬜ | Needs the user's API key for a live check |
+| P0.1 | Add a Claude provider: `LLM_PROVIDER=anthropic`, `ANTHROPIC_MODEL=claude-opus-5-5`; `client.messages.parse()` / `output_config.format` against the `app/llm/schemas.py` models; explicit `effort`; handle `stop_reason` refusal / max_tokens; keep `usage_log`. Add the dependency, `.env.example` keys and a privacy note | `app/llm/client.py`, `pyproject.toml`, `.env.example`, `ARCHITECTURE.md` | F1, F5, F6 | ✅ | `anthropic` 1.9 SDK; `beta.messages.parse` with Pydantic `output_format`, `effort` via `output_config`, no temperature, server-side refusal fallback (`fallbacks: "default"`); refusal/max_tokens raise. Mock-tested; **live check pending the user's API key** (P0.10) |
 | P0.2 | Provider-aware model picker: never pass an Ollama name to Groq/Claude; warning text per provider | `app/ui.py:137-142,201,285-293,387` | F1, F31 | ⬜ | |
-| P0.3 | One cached health check per run that verifies the model exists; remove per-call `is_available()` | `client.py:95-120`, `rewriter.py:41,98`, `jd_analyzer.py:140`, `tailor.py:157` | F1, F4 | ⬜ | |
+| P0.3 | One cached health check per run that verifies the model exists; remove per-call `is_available()` | `client.py:95-120`, `rewriter.py:41,98`, `jd_analyzer.py:140`, `tailor.py:157` | F1, F4 | ✅ | `is_available()` cached per client (one check per run); Groq check now verifies the model id exists; `last_error` explains why (used by P0.4 UI) |
 | P0.4 | Visible failures: rewrite status (ok / llm_error / rejected / unchanged) + error on `ChangeProposal`; UI banner; save usage in `generate_proposals` | `rewriter.py`, `change_proposal.py`, `tailor.py:122-159`, `ui.py` | F3, F34 | ⬜ | |
-| P0.5 | Groq fallback robustness: 429 `retry-after` backoff, strict `json_schema` for gpt-oss | `client.py:_generate_groq`, `generate_json` | F5, F6 | ⬜ | |
+| P0.5 | Groq fallback robustness: 429 `retry-after` backoff, strict `json_schema` for gpt-oss | `client.py:_generate_groq`, `generate_json` | F5, F6 | ✅ | 429 → honour `retry-after` (≤30 s, 3 retries); gpt-oss uses strict `json_schema` + `reasoning_effort` |
 | P0.6 | Move the `ollama.py` stub into `tests/conftest.py` so it stops shadowing the real package | `/ollama.py`, `tests/conftest.py` | F2 | ✅ | Stub deleted; no shim needed: tests `@patch("ollama.Client")` on the real package (0.6.2), whose responses are `.get()`-compatible |
 | P0.7 | Skip planner + rewriter when proposals are pre-approved | `tailor.py:298-311` | F7 | ✅ | Deterministic planner still runs (for plan.json); `execute_plan` skipped with pre-approved proposals. Test asserts it isn't called |
 | P0.8 | Strict mode decides before rendering; `changes.md` matches the rendered output; remove duplicate and dead writes | `tailor.py:391-539` | F8, F33 | ✅ | All-or-nothing rollback before render; changes.md appends one summary under the kept progress log; dead code removed. UI default switched to **off** until P1.8 (the over-strict validator would otherwise withhold nearly every run). Also added `tests/conftest.py`: tests were making live Groq calls via `.env` (suite 47–80 s → 17 s) |

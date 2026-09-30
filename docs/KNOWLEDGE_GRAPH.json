@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "d47c86338152897b",
+  "source_hash": "06dc7c35fd80f1d2",
   "stats": {
     "files": 85,
     "python_files": 65,
     "app_modules": 35,
     "test_files": 24,
     "classes": 59,
-    "functions": 232,
-    "lines_of_python": 7346
+    "functions": 253,
+    "lines_of_python": 7734
   },
   "axes": {
     "x": "location (path)",
@@ -103,6 +103,18 @@
       "default": "'https://api.groq.com/openai/v1'"
     },
     {
+      "name": "anthropic_api_key",
+      "env": "ANTHROPIC_API_KEY",
+      "type": "str",
+      "default": "''"
+    },
+    {
+      "name": "anthropic_model",
+      "env": "ANTHROPIC_MODEL",
+      "type": "str",
+      "default": "'claude-opus-5-5'"
+    },
+    {
       "name": "semantic_match_enabled",
       "env": "SEMANTIC_MATCH_ENABLED",
       "type": "bool",
@@ -127,7 +139,7 @@
       "type": "file",
       "layer": "Root",
       "stages": [],
-      "lines": 14
+      "lines": 21
     },
     {
       "id": ".githooks/_python",
@@ -155,7 +167,7 @@
       "type": "file",
       "layer": "Root",
       "stages": [],
-      "lines": 47
+      "lines": 52
     },
     {
       "id": "BUILD.md",
@@ -225,7 +237,7 @@
       "stages": [
         "3 JD analysis"
       ],
-      "lines": 306,
+      "lines": 307,
       "doc": "",
       "classes": [
         {
@@ -270,7 +282,7 @@
             },
             {
               "name": "analyze",
-              "line": 232,
+              "line": 233,
               "doc": ""
             }
           ]
@@ -585,7 +597,7 @@
       "type": "python",
       "layer": "Config",
       "stages": [],
-      "lines": 34,
+      "lines": 41,
       "doc": "",
       "classes": [
         {
@@ -911,58 +923,119 @@
         "3 JD analysis",
         "7 Rewrite"
       ],
-      "lines": 347,
+      "lines": 607,
       "doc": "",
       "classes": [
         {
           "name": "LLMClient",
-          "line": 34,
-          "doc": "Unified client for text generation, across two interchangeable providers:",
+          "line": 53,
+          "doc": "Unified client for text generation across three interchangeable providers:",
           "methods": [
             {
               "name": "__init__",
-              "line": 50,
+              "line": 69,
               "doc": ""
             },
             {
               "name": "is_available",
-              "line": 95,
-              "doc": "Check if the configured provider is reachable and the model is available."
+              "line": 133,
+              "doc": "Whether the configured provider is reachable AND the configured"
             },
             {
-              "name": "_groq_is_available",
-              "line": 108,
+              "name": "_check_available",
+              "line": 145,
               "doc": ""
             },
             {
-              "name": "generate",
-              "line": 122,
-              "doc": "Generate text from the LLM using the chat interface."
+              "name": "_ollama_check",
+              "line": 152,
+              "doc": ""
             },
             {
-              "name": "get_usage_summary",
-              "line": 161,
-              "doc": "Aggregate every generate() call made on this client instance so"
+              "name": "_groq_check",
+              "line": 164,
+              "doc": ""
             },
             {
-              "name": "_generate_ollama",
+              "name": "_anthropic_check",
               "line": 185,
               "doc": ""
             },
             {
-              "name": "_generate_groq",
-              "line": 228,
+              "name": "_record",
+              "line": 206,
               "doc": ""
             },
             {
+              "name": "generate",
+              "line": 224,
+              "doc": "Generate text from the LLM using the chat interface."
+            },
+            {
+              "name": "get_usage_summary",
+              "line": 253,
+              "doc": "Aggregate every LLM call made on this client instance so far"
+            },
+            {
+              "name": "_generate_ollama",
+              "line": 275,
+              "doc": ""
+            },
+            {
+              "name": "_groq_supports_strict_schema",
+              "line": 320,
+              "doc": ""
+            },
+            {
+              "name": "_generate_groq",
+              "line": 324,
+              "doc": ""
+            },
+            {
+              "name": "_split_system",
+              "line": 402,
+              "doc": "The Messages API takes the system prompt as a top-level field,"
+            },
+            {
+              "name": "_anthropic_request",
+              "line": 409,
+              "doc": ""
+            },
+            {
+              "name": "_anthropic_response",
+              "line": 446,
+              "doc": ""
+            },
+            {
+              "name": "_generate_anthropic",
+              "line": 463,
+              "doc": ""
+            },
+            {
+              "name": "_generate_json_anthropic",
+              "line": 468,
+              "doc": "Structured outputs guarantee the response matches the schema, so"
+            },
+            {
               "name": "generate_json",
-              "line": 283,
-              "doc": "Generate structured JSON conforming to a Pydantic model with retry logic."
+              "line": 489,
+              "doc": "Generate structured JSON conforming to a Pydantic model."
             }
           ]
         }
       ],
-      "functions": []
+      "functions": [
+        {
+          "name": "_retry_after_seconds",
+          "line": 579,
+          "doc": "Seconds to wait before retrying a 429: the server's `retry-after`"
+        },
+        {
+          "name": "strict_json_schema",
+          "line": 594,
+          "doc": "Adapt a Pydantic JSON schema for strict structured-output modes: every"
+        }
+      ]
     },
     {
       "id": "app/llm/prompts/final_review.txt",
@@ -1553,7 +1626,7 @@
       "type": "file",
       "layer": "Root",
       "stages": [],
-      "lines": 40
+      "lines": 41
     },
     {
       "id": "scripts/autocommit.sh",
@@ -2048,7 +2121,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 193,
+      "lines": 313,
       "doc": "",
       "classes": [
         {
@@ -2115,18 +2188,63 @@
           "doc": ""
         },
         {
+          "name": "test_groq_is_available_false_for_unknown_model",
+          "line": 150,
+          "doc": "Regression: the UI used to pass an Ollama tag (\"qwen3:4b\") to Groq, and"
+        },
+        {
+          "name": "test_availability_is_checked_once_and_cached",
+          "line": 163,
+          "doc": ""
+        },
+        {
+          "name": "test_groq_retries_after_429",
+          "line": 178,
+          "doc": ""
+        },
+        {
+          "name": "test_groq_gpt_oss_uses_strict_json_schema",
+          "line": 189,
+          "doc": ""
+        },
+        {
+          "name": "test_strict_json_schema_requires_all_properties_recursively",
+          "line": 205,
+          "doc": ""
+        },
+        {
+          "name": "_fake_claude_response",
+          "line": 225,
+          "doc": ""
+        },
+        {
+          "name": "test_anthropic_without_key_is_unavailable",
+          "line": 231,
+          "doc": ""
+        },
+        {
+          "name": "test_anthropic_generate_json_uses_structured_outputs",
+          "line": 238,
+          "doc": ""
+        },
+        {
+          "name": "test_anthropic_refusal_raises_and_is_recorded",
+          "line": 258,
+          "doc": ""
+        },
+        {
           "name": "test_groq_is_available_false_without_key",
-          "line": 148,
+          "line": 268,
           "doc": ""
         },
         {
           "name": "test_usage_log_records_successful_call",
-          "line": 156,
+          "line": 276,
           "doc": ""
         },
         {
           "name": "test_usage_log_records_failed_call",
-          "line": 179,
+          "line": 299,
           "doc": ""
         }
       ]

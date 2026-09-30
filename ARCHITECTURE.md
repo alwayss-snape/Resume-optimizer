@@ -44,4 +44,9 @@ The Semantic Matcher (`app/analysis/semantic_matcher.py`) is a separate, seconda
   the default remains Ollama — but when enabled, prompt content (which includes resume and JD text) is sent to
   Groq's servers, and Groq's own data-handling terms apply. Anyone deploying this for others' resumes should be
   aware of that before switching providers.
-- No network logging of sensitive personal candidate data by this application, in either mode.
+- **Optional: Anthropic (Claude) provider** (`LLM_PROVIDER=anthropic`, `ANTHROPIC_API_KEY`, default model
+  `claude-opus-5-5`). Uses the official `anthropic` SDK with structured outputs, so JSON responses match the Pydantic
+  schemas by construction. Like Groq, this sends prompt content (resume and JD text) to Anthropic's API, and
+  Anthropic's data-handling terms apply. It needs a pay-as-you-go API key; a Claude Pro subscription does not
+  include API access.
+- No network logging of sensitive personal candidate data by this application, in any mode.

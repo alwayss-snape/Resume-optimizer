@@ -215,6 +215,7 @@ class JDAnalyzer:
                 messages=messages,
                 schema_model=JDRequirementSelection,
                 temperature=0.0,
+                effort="low",  # index selection is simple classification
             )
         except Exception:
             return None
