@@ -54,9 +54,9 @@ Semantic matching uses a local embedding model (`all-MiniLM-L6-v2`).
 | Add free-text content | ✅ Works | Append to an existing role or create a new project |
 | Add a **new job role** | ❌ Not built | Designed, see "Open work" |
 | Strict Factual Mode | ⚠️ Cosmetic | See issue 4 |
-| DOCX / PDF / HTML output | ✅ Works | Polished formatting (Sep 29). PDF needs LibreOffice installed |
+| DOCX / PDF / HTML output | ✅ Works | ATS template (P2.1): A4, Arial, standard headings, section order by experience, "Jan 2022 – Present" dates; files named `First_Last_Resume_<Company>`. PDF needs LibreOffice installed |
 | CLI | ✅ Works | `analyze` and `tailor` only; no review step, no addition text |
-| Tests | ✅ 188 passing | `pytest -q` (~35 s, loads the cached embedding model) |
+| Tests | ✅ 233 passing | `pytest -q` (~35 s, loads the cached embedding model) |
 | Multiple JDs / history / cover letter | ❌ Not built | — |
 
 ## Open issues (found 2026-09-29, not yet fixed)

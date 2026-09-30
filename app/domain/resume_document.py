@@ -8,13 +8,17 @@ from app.domain.resume import Resume
 
 
 class ResumePresentation(BaseModel):
-    """Display choices; content remains in the canonical Resume model."""
+    """Display choices; content remains in the canonical Resume model.
+    The ATS template (P2.1): A4, single column, Arial."""
     template_id: str = "ats-classic"
     section_order: List[str] = Field(default_factory=lambda: [
-        "summary", "experience", "projects", "skills", "education", "certifications",
+        "summary", "experience", "skills", "education", "projects", "certifications", "achievements", "interests",
     ])
     font_family: str = "Arial"
     accent_color: str = "#1F4E79"
+    page_size: Literal["A4"] = "A4"
+    margin_side_in: float = 0.7
+    margin_vertical_in: float = 0.6
     compact: bool = False
 
 

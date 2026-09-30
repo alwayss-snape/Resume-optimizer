@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "e6ce96bc6e2ef52b",
+  "source_hash": "2cd077641174c1d2",
   "stats": {
-    "files": 113,
-    "python_files": 88,
-    "app_modules": 45,
-    "test_files": 36,
+    "files": 115,
+    "python_files": 90,
+    "app_modules": 46,
+    "test_files": 37,
     "classes": 79,
-    "functions": 523,
-    "lines_of_python": 12337
+    "functions": 551,
+    "lines_of_python": 12557
   },
   "axes": {
     "x": "location (path)",
@@ -1180,7 +1180,7 @@
         "2 Normalize",
         "9 Render"
       ],
-      "lines": 75,
+      "lines": 79,
       "doc": "",
       "classes": [
         {
@@ -1191,29 +1191,29 @@
         },
         {
           "name": "ResumeSource",
-          "line": 21,
+          "line": 25,
           "doc": "",
           "methods": []
         },
         {
           "name": "ResumeRevision",
-          "line": 27,
+          "line": 31,
           "doc": "",
           "methods": []
         },
         {
           "name": "ResumeDocument",
-          "line": 39,
+          "line": 43,
           "doc": "Versioned source of truth for editing, tailoring, and rendering.",
           "methods": [
             {
               "name": "record_revision",
-              "line": 48,
+              "line": 52,
               "doc": ""
             },
             {
               "name": "snapshot",
-              "line": 73,
+              "line": 77,
               "doc": "Return a JSON-serializable, versioned document for storage or export."
             }
           ]
@@ -1914,48 +1914,101 @@
       "stages": [
         "9 Render"
       ],
-      "lines": 140,
+      "lines": 136,
       "doc": "",
       "classes": [
         {
           "name": "HtmlResumeRenderer",
-          "line": 8,
+          "line": 9,
           "doc": "Render an ATS-safe, printable r\u00e9sum\u00e9 from the canonical document.",
           "methods": [
             {
               "name": "_items",
-              "line": 11,
+              "line": 12,
               "doc": ""
             },
             {
               "name": "_meta_line",
-              "line": 14,
+              "line": 15,
               "doc": "A de-emphasized 'Company \u00b7 Location' style line under a bolded"
             },
             {
               "name": "_dates",
-              "line": 23,
+              "line": 24,
               "doc": ""
             },
             {
               "name": "_experience_entry",
-              "line": 26,
+              "line": 27,
+              "doc": ""
+            },
+            {
+              "name": "_section",
+              "line": 52,
               "doc": ""
             },
             {
               "name": "render",
-              "line": 51,
-              "doc": ""
+              "line": 55,
+              "doc": "Same sections, order and headings as the DOCX template (P2.1)."
             },
             {
               "name": "write_html",
-              "line": 136,
+              "line": 132,
               "doc": ""
             }
           ]
         }
       ],
       "functions": []
+    },
+    {
+      "id": "app/rendering/layout.py",
+      "type": "python",
+      "layer": "Rendering",
+      "stages": [
+        "9 Render"
+      ],
+      "lines": 113,
+      "doc": "Shared layout rules for the ATS template (P2.1).",
+      "classes": [],
+      "functions": [
+        {
+          "name": "section_order_for",
+          "line": 39,
+          "doc": "Default order; education moves before experience for someone with"
+        },
+        {
+          "name": "format_date",
+          "line": 51,
+          "doc": "'August 2024' / 'Aug. 2024' / '08/2024' -> 'Aug 2024'; 'Current' ->"
+        },
+        {
+          "name": "date_range",
+          "line": 71,
+          "doc": "'Jan 2022 \u2013 Present'; one side only when the other is missing."
+        },
+        {
+          "name": "format_date_text",
+          "line": 76,
+          "doc": "A free-text range such as an education's '2016 - 2020' or"
+        },
+        {
+          "name": "contact_parts",
+          "line": 86,
+          "doc": "email | phone | City, Country | linkedin | github | other links."
+        },
+        {
+          "name": "display_skills",
+          "line": 94,
+          "doc": "At most `max_categories` lines: the first ones as they are (JD-relevant"
+        },
+        {
+          "name": "output_basename",
+          "line": 108,
+          "doc": "First_Last_Resume_<Company>, using only file-name-safe characters."
+        }
+      ]
     },
     {
       "id": "app/rendering/pdf_converter.py",
@@ -1994,47 +2047,102 @@
       "stages": [
         "9 Render"
       ],
-      "lines": 297,
+      "lines": 275,
       "doc": "",
       "classes": [
         {
           "name": "TemplateRenderer",
-          "line": 25,
+          "line": 22,
           "doc": "Standard single-column, ATS-safe DOCX renderer with support for ResumeDocument.",
           "methods": [
             {
               "name": "render_ats_default",
-              "line": 28,
+              "line": 25,
+              "doc": "Render the ATS template (P2.1): A4, single column, Arial,"
+            },
+            {
+              "name": "_add_header",
+              "line": 59,
+              "doc": ""
+            },
+            {
+              "name": "_add_summary",
+              "line": 83,
+              "doc": ""
+            },
+            {
+              "name": "_add_experience",
+              "line": 89,
+              "doc": ""
+            },
+            {
+              "name": "_add_skills",
+              "line": 118,
+              "doc": ""
+            },
+            {
+              "name": "_add_education",
+              "line": 129,
+              "doc": ""
+            },
+            {
+              "name": "_add_projects",
+              "line": 141,
+              "doc": ""
+            },
+            {
+              "name": "_add_certifications",
+              "line": 164,
+              "doc": ""
+            },
+            {
+              "name": "_add_achievements",
+              "line": 170,
+              "doc": ""
+            },
+            {
+              "name": "_add_interests",
+              "line": 175,
               "doc": ""
             },
             {
               "name": "_set_document_defaults",
-              "line": 215,
-              "doc": "Tighter, more consistent margins/typography than python-docx's"
+              "line": 182,
+              "doc": "A4, the template's margins and font, instead of python-docx's"
             },
             {
               "name": "_content_width",
-              "line": 239,
+              "line": 204,
               "doc": ""
             },
             {
               "name": "_add_section_heading",
-              "line": 243,
+              "line": 208,
               "doc": "A section label in the accent color with a rule underneath \u2014"
             },
             {
               "name": "_role_dates",
-              "line": 259,
+              "line": 223,
+              "doc": ""
+            },
+            {
+              "name": "_add_meta_line",
+              "line": 226,
+              "doc": "'Company \u00b7 Location' in italic grey under a title line."
+            },
+            {
+              "name": "_add_bullets",
+              "line": 235,
               "doc": ""
             },
             {
               "name": "_add_title_dates_line",
-              "line": 264,
+              "line": 240,
               "doc": "Title (bold) on the left, date range right-aligned on the same"
             },
             {
               "name": "_add_bottom_border",
-              "line": 284,
+              "line": 262,
               "doc": "Adds a single bottom border to a paragraph via raw OOXML \u2014 the"
             }
           ]
@@ -2093,97 +2201,97 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 868,
+      "lines": 874,
       "doc": "",
       "classes": [
         {
           "name": "TailorService",
-          "line": 39,
+          "line": 40,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
-              "line": 40,
+              "line": 41,
               "doc": ""
             },
             {
               "name": "generate_preview_md",
-              "line": 72,
+              "line": 73,
               "doc": ""
             },
             {
               "name": "_patchable",
-              "line": 118,
+              "line": 119,
               "doc": "Proposals as in-place DOCX patches. A summary proposal targets the"
             },
             {
               "name": "_apply_gap_answers",
-              "line": 141,
+              "line": 142,
               "doc": "Ticked keywords join the skills section; a typed answer becomes a"
             },
             {
               "name": "_draft_from_answer",
-              "line": 165,
+              "line": 166,
               "doc": "Polish the candidate's answer into one bullet that may use only"
             },
             {
               "name": "_skills_proposals",
-              "line": 181,
+              "line": 182,
               "doc": "The skills section with the JD's skills first, when that changes it (P1.6)."
             },
             {
               "name": "_summary_proposals",
-              "line": 186,
+              "line": 187,
               "doc": "The tailored summary as a proposal, when one was written (P1.5)."
             },
             {
               "name": "_embed",
-              "line": 191,
+              "line": 192,
               "doc": "Sentence embeddings for the planner, loaded lazily; raises when the"
             },
             {
               "name": "_apply_bullet_order",
-              "line": 200,
+              "line": 201,
               "doc": "Reorder bullets as planned (most relevant first within each"
             },
             {
               "name": "parse_resume",
-              "line": 215,
+              "line": 216,
               "doc": "File -> (raw document, ResumeDocument, evidence). The deterministic"
             },
             {
               "name": "normalize_raw",
-              "line": 225,
+              "line": 226,
               "doc": ""
             },
             {
               "name": "_copy_parsed",
-              "line": 233,
+              "line": 234,
               "doc": "Deep copies, so a parse kept in UI session state is never mutated."
             },
             {
               "name": "apply_parse_corrections",
-              "line": 238,
+              "line": 239,
               "doc": "Apply the user's fixes from the \"Check parsed resume\" step (P3.5)."
             },
             {
               "name": "analyze_only",
-              "line": 299,
+              "line": 300,
               "doc": ""
             },
             {
               "name": "generate_proposals",
-              "line": 325,
+              "line": 326,
               "doc": "Generate rewrite proposals without applying them, plus questions"
             },
             {
               "name": "incorporate_user_addition",
-              "line": 386,
+              "line": 387,
               "doc": "Fold a user-supplied free-text addition (a project, an"
             },
             {
               "name": "tailor_resume",
-              "line": 465,
+              "line": 466,
               "doc": ""
             }
           ]
@@ -2192,7 +2300,7 @@
       "functions": [
         {
           "name": "_merge_usage",
-          "line": 859,
+          "line": 865,
           "doc": "Combine two LLMClient.get_usage_summary() dicts into one."
         }
       ]
@@ -2537,118 +2645,118 @@
       "type": "python",
       "layer": "Tooling",
       "stages": [],
-      "lines": 727,
+      "lines": 728,
       "doc": "Regenerate the repo's living docs: the knowledge graph and the change log.",
       "classes": [],
       "functions": [
         {
           "name": "git",
-          "line": 125,
+          "line": 126,
           "doc": ""
         },
         {
           "name": "layer_of",
-          "line": 132,
+          "line": 133,
           "doc": ""
         },
         {
           "name": "module_name",
-          "line": 139,
+          "line": 140,
           "doc": ""
         },
         {
           "name": "first_line",
-          "line": 146,
+          "line": 147,
           "doc": ""
         },
         {
           "name": "list_files",
-          "line": 155,
+          "line": 156,
           "doc": "Tracked + new (not ignored) files, restricted to the project map."
         },
         {
           "name": "parse_python",
-          "line": 173,
+          "line": 174,
           "doc": ""
         },
         {
           "name": "symbols_of",
-          "line": 201,
+          "line": 202,
           "doc": ""
         },
         {
           "name": "settings_fields",
-          "line": 214,
+          "line": 215,
           "doc": ""
         },
         {
           "name": "build_graph",
-          "line": 233,
+          "line": 234,
           "doc": ""
         },
         {
           "name": "render_graph_md",
-          "line": 307,
+          "line": 308,
           "doc": ""
         },
         {
           "name": "write_graph",
-          "line": 505,
+          "line": 506,
           "doc": ""
         },
         {
           "name": "commit_info",
-          "line": 548,
+          "line": 549,
           "doc": ""
         },
         {
           "name": "changed_files",
-          "line": 559,
+          "line": 560,
           "doc": ""
         },
         {
           "name": "is_major",
-          "line": 572,
+          "line": 573,
           "doc": ""
         },
         {
           "name": "blob",
-          "line": 581,
+          "line": 582,
           "doc": ""
         },
         {
           "name": "structure_delta",
-          "line": 586,
+          "line": 587,
           "doc": ""
         },
         {
           "name": "render_entry",
-          "line": 609,
+          "line": 610,
           "doc": ""
         },
         {
           "name": "_split_entries",
-          "line": 652,
+          "line": 653,
           "doc": ""
         },
         {
           "name": "_join",
-          "line": 664,
+          "line": 665,
           "doc": ""
         },
         {
           "name": "log_entry",
-          "line": 668,
+          "line": 669,
           "doc": ""
         },
         {
           "name": "backfill",
-          "line": 686,
+          "line": 687,
           "doc": ""
         },
         {
           "name": "main",
-          "line": 703,
+          "line": 704,
           "doc": ""
         }
       ]
@@ -4411,6 +4519,62 @@
       ]
     },
     {
+      "id": "tests/unit/test_template_layout.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 122,
+      "doc": "P2.1: the ATS template (A4, Arial, standard headings, section order,",
+      "classes": [],
+      "functions": [
+        {
+          "name": "_resume",
+          "line": 19,
+          "doc": ""
+        },
+        {
+          "name": "test_format_date",
+          "line": 39,
+          "doc": ""
+        },
+        {
+          "name": "test_section_order_default_and_early_career",
+          "line": 52,
+          "doc": ""
+        },
+        {
+          "name": "test_contact_line_order",
+          "line": 67,
+          "doc": ""
+        },
+        {
+          "name": "test_skills_capped_at_four_lines",
+          "line": 73,
+          "doc": ""
+        },
+        {
+          "name": "test_output_basename",
+          "line": 79,
+          "doc": ""
+        },
+        {
+          "name": "test_docx_template_page_font_order_and_dates",
+          "line": 85,
+          "doc": ""
+        },
+        {
+          "name": "test_docx_follows_presentation_order",
+          "line": 106,
+          "doc": ""
+        },
+        {
+          "name": "test_html_matches_docx_sections",
+          "line": 114,
+          "doc": ""
+        }
+      ]
+    },
+    {
       "id": "tests/unit/test_template_renderer_standalone.py",
       "type": "python",
       "layer": "Tests",
@@ -5432,6 +5596,11 @@
     },
     {
       "from": "app/domain/resume.py",
+      "to": "tests/unit/test_template_layout.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/resume.py",
       "to": "tests/unit/test_template_renderer_standalone.py",
       "type": "tested_by"
     },
@@ -5488,6 +5657,11 @@
     {
       "from": "app/domain/resume_document.py",
       "to": "tests/unit/test_resume_model_v2.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/resume_document.py",
+      "to": "tests/unit/test_template_layout.py",
       "type": "tested_by"
     },
     {
@@ -5907,6 +6081,11 @@
     },
     {
       "from": "app/rendering/html_renderer.py",
+      "to": "app/rendering/layout.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/rendering/html_renderer.py",
       "to": "tests/integration/test_preserve_rewrite_end_to_end.py",
       "type": "tested_by"
     },
@@ -5926,6 +6105,31 @@
       "type": "tested_by"
     },
     {
+      "from": "app/rendering/html_renderer.py",
+      "to": "tests/unit/test_template_layout.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/rendering/layout.py",
+      "to": "app/analysis/experience.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/rendering/layout.py",
+      "to": "app/domain/resume.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/rendering/layout.py",
+      "to": "app/domain/resume_document.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/rendering/layout.py",
+      "to": "tests/unit/test_template_layout.py",
+      "type": "tested_by"
+    },
+    {
       "from": "app/rendering/pdf_converter.py",
       "to": "app/rendering/pdf_converter.py::PdfConverter",
       "type": "contains"
@@ -5942,12 +6146,12 @@
     },
     {
       "from": "app/rendering/template_renderer.py",
-      "to": "app/domain/resume.py",
+      "to": "app/domain/resume_document.py",
       "type": "imports"
     },
     {
       "from": "app/rendering/template_renderer.py",
-      "to": "app/domain/resume_document.py",
+      "to": "app/rendering/layout.py",
       "type": "imports"
     },
     {
@@ -5968,6 +6172,11 @@
     {
       "from": "app/rendering/template_renderer.py",
       "to": "tests/unit/test_resume_model_v2.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/rendering/template_renderer.py",
+      "to": "tests/unit/test_template_layout.py",
       "type": "tested_by"
     },
     {
@@ -6118,6 +6327,11 @@
     {
       "from": "app/services/tailor.py",
       "to": "app/rendering/html_renderer.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/services/tailor.py",
+      "to": "app/rendering/layout.py",
       "type": "imports"
     },
     {

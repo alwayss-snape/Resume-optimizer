@@ -28,6 +28,7 @@ from app.ingestion.pdf import PdfParser
 from app.llm.client import LLMClient
 from app.rendering.docx_patcher import DocxPatcher
 from app.rendering.html_renderer import HtmlResumeRenderer
+from app.rendering.layout import output_basename, section_order_for
 from app.rendering.pdf_converter import PdfConverter
 from app.rendering.template_renderer import TemplateRenderer
 from app.services.run_manager import RunManager
@@ -585,9 +586,11 @@ class TailorService:
 
         # Output file generation
         os.makedirs(output_dir, exist_ok=True)
-        docx_output_path = os.path.join(output_dir, "tailored_resume.docx")
-        pdf_output_path = os.path.join(output_dir, "tailored_resume.pdf")
-        html_output_path = os.path.join(output_dir, "tailored_resume.html")
+        # First_Last_Resume_<Company>.docx/.pdf/.html (P2.1)
+        base_name = output_basename(resume, job_desc.company) or "tailored_resume"
+        docx_output_path = os.path.join(output_dir, f"{base_name}.docx")
+        pdf_output_path = os.path.join(output_dir, f"{base_name}.pdf")
+        html_output_path = os.path.join(output_dir, f"{base_name}.html")
 
         def _prop_key(p):
             return getattr(p, "semantic_id", None) or getattr(p, "target_semantic_id", None) or getattr(p, "source_id", None)
@@ -697,6 +700,9 @@ class TailorService:
         score = keyword_report.rate
         evidence_score = self.scorer.calculate_score(matches, job_desc.requirements)
         _append_progress(f"Recomputed keyword match rate after applying changes: {score:.1f}% (was {initial_score:.1f}%)")
+
+        # Education goes first for someone early in their career (P2.1).
+        resume_doc.presentation.section_order = section_order_for(resume)
 
         if mode == "PRESERVE" and not is_pdf:
             self.docx_patcher.patch(resume_path, raw_doc.document_map,

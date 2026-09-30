@@ -618,7 +618,7 @@ if st.session_state.stage == "results" and st.session_state.get("results") is no
                 st.download_button(
                     label="📥 Download Tailored DOCX",
                     data=f.read(),
-                    file_name="tailored_resume.docx",
+                    file_name=os.path.basename(results["docx"]),
                     mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                     use_container_width=True,
                 )
@@ -628,7 +628,7 @@ if st.session_state.stage == "results" and st.session_state.get("results") is no
                 st.download_button(
                     label="📥 Download Tailored PDF",
                     data=f.read(),
-                    file_name="tailored_resume.pdf",
+                    file_name=os.path.basename(results["pdf"]),
                     mime="application/pdf",
                     use_container_width=True,
                 )
@@ -644,7 +644,7 @@ if st.session_state.stage == "results" and st.session_state.get("results") is no
                 st.download_button(
                     label="📥 Open / Download Tailored PDF",
                     data=f.read(),
-                    file_name="tailored_resume.pdf",
+                    file_name=os.path.basename(results["pdf"]),
                     mime="application/pdf",
                     use_container_width=True,
                     key="preview_download_pdf",

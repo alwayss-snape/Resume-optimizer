@@ -4,6 +4,7 @@ from typing import Iterable
 
 from app.domain.resume import Resume
 from app.domain.resume_document import ResumeDocument
+from app.rendering.layout import SECTION_TITLES, contact_parts, date_range, display_skills, format_date_text
 
 class HtmlResumeRenderer:
     """Render an ATS-safe, printable résumé from the canonical document."""
@@ -21,7 +22,7 @@ class HtmlResumeRenderer:
 
     @staticmethod
     def _dates(role) -> str:
-        return " – ".join(v for v in (role.start_date, role.end_date) if v) if role else ""
+        return date_range(role.start_date, role.end_date) if role else ""
 
     def _experience_entry(self, item) -> str:
         roles = item.all_roles()
@@ -48,75 +49,70 @@ class HtmlResumeRenderer:
         parts.append("</article>")
         return "".join(parts)
 
+    def _section(self, name: str, body: str) -> str:
+        return f"<section><h2>{SECTION_TITLES[name]}</h2>{body}</section>"
+
     def render(self, document: ResumeDocument) -> str:
+        """Same sections, order and headings as the DOCX template (P2.1)."""
         resume: Resume = document.resume
         presentation = document.presentation
-        contact = " · ".join(html.escape(value) for value in (
-            resume.candidate.email, resume.candidate.phone, resume.candidate.location, *resume.candidate.display_links(),
-        ) if value)
+        contact = " | ".join(html.escape(value) for value in contact_parts(resume.candidate))
         headline = (f'<p class="headline">{html.escape(resume.candidate.headline)}</p>'
                     if resume.candidate.headline else "")
         sections = []
 
-        if resume.summary:
-            sections.append(f"<section><h2>Professional Summary</h2><p>{html.escape(resume.summary)}</p></section>")
-
         for section_name in presentation.section_order:
-            if section_name == "experience" and resume.experience:
+            if section_name == "summary" and resume.summary:
+                sections.append(self._section("summary", f"<p>{html.escape(resume.summary)}</p>"))
+            elif section_name == "experience" and resume.experience:
                 entries = "".join(self._experience_entry(item) for item in resume.experience)
-                sections.append(f"<section><h2>Experience</h2>{entries}</section>")
+                sections.append(self._section("experience", entries))
             elif section_name == "projects" and resume.projects:
                 entries = "".join(
                     "<article class='entry'>"
                     f"<h3>{html.escape(project.name)}</h3>"
-                    f"<p>{html.escape(project.description)}</p>"
-                    f"<ul>{self._items(bullet.text for bullet in project.bullets)}</ul></article>"
+                    + (f"<p>{html.escape(project.description)}</p>" if project.description else "")
+                    + f"<ul>{self._items(bullet.text for bullet in project.bullets)}</ul></article>"
                     for project in resume.projects
                 )
-                sections.append(f"<section><h2>Projects</h2>{entries}</section>")
+                sections.append(self._section("projects", entries))
             elif section_name == "skills" and resume.skills:
                 skills = "".join(
                     f"<p><strong>{html.escape(category)}:</strong> {html.escape(', '.join(values))}</p>"
-                    for category, values in resume.skills.items()
+                    for category, values in display_skills(resume.skills).items()
                 )
-                sections.append(f"<section><h2>Skills</h2>{skills}</section>")
+                sections.append(self._section("skills", skills))
             elif section_name == "education" and resume.education:
                 entries = "".join(
                     "<article class='entry'>"
                     "<div class='entry-head'>"
-                    f"<h3>{html.escape(item.degree)}</h3>"
-                    f"<span class='dates'>{html.escape(item.dates or '')}</span>"
+                    f"<h3>{html.escape(item.degree or item.institution)}</h3>"
+                    f"<span class='dates'>{html.escape(format_date_text(item.dates))}</span>"
                     "</div>"
-                    f"{self._meta_line(item.institution, item.location)}"
+                    f"{self._meta_line(item.institution if item.degree else '', item.location)}"
                     "</article>"
                     for item in resume.education
                 )
-                sections.append(f"<section><h2>Education</h2>{entries}</section>")
+                sections.append(self._section("education", entries))
             elif section_name == "certifications" and resume.certifications:
-                cert_names = [c.get("name", "") if isinstance(c, dict) else str(c) for c in resume.certifications]
-                sections.append(
-                    "<section><h2>Certifications</h2><p>"
-                    + html.escape(" · ".join(n for n in cert_names if n))
-                    + "</p></section>"
-                )
-        if resume.achievements:
-            sections.append(
-                f"<section><h2>Achievements</h2><ul>{self._items(resume.achievements)}</ul></section>"
-            )
-        if resume.interests:
-            sections.append(f"<section><h2>Interests</h2><p>{html.escape(', '.join(resume.interests))}</p></section>")
+                certs = [" — ".join(v for v in c.values() if v) for c in resume.certifications]
+                sections.append(self._section("certifications", f"<ul>{self._items(certs)}</ul>"))
+            elif section_name == "achievements" and resume.achievements:
+                sections.append(self._section("achievements", f"<ul>{self._items(resume.achievements)}</ul>"))
+            elif section_name == "interests" and resume.interests:
+                sections.append(self._section("interests", f"<p>{html.escape(', '.join(resume.interests))}</p>"))
 
         return f"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><title>{html.escape(resume.candidate.name)} — Resume</title>
 <style>
-@page {{ size: A4; margin: 16mm; }}
+@page {{ size: A4; margin: {presentation.margin_vertical_in}in {presentation.margin_side_in}in; }}
 * {{ box-sizing: border-box; }}
-body {{ font-family: {html.escape(presentation.font_family)}, Arial, sans-serif; color: #111827; font-size: 10.5pt; line-height: 1.4; max-width: 780px; margin: 0 auto; padding: 24px 16px; background: #fff; }}
-header {{ border-bottom: 2px solid {html.escape(presentation.accent_color)}; padding-bottom: 10px; margin-bottom: 14px; }}
-h1 {{ margin: 0; font-size: 25pt; font-weight: 700; letter-spacing: .2px; color: {html.escape(presentation.accent_color)}; }}
+body {{ font-family: {html.escape(presentation.font_family)}, Arial, sans-serif; color: #111827; font-size: 10.5pt; line-height: 1.4; max-width: 210mm; margin: 0 auto; padding: 24px 16px; background: #fff; }}
+header {{ border-bottom: 1px solid {html.escape(presentation.accent_color)}; padding-bottom: 8px; margin-bottom: 12px; }}
+h1 {{ margin: 0; font-size: 22pt; font-weight: 700; letter-spacing: .2px; color: {html.escape(presentation.accent_color)}; }}
 .contact {{ margin: 5px 0 0; color: #4b5563; font-size: 10pt; }}
 .headline {{ margin: 2px 0 0; font-size: 12pt; color: {html.escape(presentation.accent_color)}; }}
-h2 {{ color: {html.escape(presentation.accent_color)}; font-size: 12pt; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; border-bottom: 1px solid #d1d5db; padding-bottom: 4px; margin: 18px 0 8px; }}
+h2 {{ color: {html.escape(presentation.accent_color)}; font-size: 11.5pt; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; border-bottom: 1px solid {html.escape(presentation.accent_color)}; padding-bottom: 3px; margin: 14px 0 6px; }}
 h3 {{ font-size: 11pt; font-weight: 700; margin: 0; }}
 .entry-head {{ display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin: 10px 0 0; }}
 .dates {{ color: #4b5563; font-weight: 400; font-size: 9.5pt; white-space: nowrap; }}

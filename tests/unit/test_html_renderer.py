@@ -16,7 +16,7 @@ def test_html_renderer_outputs_ats_sections_and_escapes_content(tmp_path):
     output = HtmlResumeRenderer().write_html(document, str(tmp_path / "resume.html"))
     html = open(output, encoding="utf-8").read()
 
-    assert "<h2>Experience</h2>" in html
+    assert "<h2>Work Experience</h2>" in html
     assert "<h2>Skills</h2>" in html
     assert "Avery &lt;Lee&gt;" in html
     assert "parsing &lt;safely&gt;" in html
