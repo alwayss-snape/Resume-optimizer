@@ -7,7 +7,7 @@ from uuid import uuid4
 from app.analysis.jd_analyzer import JDAnalyzer
 from app.analysis.matcher import EvidenceMatcher
 from app.analysis.resume_normalizer import ResumeNormalizer
-from app.analysis.rewriter import LLMRewriter, RewriteProposal
+from app.analysis.rewriter import FAILED_STATUSES, LLMRewriter, RewriteProposal
 from app.analysis.scoring import AlignmentScorer
 from app.analysis.semantic_matcher import SemanticMatcher
 from app.analysis.tailor_planner import TailoringPlanner
@@ -150,11 +150,25 @@ class TailorService:
             if suggestion:
                 missing_suggestions.append(suggestion)
 
+        llm_available = bool(self.llm_client and self.llm_client.is_available())
+        failed = [p for p in proposals if getattr(p, "status", None) in FAILED_STATUSES]
         return {
             "proposals": proposals,
             "missing_suggestions": missing_suggestions,
             "alignment_score": score,
-            "llm_available": bool(self.llm_client and self.llm_client.is_available()),
+            "llm_available": llm_available,
+            # Why rewrites didn't happen, so the UI can say so instead of
+            # silently presenting the original text as the "proposal".
+            "llm_status": {
+                "provider": getattr(self.llm_client, "provider", None),
+                "model": getattr(self.llm_client, "model", None),
+                "available": llm_available,
+                "reason": getattr(self.llm_client, "last_error", None),
+                "attempted": len(proposals),
+                "failed": len(failed),
+                "errors": sorted({p.error for p in failed if p.error}),
+            },
+            "llm_usage": self.llm_client.get_usage_summary() if self.llm_client else None,
             "experience_options": [{"id": e.id, "label": f"{e.company} — {e.title}"} for e in resume.experience],
         }
 
@@ -242,6 +256,7 @@ class TailorService:
         preapproved_proposals: Optional[List] = None,
         addition_text: Optional[str] = None,
         addition_target: str = "auto",
+        proposal_usage: Optional[Dict] = None,
     ) -> Dict[str, str]:
         run_dir = self.run_manager.create_run(resume_path, jd_text)
         clean_jd_text = self.safety_guard.sanitize(jd_text)
@@ -462,9 +477,13 @@ class TailorService:
         # call made anywhere in the pipeline is recorded on the client
         # instance) — lets us see real per-run token consumption instead of
         # guessing whether a single free-tier model is enough headroom.
+        # proposal_usage covers the earlier generate_proposals step (a
+        # separate client instance in the UI), which makes most of the calls.
         usage_summary = None
         try:
             usage_summary = self.llm_client.get_usage_summary()
+            if proposal_usage:
+                usage_summary = _merge_usage(proposal_usage, usage_summary)
             self.run_manager.save_json(run_dir, "llm_usage.json", usage_summary)
         except Exception:
             pass
@@ -548,3 +567,15 @@ class TailorService:
             "pdf_warnings": pdf_warnings,
             "success": success,
         }
+
+
+def _merge_usage(first: Dict, second: Dict) -> Dict:
+    """Combine two LLMClient.get_usage_summary() dicts into one."""
+    merged = dict(second)
+    for key in ("call_count", "success_count", "failure_count",
+                "total_prompt_tokens", "total_completion_tokens", "total_tokens"):
+        merged[key] = (first.get(key) or 0) + (second.get(key) or 0)
+    merged["total_duration_seconds"] = round(
+        (first.get("total_duration_seconds") or 0) + (second.get("total_duration_seconds") or 0), 3)
+    merged["calls"] = list(first.get("calls") or []) + list(second.get("calls") or [])
+    return merged

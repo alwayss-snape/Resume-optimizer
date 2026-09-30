@@ -93,6 +93,7 @@ def _cleanup_session_state():
         "proposals", "missing_suggestions", "llm_available", "pre_score",
         "resume_path", "jd_text", "model_choice", "render_mode", "strict_factual",
         "results", "output_dir", "analysis_report", "experience_options",
+        "llm_status", "proposal_usage",
     ):
         st.session_state.pop(key, None)
 
@@ -132,13 +133,35 @@ st.markdown("""
 st.markdown('<div class="main-header">Local Resume Tailor</div>', unsafe_allow_html=True)
 st.markdown('<div class="sub-header">Privacy-first, evidence-based local AI resume optimization</div>', unsafe_allow_html=True)
 
+def model_options(provider: str) -> list:
+    """Models offered in the sidebar for the configured provider. The
+    configured default always comes first; a model name from one provider
+    must never be sent to another (an Ollama tag sent to Groq made every
+    rewrite fail silently)."""
+    if provider == "anthropic":
+        options = [settings.anthropic_model, "claude-opus-5-5", "claude-sonnet-5-5"]
+    elif provider == "groq":
+        options = [settings.groq_model, "openai/gpt-oss-120b", "openai/gpt-oss-20b"]
+    else:
+        options = [settings.llm_model, "qwen3:4b", "qwen3:8b", "qwen3.5:4b"]
+    return list(dict.fromkeys(o for o in options if o))
+
+
+PROVIDER_LABELS = {"anthropic": "Claude (Anthropic API)", "groq": "Groq (cloud)", "ollama": "Ollama (local)"}
+PROVIDER_FIX_HINTS = {
+    "anthropic": "Check ANTHROPIC_API_KEY in your .env (a pay-as-you-go key from console.anthropic.com).",
+    "groq": "Check GROQ_API_KEY and GROQ_MODEL in your .env.",
+    "ollama": "Start Ollama (`ollama serve`) and pull the model (`ollama pull <model>`).",
+}
+
 # Sidebar settings
 st.sidebar.title("⚙️ Model & Configuration")
+llm_provider = (settings.llm_provider or "ollama").strip().lower()
+st.sidebar.caption(f"Provider: **{PROVIDER_LABELS.get(llm_provider, llm_provider)}** (set `LLM_PROVIDER` in `.env`)")
 model_choice = st.sidebar.selectbox(
     "Select Model",
-    options=["qwen3:4b", "qwen3:8b", "qwen3.5:4b"],
+    options=model_options(llm_provider),
     index=0,
-    help="Default qwen3:4b recommended for 8GB Mac."
 )
 render_mode = st.sidebar.radio(
     "Output Layout Mode",
@@ -221,6 +244,8 @@ if btn_analyze or btn_tailor:
                 st.session_state.proposals = generated["proposals"]
                 st.session_state.missing_suggestions = generated["missing_suggestions"]
                 st.session_state.llm_available = generated["llm_available"]
+                st.session_state.llm_status = generated.get("llm_status") or {}
+                st.session_state.proposal_usage = generated.get("llm_usage")
                 st.session_state.pre_score = generated["alignment_score"]
                 st.session_state.experience_options = generated["experience_options"]
                 # Keep the temp resume file alive — it's needed again when
@@ -287,14 +312,21 @@ if st.session_state.stage == "analysis" and st.session_state.get("analysis_repor
 # losing before, since it used to be gated on a one-shot button click.)
 # ---------------------------------------------------------------------------
 if st.session_state.stage in ("proposals", "results"):
+    llm_status = st.session_state.get("llm_status") or {}
+    status_provider = llm_status.get("provider") or llm_provider
+    status_model = llm_status.get("model") or st.session_state.get("model_choice", model_choice)
     if not st.session_state.get("llm_available", True):
+        st.error(
+            f"⚠️ The AI model isn't usable: **{PROVIDER_LABELS.get(status_provider, status_provider)}**, "
+            f"model `{status_model}`: {llm_status.get('reason') or 'unavailable'}. "
+            "No rewrites or suggestions could be generated, so the proposals below are your original text. "
+            f"{PROVIDER_FIX_HINTS.get(status_provider, '')} Then click **Tailor & Generate Resume** again."
+        )
+    elif llm_status.get("failed"):
+        errors = llm_status.get("errors") or []
         st.warning(
-            f"⚠️ The local LLM (**{st.session_state.get('model_choice', model_choice)}** at "
-            f"`{settings.llm_host}`) isn't reachable right now. Until it's running, proposed "
-            "rewrites below will match your original text unchanged, and no 'Suggested "
-            "Additions' can be drafted. Start Ollama and make sure the model is pulled "
-            f"(`ollama pull {st.session_state.get('model_choice', model_choice)}`), then click "
-            "**Tailor & Generate Resume** again."
+            f"⚠️ {llm_status['failed']} of {llm_status.get('attempted', '?')} rewrites failed and show your "
+            "original text. " + (f"Reason: {errors[0]}" if errors else "")
         )
 
     missing_suggestions = st.session_state.get("missing_suggestions", [])
@@ -345,6 +377,11 @@ if st.session_state.stage == "proposals":
                 edt = st.text_area(f"Proposed ({i+1})", value=prop_text, key=keybase + "_edit", height=80)
                 if rationale:
                     st.caption(f"🎯 {rationale}")
+                p_status = getattr(p, "status", None)
+                if p_status in ("llm_unavailable", "llm_error"):
+                    st.caption(f"❌ Not rewritten: {getattr(p, 'error', None) or 'the AI call failed'}")
+                elif p_status == "unchanged":
+                    st.caption("➖ The AI kept your original wording for this bullet.")
             if sel:
                 selected.append(p)
                 edits[p.id if hasattr(p, 'id') else i] = edt
@@ -400,6 +437,7 @@ if st.session_state.stage == "proposals":
                     preapproved_proposals=preapproved,
                     addition_text=addition_text,
                     addition_target=addition_target,
+                    proposal_usage=st.session_state.get("proposal_usage"),
                 )
             st.session_state.results = results
             st.session_state.output_dir = output_dir

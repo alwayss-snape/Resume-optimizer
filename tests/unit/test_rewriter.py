@@ -129,3 +129,34 @@ def test_suggest_for_missing_requirement_none_without_llm():
     rewriter = LLMRewriter(llm_client=None)
     assert rewriter.suggest_for_missing_requirement("Some requirement") is None
 
+
+
+# --- P0.4: rewrite outcomes are reported, not swallowed ---
+
+def test_rewrite_status_reports_unavailable_llm_with_reason():
+    from app.analysis.rewriter import STATUS_LLM_UNAVAILABLE
+    client = MagicMock()
+    client.is_available.return_value = False
+    client.last_error = "GROQ_API_KEY is not set"
+    text, _, status, error = LLMRewriter(client).rewrite_bullet_with_status("Built X.", [], [])
+    assert text == "Built X." and status == STATUS_LLM_UNAVAILABLE and error == "GROQ_API_KEY is not set"
+
+
+def test_rewrite_status_reports_llm_error():
+    from app.analysis.rewriter import STATUS_LLM_ERROR
+    client = MagicMock()
+    client.is_available.return_value = True
+    client.generate_json.side_effect = Exception("429 rate limited")
+    text, _, status, error = LLMRewriter(client).rewrite_bullet_with_status("Built X.", [], [])
+    assert text == "Built X." and status == STATUS_LLM_ERROR and "429" in error
+
+
+def test_rewrite_status_ok_and_unchanged():
+    from app.analysis.rewriter import STATUS_OK, STATUS_UNCHANGED
+    from app.llm.schemas import BulletRewriteResult
+    client = MagicMock()
+    client.is_available.return_value = True
+    client.generate_json.return_value = BulletRewriteResult(rewritten="Engineered X.", rationale="r")
+    assert LLMRewriter(client).rewrite_bullet_with_status("Built X.", [], [])[2] == STATUS_OK
+    client.generate_json.return_value = BulletRewriteResult(rewritten="Built X.", rationale="r")
+    assert LLMRewriter(client).rewrite_bullet_with_status("Built X.", [], [])[2] == STATUS_UNCHANGED

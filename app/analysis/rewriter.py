@@ -13,6 +13,14 @@ from app.llm.client import LLMClient
 from app.llm.schemas import BulletRewriteResult, MissingRequirementSuggestion
 
 
+# Outcome of one rewrite attempt (stored on ChangeProposal.status).
+STATUS_OK = "ok"                            # the LLM produced a changed bullet
+STATUS_UNCHANGED = "unchanged"              # the LLM kept the original wording
+STATUS_LLM_UNAVAILABLE = "llm_unavailable"  # provider unreachable / misconfigured
+STATUS_LLM_ERROR = "llm_error"              # the call failed (rate limit, bad output, ...)
+FAILED_STATUSES = (STATUS_LLM_UNAVAILABLE, STATUS_LLM_ERROR)
+
+
 # Backwards compatibility: expose the old name `RewriteProposal` as an
 # alias to the richer `ChangeProposal` model so external callers/tests
 # that import from this module continue to work.
@@ -36,11 +44,27 @@ class LLMRewriter:
         Returns (rewritten_text, rationale). Falls back to
         (original_text, "") whenever the LLM is unavailable or the call
         fails — this never fabricates content, it just means no
-        improvement was made.
+        improvement was made. Use rewrite_bullet_with_status() to find out why.
         """
+        text, rationale, _status, _error = self.rewrite_bullet_with_status(
+            original_text, evidence, jd_requirements, target_keywords
+        )
+        return text, rationale
+
+    def rewrite_bullet_with_status(
+        self,
+        original_text: str,
+        evidence: List[Evidence],
+        jd_requirements: List[str],
+        target_keywords: Optional[List[str]] = None,
+    ) -> Tuple[str, str, str, Optional[str]]:
+        """Like rewrite_bullet, plus what happened, so failures are visible
+        instead of looking like "no change needed". Returns
+        (text, rationale, status, error) where status is one of
+        STATUS_OK, STATUS_UNCHANGED, STATUS_LLM_UNAVAILABLE, STATUS_LLM_ERROR."""
         if not self.llm_client or not self.llm_client.is_available():
-            # Deterministic fallback: return original text if LLM unavailable
-            return original_text, ""
+            reason = getattr(self.llm_client, "last_error", None) if self.llm_client else "no LLM configured"
+            return original_text, "", STATUS_LLM_UNAVAILABLE, reason or "LLM unavailable"
 
         prompt_path = os.path.join(os.path.dirname(__file__), "..", "llm", "prompts", "rewrite_bullet.txt")
         system_prompt = "You are a precise resume bullet writer."
@@ -79,11 +103,11 @@ class LLMRewriter:
             rewritten = (result.rewritten or "").strip()
             if rewritten.startswith("•") or rewritten.startswith("-"):
                 rewritten = rewritten.lstrip("•- ").strip()
-            if not rewritten:
-                return original_text, ""
-            return rewritten, (result.rationale or "").strip()
-        except Exception:
-            return original_text, ""
+            if not rewritten or rewritten == original_text.strip():
+                return original_text, (result.rationale or "").strip(), STATUS_UNCHANGED, None
+            return rewritten, (result.rationale or "").strip(), STATUS_OK, None
+        except Exception as e:
+            return original_text, "", STATUS_LLM_ERROR, str(e)
 
     def suggest_for_missing_requirement(
         self,
@@ -155,7 +179,7 @@ class LLMRewriter:
                 action_ev = [evidence_map[ev_id] for ev_id in action.evidence_ids if ev_id in evidence_map]
                 jd_req_texts = [r.text for r in job_description.requirements]
 
-                new_text, llm_rationale = self.rewrite_bullet(
+                new_text, llm_rationale, status, error = self.rewrite_bullet_with_status(
                     orig_text,
                     action_ev,
                     jd_req_texts,
@@ -179,6 +203,8 @@ class LLMRewriter:
                     proposed_text=new_text,
                     evidence_ids=action.evidence_ids,
                     rationale=combined_rationale,
+                    status=status,
+                    error=error,
                 ))
 
         return proposals

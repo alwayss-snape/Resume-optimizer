@@ -17,6 +17,11 @@ class ChangeProposal(BaseModel):
     evidence_ids: Optional[List[str]] = None
     allowed_facts: Optional[List[str]] = None
     expected_score_delta: Optional[float] = None
+    # Outcome of the rewrite attempt (see app.analysis.rewriter STATUS_*) and,
+    # when it failed, why. Lets the UI say "3 of 8 rewrites failed: ..."
+    # instead of silently showing the original text as the proposal.
+    status: Optional[str] = None
+    error: Optional[str] = None
 
     id: str = Field(default_factory=lambda: f"prop_{uuid4().hex[:8]}")
 

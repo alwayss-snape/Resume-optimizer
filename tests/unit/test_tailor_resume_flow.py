@@ -85,3 +85,14 @@ def test_strict_mode_is_decided_before_rendering(tmp_path, strict):
     # The progress log survives and the summary is written exactly once.
     assert "## Progress Log" in report
     assert report.count("## Final Summary") == 1
+
+
+def test_generate_proposals_reports_llm_status_when_unavailable(tmp_path):
+    service = _service(tmp_path)  # conftest pins an unreachable local provider
+    out = service.generate_proposals(SAMPLE_DOCX, SAMPLE_JD)
+    status = out["llm_status"]
+    assert out["llm_available"] is False and status["available"] is False
+    assert status["reason"]  # a human-readable cause, shown in the UI
+    assert status["failed"] == status["attempted"] == len(out["proposals"])
+    assert all(p.status == "llm_unavailable" for p in out["proposals"])
+    assert out["llm_usage"] is not None

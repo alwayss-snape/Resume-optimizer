@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "06dc7c35fd80f1d2",
+  "source_hash": "d348446d4dc6f11d",
   "stats": {
     "files": 85,
     "python_files": 65,
     "app_modules": 35,
     "test_files": 24,
     "classes": 59,
-    "functions": 253,
-    "lines_of_python": 7734
+    "functions": 260,
+    "lines_of_python": 7876
   },
   "axes": {
     "x": "location (path)",
@@ -197,7 +197,7 @@
       "stages": [
         "7 Rewrite"
       ],
-      "lines": 65,
+      "lines": 70,
       "doc": "",
       "classes": [
         {
@@ -207,22 +207,22 @@
           "methods": [
             {
               "name": "model_dump",
-              "line": 25,
+              "line": 30,
               "doc": ""
             },
             {
               "name": "semantic_id",
-              "line": 40,
+              "line": 45,
               "doc": ""
             },
             {
               "name": "source_id",
-              "line": 50,
+              "line": 55,
               "doc": ""
             },
             {
               "name": "rewritten_text",
-              "line": 59,
+              "line": 64,
               "doc": ""
             }
           ]
@@ -392,32 +392,37 @@
       "stages": [
         "7 Rewrite"
       ],
-      "lines": 184,
+      "lines": 210,
       "doc": "",
       "classes": [
         {
           "name": "LLMRewriter",
-          "line": 22,
+          "line": 30,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
-              "line": 23,
+              "line": 31,
               "doc": ""
             },
             {
               "name": "rewrite_bullet",
-              "line": 26,
+              "line": 34,
               "doc": "Rewrite (or, given a single free-text `original_text` with no"
             },
             {
+              "name": "rewrite_bullet_with_status",
+              "line": 54,
+              "doc": "Like rewrite_bullet, plus what happened, so failures are visible"
+            },
+            {
               "name": "suggest_for_missing_requirement",
-              "line": 88,
+              "line": 112,
               "doc": "Advisory only. For a JD requirement the resume doesn't currently"
             },
             {
               "name": "execute_plan",
-              "line": 135,
+              "line": 159,
               "doc": ""
             }
           ]
@@ -1379,7 +1384,7 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 550,
+      "lines": 581,
       "doc": "",
       "classes": [
         {
@@ -1409,18 +1414,24 @@
             },
             {
               "name": "incorporate_user_addition",
-              "line": 161,
+              "line": 175,
               "doc": "Fold a user-supplied free-text addition (a project, an"
             },
             {
               "name": "tailor_resume",
-              "line": 235,
+              "line": 249,
               "doc": ""
             }
           ]
         }
       ],
-      "functions": []
+      "functions": [
+        {
+          "name": "_merge_usage",
+          "line": 572,
+          "doc": "Combine two LLMClient.get_usage_summary() dicts into one."
+        }
+      ]
     },
     {
       "id": "app/services/validation_agent.py",
@@ -1468,7 +1479,7 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 507,
+      "lines": 545,
       "doc": "",
       "classes": [],
       "functions": [
@@ -1486,6 +1497,11 @@
           "name": "_cleanup_session_state",
           "line": 79,
           "doc": "Remove temp files from a previous run and reset to a clean 'idle' state."
+        },
+        {
+          "name": "model_options",
+          "line": 136,
+          "doc": "Models offered in the sidebar for the configured provider. The"
         }
       ]
     },
@@ -2399,7 +2415,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 131,
+      "lines": 162,
       "doc": "",
       "classes": [],
       "functions": [
@@ -2426,6 +2442,21 @@
         {
           "name": "test_suggest_for_missing_requirement_none_without_llm",
           "line": 128,
+          "doc": ""
+        },
+        {
+          "name": "test_rewrite_status_reports_unavailable_llm_with_reason",
+          "line": 136,
+          "doc": ""
+        },
+        {
+          "name": "test_rewrite_status_reports_llm_error",
+          "line": 145,
+          "doc": ""
+        },
+        {
+          "name": "test_rewrite_status_ok_and_unchanged",
+          "line": 154,
           "doc": ""
         }
       ]
@@ -2578,7 +2609,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 87,
+      "lines": 98,
       "doc": "tailor_resume orchestration: pre-approved proposals and Strict Factual Mode.",
       "classes": [],
       "functions": [
@@ -2610,6 +2641,11 @@
         {
           "name": "test_strict_mode_is_decided_before_rendering",
           "line": 62,
+          "doc": ""
+        },
+        {
+          "name": "test_generate_proposals_reports_llm_status_when_unavailable",
+          "line": 90,
           "doc": ""
         }
       ]
@@ -3443,6 +3479,11 @@
     {
       "from": "app/llm/schemas.py",
       "to": "tests/unit/test_llm_client.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/llm/schemas.py",
+      "to": "tests/unit/test_rewriter.py",
       "type": "tested_by"
     },
     {

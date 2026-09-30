@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**35 app modules · 24 test files · 59 classes · 253 functions/methods · 7,734 lines of Python** · source hash `06dc7c35fd80f1d2`
+**35 app modules · 24 test files · 59 classes · 260 functions/methods · 7,876 lines of Python** · source hash `d348446d4dc6f11d`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -144,13 +144,13 @@ Spanning all stages: `app/cli.py`, `app/services/tailor.py`, `app/ui.py`
 
 ### `app/analysis/change_proposal.py`
 
-**Layer:** Analysis · **Stage:** 7 Rewrite · **Lines:** 65
+**Layer:** Analysis · **Stage:** 7 Rewrite · **Lines:** 70
 
 - class **`ChangeProposal`** ([app/analysis/change_proposal.py:6](../app/analysis/change_proposal.py#L6)) — Richer change proposal schema for review and audit.
-  - `model_dump()` :25
-  - `semantic_id()` :40
-  - `source_id()` :50
-  - `rewritten_text()` :59
+  - `model_dump()` :30
+  - `semantic_id()` :45
+  - `source_id()` :55
+  - `rewritten_text()` :64
 - **Imported by:** `analysis/rewriter.py`
 
 ### `app/analysis/jd_analyzer.py`
@@ -201,13 +201,14 @@ Spanning all stages: `app/cli.py`, `app/services/tailor.py`, `app/ui.py`
 
 ### `app/analysis/rewriter.py`
 
-**Layer:** Analysis · **Stage:** 7 Rewrite · **Lines:** 184
+**Layer:** Analysis · **Stage:** 7 Rewrite · **Lines:** 210
 
-- class **`LLMRewriter`** ([app/analysis/rewriter.py:22](../app/analysis/rewriter.py#L22))
-  - `__init__()` :23
-  - `rewrite_bullet()` :26 — Rewrite (or, given a single free-text `original_text` with no
-  - `suggest_for_missing_requirement()` :88 — Advisory only. For a JD requirement the resume doesn't currently
-  - `execute_plan()` :135
+- class **`LLMRewriter`** ([app/analysis/rewriter.py:30](../app/analysis/rewriter.py#L30))
+  - `__init__()` :31
+  - `rewrite_bullet()` :34 — Rewrite (or, given a single free-text `original_text` with no
+  - `rewrite_bullet_with_status()` :54 — Like rewrite_bullet, plus what happened, so failures are visible
+  - `suggest_for_missing_requirement()` :112 — Advisory only. For a JD requirement the resume doesn't currently
+  - `execute_plan()` :159
 - **Imports:** `analysis/change_proposal.py`, `domain/evidence.py`, `domain/job.py`, `domain/resume.py`, `domain/tailoring.py`, `llm/client.py`, `llm/schemas.py`
 - **Imported by:** `rendering/docx_patcher.py`, `services/tailor.py`, `services/validation_agent.py`, `validation/factual.py`
 - **Tested by:** `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_docx_renderer.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_tailor_resume_flow.py`, `tests/unit/test_validation.py`
@@ -414,7 +415,7 @@ _Semantic (embedding-based) matching layer._
 - class **`MissingRequirementSuggestion`** ([app/llm/schemas.py:39](../app/llm/schemas.py#L39)) — Advisory-only suggestion for a JD requirement the resume doesn't
 - class **`JDRequirementSelection`** ([app/llm/schemas.py:48](../app/llm/schemas.py#L48)) — Which job-description line indices (from a numbered list the caller
 - **Imported by:** `analysis/jd_analyzer.py`, `analysis/rewriter.py`, `llm/client.py`
-- **Tested by:** `tests/unit/test_jd_analyzer_llm.py`, `tests/unit/test_llm_client.py`
+- **Tested by:** `tests/unit/test_jd_analyzer_llm.py`, `tests/unit/test_llm_client.py`, `tests/unit/test_rewriter.py`
 
 ### `app/rendering/document_map.py`
 
@@ -489,15 +490,16 @@ _Semantic (embedding-based) matching layer._
 
 ### `app/services/tailor.py`
 
-**Layer:** Services · **Stage:** all · **Lines:** 550
+**Layer:** Services · **Stage:** all · **Lines:** 581
 
 - class **`TailorService`** ([app/services/tailor.py:33](../app/services/tailor.py#L33))
   - `__init__()` :34
   - `generate_preview_md()` :58
   - `analyze_only()` :94
   - `generate_proposals()` :122 — Generate rewrite proposals without applying them, plus advisory
-  - `incorporate_user_addition()` :161 — Fold a user-supplied free-text addition (a project, an
-  - `tailor_resume()` :235
+  - `incorporate_user_addition()` :175 — Fold a user-supplied free-text addition (a project, an
+  - `tailor_resume()` :249
+- function **`_merge_usage()`** ([app/services/tailor.py:572](../app/services/tailor.py#L572)) — Combine two LLMClient.get_usage_summary() dicts into one.
 - **Imports:** `analysis/jd_analyzer.py`, `analysis/matcher.py`, `analysis/resume_normalizer.py`, `analysis/rewriter.py`, `analysis/scoring.py`, `analysis/semantic_matcher.py`, `analysis/tailor_planner.py`, `domain/evidence.py`, `domain/job.py`, `domain/report.py`, `domain/resume.py`, `domain/resume_document.py`, `domain/tailoring.py`, `ingestion/docx.py`, `ingestion/pdf.py`, `llm/client.py`, `rendering/docx_patcher.py`, `rendering/html_renderer.py`, `rendering/pdf_converter.py`, `rendering/template_renderer.py`, `services/run_manager.py`, `validation/factual.py`, `validation/output.py`, `validation/safety.py`, `validation/structural.py`
 - **Imported by:** `cli.py`, `ui.py`
 - **Tested by:** `tests/integration/test_end_to_end.py`, `tests/unit/test_cli.py`, `tests/unit/test_tailor_resume_flow.py`, `tests/unit/test_tailor_service_addition.py`
@@ -513,11 +515,12 @@ _Semantic (embedding-based) matching layer._
 
 ### `app/ui.py`
 
-**Layer:** Entry points · **Stage:** all · **Lines:** 507
+**Layer:** Entry points · **Stage:** all · **Lines:** 545
 
 - function **`get_local_pdf_preview_url()`** ([app/ui.py:25](../app/ui.py#L25)) — Serve a PDF from a temporary HTTP endpoint so Chrome can render it in an iframe.
 - function **`display_pdf_with_fallback()`** ([app/ui.py:42](../app/ui.py#L42)) — Try to use Streamlit's native PDF display if available, otherwise fall back
 - function **`_cleanup_session_state()`** ([app/ui.py:79](../app/ui.py#L79)) — Remove temp files from a previous run and reset to a clean 'idle' state.
+- function **`model_options()`** ([app/ui.py:136](../app/ui.py#L136)) — Models offered in the sidebar for the configured provider. The
 - **Imports:** `config/settings.py`, `llm/client.py`, `services/tailor.py`
 - **Tested by:** `tests/unit/test_ui.py`
 
