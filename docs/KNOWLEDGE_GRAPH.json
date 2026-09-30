@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "e73fdc16f534d86c",
+  "source_hash": "34904e78f33854f7",
   "stats": {
     "files": 103,
     "python_files": 80,
     "app_modules": 41,
     "test_files": 32,
     "classes": 73,
-    "functions": 431,
-    "lines_of_python": 10838
+    "functions": 445,
+    "lines_of_python": 11071
   },
   "axes": {
     "x": "location (path)",
@@ -203,7 +203,7 @@
       "stages": [
         "7 Rewrite"
       ],
-      "lines": 78,
+      "lines": 82,
       "doc": "",
       "classes": [
         {
@@ -213,22 +213,22 @@
           "methods": [
             {
               "name": "model_dump",
-              "line": 38,
+              "line": 42,
               "doc": ""
             },
             {
               "name": "semantic_id",
-              "line": 53,
+              "line": 57,
               "doc": ""
             },
             {
               "name": "source_id",
-              "line": 63,
+              "line": 67,
               "doc": ""
             },
             {
               "name": "rewritten_text",
-              "line": 72,
+              "line": 76,
               "doc": ""
             }
           ]
@@ -539,7 +539,7 @@
       "stages": [
         "7 Rewrite"
       ],
-      "lines": 229,
+      "lines": 238,
       "doc": "",
       "classes": [
         {
@@ -631,7 +631,7 @@
       "stages": [
         "4 Match"
       ],
-      "lines": 166,
+      "lines": 172,
       "doc": "Semantic (embedding-based) matching layer.",
       "classes": [
         {
@@ -651,7 +651,7 @@
             },
             {
               "name": "match",
-              "line": 97,
+              "line": 103,
               "doc": "Returns a new match list: every non-MISSING match from"
             }
           ]
@@ -729,33 +729,49 @@
       "stages": [
         "6 Plan"
       ],
-      "lines": 103,
+      "lines": 175,
       "doc": "",
       "classes": [
         {
           "name": "TailoringPlanner",
-          "line": 9,
-          "doc": "",
+          "line": 35,
+          "doc": "Planner v2 (P1.3): scores every experience bullet for relevance to the",
           "methods": [
             {
               "name": "__init__",
-              "line": 10,
+              "line": 42,
               "doc": ""
             },
             {
+              "name": "_similarities",
+              "line": 47,
+              "doc": "bullets x requirements similarity in 0..1."
+            },
+            {
               "name": "create_plan",
-              "line": 13,
+              "line": 65,
               "doc": ""
             },
             {
               "name": "rank_missing_requirements",
-              "line": 86,
+              "line": 158,
               "doc": "Order MISSING matches so the most important, still-unaddressed"
             }
           ]
         }
       ],
-      "functions": []
+      "functions": [
+        {
+          "name": "_content",
+          "line": 25,
+          "doc": ""
+        },
+        {
+          "name": "_cosine",
+          "line": 29,
+          "doc": ""
+        }
+      ]
     },
     {
       "id": "app/analysis/terminology.py",
@@ -1051,7 +1067,7 @@
       "stages": [
         "6 Plan"
       ],
-      "lines": 19,
+      "lines": 29,
       "doc": "",
       "classes": [
         {
@@ -1062,7 +1078,7 @@
         },
         {
           "name": "TailoringPlan",
-          "line": 17,
+          "line": 25,
           "doc": "",
           "methods": []
         }
@@ -1885,7 +1901,7 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 723,
+      "lines": 754,
       "doc": "",
       "classes": [
         {
@@ -1904,43 +1920,53 @@
               "doc": ""
             },
             {
-              "name": "parse_resume",
+              "name": "_embed",
               "line": 111,
+              "doc": "Sentence embeddings for the planner, loaded lazily; raises when the"
+            },
+            {
+              "name": "_apply_bullet_order",
+              "line": 120,
+              "doc": "Reorder bullets as planned (most relevant first within each"
+            },
+            {
+              "name": "parse_resume",
+              "line": 135,
               "doc": "File -> (raw document, ResumeDocument, evidence). The deterministic"
             },
             {
               "name": "normalize_raw",
-              "line": 121,
+              "line": 145,
               "doc": ""
             },
             {
               "name": "_copy_parsed",
-              "line": 129,
+              "line": 153,
               "doc": "Deep copies, so a parse kept in UI session state is never mutated."
             },
             {
               "name": "apply_parse_corrections",
-              "line": 134,
+              "line": 158,
               "doc": "Apply the user's fixes from the \"Check parsed resume\" step (P3.5)."
             },
             {
               "name": "analyze_only",
-              "line": 195,
+              "line": 219,
               "doc": ""
             },
             {
               "name": "generate_proposals",
-              "line": 221,
+              "line": 245,
               "doc": "Generate rewrite proposals without applying them, plus advisory"
             },
             {
               "name": "incorporate_user_addition",
-              "line": 283,
+              "line": 307,
               "doc": "Fold a user-supplied free-text addition (a project, an"
             },
             {
               "name": "tailor_resume",
-              "line": 357,
+              "line": 381,
               "doc": ""
             }
           ]
@@ -1949,7 +1975,7 @@
       "functions": [
         {
           "name": "_merge_usage",
-          "line": 714,
+          "line": 745,
           "doc": "Combine two LLMClient.get_usage_summary() dicts into one."
         }
       ]
@@ -3585,7 +3611,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 144,
+      "lines": 163,
       "doc": "Tests for SemanticMatcher.",
       "classes": [],
       "functions": [
@@ -3628,6 +3654,11 @@
           "name": "test_no_missing_requirements_short_circuits",
           "line": 135,
           "doc": ""
+        },
+        {
+          "name": "test_model_loads_from_local_cache_first",
+          "line": 147,
+          "doc": "An online load does Hub update checks on every start (~90 s on a"
         }
       ]
     },
@@ -3705,7 +3736,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 149,
+      "lines": 231,
       "doc": "",
       "classes": [],
       "functions": [
@@ -3723,6 +3754,46 @@
           "name": "test_deterministic_match_preferred_over_semantic_for_rationale",
           "line": 105,
           "doc": "If a bullet has BOTH a deterministic match and a semantic match (to"
+        },
+        {
+          "name": "_v2_resume",
+          "line": 154,
+          "doc": ""
+        },
+        {
+          "name": "_v2_job",
+          "line": 165,
+          "doc": ""
+        },
+        {
+          "name": "_v2_plan",
+          "line": 175,
+          "doc": ""
+        },
+        {
+          "name": "test_v2_rewrites_relevant_bullets_without_requirement_matches",
+          "line": 182,
+          "doc": ""
+        },
+        {
+          "name": "test_v2_rewriter_inputs_are_scoped_to_the_bullet",
+          "line": 189,
+          "doc": ""
+        },
+        {
+          "name": "test_v2_orders_bullets_within_sub_headings",
+          "line": 199,
+          "doc": ""
+        },
+        {
+          "name": "test_v2_uses_embeddings_when_given_and_falls_back_on_error",
+          "line": 205,
+          "doc": ""
+        },
+        {
+          "name": "test_v2_rewriter_gets_only_scoped_requirements_and_keywords",
+          "line": 217,
+          "doc": ""
         }
       ]
     },
@@ -4170,6 +4241,11 @@
     },
     {
       "from": "app/analysis/rewriter.py",
+      "to": "tests/unit/test_tailor_planner.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/analysis/rewriter.py",
       "to": "tests/unit/test_tailor_resume_flow.py",
       "type": "tested_by"
     },
@@ -4292,6 +4368,11 @@
       "from": "app/analysis/structure_extractor.py",
       "to": "tests/unit/test_structure_extractor.py",
       "type": "tested_by"
+    },
+    {
+      "from": "app/analysis/tailor_planner.py",
+      "to": "app/analysis/keyword_match.py",
+      "type": "imports"
     },
     {
       "from": "app/analysis/tailor_planner.py",

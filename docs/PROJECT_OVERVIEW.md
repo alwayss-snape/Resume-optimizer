@@ -56,7 +56,7 @@ Semantic matching uses a local embedding model (`all-MiniLM-L6-v2`).
 | Strict Factual Mode | ⚠️ Cosmetic | See issue 4 |
 | DOCX / PDF / HTML output | ✅ Works | Polished formatting (Sep 29). PDF needs LibreOffice installed |
 | CLI | ✅ Works | `analyze` and `tailor` only; no review step, no addition text |
-| Tests | ✅ 87 passing | `pytest -q` (~80 s, loads the embedding model) |
+| Tests | ✅ 188 passing | `pytest -q` (~35 s, loads the cached embedding model) |
 | Multiple JDs / history / cover letter | ❌ Not built | — |
 
 ## Open issues (found 2026-09-29, not yet fixed)

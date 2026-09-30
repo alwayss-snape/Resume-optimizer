@@ -82,7 +82,13 @@ class SemanticMatcher:
         if self._model is None:
             try:
                 from sentence_transformers import SentenceTransformer
-                self._model = SentenceTransformer(self._model_name)
+                try:
+                    # Cached copy first: an online load makes Hugging Face Hub
+                    # update checks on every start, which took ~90 s where
+                    # IPv6 is black-holed (vs ~9 s from the cache).
+                    self._model = SentenceTransformer(self._model_name, local_files_only=True)
+                except Exception:
+                    self._model = SentenceTransformer(self._model_name)  # first run: download
             except Exception:
                 # Missing dependency, no network for first-time model download,
                 # or any other load failure: semantic matching is skipped, not fatal.

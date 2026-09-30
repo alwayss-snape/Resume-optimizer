@@ -142,3 +142,22 @@ def test_no_missing_requirements_short_circuits():
     result = matcher.match([req], evidence, existing)
 
     assert result == existing
+
+
+def test_model_loads_from_local_cache_first(monkeypatch):
+    """An online load does Hub update checks on every start (~90 s on a
+    network with broken IPv6); the cached copy is tried first."""
+    import sys, types
+    from app.analysis.semantic_matcher import SemanticMatcher
+    calls = []
+
+    class FakeST:
+        def __init__(self, name, **kwargs):
+            calls.append(kwargs)
+
+        def encode(self, texts):
+            return [[1.0] for _ in texts]
+
+    monkeypatch.setitem(sys.modules, "sentence_transformers", types.SimpleNamespace(SentenceTransformer=FakeST))
+    SemanticMatcher(model_name="m", threshold=0.5, enabled=True)._get_embedder()
+    assert calls == [{"local_files_only": True}]
