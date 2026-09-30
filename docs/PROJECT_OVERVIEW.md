@@ -17,7 +17,7 @@ job description, and it:
 Core rule (from ARCHITECTURE.md): _the LLM edits content; deterministic code owns structure, formatting, validation
 and file generation._ Every rewrite must trace back to an "evidence" item from the original resume.
 
-**Ways to run it:** Streamlit UI (`streamlit run app/ui.py`) or CLI (`python -m app.cli analyze|tailor ...`).
+**Ways to run it:** Streamlit UI (`streamlit run app/ui.py`) or CLI (`python -m app.cli analyze|propose|tailor ...`).
 **LLM:** Groq cloud (`LLM_PROVIDER=groq`, which is what `.env` uses today) or local Ollama (`qwen3:4b`).
 Semantic matching uses a local embedding model (`all-MiniLM-L6-v2`).
 
@@ -56,8 +56,8 @@ Semantic matching uses a local embedding model (`all-MiniLM-L6-v2`).
 | Add a **new job role** | ✅ Works | Company, title, location, dates or "currently here", description → fact-checked bullets, placed in date order (P3.3) |
 | Strict Factual Mode | ⚠️ Cosmetic | See issue 4 |
 | DOCX / PDF / HTML output | ✅ Works | Re-parsed after rendering to prove it reads back intact (ATS round-trip, P2.5). ATS template (P2.1): A4, Arial, standard headings, section order by experience, "Jan 2022 – Present" dates; files named `First_Last_Resume_<Company>`. Auto page-fit to 1 page (< 8 years) or 2, trimming the least relevant content and reporting it (P2.3–P2.4). PDF and page-fit need LibreOffice installed |
-| CLI | ✅ Works | `analyze` and `tailor` only; no review step, no addition text |
-| Tests | ✅ 306 passing | `pytest -q` (~35 s, loads the cached embedding model) |
+| CLI | ✅ Works | `analyze`, `propose` (editable review file) and `tailor --proposals` with the UI's features: edits, gap answers, additions, a new job, strict mode; live progress (P3.6) |
+| Tests | ✅ 311 passing | `pytest -q` (~35 s, loads the cached embedding model) |
 | Multiple JDs / history / cover letter | ❌ Not built | — |
 
 ## Open issues

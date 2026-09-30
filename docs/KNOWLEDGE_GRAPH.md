@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**49 app modules · 44 test files · 86 classes · 684 functions/methods · 14,612 lines of Python** · source hash `141f78b66b693a4e`
+**49 app modules · 45 test files · 86 classes · 694 functions/methods · 14,849 lines of Python** · source hash `01ef1ac0a7efe2a1`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -30,7 +30,7 @@ pyproject.toml
   post-commit
   pre-commit
 app/
-  cli.py                                         check_llm(), main()
+  cli.py                                         check_llm(), write_proposals(), read_proposals(), _print_progress(), m…
   ui.py                                          get_local_pdf_preview_url(), display_pdf_with_fallback(), _cleanup_ses…
   analysis/
     change_proposal.py                           ChangeProposal
@@ -122,6 +122,7 @@ tests/
     test_ats_round_trip.py                       P2.5: the rendered template must read back exactly as rendered, and the
     test_check_parsed_resume.py                  P3.5: "Check parsed resume" step: corrections applied by the service,
     test_cli.py                                  test_tailor_service_analyze_only(), test_tailor_service_end_to_end_doc…
+    test_cli_parity.py                           P3.6: progress reporting, and the CLI doing what the UI does (review,
     test_content_lint.py                         P2.6: deterministic content checks on the finished resume.
     test_docx_parser.py                          test_docx_parser_sample(), test_docx_parser_file_not_found()
     test_docx_renderer.py                        test_docx_patcher_preserve_mode(), test_template_renderer_ats_mode(), …
@@ -307,7 +308,7 @@ _Keyword-level match rate, the headline score (P1.2)._
 
 ### `app/analysis/rewriter.py`
 
-**Layer:** Analysis · **Stage:** 7 Rewrite · **Lines:** 289
+**Layer:** Analysis · **Stage:** 7 Rewrite · **Lines:** 293
 
 - class **`LLMRewriter`** ([app/analysis/rewriter.py:69](../app/analysis/rewriter.py#L69))
   - `__init__()` :70
@@ -426,12 +427,15 @@ _Tailored professional summary (P1.5)._
 
 ### `app/cli.py`
 
-**Layer:** Entry points · **Stage:** all · **Lines:** 112
+**Layer:** Entry points · **Stage:** all · **Lines:** 224
 
 - function **`check_llm()`** ([app/cli.py:11](../app/cli.py#L11)) — One live, structured call to the configured provider. Returns an exit
-- function **`main()`** ([app/cli.py:44](../app/cli.py#L44))
-- **Imports:** `llm/client.py`, `llm/schemas.py`, `services/tailor.py`
-- **Tested by:** `tests/unit/test_cli.py`
+- function **`write_proposals()`** ([app/cli.py:57](../app/cli.py#L57)) — Draft proposals and gap questions into an editable JSON file (P3.6),
+- function **`read_proposals()`** ([app/cli.py:88](../app/cli.py#L88)) — The edited proposals file -> tailor_resume keyword arguments.
+- function **`_print_progress()`** ([app/cli.py:122](../app/cli.py#L122))
+- function **`main()`** ([app/cli.py:126](../app/cli.py#L126))
+- **Imports:** `domain/job.py`, `llm/client.py`, `llm/schemas.py`, `services/tailor.py`
+- **Tested by:** `tests/unit/test_cli.py`, `tests/unit/test_cli_parity.py`
 
 ### `app/config/settings.py`
 
@@ -455,7 +459,7 @@ _Tailored professional summary (P1.5)._
 
 - class **`Requirement`** ([app/domain/job.py:4](../app/domain/job.py#L4))
 - class **`JobDescription`** ([app/domain/job.py:28](../app/domain/job.py#L28))
-- **Imported by:** `analysis/gap_questions.py`, `analysis/jd_analyzer.py`, `analysis/keyword_match.py`, `analysis/matcher.py`, `analysis/rewriter.py`, `analysis/scoring.py`, `analysis/semantic_matcher.py`, `analysis/summary_writer.py`, `analysis/tailor_planner.py`, `services/tailor.py`
+- **Imported by:** `analysis/gap_questions.py`, `analysis/jd_analyzer.py`, `analysis/keyword_match.py`, `analysis/matcher.py`, `analysis/rewriter.py`, `analysis/scoring.py`, `analysis/semantic_matcher.py`, `analysis/summary_writer.py`, `analysis/tailor_planner.py`, `cli.py`, `services/tailor.py`
 - **Tested by:** `tests/unit/test_gap_questions.py`, `tests/unit/test_jd_analyzer.py`, `tests/unit/test_keyword_match.py`, `tests/unit/test_matcher.py`, `tests/unit/test_new_role.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_review_view.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_scoring.py`, `tests/unit/test_semantic_matcher.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_tailor_planner.py`, `tests/unit/test_tailor_service_addition.py`
 
 ### `app/domain/report.py`
@@ -565,7 +569,7 @@ _Run evaluation cases through the pipeline and collect metrics (P4.1)._
 - function **`summary_lines()`** ([app/eval/harness.py:259](../app/eval/harness.py#L259))
 - **Imports:** `analysis/jd_analyzer.py`, `eval/golden.py`, `llm/client.py`, `services/tailor.py`
 - **Imported by:** `eval/__main__.py`
-- **Tested by:** `tests/unit/test_eval_harness.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_profile_store.py`
+- **Tested by:** `tests/unit/test_cli_parity.py`, `tests/unit/test_eval_harness.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_profile_store.py`
 
 ### `app/ingestion/docx.py`
 
@@ -813,7 +817,7 @@ _Local profile of facts the user has confirmed (P3.2)._
   - `forget()` :110 — Forget one keyword, or everything when keyword is None. Returns how many were removed.
 - **Imports:** `config/settings.py`
 - **Imported by:** `services/tailor.py`, `ui.py`
-- **Tested by:** `tests/unit/test_profile_store.py`
+- **Tested by:** `tests/unit/test_cli_parity.py`, `tests/unit/test_profile_store.py`
 
 ### `app/services/run_manager.py`
 
@@ -824,44 +828,45 @@ _Local profile of facts the user has confirmed (P3.2)._
   - `create_run()` :12
   - `save_json()` :30
 - **Imported by:** `services/tailor.py`
-- **Tested by:** `tests/unit/test_gap_questions.py`, `tests/unit/test_new_role.py`, `tests/unit/test_profile_store.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_tailor_resume_flow.py`
+- **Tested by:** `tests/unit/test_cli_parity.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_new_role.py`, `tests/unit/test_profile_store.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_tailor_resume_flow.py`
 
 ### `app/services/tailor.py`
 
-**Layer:** Services · **Stage:** all · **Lines:** 1056
+**Layer:** Services · **Stage:** all · **Lines:** 1078
 
-- class **`TailorService`** ([app/services/tailor.py:44](../app/services/tailor.py#L44))
-  - `__init__()` :45
-  - `generate_preview_md()` :78
-  - `_patchable()` :124 — Proposals as in-place DOCX patches. A summary proposal targets the
-  - `_apply_gap_answers()` :147 — Ticked keywords join the skills section; a typed answer becomes a
-  - `_prefill_from_profile()` :171 — Answers confirmed for an earlier JD pre-fill the same questions
-  - `_draft_from_answer()` :183 — Polish the candidate's answer into one bullet that may use only
-  - `_split_description()` :202 — Pasted role description -> bullet-sized chunks: one per line (list
-  - `add_new_role()` :211 — Add a job the resume doesn't have yet (P3.3). Each chunk of the
-  - `_skills_proposals()` :275 — The skills section with the JD's skills first, when that changes it (P1.6).
-  - `_summary_proposals()` :280 — The tailored summary as a proposal, when one was written (P1.5).
-  - `_embed()` :285 — Sentence embeddings for the planner, loaded lazily; raises when the
-  - `_fit_relevance()` :294 — Planner relevance per bullet for the page-fit loop. Bullets the user
-  - `_render_template()` :304 — One template render plus PDF conversion (the page-fit loop's step).
-  - `_apply_bullet_order()` :310 — Reorder bullets as planned (most relevant first within each
-  - `parse_resume()` :325 — File -> (raw document, ResumeDocument, evidence). The deterministic
-  - `normalize_raw()` :335
-  - `_copy_parsed()` :343 — Deep copies, so a parse kept in UI session state is never mutated.
-  - `preview_keyword_match()` :348 — Match rate if these proposals were applied (P3.4 "recalculate"):
-  - `apply_parse_corrections()` :371 — Apply the user's fixes from the "Check parsed resume" step (P3.5).
-  - `analyze_only()` :432
-  - `generate_proposals()` :458 — Generate rewrite proposals without applying them, plus questions
-  - `incorporate_user_addition()` :520 — Fold a user-supplied free-text addition (a project, an
-  - `tailor_resume()` :599
-- function **`_merge_usage()`** ([app/services/tailor.py:1047](../app/services/tailor.py#L1047)) — Combine two LLMClient.get_usage_summary() dicts into one.
+- class **`TailorService`** ([app/services/tailor.py:55](../app/services/tailor.py#L55))
+  - `__init__()` :56
+  - `generate_preview_md()` :89
+  - `_patchable()` :135 — Proposals as in-place DOCX patches. A summary proposal targets the
+  - `_apply_gap_answers()` :158 — Ticked keywords join the skills section; a typed answer becomes a
+  - `_prefill_from_profile()` :182 — Answers confirmed for an earlier JD pre-fill the same questions
+  - `_draft_from_answer()` :194 — Polish the candidate's answer into one bullet that may use only
+  - `_split_description()` :213 — Pasted role description -> bullet-sized chunks: one per line (list
+  - `add_new_role()` :222 — Add a job the resume doesn't have yet (P3.3). Each chunk of the
+  - `_skills_proposals()` :286 — The skills section with the JD's skills first, when that changes it (P1.6).
+  - `_summary_proposals()` :291 — The tailored summary as a proposal, when one was written (P1.5).
+  - `_embed()` :296 — Sentence embeddings for the planner, loaded lazily; raises when the
+  - `_fit_relevance()` :305 — Planner relevance per bullet for the page-fit loop. Bullets the user
+  - `_render_template()` :315 — One template render plus PDF conversion (the page-fit loop's step).
+  - `_apply_bullet_order()` :321 — Reorder bullets as planned (most relevant first within each
+  - `parse_resume()` :336 — File -> (raw document, ResumeDocument, evidence). The deterministic
+  - `normalize_raw()` :346
+  - `_copy_parsed()` :354 — Deep copies, so a parse kept in UI session state is never mutated.
+  - `preview_keyword_match()` :359 — Match rate if these proposals were applied (P3.4 "recalculate"):
+  - `apply_parse_corrections()` :382 — Apply the user's fixes from the "Check parsed resume" step (P3.5).
+  - `analyze_only()` :443
+  - `generate_proposals()` :469 — Generate rewrite proposals without applying them, plus questions
+  - `incorporate_user_addition()` :538 — Fold a user-supplied free-text addition (a project, an
+  - `tailor_resume()` :617
+- function **`_progress()`** ([app/services/tailor.py:44](../app/services/tailor.py#L44)) — A progress reporter that can never break a run (P3.6).
+- function **`_merge_usage()`** ([app/services/tailor.py:1069](../app/services/tailor.py#L1069)) — Combine two LLMClient.get_usage_summary() dicts into one.
 - **Imports:** `analysis/experience.py`, `analysis/gap_questions.py`, `analysis/jd_analyzer.py`, `analysis/keyword_match.py`, `analysis/matcher.py`, `analysis/resume_normalizer.py`, `analysis/rewriter.py`, `analysis/scoring.py`, `analysis/semantic_matcher.py`, `analysis/skills_tailor.py`, `analysis/structure_extractor.py`, `analysis/summary_writer.py`, `analysis/tailor_planner.py`, `domain/evidence.py`, `domain/job.py`, `domain/report.py`, `domain/resume.py`, `domain/resume_document.py`, `domain/tailoring.py`, `ingestion/docx.py`, `ingestion/pdf.py`, `llm/client.py`, `rendering/docx_patcher.py`, `rendering/html_renderer.py`, `rendering/layout.py`, `rendering/page_fit.py`, `rendering/pdf_converter.py`, `rendering/template_renderer.py`, `services/profile_store.py`, `services/run_manager.py`, `validation/content_lint.py`, `validation/factual.py`, `validation/output.py`, `validation/safety.py`, `validation/structural.py`
 - **Imported by:** `cli.py`, `eval/harness.py`, `ui.py`
-- **Tested by:** `tests/integration/test_end_to_end.py`, `tests/unit/test_check_parsed_resume.py`, `tests/unit/test_cli.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_new_role.py`, `tests/unit/test_profile_store.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_review_view.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_tailor_resume_flow.py`, `tests/unit/test_tailor_service_addition.py`, `tests/unit/test_ui.py`
+- **Tested by:** `tests/integration/test_end_to_end.py`, `tests/unit/test_check_parsed_resume.py`, `tests/unit/test_cli.py`, `tests/unit/test_cli_parity.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_new_role.py`, `tests/unit/test_profile_store.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_review_view.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_tailor_resume_flow.py`, `tests/unit/test_tailor_service_addition.py`, `tests/unit/test_ui.py`
 
 ### `app/ui.py`
 
-**Layer:** Entry points · **Stage:** all · **Lines:** 821
+**Layer:** Entry points · **Stage:** all · **Lines:** 824
 
 - function **`get_local_pdf_preview_url()`** ([app/ui.py:28](../app/ui.py#L28)) — Serve a PDF from a temporary HTTP endpoint so Chrome can render it in an iframe.
 - function **`display_pdf_with_fallback()`** ([app/ui.py:45](../app/ui.py#L45)) — Try to use Streamlit's native PDF display if available, otherwise fall back

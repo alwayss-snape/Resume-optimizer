@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "141f78b66b693a4e",
+  "source_hash": "01ef1ac0a7efe2a1",
   "stats": {
-    "files": 122,
-    "python_files": 100,
+    "files": 123,
+    "python_files": 101,
     "app_modules": 49,
-    "test_files": 44,
+    "test_files": 45,
     "classes": 86,
-    "functions": 684,
-    "lines_of_python": 14612
+    "functions": 694,
+    "lines_of_python": 14849
   },
   "axes": {
     "x": "location (path)",
@@ -630,7 +630,7 @@
       "stages": [
         "7 Rewrite"
       ],
-      "lines": 289,
+      "lines": 293,
       "doc": "",
       "classes": [
         {
@@ -999,7 +999,7 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 112,
+      "lines": 224,
       "doc": "",
       "classes": [],
       "functions": [
@@ -1009,8 +1009,23 @@
           "doc": "One live, structured call to the configured provider. Returns an exit"
         },
         {
+          "name": "write_proposals",
+          "line": 57,
+          "doc": "Draft proposals and gap questions into an editable JSON file (P3.6),"
+        },
+        {
+          "name": "read_proposals",
+          "line": 88,
+          "doc": "The edited proposals file -> tailor_resume keyword arguments."
+        },
+        {
+          "name": "_print_progress",
+          "line": 122,
+          "doc": ""
+        },
+        {
           "name": "main",
-          "line": 44,
+          "line": 126,
           "doc": ""
         }
       ]
@@ -2409,127 +2424,127 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 1056,
+      "lines": 1078,
       "doc": "",
       "classes": [
         {
           "name": "TailorService",
-          "line": 44,
+          "line": 55,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
-              "line": 45,
+              "line": 56,
               "doc": ""
             },
             {
               "name": "generate_preview_md",
-              "line": 78,
+              "line": 89,
               "doc": ""
             },
             {
               "name": "_patchable",
-              "line": 124,
+              "line": 135,
               "doc": "Proposals as in-place DOCX patches. A summary proposal targets the"
             },
             {
               "name": "_apply_gap_answers",
-              "line": 147,
+              "line": 158,
               "doc": "Ticked keywords join the skills section; a typed answer becomes a"
             },
             {
               "name": "_prefill_from_profile",
-              "line": 171,
+              "line": 182,
               "doc": "Answers confirmed for an earlier JD pre-fill the same questions"
             },
             {
               "name": "_draft_from_answer",
-              "line": 183,
+              "line": 194,
               "doc": "Polish the candidate's answer into one bullet that may use only"
             },
             {
               "name": "_split_description",
-              "line": 202,
+              "line": 213,
               "doc": "Pasted role description -> bullet-sized chunks: one per line (list"
             },
             {
               "name": "add_new_role",
-              "line": 211,
+              "line": 222,
               "doc": "Add a job the resume doesn't have yet (P3.3). Each chunk of the"
             },
             {
               "name": "_skills_proposals",
-              "line": 275,
+              "line": 286,
               "doc": "The skills section with the JD's skills first, when that changes it (P1.6)."
             },
             {
               "name": "_summary_proposals",
-              "line": 280,
+              "line": 291,
               "doc": "The tailored summary as a proposal, when one was written (P1.5)."
             },
             {
               "name": "_embed",
-              "line": 285,
+              "line": 296,
               "doc": "Sentence embeddings for the planner, loaded lazily; raises when the"
             },
             {
               "name": "_fit_relevance",
-              "line": 294,
+              "line": 305,
               "doc": "Planner relevance per bullet for the page-fit loop. Bullets the user"
             },
             {
               "name": "_render_template",
-              "line": 304,
+              "line": 315,
               "doc": "One template render plus PDF conversion (the page-fit loop's step)."
             },
             {
               "name": "_apply_bullet_order",
-              "line": 310,
+              "line": 321,
               "doc": "Reorder bullets as planned (most relevant first within each"
             },
             {
               "name": "parse_resume",
-              "line": 325,
+              "line": 336,
               "doc": "File -> (raw document, ResumeDocument, evidence). The deterministic"
             },
             {
               "name": "normalize_raw",
-              "line": 335,
+              "line": 346,
               "doc": ""
             },
             {
               "name": "_copy_parsed",
-              "line": 343,
+              "line": 354,
               "doc": "Deep copies, so a parse kept in UI session state is never mutated."
             },
             {
               "name": "preview_keyword_match",
-              "line": 348,
+              "line": 359,
               "doc": "Match rate if these proposals were applied (P3.4 \"recalculate\"):"
             },
             {
               "name": "apply_parse_corrections",
-              "line": 371,
+              "line": 382,
               "doc": "Apply the user's fixes from the \"Check parsed resume\" step (P3.5)."
             },
             {
               "name": "analyze_only",
-              "line": 432,
+              "line": 443,
               "doc": ""
             },
             {
               "name": "generate_proposals",
-              "line": 458,
+              "line": 469,
               "doc": "Generate rewrite proposals without applying them, plus questions"
             },
             {
               "name": "incorporate_user_addition",
-              "line": 520,
+              "line": 538,
               "doc": "Fold a user-supplied free-text addition (a project, an"
             },
             {
               "name": "tailor_resume",
-              "line": 599,
+              "line": 617,
               "doc": ""
             }
           ]
@@ -2537,8 +2552,13 @@
       ],
       "functions": [
         {
+          "name": "_progress",
+          "line": 44,
+          "doc": "A progress reporter that can never break a run (P3.6)."
+        },
+        {
           "name": "_merge_usage",
-          "line": 1047,
+          "line": 1069,
           "doc": "Combine two LLMClient.get_usage_summary() dicts into one."
         }
       ]
@@ -2559,7 +2579,7 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 821,
+      "lines": 824,
       "doc": "",
       "classes": [],
       "functions": [
@@ -3296,6 +3316,47 @@
         {
           "name": "test_check_llm_reports_success_and_failure",
           "line": 34,
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "tests/unit/test_cli_parity.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 96,
+      "doc": "P3.6: progress reporting, and the CLI doing what the UI does (review,",
+      "classes": [],
+      "functions": [
+        {
+          "name": "_service",
+          "line": 21,
+          "doc": ""
+        },
+        {
+          "name": "test_progress_is_reported_for_both_steps",
+          "line": 29,
+          "doc": ""
+        },
+        {
+          "name": "test_a_broken_progress_callback_never_breaks_a_run",
+          "line": 41,
+          "doc": ""
+        },
+        {
+          "name": "test_proposals_file_round_trip_applies_exactly_the_review",
+          "line": 47,
+          "doc": ""
+        },
+        {
+          "name": "test_rejected_proposals_start_unticked",
+          "line": 77,
+          "doc": ""
+        },
+        {
+          "name": "test_cli_propose_and_tailor_end_to_end",
+          "line": 82,
           "doc": ""
         }
       ]
@@ -6136,6 +6197,11 @@
     },
     {
       "from": "app/cli.py",
+      "to": "app/domain/job.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/cli.py",
       "to": "app/llm/client.py",
       "type": "imports"
     },
@@ -6152,6 +6218,11 @@
     {
       "from": "app/cli.py",
       "to": "tests/unit/test_cli.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/cli.py",
+      "to": "tests/unit/test_cli_parity.py",
       "type": "tested_by"
     },
     {
@@ -6676,6 +6747,11 @@
     },
     {
       "from": "app/eval/harness.py",
+      "to": "tests/unit/test_cli_parity.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/eval/harness.py",
       "to": "tests/unit/test_eval_harness.py",
       "type": "tested_by"
     },
@@ -7196,6 +7272,11 @@
     },
     {
       "from": "app/services/profile_store.py",
+      "to": "tests/unit/test_cli_parity.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/services/profile_store.py",
       "to": "tests/unit/test_profile_store.py",
       "type": "tested_by"
     },
@@ -7203,6 +7284,11 @@
       "from": "app/services/run_manager.py",
       "to": "app/services/run_manager.py::RunManager",
       "type": "contains"
+    },
+    {
+      "from": "app/services/run_manager.py",
+      "to": "tests/unit/test_cli_parity.py",
+      "type": "tested_by"
     },
     {
       "from": "app/services/run_manager.py",
@@ -7432,6 +7518,11 @@
     {
       "from": "app/services/tailor.py",
       "to": "tests/unit/test_cli.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/services/tailor.py",
+      "to": "tests/unit/test_cli_parity.py",
       "type": "tested_by"
     },
     {

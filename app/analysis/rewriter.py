@@ -213,6 +213,7 @@ class LLMRewriter:
         plan: TailoringPlan,
         evidence_list: List[Evidence],
         job_description: JobDescription,
+        progress=None,
     ) -> List[RewriteProposal]:
         """One LLM call per role (P1.4): all of a job's bullets that the
         planner marked REWRITE go together, so the model sees the whole role
@@ -274,15 +275,18 @@ class LLMRewriter:
                                          if k not in results or v["status"] == STATUS_OK}}
             return results, error, missing_status
 
+        step = progress or (lambda message: None)
         for exp in resume.experience:
             todo = [b for b in exp.bullets if b.id in actions]
             if todo:
+                step(f"Rewriting {len(todo)} bullet(s) for {exp.company or exp.title or 'a job'}")
                 collect(todo, *rewrite_with_follow_up(exp, [item_for(b, b.group) for b in todo]))
 
         # All project bullets in one more call (P1.7), each with its
         # project name as the sub-heading.
         project_todo = [(b, p.name) for p in resume.projects for b in p.bullets if b.id in actions]
         if project_todo:
+            step(f"Rewriting {len(project_todo)} project bullet(s)")
             header = ["Section: Projects (each bullet's sub-heading is its project name)"]
             results = rewrite_with_follow_up(None, [item_for(b, name) for b, name in project_todo], header=header)
             collect([b for b, _ in project_todo], *results)

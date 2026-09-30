@@ -334,10 +334,11 @@ def _draft_proposals(parsed, parse_corrected: bool) -> None:
     st.session_state.pop("live_match", None)  # belongs to the previous proposals
     llm_client = LLMClient(model=st.session_state.model_choice)
     service = TailorService(llm_client=llm_client)
-    with st.spinner("Analyzing the job description and drafting proposals..."):
+    with st.status("Drafting proposals...", expanded=True) as status:
         generated = service.generate_proposals(
-            st.session_state.resume_path, st.session_state.jd_text, parsed=parsed,
+            st.session_state.resume_path, st.session_state.jd_text, parsed=parsed, progress=status.write,
         )
+        status.update(label="Proposals ready", state="complete", expanded=False)
     st.session_state.parsed = parsed
     st.session_state.parse_corrected = parse_corrected
     st.session_state.stage = "proposals"
@@ -691,7 +692,7 @@ if st.session_state.stage == "proposals":
 
         output_dir = tempfile.mkdtemp()
         try:
-            with st.spinner("Applying changes, regenerating your résumé, and rescoring..."):
+            with st.status("Applying changes and generating your resume...", expanded=True) as status:
                 llm_client = LLMClient(model=st.session_state.model_choice)
                 service = TailorService(llm_client=llm_client)
                 results = service.tailor_resume(
@@ -711,7 +712,9 @@ if st.session_state.stage == "proposals":
                     new_role=new_role,
                     gap_questions=gap_questions,
                     remember_answers=remember_answers,
+                    progress=status.write,
                 )
+                status.update(label="Resume generated", state="complete", expanded=False)
             st.session_state.results = results
             st.session_state.output_dir = output_dir
             st.session_state.stage = "results"

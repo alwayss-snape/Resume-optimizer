@@ -2,7 +2,7 @@ import os
 import re
 import shutil
 from datetime import date, datetime
-from typing import Dict, List, Optional, Tuple
+from typing import Callable, Dict, List, Optional, Tuple
 from uuid import uuid4
 
 from app.analysis.experience import is_ongoing, parse_month, target_pages
@@ -40,6 +40,17 @@ from app.validation.factual import FactualValidator
 from app.validation.output import OutputQAValidator
 from app.validation.structural import StructuralValidator
 from app.validation.safety import SafetyGuard
+
+def _progress(callback: Optional[Callable[[str], None]]) -> Callable[[str], None]:
+    """A progress reporter that can never break a run (P3.6)."""
+    def step(message: str) -> None:
+        if callback is not None:
+            try:
+                callback(message)
+            except Exception:
+                pass
+    return step
+
 
 class TailorService:
     def __init__(self, llm_client: Optional[LLMClient] = None):
@@ -456,29 +467,36 @@ class TailorService:
         )
 
     def generate_proposals(self, resume_path: str, jd_text: str, suggestion_limit: int = 5,
-                           parsed=None) -> Dict:
+                           parsed=None, progress: Optional[Callable[[str], None]] = None) -> Dict:
         """Generate rewrite proposals without applying them, plus questions
         about JD keywords the resume doesn't show (P3.1).
 
         Returns {"proposals": [...], "gap_questions": [...],
         "alignment_score": float, ...}. Useful for UI review flows.
         """
+        step = _progress(progress)
         clean_jd_text = self.safety_guard.sanitize(jd_text)
 
         # `parsed`: the (raw, resume, evidence) the user checked in the UI.
+        if parsed is None:
+            step("Reading your resume")
         raw_doc, resume_doc, evidence_list = (
             self._copy_parsed(parsed) if parsed is not None else self.parse_resume(resume_path)
         )
         resume = resume_doc.resume
+        step("Analysing the job description")
         job_desc = self.jd_analyzer.analyze(clean_jd_text)
+        step("Matching your resume to the job's keywords")
         matches = self.matcher.match(job_desc, evidence_list)
         matches = self.semantic_matcher.match(job_desc.requirements, evidence_list, matches)
         keyword_report = self.keyword_matcher.match(job_desc, resume)
         score = keyword_report.rate
         plan = self.planner.create_plan(resume, job_desc, evidence_list, matches)
+        step("Writing a tailored summary")
         proposals = self._summary_proposals(resume, job_desc, keyword_report, evidence_list)
         proposals += self._skills_proposals(resume, keyword_report)
-        proposals += self.rewriter.execute_plan(resume, plan, evidence_list, job_desc)
+        proposals += self.rewriter.execute_plan(resume, plan, evidence_list, job_desc, progress=step)
+        step("Fact-checking every proposal")
         # Fact-check now so the review UI can show each proposal's verdict
         # (and what would be dropped) before the user applies anything.
         for prop in proposals:
@@ -614,6 +632,7 @@ class TailorService:
         new_role: Optional[Dict] = None,
         gap_questions: Optional[List] = None,
         remember_answers: bool = True,
+        progress: Optional[Callable[[str], None]] = None,
     ) -> Dict[str, str]:
         run_dir = self.run_manager.create_run(resume_path, jd_text)
         clean_jd_text = self.safety_guard.sanitize(jd_text)
@@ -627,7 +646,10 @@ class TailorService:
             f.write(f"**Started:** {datetime.utcnow().isoformat()}Z\n\n")
             f.write("## Progress Log\n\n")
         
+        step = _progress(progress)
+
         def _append_progress(msg: str) -> None:
+            step(msg)
             ts = datetime.utcnow().isoformat() + "Z"
             try:
                 with open(report_md_path, "a", encoding="utf-8") as pf:
