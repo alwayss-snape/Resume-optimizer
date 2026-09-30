@@ -107,6 +107,7 @@ STAGE_MAP: Dict[str, List[str]] = {
     "app/rendering/html_renderer.py": ["9 Render"],
     "app/rendering/layout.py": ["9 Render"],
     "app/rendering/page_fit.py": ["9 Render"],
+    "app/rendering/review_view.py": ["7 Rewrite"],
     "app/rendering/pdf_converter.py": ["9 Render"],
     "app/services/run_manager.py": ["10 Report"],
     "app/services/tailor.py": STAGES,  # the orchestrator touches every stage

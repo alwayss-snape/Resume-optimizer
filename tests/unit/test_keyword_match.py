@@ -101,4 +101,4 @@ def test_analysis_view_shows_keyword_table():
     at.run()
     assert not at.exception
     assert at.metric[0].value == "50.0%"
-    assert len(at.dataframe) == 1
+    assert len(at.dataframe) == 2  # keyword table + score breakdown (P3.4)

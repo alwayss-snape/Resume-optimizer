@@ -244,6 +244,27 @@ class TailorService:
         raw_doc, resume_doc, evidence_list = parsed
         return raw_doc, resume_doc.model_copy(deep=True), [e.model_copy(deep=True) for e in evidence_list]
 
+    def preview_keyword_match(self, parsed, job_desc: JobDescription, proposals: List[Dict]):
+        """Match rate if these proposals were applied (P3.4 "recalculate"):
+        no LLM, no files. `proposals` are dicts with kind, target_semantic_id
+        and proposed_text, i.e. the ticked (and possibly edited) ones."""
+        resume = parsed[1].resume.model_copy(deep=True)
+        for p in proposals:
+            text = (p.get("proposed_text") or "").strip()
+            if not text:
+                continue
+            kind = p.get("kind", "bullet")
+            if kind == "summary":
+                resume.summary = text
+            elif kind == "skills" and parse_skills(text):
+                resume.skills = parse_skills(text)
+            else:
+                for section in [*resume.experience, *resume.projects]:
+                    for b in section.bullets:
+                        if b.id == p.get("target_semantic_id"):
+                            b.text = text
+        return self.keyword_matcher.match(job_desc, resume)
+
     def apply_parse_corrections(self, parsed, corrections: Dict):
         """Apply the user's fixes from the "Check parsed resume" step (P3.5).
 

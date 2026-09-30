@@ -49,7 +49,7 @@ Semantic matching uses a local embedding model (`all-MiniLM-L6-v2`).
 | Matching + score | ✅ Works | Headline = keyword match rate with a matched/missing table (P1.2); requirement-level evidence score kept as secondary |
 | Tailor content | ✅ Works | All relevant job and project bullets (one call per role), summary, skills order; nothing invented, dropped details flagged (P1.3–P1.7, P1.14) |
 | Check parsed resume in UI | ✅ Works | Edit name, headline, contact, links, companies, roles and dates before tailoring (P3.5) |
-| Review / edit proposals in UI | ✅ Works | Checkbox + editable text per proposal |
+| Review / edit proposals in UI | ✅ Works | Side-by-side diff with JD keywords highlighted, status badge, edit box, accept/reject all, match rate recalculated on demand, keyword gap table and score breakdown (P3.4) |
 | Gap questions for missing JD keywords | ✅ Works | Suggest-and-confirm: only ticked skills and the user's own answers are added (P3.1) |
 | Content checks on the result | ✅ Works | Bullets per role, length, pronouns, buzzwords, tense, dates, share of bullets with numbers (P2.6); advice only |
 | Add free-text content | ✅ Works | Append to an existing role or create a new project |
@@ -57,7 +57,7 @@ Semantic matching uses a local embedding model (`all-MiniLM-L6-v2`).
 | Strict Factual Mode | ⚠️ Cosmetic | See issue 4 |
 | DOCX / PDF / HTML output | ✅ Works | Re-parsed after rendering to prove it reads back intact (ATS round-trip, P2.5). ATS template (P2.1): A4, Arial, standard headings, section order by experience, "Jan 2022 – Present" dates; files named `First_Last_Resume_<Company>`. Auto page-fit to 1 page (< 8 years) or 2, trimming the least relevant content and reporting it (P2.3–P2.4). PDF and page-fit need LibreOffice installed |
 | CLI | ✅ Works | `analyze` and `tailor` only; no review step, no addition text |
-| Tests | ✅ 261 passing | `pytest -q` (~35 s, loads the cached embedding model) |
+| Tests | ✅ 272 passing | `pytest -q` (~35 s, loads the cached embedding model) |
 | Multiple JDs / history / cover letter | ❌ Not built | — |
 
 ## Open issues

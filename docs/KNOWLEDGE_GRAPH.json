@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "5f520bb38e35a0d4",
+  "source_hash": "56ca990f2d9a513e",
   "stats": {
-    "files": 118,
-    "python_files": 96,
+    "files": 119,
+    "python_files": 97,
     "app_modules": 48,
-    "test_files": 41,
+    "test_files": 42,
     "classes": 83,
-    "functions": 621,
-    "lines_of_python": 13745
+    "functions": 635,
+    "lines_of_python": 13878
   },
   "axes": {
     "x": "location (path)",
@@ -2121,7 +2121,9 @@
       "id": "app/rendering/review_view.py",
       "type": "python",
       "layer": "Rendering",
-      "stages": [],
+      "stages": [
+        "7 Rewrite"
+      ],
       "lines": 107,
       "doc": "What the proposal review screen shows (P3.4), as plain functions so the",
       "classes": [],
@@ -2454,7 +2456,7 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 753,
+      "lines": 754,
       "doc": "",
       "classes": [],
       "functions": [
@@ -2820,118 +2822,118 @@
       "type": "python",
       "layer": "Tooling",
       "stages": [],
-      "lines": 729,
+      "lines": 730,
       "doc": "Regenerate the repo's living docs: the knowledge graph and the change log.",
       "classes": [],
       "functions": [
         {
           "name": "git",
-          "line": 127,
+          "line": 128,
           "doc": ""
         },
         {
           "name": "layer_of",
-          "line": 134,
+          "line": 135,
           "doc": ""
         },
         {
           "name": "module_name",
-          "line": 141,
+          "line": 142,
           "doc": ""
         },
         {
           "name": "first_line",
-          "line": 148,
+          "line": 149,
           "doc": ""
         },
         {
           "name": "list_files",
-          "line": 157,
+          "line": 158,
           "doc": "Tracked + new (not ignored) files, restricted to the project map."
         },
         {
           "name": "parse_python",
-          "line": 175,
+          "line": 176,
           "doc": ""
         },
         {
           "name": "symbols_of",
-          "line": 203,
+          "line": 204,
           "doc": ""
         },
         {
           "name": "settings_fields",
-          "line": 216,
+          "line": 217,
           "doc": ""
         },
         {
           "name": "build_graph",
-          "line": 235,
+          "line": 236,
           "doc": ""
         },
         {
           "name": "render_graph_md",
-          "line": 309,
+          "line": 310,
           "doc": ""
         },
         {
           "name": "write_graph",
-          "line": 507,
+          "line": 508,
           "doc": ""
         },
         {
           "name": "commit_info",
-          "line": 550,
+          "line": 551,
           "doc": ""
         },
         {
           "name": "changed_files",
-          "line": 561,
+          "line": 562,
           "doc": ""
         },
         {
           "name": "is_major",
-          "line": 574,
+          "line": 575,
           "doc": ""
         },
         {
           "name": "blob",
-          "line": 583,
+          "line": 584,
           "doc": ""
         },
         {
           "name": "structure_delta",
-          "line": 588,
+          "line": 589,
           "doc": ""
         },
         {
           "name": "render_entry",
-          "line": 611,
+          "line": 612,
           "doc": ""
         },
         {
           "name": "_split_entries",
-          "line": 654,
+          "line": 655,
           "doc": ""
         },
         {
           "name": "_join",
-          "line": 666,
+          "line": 667,
           "doc": ""
         },
         {
           "name": "log_entry",
-          "line": 670,
+          "line": 671,
           "doc": ""
         },
         {
           "name": "backfill",
-          "line": 688,
+          "line": 689,
           "doc": ""
         },
         {
           "name": "main",
-          "line": 705,
+          "line": 706,
           "doc": ""
         }
       ]
@@ -4319,6 +4321,87 @@
       ]
     },
     {
+      "id": "tests/unit/test_review_view.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 131,
+      "doc": "P3.4: the proposal review screen (diff, badges, breakdown, gap table,",
+      "classes": [],
+      "functions": [
+        {
+          "name": "test_diff_marks_removed_added_and_keywords_and_escapes",
+          "line": 19,
+          "doc": ""
+        },
+        {
+          "name": "test_multi_word_keyword_is_highlighted_whole",
+          "line": 28,
+          "doc": ""
+        },
+        {
+          "name": "test_status_badges",
+          "line": 33,
+          "doc": ""
+        },
+        {
+          "name": "_report",
+          "line": 41,
+          "doc": ""
+        },
+        {
+          "name": "test_score_breakdown_adds_up_to_the_rate",
+          "line": 50,
+          "doc": ""
+        },
+        {
+          "name": "test_gap_table_orders_required_first_and_marks_asked",
+          "line": 57,
+          "doc": ""
+        },
+        {
+          "name": "_parsed",
+          "line": 63,
+          "doc": ""
+        },
+        {
+          "name": "_job",
+          "line": 70,
+          "doc": ""
+        },
+        {
+          "name": "test_preview_applies_ticked_edits_without_touching_the_parse",
+          "line": 75,
+          "doc": ""
+        },
+        {
+          "name": "_proposal",
+          "line": 85,
+          "doc": ""
+        },
+        {
+          "name": "_app",
+          "line": 90,
+          "doc": ""
+        },
+        {
+          "name": "test_review_shows_badges_diff_and_gap_table",
+          "line": 106,
+          "doc": ""
+        },
+        {
+          "name": "test_accept_all_and_reject_all",
+          "line": 115,
+          "doc": ""
+        },
+        {
+          "name": "test_recalculate_uses_ticked_edited_text_and_generates_nothing",
+          "line": 123,
+          "doc": ""
+        }
+      ]
+    },
+    {
       "id": "tests/unit/test_rewriter.py",
       "type": "python",
       "layer": "Tests",
@@ -5148,6 +5231,11 @@
     },
     {
       "from": "app/analysis/change_proposal.py",
+      "to": "tests/unit/test_review_view.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/analysis/change_proposal.py",
       "to": "tests/unit/test_skills_tailor.py",
       "type": "tested_by"
     },
@@ -5279,6 +5367,11 @@
     {
       "from": "app/analysis/keyword_match.py",
       "to": "tests/unit/test_keyword_match.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/analysis/keyword_match.py",
+      "to": "tests/unit/test_review_view.py",
       "type": "tested_by"
     },
     {
@@ -5843,6 +5936,11 @@
     },
     {
       "from": "app/domain/job.py",
+      "to": "tests/unit/test_review_view.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/job.py",
       "to": "tests/unit/test_rewriter.py",
       "type": "tested_by"
     },
@@ -5904,6 +6002,11 @@
     {
       "from": "app/domain/report.py",
       "to": "tests/unit/test_matcher.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/report.py",
+      "to": "tests/unit/test_review_view.py",
       "type": "tested_by"
     },
     {
@@ -6028,6 +6131,11 @@
     },
     {
       "from": "app/domain/resume.py",
+      "to": "tests/unit/test_review_view.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/resume.py",
       "to": "tests/unit/test_rewriter.py",
       "type": "tested_by"
     },
@@ -6124,6 +6232,11 @@
     {
       "from": "app/domain/resume_document.py",
       "to": "tests/unit/test_resume_model_v2.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/resume_document.py",
+      "to": "tests/unit/test_review_view.py",
       "type": "tested_by"
     },
     {
@@ -6667,6 +6780,11 @@
       "type": "imports"
     },
     {
+      "from": "app/rendering/review_view.py",
+      "to": "tests/unit/test_review_view.py",
+      "type": "tested_by"
+    },
+    {
       "from": "app/rendering/template_renderer.py",
       "to": "app/domain/resume_document.py",
       "type": "imports"
@@ -6939,6 +7057,11 @@
     {
       "from": "app/services/tailor.py",
       "to": "tests/unit/test_project_rewrites.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/services/tailor.py",
+      "to": "tests/unit/test_review_view.py",
       "type": "tested_by"
     },
     {

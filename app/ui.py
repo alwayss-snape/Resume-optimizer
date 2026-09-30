@@ -13,6 +13,7 @@ import streamlit as st
 
 from app.config.settings import settings
 from app.llm.client import LLMClient
+from app.rendering.review_view import diff_html, gap_table, score_breakdown, status_badge
 from app.services.tailor import TailorService
 
 st.set_page_config(
@@ -296,6 +297,9 @@ def _show_keyword_match(keyword_report, heading: str = "Keyword match") -> None:
               "resume: hard skills count most, then the job title, education/certifications, soft skills; "
               "required keywords count 1.5x.")
     st.caption(f"{len(keyword_report.matched)} of {len(keyword_report.rows)} keywords found, {verdict}.")
+    breakdown = score_breakdown(keyword_report)
+    if breakdown:
+        st.dataframe(breakdown, use_container_width=True, hide_index=True)
     rows = sorted(keyword_report.rows, key=lambda r: (r.found, -r.weight))
     st.dataframe(
         [{"Keyword": r.keyword, "Found": "✅" if r.found else "❌", "Kind": r.kind,
@@ -470,12 +474,34 @@ if st.session_state.stage == "proposals":
 
     with st.expander(f"🔑 Keyword match before tailoring: {st.session_state.get('pre_score', 0):.1f}%"):
         _show_keyword_match(st.session_state.get("keyword_match"))
+    live = st.session_state.get("live_match")
+    if live is not None:
+        st.metric("Match rate with your current selection", f"{live.rate:.1f}%",
+                  delta=f"{live.rate - st.session_state.get('pre_score', 0):+.1f} pts vs before")
+        with st.expander("Details for your current selection"):
+            _show_keyword_match(live, heading="Selected rewrites")
+
+    gap_rows = gap_table(st.session_state.get("keyword_match"),
+                         asked=[k for q in (st.session_state.get("gap_questions") or []) for k in q.keywords])
+    if gap_rows:
+        with st.expander(f"🕳️ Keyword gaps: {len(gap_rows)} JD keyword(s) not on your resume"):
+            st.caption("Rewrites never add these; they come in only through your answers to the questions below.")
+            st.dataframe(gap_rows, use_container_width=True, hide_index=True)
 
     st.markdown("### Review Proposed Rewrites")
     if proposals:
         st.markdown("Edit proposed text or uncheck to reject. Then add anything else below and click **Apply & Generate**.")
+
+        def _set_all(value: bool) -> None:
+            for i in range(len(proposals)):
+                st.session_state[f"p_{i}_apply"] = value
+
+        b1, b2, _ = st.columns([1, 1, 4])
+        b1.button("✅ Accept all", on_click=_set_all, args=(True,))
+        b2.button("✖️ Reject all", on_click=_set_all, args=(False,))
     else:
         st.info("No existing bullets needed rewriting for this job description.")
+    all_keywords = [r.keyword for r in getattr(st.session_state.get("keyword_match"), "rows", [])]
 
     experience_options = st.session_state.get("experience_options", [])
     target_labels = ["Auto — add to my most recent role"] + [
@@ -490,29 +516,34 @@ if st.session_state.stage == "proposals":
             orig = getattr(p, "original_text", "")
             prop_text = getattr(p, "proposed_text", None) or getattr(p, "rewritten_text", None) or ""
             rationale = getattr(p, "rationale", None)
-            col1, col2 = st.columns([1, 3])
-            with col1:
-                sel = st.checkbox("Apply", value=True, key=keybase + "_apply")
-            with col2:
-                if getattr(p, "kind", "bullet") == "summary":
-                    st.markdown("**Professional summary**")
-                elif getattr(p, "kind", "bullet") == "skills":
-                    st.markdown("**Skills** (one \"Category: a, b, c\" line each; reordering only, nothing is added)")
-                st.markdown(f"**Original:** {orig or '(no summary)'}")
-                edt = st.text_area(f"Proposed ({i+1})", value=prop_text, key=keybase + "_edit", height=80)
-                if rationale:
-                    st.caption(f"🎯 {rationale}")
-                verdict = getattr(p, "validation", None)
-                note = getattr(p, "validation_note", None)
-                if verdict == "REJECT":
-                    st.caption(f"⛔ Will be dropped unless you edit it: {note}")
-                elif verdict == "NEEDS_CONFIRM":
-                    st.caption(f"⚠️ {note}")
-                p_status = getattr(p, "status", None)
-                if p_status in ("llm_unavailable", "llm_error"):
-                    st.caption(f"❌ Not rewritten: {getattr(p, 'error', None) or 'the AI call failed'}")
-                elif p_status == "unchanged":
-                    st.caption("➖ The AI kept your original wording for this bullet.")
+            verdict = getattr(p, "validation", None)
+            note = getattr(p, "validation_note", None)
+            p_status = getattr(p, "status", None)
+            badge, meaning = status_badge(p_status, verdict, (prop_text or "").strip() != (orig or "").strip())
+            kind = getattr(p, "kind", "bullet")
+            title = {"summary": "Professional summary",
+                     "skills": "Skills (one \"Category: a, b, c\" line each; reordering only, nothing is added)"
+                     }.get(kind, f"Bullet {i + 1}")
+            st.markdown(f"**{badge}** · {title}")
+            st.session_state.setdefault(keybase + "_apply", True)  # Accept/Reject all set this key
+            sel = st.checkbox("Apply", key=keybase + "_apply")
+            left_html, right_html = diff_html(orig or "(no summary)", prop_text, all_keywords)
+            c_orig, c_new = st.columns(2)
+            with c_orig:
+                st.caption("Original")
+                st.markdown(left_html, unsafe_allow_html=True)
+            with c_new:
+                st.caption("Proposed (added words highlighted, JD keywords in bold)")
+                st.markdown(right_html, unsafe_allow_html=True)
+            edt = st.text_area(f"Edit proposed text ({i+1})", value=prop_text, key=keybase + "_edit", height=80)
+            if rationale:
+                st.caption(f"🎯 {rationale}")
+            if p_status in ("llm_unavailable", "llm_error"):
+                st.caption(f"{badge}: {getattr(p, 'error', None) or 'the AI call failed'}")
+            elif verdict in ("REJECT", "NEEDS_CONFIRM") and note:
+                st.caption(f"{badge}: {note}")
+            else:
+                st.caption(meaning)
             if sel:
                 selected.append(p)
                 edits[p.id if hasattr(p, 'id') else i] = edt
@@ -544,7 +575,37 @@ if st.session_state.stage == "proposals":
         )
         target_choice = st.selectbox("Where should this go?", options=target_labels, key="addition_target_choice")
 
-        apply_btn = st.form_submit_button("Apply & Generate")
+        f1, f2 = st.columns(2)
+        recalc_btn = f1.form_submit_button("🔄 Recalculate match rate")
+        apply_btn = f2.form_submit_button("Apply & Generate", type="primary")
+
+    def _preapproved():
+        """The ticked proposals as dicts, carrying the user's edits."""
+        out = []
+        for p in selected:
+            edited_text = edits.get(p.id if hasattr(p, 'id') else None) or (
+                getattr(p, "proposed_text", None) or getattr(p, "rewritten_text", None) or ""
+            )
+            if hasattr(p, 'model_dump'):
+                base = p.model_dump()
+            elif hasattr(p, 'dict'):
+                base = p.dict()
+            else:
+                base = {}
+            original_proposed = getattr(p, "proposed_text", None) or getattr(p, "rewritten_text", None) or ""
+            base["user_edited"] = edited_text.strip() != original_proposed.strip()
+            base["proposed_text"] = edited_text
+            base.pop("rewritten_text", None)  # model_dump mirrors it; the edit must win
+            out.append(base)
+        return out
+
+    if recalc_btn:
+        try:
+            st.session_state.live_match = TailorService(llm_client=None).preview_keyword_match(
+                st.session_state.parsed, st.session_state.job_description, _preapproved())
+            st.rerun()
+        except Exception as e:
+            st.error(f"Could not recalculate: {e}")
 
     if not apply_btn:
         st.info("Review the proposals and press 'Apply & Generate' when ready.")
@@ -562,22 +623,7 @@ if st.session_state.stage == "proposals":
             for q, ticked, answer, where in gap_inputs if ticked or (answer or "").strip()
         ]
 
-        preapproved = []
-        for p in selected:
-            edited_text = edits.get(p.id if hasattr(p, 'id') else None) or (
-                getattr(p, "proposed_text", None) or getattr(p, "rewritten_text", None) or ""
-            )
-            if hasattr(p, 'model_dump'):
-                base = p.model_dump()
-            elif hasattr(p, 'dict'):
-                base = p.dict()
-            else:
-                base = {}
-            original_proposed = getattr(p, "proposed_text", None) or getattr(p, "rewritten_text", None) or ""
-            base["user_edited"] = edited_text.strip() != original_proposed.strip()
-            base["proposed_text"] = edited_text
-            base.pop("rewritten_text", None)  # model_dump mirrors it; the edit must win
-            preapproved.append(base)
+        preapproved = _preapproved()
 
         output_dir = tempfile.mkdtemp()
         try:

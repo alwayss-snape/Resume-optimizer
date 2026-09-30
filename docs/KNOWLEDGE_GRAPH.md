@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**48 app modules · 41 test files · 83 classes · 621 functions/methods · 13,745 lines of Python** · source hash `5f520bb38e35a0d4`
+**48 app modules · 42 test files · 83 classes · 635 functions/methods · 13,878 lines of Python** · source hash `56ca990f2d9a513e`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -143,6 +143,7 @@ tests/
     test_resume_document.py                      test_resume_document_has_versioned_json_snapshot(), test_resume_docume…
     test_resume_model_v2.py                      Resume model v2 (P1.12): several roles at one company, project
     test_resume_normalizer.py                    test_resume_normalizer(), _normalize_replica(), test_replica_header_su…
+    test_review_view.py                          P3.4: the proposal review screen (diff, badges, breakdown, gap table,
     test_rewriter.py                             test_rewriter_deterministic_fallback(), test_rewrite_bullet_parses_str…
     test_scoring.py                              _req(), _match(), test_semantic_partial_excluded_from_headline_score()…
     test_semantic_matcher.py                     Tests for SemanticMatcher.
@@ -168,7 +169,7 @@ Rows = layer (what kind of code), columns = pipeline stage (when it runs during 
 | **Analysis** | · | `experience`<br>`resume_normalizer`<br>`structure_extractor` | `jd_analyzer` | `matcher`<br>`semantic_matcher`<br>`terminology` | `keyword_match`<br>`scoring` | `gap_questions`<br>`tailor_planner` | `change_proposal`<br>`experience`<br>`rewriter`<br>`skills_tailor`<br>`summary_writer` | · | · | · |
 | **LLM** | · | · | `client`<br>`schemas` | · | · | · | `client`<br>`schemas` | · | · | · |
 | **Validation** | · | · | `safety` | · | · | · | · | `content_lint`<br>`factual`<br>`output`<br>`structural` | · | · |
-| **Rendering** | `document_map` | · | · | · | · | · | · | · | `document_map`<br>`docx_patcher`<br>`html_renderer`<br>`layout`<br>`page_fit`<br>`pdf_converter`<br>`template_renderer` | · |
+| **Rendering** | `document_map` | · | · | · | · | · | `review_view` | · | `document_map`<br>`docx_patcher`<br>`html_renderer`<br>`layout`<br>`page_fit`<br>`pdf_converter`<br>`template_renderer` | · |
 | **Domain models** | · | `evidence`<br>`resume`<br>`resume_document` | `job` | `evidence`<br>`report` | `report` | `tailoring` | · | · | `resume_document` | · |
 | **Services** | · | · | · | · | · | · | · | · | · | `run_manager` |
 
@@ -186,7 +187,7 @@ Spanning all stages: `app/cli.py`, `app/eval/harness.py`, `app/services/tailor.p
   - `source_id()` :70
   - `rewritten_text()` :79
 - **Imported by:** `analysis/rewriter.py`, `analysis/skills_tailor.py`, `analysis/summary_writer.py`
-- **Tested by:** `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`
+- **Tested by:** `tests/unit/test_review_view.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`
 
 ### `app/analysis/experience.py`
 
@@ -259,7 +260,7 @@ _Keyword-level match rate, the headline score (P1.2)._
 - function **`resume_sections()`** ([app/analysis/keyword_match.py:62](../app/analysis/keyword_match.py#L62)) — (label, text) for every part of the resume a recruiter or ATS reads.
 - **Imports:** `analysis/terminology.py`, `domain/job.py`, `domain/report.py`, `domain/resume.py`
 - **Imported by:** `analysis/gap_questions.py`, `analysis/skills_tailor.py`, `analysis/tailor_planner.py`, `services/tailor.py`
-- **Tested by:** `tests/unit/test_gap_questions.py`, `tests/unit/test_keyword_match.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`
+- **Tested by:** `tests/unit/test_gap_questions.py`, `tests/unit/test_keyword_match.py`, `tests/unit/test_review_view.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`
 
 ### `app/analysis/matcher.py`
 
@@ -450,7 +451,7 @@ _Tailored professional summary (P1.5)._
 - class **`Requirement`** ([app/domain/job.py:4](../app/domain/job.py#L4))
 - class **`JobDescription`** ([app/domain/job.py:28](../app/domain/job.py#L28))
 - **Imported by:** `analysis/gap_questions.py`, `analysis/jd_analyzer.py`, `analysis/keyword_match.py`, `analysis/matcher.py`, `analysis/rewriter.py`, `analysis/scoring.py`, `analysis/semantic_matcher.py`, `analysis/summary_writer.py`, `analysis/tailor_planner.py`, `services/tailor.py`
-- **Tested by:** `tests/unit/test_gap_questions.py`, `tests/unit/test_jd_analyzer.py`, `tests/unit/test_keyword_match.py`, `tests/unit/test_matcher.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_scoring.py`, `tests/unit/test_semantic_matcher.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_tailor_planner.py`, `tests/unit/test_tailor_service_addition.py`
+- **Tested by:** `tests/unit/test_gap_questions.py`, `tests/unit/test_jd_analyzer.py`, `tests/unit/test_keyword_match.py`, `tests/unit/test_matcher.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_review_view.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_scoring.py`, `tests/unit/test_semantic_matcher.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_tailor_planner.py`, `tests/unit/test_tailor_service_addition.py`
 
 ### `app/domain/report.py`
 
@@ -463,7 +464,7 @@ _Tailored professional summary (P1.5)._
   - `missing()` :44
 - class **`TailoringReport`** ([app/domain/report.py:49](../app/domain/report.py#L49))
 - **Imported by:** `analysis/gap_questions.py`, `analysis/keyword_match.py`, `analysis/matcher.py`, `analysis/scoring.py`, `analysis/semantic_matcher.py`, `analysis/skills_tailor.py`, `analysis/summary_writer.py`, `analysis/tailor_planner.py`, `rendering/review_view.py`, `services/tailor.py`
-- **Tested by:** `tests/unit/test_keyword_match.py`, `tests/unit/test_matcher.py`, `tests/unit/test_scoring.py`, `tests/unit/test_semantic_matcher.py`, `tests/unit/test_tailor_planner.py`, `tests/unit/test_tailor_service_addition.py`
+- **Tested by:** `tests/unit/test_keyword_match.py`, `tests/unit/test_matcher.py`, `tests/unit/test_review_view.py`, `tests/unit/test_scoring.py`, `tests/unit/test_semantic_matcher.py`, `tests/unit/test_tailor_planner.py`, `tests/unit/test_tailor_service_addition.py`
 
 ### `app/domain/resume.py`
 
@@ -480,7 +481,7 @@ _Tailored professional summary (P1.5)._
 - class **`Education`** ([app/domain/resume.py:71](../app/domain/resume.py#L71))
 - class **`Resume`** ([app/domain/resume.py:79](../app/domain/resume.py#L79))
 - **Imported by:** `analysis/experience.py`, `analysis/keyword_match.py`, `analysis/resume_normalizer.py`, `analysis/rewriter.py`, `analysis/skills_tailor.py`, `analysis/structure_extractor.py`, `analysis/summary_writer.py`, `analysis/tailor_planner.py`, `domain/resume_document.py`, `eval/golden.py`, `rendering/html_renderer.py`, `rendering/layout.py`, `rendering/page_fit.py`, `services/tailor.py`, `validation/content_lint.py`, `validation/structural.py`
-- **Tested by:** `tests/unit/test_ats_round_trip.py`, `tests/unit/test_content_lint.py`, `tests/unit/test_docx_renderer.py`, `tests/unit/test_experience.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_html_renderer.py`, `tests/unit/test_keyword_match.py`, `tests/unit/test_page_fit.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_resume_document.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_tailor_planner.py`, `tests/unit/test_tailor_service_addition.py`, `tests/unit/test_template_layout.py`, `tests/unit/test_template_renderer_standalone.py`
+- **Tested by:** `tests/unit/test_ats_round_trip.py`, `tests/unit/test_content_lint.py`, `tests/unit/test_docx_renderer.py`, `tests/unit/test_experience.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_html_renderer.py`, `tests/unit/test_keyword_match.py`, `tests/unit/test_page_fit.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_resume_document.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_review_view.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_tailor_planner.py`, `tests/unit/test_tailor_service_addition.py`, `tests/unit/test_template_layout.py`, `tests/unit/test_template_renderer_standalone.py`
 
 ### `app/domain/resume_document.py`
 
@@ -494,7 +495,7 @@ _Tailored professional summary (P1.5)._
   - `snapshot()` :77 — Return a JSON-serializable, versioned document for storage or export.
 - **Imports:** `domain/resume.py`
 - **Imported by:** `analysis/resume_normalizer.py`, `analysis/structure_extractor.py`, `rendering/html_renderer.py`, `rendering/layout.py`, `rendering/page_fit.py`, `rendering/template_renderer.py`, `services/tailor.py`
-- **Tested by:** `tests/unit/test_ats_round_trip.py`, `tests/unit/test_docx_renderer.py`, `tests/unit/test_html_renderer.py`, `tests/unit/test_page_fit.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_resume_document.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_template_layout.py`, `tests/unit/test_template_renderer_standalone.py`
+- **Tested by:** `tests/unit/test_ats_round_trip.py`, `tests/unit/test_docx_renderer.py`, `tests/unit/test_html_renderer.py`, `tests/unit/test_page_fit.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_resume_document.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_review_view.py`, `tests/unit/test_template_layout.py`, `tests/unit/test_template_renderer_standalone.py`
 
 ### `app/domain/tailoring.py`
 
@@ -746,7 +747,7 @@ _Page-fit loop (P2.4): render, count pages, trim, render again._
 
 ### `app/rendering/review_view.py`
 
-**Layer:** Rendering · **Stage:** — · **Lines:** 107
+**Layer:** Rendering · **Stage:** 7 Rewrite · **Lines:** 107
 
 _What the proposal review screen shows (P3.4), as plain functions so the_
 
@@ -759,6 +760,7 @@ _What the proposal review screen shows (P3.4), as plain functions so the_
 - function **`gap_table()`** ([app/rendering/review_view.py:98](../app/rendering/review_view.py#L98)) — Missing JD keywords, required and heaviest first, and whether a gap
 - **Imports:** `domain/report.py`
 - **Imported by:** `ui.py`
+- **Tested by:** `tests/unit/test_review_view.py`
 
 ### `app/rendering/template_renderer.py`
 
@@ -825,11 +827,11 @@ _What the proposal review screen shows (P3.4), as plain functions so the_
 - function **`_merge_usage()`** ([app/services/tailor.py:924](../app/services/tailor.py#L924)) — Combine two LLMClient.get_usage_summary() dicts into one.
 - **Imports:** `analysis/experience.py`, `analysis/gap_questions.py`, `analysis/jd_analyzer.py`, `analysis/keyword_match.py`, `analysis/matcher.py`, `analysis/resume_normalizer.py`, `analysis/rewriter.py`, `analysis/scoring.py`, `analysis/semantic_matcher.py`, `analysis/skills_tailor.py`, `analysis/structure_extractor.py`, `analysis/summary_writer.py`, `analysis/tailor_planner.py`, `domain/evidence.py`, `domain/job.py`, `domain/report.py`, `domain/resume.py`, `domain/resume_document.py`, `domain/tailoring.py`, `ingestion/docx.py`, `ingestion/pdf.py`, `llm/client.py`, `rendering/docx_patcher.py`, `rendering/html_renderer.py`, `rendering/layout.py`, `rendering/page_fit.py`, `rendering/pdf_converter.py`, `rendering/template_renderer.py`, `services/run_manager.py`, `validation/content_lint.py`, `validation/factual.py`, `validation/output.py`, `validation/safety.py`, `validation/structural.py`
 - **Imported by:** `cli.py`, `eval/harness.py`, `ui.py`
-- **Tested by:** `tests/integration/test_end_to_end.py`, `tests/unit/test_check_parsed_resume.py`, `tests/unit/test_cli.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_tailor_resume_flow.py`, `tests/unit/test_tailor_service_addition.py`, `tests/unit/test_ui.py`
+- **Tested by:** `tests/integration/test_end_to_end.py`, `tests/unit/test_check_parsed_resume.py`, `tests/unit/test_cli.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_review_view.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_tailor_resume_flow.py`, `tests/unit/test_tailor_service_addition.py`, `tests/unit/test_ui.py`
 
 ### `app/ui.py`
 
-**Layer:** Entry points · **Stage:** all · **Lines:** 753
+**Layer:** Entry points · **Stage:** all · **Lines:** 754
 
 - function **`get_local_pdf_preview_url()`** ([app/ui.py:26](../app/ui.py#L26)) — Serve a PDF from a temporary HTTP endpoint so Chrome can render it in an iframe.
 - function **`display_pdf_with_fallback()`** ([app/ui.py:43](../app/ui.py#L43)) — Try to use Streamlit's native PDF display if available, otherwise fall back
@@ -1108,7 +1110,6 @@ From `app/config/settings.py`; each can be overridden by the env var of the same
 - `app/analysis/terminology.py`
 - `app/config/settings.py`
 - `app/ingestion/ocr.py`
-- `app/rendering/review_view.py`
 
 **Not imported by any app code** (possibly dead code, or only used by tests/scripts):
 
@@ -1116,4 +1117,4 @@ From `app/config/settings.py`; each can be overridden by the env var of the same
 
 **Not in `STAGE_MAP`** (add them in `scripts/update_docs.py`):
 
-- `app/rendering/review_view.py`
+- none

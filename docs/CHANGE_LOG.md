@@ -10,6 +10,46 @@ Timestamped record of every **major** commit (anything touching `app/`, `scripts
 
 <!-- entries below; newest first -->
 
+<!-- entry:2026-09-30T23:27:36+05:30 -->
+## 2026-09-30 23:27 (+0530) · P3.4: Review screen with diff, badges, accept-all and live match rate
+
+Kshitij Chaubey · branch `fb_ksh`
+
+**Why / details**
+
+> Reviewing proposals meant reading two blocks of text and spotting the
+> differences by eye, with separate captions for validation and call status,
+> and the match rate only changed after a full Apply & Generate (F17, F31).
+>
+> Each proposal now shows one status badge (the thing to act on first), the
+> original and the proposal side by side with removed and added words
+> marked and JD keywords in bold, and the edit box. Accept all / Reject all
+> set every checkbox. Because Streamlit forms only rerun on submit, a second
+> submit button recalculates the match rate from the ticked, edited text
+> (deterministic, no LLM, nothing rendered) and shows it next to the
+> before-tailoring rate. A keyword-gap table lists what the JD asks for that
+> the resume lacks and whether a question below covers it, and every
+> keyword table now has a per-kind score breakdown that sums to the rate.
+>
+> The display logic lives in rendering/review_view.py as plain functions so
+> it can be tested without Streamlit.
+
+**Changed files**
+
+- Docs: `M` docs/ACTION_ITEMS.md, `M` docs/PROJECT_OVERVIEW.md
+- Entry points: `M` app/ui.py
+- Rendering: `A` app/rendering/review_view.py
+- Services: `M` app/services/tailor.py
+- Tests: `M` tests/unit/test_keyword_match.py, `A` tests/unit/test_review_view.py
+- Tooling: `M` scripts/update_docs.py
+
+**Structure delta**
+
+- new module `app/rendering/review_view.py`
+- `app/services/tailor.py`: added `TailorService.preview_keyword_match()`
+
+---
+
 <!-- entry:2026-09-30T23:24:47+05:30 -->
 ## 2026-09-30 23:24 (+0530) · P1.10: Guard fixes from review (joiners, line separators, JD invisibles)
 
@@ -35,6 +75,8 @@ Kshitij Chaubey · branch `fb_ksh`
 **Structure delta**
 
 - `app/validation/safety.py`: added `SafetyGuard.strip_invisible()`
+
+---
 
 ---
 
@@ -74,6 +116,8 @@ Kshitij Chaubey · branch `fb_ksh`
 
 - removed module `app/services/validation_agent.py`
 - `app/validation/safety.py`: added `SafetyGuard.guard_messages()`, `SafetyGuard.sanitize_untrusted()`
+
+---
 
 ---
 
@@ -121,6 +165,8 @@ Kshitij Chaubey · branch `fb_ksh`
 
 ---
 
+---
+
 <!-- entry:2026-09-30T22:38:42+05:30 -->
 ## 2026-09-30 22:38 (+0530) · P2.5: ATS round-trip QA on the rendered DOCX and PDF
 
@@ -157,6 +203,8 @@ Kshitij Chaubey · branch `fb_ksh`
 
 - `app/analysis/resume_normalizer.py`: added `ResumeNormalizer._looks_like_degree()`, `ResumeNormalizer._split_middle_dot()`
 - `app/validation/output.py`: added `OutputQAValidator.round_trip()`
+
+---
 
 ---
 
@@ -213,6 +261,8 @@ Kshitij Chaubey · branch `fb_ksh`
 
 ---
 
+---
+
 <!-- entry:2026-09-30T22:17:12+05:30 -->
 ## 2026-09-30 22:17 (+0530) · P2.3: Page target (1 or 2 A4 pages) from years of experience
 
@@ -251,6 +301,8 @@ Kshitij Chaubey · branch `fb_ksh`
 
 ---
 
+---
+
 <!-- entry:2026-09-30T22:15:59+05:30 -->
 ## 2026-09-30 22:15 (+0530) · P2.2: ATS template is the default output; PRESERVE moves to Advanced
 
@@ -272,6 +324,8 @@ Kshitij Chaubey · branch `fb_ksh`
 - Entry points: `M` app/cli.py, `M` app/ui.py
 - Services: `M` app/services/tailor.py
 - Tests: `M` tests/unit/test_ui.py
+
+---
 
 ---
 
@@ -347,6 +401,8 @@ Kshitij Chaubey · branch `fb_ksh`
 
 ---
 
+---
+
 <!-- entry:2026-09-30T21:50:22+05:30 -->
 ## 2026-09-30 21:50 (+0530) · P1.4: Retry bullets returned unchanged that still break the rules
 
@@ -373,6 +429,8 @@ Kshitij Chaubey · branch `fb_ksh`
 **Structure delta**
 
 - `app/analysis/rewriter.py`: added `breaks_bullet_rules()`
+
+---
 
 ---
 
@@ -423,6 +481,8 @@ Kshitij Chaubey · branch `fb_ksh`
 **Structure delta**
 
 - `app/llm/client.py`: added `_requested_wait()`
+
+---
 
 ---
 
@@ -502,6 +562,8 @@ Kshitij Chaubey · branch `fb_ksh`
 
 ---
 
+---
+
 <!-- entry:2026-09-30T16:45:06+05:30 -->
 ## 2026-09-30 16:45 (+0530) · Normalize typographic Unicode in LLM output; keep metrics verbatim
 
@@ -554,6 +616,8 @@ Kshitij Chaubey · branch `fb_ksh`
 
 ---
 
+---
+
 <!-- entry:2026-09-30T16:39:23+05:30 -->
 ## 2026-09-30 16:39 (+0530) · P0.10: Add check-llm command for a live provider/model smoke test
 
@@ -572,6 +636,8 @@ Kshitij Chaubey · branch `fb_ksh`
 **Structure delta**
 
 - `app/cli.py`: added `check_llm()`
+
+---
 
 ---
 
@@ -661,6 +727,8 @@ Kshitij Chaubey · branch `fb_ksh`
 
 ---
 
+---
+
 <!-- entry:2026-09-30T16:36:34+05:30 -->
 ## 2026-09-30 16:36 (+0530) · P0.1 + P0.3 + P0.5: Add Claude provider; model-aware cached health check; Groq 429 retry
 
@@ -698,6 +766,8 @@ Kshitij Chaubey · branch `fb_ksh`
 **Structure delta**
 
 - `app/llm/client.py`: added `LLMClient._anthropic_check()`, `LLMClient._anthropic_request()`, `LLMClient._anthropic_response()`, `LLMClient._check_available()`, `LLMClient._generate_anthropic()`, `LLMClient._generate_json_anthropic()`, `LLMClient._groq_check()`, `LLMClient._groq_supports_strict_schema()`, `LLMClient._ollama_check()`, `LLMClient._record()`, `LLMClient._split_system()`, `_retry_after_seconds()`, `strict_json_schema()`; removed `LLMClient._groq_is_available()`
+
+---
 
 ---
 
@@ -797,6 +867,8 @@ Kshitij Chaubey · branch `fb_ksh`
 
 ---
 
+---
+
 <!-- entry:2026-09-30T16:30:03+05:30 -->
 ## 2026-09-30 16:30 (+0530) · Treat any .py file as a major change for the change log
 
@@ -809,6 +881,8 @@ Kshitij Chaubey · branch `fb_ksh`
 **Changed files**
 
 - Tooling: `M` scripts/update_docs.py
+
+---
 
 ---
 
@@ -899,6 +973,8 @@ Kshitij Chaubey · branch `fb_ksh`
 
 ---
 
+---
+
 <!-- entry:2026-09-30T16:29:11+05:30 -->
 ## 2026-09-30 16:29 (+0530) · P0.9: Fix score cap at 60, empty JD keywords, and unit-blind number check
 
@@ -929,6 +1005,8 @@ Kshitij Chaubey · branch `fb_ksh`
 **Structure delta**
 
 - `app/analysis/scoring.py`: added `AlignmentScorer._compute()`
+
+---
 
 ---
 
@@ -1048,6 +1126,8 @@ Kshitij Chaubey · branch `fb_ksh`
 
 ---
 
+---
+
 <!-- entry:2026-09-29T15:37:29+00:00 -->
 ## 2026-09-29 21:07 (+0530) · Polish resume output formatting (DOCX/PDF + HTML preview)
 
@@ -1098,6 +1178,8 @@ Kshitij Chaubey · branch `fb_ksh`
 
 - `app/rendering/html_renderer.py`: added `HtmlResumeRenderer._meta_line()`
 - `app/rendering/template_renderer.py`: added `TemplateRenderer._add_bottom_border()`, `TemplateRenderer._add_section_heading()`, `TemplateRenderer._add_title_dates_line()`, `TemplateRenderer._content_width()`, `TemplateRenderer._set_document_defaults()`
+
+---
 
 ---
 
@@ -1237,6 +1319,8 @@ Kshitij Chaubey · branch `fb_ksh`
 
 ---
 
+---
+
 <!-- entry:2026-09-29T15:18:47+00:00 -->
 ## 2026-09-29 20:48 (+0530) · Fix resume parsing data-integrity bugs found against real resume
 
@@ -1316,6 +1400,8 @@ Kshitij Chaubey · branch `fb_ksh`
 
 ---
 
+---
+
 <!-- entry:2026-08-31T23:04:38+00:00 -->
 ## 2026-09-01 04:34 (+0530) · Add optional Groq cloud LLM provider; track per-run token usage
 
@@ -1352,6 +1438,8 @@ Kshitij Chaubey · branch `fb_ksh`
 **Structure delta**
 
 - `app/llm/client.py`: added `LLMClient._generate_groq()`, `LLMClient._generate_ollama()`, `LLMClient._groq_is_available()`, `LLMClient.get_usage_summary()`
+
+---
 
 ---
 
@@ -1484,6 +1572,8 @@ Kshitij Chaubey · branch `fb_ksh`
 
 ---
 
+---
+
 <!-- entry:2026-08-31T21:33:07+05:30 -->
 ## 2026-08-31 21:33 (+0530) · Add semantic matching layer; fix PDF/JD/matcher/scoring bugs
 
@@ -1513,6 +1603,8 @@ Kshitij Chaubey · branch `fb_ksh`
 - new module `app/analysis/semantic_matcher.py`: `class SemanticMatcher`
 - `app/analysis/terminology.py`: added `flat_alias_to_canonical()`
 - `app/ingestion/pdf.py`: added `PdfParser._merge_wrapped_lines()`
+
+---
 
 ---
 
@@ -1630,6 +1722,8 @@ Kshitij Chaubey · branch `fb_ksh`
 
 ---
 
+---
+
 <!-- entry:2026-08-31T16:56:49+05:30 -->
 ## 2026-08-31 16:56 (+0530) · Fix PDF preview for Chrome and related resume rendering updates
 
@@ -1645,6 +1739,8 @@ Kshitij Chaubey · branch `fb_ksh`
 
 - `app/rendering/template_renderer.py`: added `TemplateRenderer.render_ats_default()`, `class TemplateRenderer`
 - `app/ui.py`: added `get_local_pdf_preview_url()`
+
+---
 
 ---
 
@@ -1747,6 +1843,8 @@ Kshitij Chaubey · branch `fb_ksh`
 
 ---
 
+---
+
 <!-- entry:2026-08-31T16:11:26+05:30 -->
 ## 2026-08-31 16:11 (+0530) · Fix: resolve merge markers in TailorService return payload
 
@@ -1759,6 +1857,8 @@ Kshitij Chaubey · branch `fb_ksh`
 **Structure delta**
 
 - `app/services/tailor.py`: added `TailorService.__init__()`, `TailorService.analyze_only()`, `TailorService.generate_preview_md()`, `TailorService.tailor_resume()`, `class TailorService`
+
+---
 
 ---
 
@@ -1866,6 +1966,8 @@ Kshitij Chaubey · branch `fb_ksh`
 
 ---
 
+---
+
 <!-- entry:2026-08-31T15:48:16+05:30 -->
 ## 2026-08-31 15:48 (+0530) · Refactor: renderer accepts ResumeDocument; Tailor passes ResumeDocument; add validation agent and tests
 
@@ -1886,6 +1988,8 @@ Kshitij Chaubey · branch `fb_ksh`
 - `app/rendering/template_renderer.py`: removed `TemplateRenderer.render_ats_default()`, `class TemplateRenderer`
 - new module `app/services/validation_agent.py`: `class ValidationAgent`
 - `app/validation/factual.py`: added `FactualValidator._canonical_term()`, `FactualValidator._factual_terms()`, `FactualValidator.extract_numbers()`, `FactualValidator.validate_proposal()`, `class ClaimCheck`, `class FactualValidator`, `class ValidationResult`
+
+---
 
 ---
 
@@ -1981,6 +2085,8 @@ Kshitij Chaubey · branch `fb_ksh`
 
 ---
 
+---
+
 <!-- entry:2026-08-31T14:33:01+05:30 -->
 ## 2026-08-31 14:33 (+0530) · Phase1: wire StructuralValidator and OutputQAValidator into TailorService; collect validation warnings
 
@@ -1993,6 +2099,8 @@ Kshitij Chaubey · branch `fb_ksh`
 **Structure delta**
 
 - `app/services/tailor.py`: removed `TailorService.__init__()`, `TailorService.analyze_only()`, `TailorService.generate_preview_md()`, `TailorService.tailor_resume()`, `class TailorService`
+
+---
 
 ---
 
@@ -2100,6 +2208,8 @@ Kshitij Chaubey · branch `fb_ksh`
 
 ---
 
+---
+
 <!-- entry:2026-08-30T19:10:52+05:30 -->
 ## 2026-08-30 19:10 (+0530) · Render all canonical resume sections in ATS DOCX
 
@@ -2108,6 +2218,8 @@ Kshitij Chaubey · branch `fb_ksh`
 **Changed files**
 
 - Rendering: `M` app/rendering/template_renderer.py
+
+---
 
 ---
 
@@ -2202,6 +2314,8 @@ Kshitij Chaubey · branch `fb_ksh`
 
 ---
 
+---
+
 <!-- entry:2026-08-30T19:10:27+05:30 -->
 ## 2026-08-30 19:10 (+0530) · Parse table cell paragraphs without flattening
 
@@ -2210,6 +2324,8 @@ Kshitij Chaubey · branch `fb_ksh`
 **Changed files**
 
 - Ingestion: `M` app/ingestion/docx.py
+
+---
 
 ---
 
@@ -2304,6 +2420,8 @@ Kshitij Chaubey · branch `fb_ksh`
 
 ---
 
+---
+
 <!-- entry:2026-08-30T19:08:08+05:30 -->
 ## 2026-08-30 19:08 (+0530) · Use ATS HTML preview when PDF is unavailable
 
@@ -2312,6 +2430,8 @@ Kshitij Chaubey · branch `fb_ksh`
 **Changed files**
 
 - Entry points: `M` app/ui.py
+
+---
 
 ---
 
@@ -2406,6 +2526,8 @@ Kshitij Chaubey · branch `fb_ksh`
 
 ---
 
+---
+
 <!-- entry:2026-08-30T19:07:20+05:30 -->
 ## 2026-08-30 19:07 (+0530) · Test ATS HTML resume rendering
 
@@ -2414,6 +2536,8 @@ Kshitij Chaubey · branch `fb_ksh`
 **Changed files**
 
 - Tests: `A` tests/unit/test_html_renderer.py
+
+---
 
 ---
 
@@ -2516,6 +2640,8 @@ Kshitij Chaubey · branch `fb_ksh`
 
 ---
 
+---
+
 <!-- entry:2026-08-30T19:06:22+05:30 -->
 ## 2026-08-30 19:06 (+0530) · Expand canonical document contract coverage
 
@@ -2567,6 +2693,8 @@ Kshitij Chaubey · branch `fb_ksh`
 
 ---
 
+---
+
 <!-- entry:2026-08-30T19:04:11+05:30 -->
 ## 2026-08-30 19:04 (+0530) · Test canonical resume document contract
 
@@ -2575,6 +2703,8 @@ Kshitij Chaubey · branch `fb_ksh`
 **Changed files**
 
 - Tests: `A` tests/unit/test_resume_document.py
+
+---
 
 ---
 
@@ -2677,6 +2807,8 @@ Kshitij Chaubey · branch `fb_ksh`
 
 ---
 
+---
+
 <!-- entry:2026-08-29T21:20:23+05:30 -->
 ## 2026-08-29 21:20 (+0530) · Keep grounded validation test deterministic
 
@@ -2685,6 +2817,8 @@ Kshitij Chaubey · branch `fb_ksh`
 **Changed files**
 
 - Tests: `M` tests/unit/test_validation.py
+
+---
 
 ---
 
@@ -2783,6 +2917,8 @@ Kshitij Chaubey · branch `fb_ksh`
 
 ---
 
+---
+
 <!-- entry:2026-08-29T21:20:01+05:30 -->
 ## 2026-08-29 21:20 (+0530) · Test rejection of fabricated resume claims
 
@@ -2834,6 +2970,8 @@ Kshitij Chaubey · branch `fb_ksh`
 
 ---
 
+---
+
 <!-- entry:2026-08-29T21:19:45+05:30 -->
 ## 2026-08-29 21:19 (+0530) · Cover conservative evidence matching
 
@@ -2842,6 +2980,8 @@ Kshitij Chaubey · branch `fb_ksh`
 **Changed files**
 
 - Tests: `M` tests/unit/test_matcher.py
+
+---
 
 ---
 
@@ -2940,6 +3080,8 @@ Kshitij Chaubey · branch `fb_ksh`
 
 ---
 
+---
+
 <!-- entry:2026-08-29T21:19:08+05:30 -->
 ## 2026-08-29 21:19 (+0530) · Preview the rendered resume instead of plain Markdown
 
@@ -2948,6 +3090,8 @@ Kshitij Chaubey · branch `fb_ksh`
 **Changed files**
 
 - Entry points: `M` app/ui.py
+
+---
 
 ---
 
@@ -3046,6 +3190,8 @@ Kshitij Chaubey · branch `fb_ksh`
 
 ---
 
+---
+
 <!-- entry:2026-08-29T21:18:31+05:30 -->
 ## 2026-08-29 21:18 (+0530) · Require cited evidence for alignment score credit
 
@@ -3054,6 +3200,8 @@ Kshitij Chaubey · branch `fb_ksh`
 **Changed files**
 
 - Analysis: `M` app/analysis/scoring.py
+
+---
 
 ---
 
@@ -3152,6 +3300,8 @@ Kshitij Chaubey · branch `fb_ksh`
 
 ---
 
+---
+
 <!-- entry:2026-08-29T21:17:49+05:30 -->
 ## 2026-08-29 21:17 (+0530) · Harden evidence-only requirement matching
 
@@ -3164,6 +3314,8 @@ Kshitij Chaubey · branch `fb_ksh`
 **Structure delta**
 
 - `app/analysis/matcher.py`: added `EvidenceMatcher._meaningful_tokens()`, `EvidenceMatcher._normalize_text()`; removed `EvidenceMatcher._normalize_term()`
+
+---
 
 ---
 
@@ -3258,6 +3410,8 @@ Kshitij Chaubey · branch `fb_ksh`
 
 ---
 
+---
+
 <!-- entry:2026-08-29T21:08:37+05:30 -->
 ## 2026-08-29 21:08 (+0530) · fix: resolve 0.0 alignment score bug & add live resume preview tab
 
@@ -3278,6 +3432,8 @@ Kshitij Chaubey · branch `fb_ksh`
 - `app/analysis/jd_analyzer.py`: added `JDAnalyzer.extract_keywords_from_text()`
 - `app/analysis/matcher.py`: added `EvidenceMatcher._extract_key_tokens()`
 - `app/services/tailor.py`: added `TailorService.generate_preview_md()`
+
+---
 
 ---
 

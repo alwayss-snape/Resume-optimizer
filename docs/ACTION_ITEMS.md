@@ -15,9 +15,9 @@ JD-aligned rewrites, a Novoresume-style ATS layout that fits the right length, a
 | 0: Make the LLM path work | 10 | 10 | 0 | 0 |
 | 1: Content quality | 14 | 14 | 0 | 0 |
 | 2: Template, ATS, page-fit | 6 | 6 | 0 | 0 |
-| 3: Gap questions + UX | 6 | 2 | 0 | 4 |
+| 3: Gap questions + UX | 6 | 3 | 0 | 3 |
 | 4: Evaluation harness | 3 | 1 | 0 | 2 |
-| **Total** | **39** | **33** | **0** | **6** |
+| **Total** | **39** | **34** | **0** | **5** |
 
 ## Decisions (fixed by the user, 2026-09-30)
 
@@ -135,7 +135,7 @@ anonymized replica of the layout.
 | P3.1 | Gap questions replace the "illustrative" suggestions ("JD requires X. Have you used it?"). A bullet is drafted only from the answer; the skill is added only if the user ticks it | `rewriter.py:88-133`, `tailor.py`, `ui.py:295-311` | F19 | ✅ | New `analysis/gap_questions.py` (no LLM): JD keywords the resume lacks, grouped by the JD line that asks for them, required first, ≤ 6 questions. UI (inside the review form): "I have used X" checkboxes, an optional "where and how" answer and where to add it. `tailor_resume(gap_answers=…)`: ticked keywords join a matching skills category (recorded as `user_confirmed` skill evidence); an answer is polished into a bullet that may use only the ticked keywords and is fact-checked against the answer (the candidate's wording is used if the polish adds anything). The illustrative suggestions (5 LLM calls, invented metrics) and `suggest_for_missing_requirement` are removed |
 | P3.2 | Profile store: confirmed answers become `user_confirmed` evidence, pre-filled on future JDs | new `services/profile_store.py`, `domain/evidence.py`, `.gitignore` | F19 | ⬜ | |
 | P3.3 | "Add a job role" form → new Experience in date order, bullets polished from the input | `tailor.py`, `ui.py` | F20 | ⬜ | Design in PROJECT_OVERVIEW.md |
-| P3.4 | Review UI: side-by-side diff + highlighted keywords, status badges, accept-all, match rate recomputed on edit, keyword gap table, score breakdown | `ui.py` | F17, F31 | ⬜ | |
+| P3.4 | Review UI: side-by-side diff + highlighted keywords, status badges, accept-all, match rate recomputed on edit, keyword gap table, score breakdown | `ui.py` | F17, F31 | ✅ | New `rendering/review_view.py` (pure functions, tested): `diff_html()` word-level diff (removed words struck through on the original, added words highlighted on the proposal, JD keywords in bold on both, multi-word keywords included, HTML-escaped); `status_badge()` (❌ Not rewritten / ⛔ Will be dropped / ⚠️ Check / ➖ Kept as is / ✅ Pass, the one to act on first); `score_breakdown()` (found and points per keyword kind, summing to the rate, partial title credit included); `gap_table()` (missing keywords, required first, and whether a gap question asks about each). UI: badge + side-by-side diff per proposal with the edit box below; ✅ Accept all / ✖️ Reject all; a "🔄 Recalculate match rate" form button that re-scores the ticked, edited text through `TailorService.preview_keyword_match()` (no LLM, no files) and shows the rate with its delta; keyword-gap expander; score breakdown under every keyword table. `AppTest` checks for badges, diff, accept/reject all and recalculation |
 | P3.5 | "Check parsed resume" step before tailoring (edit name, headline, links, roles, dates) | `ui.py` | F21, F22 | ✅ | "Tailor" now parses first (stage `check_parse`): parse problems shown as warnings, editable name / headline / email / phone / location / links and per job company, location, each role's title + start/end. `TailorService.apply_parse_corrections()` applies them to a copy (bullets untouched, evidence prefix follows a company rename, user revision recorded). The checked parse is passed to `generate_proposals(parsed=…)` and `tailor_resume(parsed=…)`, so the file isn't re-parsed (no second structure LLM call) and corrections survive; any correction switches PRESERVE output to the ATS template. Tested with Streamlit `AppTest` |
 | P3.6 | `st.status` progress per stage; CLI parity | `ui.py`, `cli.py` | F31 | ⬜ | |
 
