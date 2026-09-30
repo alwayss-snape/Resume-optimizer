@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**41 app modules · 31 test files · 73 classes · 417 functions/methods · 10,640 lines of Python** · source hash `cd244367439c5fae`
+**41 app modules · 32 test files · 73 classes · 431 functions/methods · 10,838 lines of Python** · source hash `ea245457999862b3`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -49,7 +49,7 @@ app/
   domain/
     evidence.py                                  Evidence
     job.py                                       Requirement, JobDescription
-    report.py                                    Match, TailoringReport
+    report.py                                    Match, KeywordRow, KeywordMatchReport, TailoringReport
     resume.py                                    Candidate, ResumeBullet, Role, Experience, Project, Education, Resume
     resume_document.py                           ResumePresentation, ResumeSource, ResumeRevision, ResumeDocument
     tailoring.py                                 TailoringAction, TailoringPlan
@@ -122,6 +122,7 @@ tests/
     test_jd_analyzer.py                          test_jd_analyzer_heuristic(), test_heading_variants_are_not_extracted_…
     test_jd_analyzer_llm.py                      _FakeLLMClient
     test_jd_analyzer_v2.py                       JD analysis v2 (P1.1): title/company without labels, whole-line
+    test_keyword_match.py                        Keyword-level match rate as the headline score (P1.2).
     test_llm_client.py                           SampleSchema
     test_matcher.py                              test_evidence_matcher_exact_and_alias(), test_one_generic_word_cannot_…
     test_parsing_fixes_p19.py                    P1.9: links (DOCX hyperlinks, PDF link annotations, URLs in text),
@@ -149,7 +150,7 @@ Rows = layer (what kind of code), columns = pipeline stage (when it runs during 
 | Layer | 1 Ingest | 2 Normalize | 3 JD analysis | 4 Match | 5 Score | 6 Plan | 7 Rewrite | 8 Validate | 9 Render | 10 Report |
 |---|---|---|---|---|---|---|---|---|---|---|
 | **Ingestion** | `docx`<br>`ocr`<br>`pdf` | · | · | · | · | · | · | · | · | · |
-| **Analysis** | · | `resume_normalizer`<br>`structure_extractor` | `jd_analyzer` | `matcher`<br>`semantic_matcher`<br>`terminology` | `scoring` | `tailor_planner` | `change_proposal`<br>`rewriter` | · | · | · |
+| **Analysis** | · | `resume_normalizer`<br>`structure_extractor` | `jd_analyzer` | `matcher`<br>`semantic_matcher`<br>`terminology` | `keyword_match`<br>`scoring` | `tailor_planner` | `change_proposal`<br>`rewriter` | · | · | · |
 | **LLM** | · | · | `client`<br>`schemas` | · | · | · | `client`<br>`schemas` | · | · | · |
 | **Validation** | · | · | `safety` | · | · | · | · | `factual`<br>`output`<br>`structural` | · | · |
 | **Rendering** | `document_map` | · | · | · | · | · | · | · | `document_map`<br>`docx_patcher`<br>`html_renderer`<br>`pdf_converter`<br>`template_renderer` | · |
@@ -199,24 +200,22 @@ Spanning all stages: `app/cli.py`, `app/eval/harness.py`, `app/services/tailor.p
 
 ### `app/analysis/keyword_match.py`
 
-**Layer:** Analysis · **Stage:** — · **Lines:** 190
+**Layer:** Analysis · **Stage:** 5 Score · **Lines:** 162
 
 _Keyword-level match rate, the headline score (P1.2)._
 
-- class **`KeywordRow`** ([app/analysis/keyword_match.py:40](../app/analysis/keyword_match.py#L40))
-- class **`KeywordMatchReport`** ([app/analysis/keyword_match.py:51](../app/analysis/keyword_match.py#L51))
-  - `matched()` :57
-  - `missing()` :61
-- class **`KeywordMatcher`** ([app/analysis/keyword_match.py:122](../app/analysis/keyword_match.py#L122))
-  - `_find()` :123
-  - `_title_credit()` :143
-  - `match()` :153
-- function **`_stem()`** ([app/analysis/keyword_match.py:65](../app/analysis/keyword_match.py#L65))
-- function **`_alias()`** ([app/analysis/keyword_match.py:73](../app/analysis/keyword_match.py#L73))
-- function **`tokens()`** ([app/analysis/keyword_match.py:80](../app/analysis/keyword_match.py#L80)) — Lowercased, alias-canonical, plural-insensitive tokens.
-- function **`_contains_seq()`** ([app/analysis/keyword_match.py:85](../app/analysis/keyword_match.py#L85))
-- function **`resume_sections()`** ([app/analysis/keyword_match.py:90](../app/analysis/keyword_match.py#L90)) — (label, text) for every part of the resume a recruiter or ATS reads.
-- **Imports:** `analysis/terminology.py`, `domain/job.py`, `domain/resume.py`
+- class **`KeywordMatcher`** ([app/analysis/keyword_match.py:94](../app/analysis/keyword_match.py#L94))
+  - `_find()` :95
+  - `_title_credit()` :115
+  - `match()` :125
+- function **`_stem()`** ([app/analysis/keyword_match.py:37](../app/analysis/keyword_match.py#L37))
+- function **`_alias()`** ([app/analysis/keyword_match.py:45](../app/analysis/keyword_match.py#L45))
+- function **`tokens()`** ([app/analysis/keyword_match.py:52](../app/analysis/keyword_match.py#L52)) — Lowercased, alias-canonical, plural-insensitive tokens.
+- function **`_contains_seq()`** ([app/analysis/keyword_match.py:57](../app/analysis/keyword_match.py#L57))
+- function **`resume_sections()`** ([app/analysis/keyword_match.py:62](../app/analysis/keyword_match.py#L62)) — (label, text) for every part of the resume a recruiter or ATS reads.
+- **Imports:** `analysis/terminology.py`, `domain/job.py`, `domain/report.py`, `domain/resume.py`
+- **Imported by:** `services/tailor.py`
+- **Tested by:** `tests/unit/test_keyword_match.py`
 
 ### `app/analysis/matcher.py`
 
@@ -368,16 +367,20 @@ _LLM-assisted resume structure extraction with a verbatim guard (P1.13)._
 - class **`Requirement`** ([app/domain/job.py:4](../app/domain/job.py#L4))
 - class **`JobDescription`** ([app/domain/job.py:28](../app/domain/job.py#L28))
 - **Imported by:** `analysis/jd_analyzer.py`, `analysis/keyword_match.py`, `analysis/matcher.py`, `analysis/rewriter.py`, `analysis/scoring.py`, `analysis/semantic_matcher.py`, `analysis/tailor_planner.py`, `services/tailor.py`
-- **Tested by:** `tests/unit/test_jd_analyzer.py`, `tests/unit/test_matcher.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_scoring.py`, `tests/unit/test_semantic_matcher.py`, `tests/unit/test_tailor_planner.py`, `tests/unit/test_tailor_service_addition.py`
+- **Tested by:** `tests/unit/test_jd_analyzer.py`, `tests/unit/test_keyword_match.py`, `tests/unit/test_matcher.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_scoring.py`, `tests/unit/test_semantic_matcher.py`, `tests/unit/test_tailor_planner.py`, `tests/unit/test_tailor_service_addition.py`
 
 ### `app/domain/report.py`
 
-**Layer:** Domain models · **Stage:** 4 Match, 5 Score · **Lines:** 28
+**Layer:** Domain models · **Stage:** 4 Match, 5 Score · **Lines:** 61
 
-- class **`Match`** ([app/domain/report.py:4](../app/domain/report.py#L4))
-- class **`TailoringReport`** ([app/domain/report.py:19](../app/domain/report.py#L19))
-- **Imported by:** `analysis/matcher.py`, `analysis/scoring.py`, `analysis/semantic_matcher.py`, `analysis/tailor_planner.py`, `services/tailor.py`
-- **Tested by:** `tests/unit/test_matcher.py`, `tests/unit/test_scoring.py`, `tests/unit/test_semantic_matcher.py`, `tests/unit/test_tailor_planner.py`, `tests/unit/test_tailor_service_addition.py`
+- class **`Match`** ([app/domain/report.py:8](../app/domain/report.py#L8))
+- class **`KeywordRow`** ([app/domain/report.py:23](../app/domain/report.py#L23))
+- class **`KeywordMatchReport`** ([app/domain/report.py:34](../app/domain/report.py#L34))
+  - `matched()` :40
+  - `missing()` :44
+- class **`TailoringReport`** ([app/domain/report.py:49](../app/domain/report.py#L49))
+- **Imported by:** `analysis/keyword_match.py`, `analysis/matcher.py`, `analysis/scoring.py`, `analysis/semantic_matcher.py`, `analysis/tailor_planner.py`, `services/tailor.py`
+- **Tested by:** `tests/unit/test_keyword_match.py`, `tests/unit/test_matcher.py`, `tests/unit/test_scoring.py`, `tests/unit/test_semantic_matcher.py`, `tests/unit/test_tailor_planner.py`, `tests/unit/test_tailor_service_addition.py`
 
 ### `app/domain/resume.py`
 
@@ -394,7 +397,7 @@ _LLM-assisted resume structure extraction with a verbatim guard (P1.13)._
 - class **`Education`** ([app/domain/resume.py:71](../app/domain/resume.py#L71))
 - class **`Resume`** ([app/domain/resume.py:79](../app/domain/resume.py#L79))
 - **Imported by:** `analysis/keyword_match.py`, `analysis/resume_normalizer.py`, `analysis/rewriter.py`, `analysis/structure_extractor.py`, `analysis/tailor_planner.py`, `domain/resume_document.py`, `eval/golden.py`, `rendering/html_renderer.py`, `rendering/template_renderer.py`, `services/tailor.py`, `validation/structural.py`
-- **Tested by:** `tests/unit/test_docx_renderer.py`, `tests/unit/test_html_renderer.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_resume_document.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_tailor_planner.py`, `tests/unit/test_tailor_service_addition.py`, `tests/unit/test_template_renderer_standalone.py`
+- **Tested by:** `tests/unit/test_docx_renderer.py`, `tests/unit/test_html_renderer.py`, `tests/unit/test_keyword_match.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_resume_document.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_tailor_planner.py`, `tests/unit/test_tailor_service_addition.py`, `tests/unit/test_template_renderer_standalone.py`
 
 ### `app/domain/resume_document.py`
 
@@ -452,7 +455,7 @@ _Canonical projection of a parsed resume, compared against hand-checked_
 
 ### `app/eval/harness.py`
 
-**Layer:** Root · **Stage:** all · **Lines:** 264
+**Layer:** Root · **Stage:** all · **Lines:** 271
 
 _Run evaluation cases through the pipeline and collect metrics (P4.1)._
 
@@ -466,11 +469,11 @@ _Run evaluation cases through the pipeline and collect metrics (P4.1)._
 - function **`load_cases()`** ([app/eval/harness.py:66](../app/eval/harness.py#L66))
 - function **`keyword_coverage()`** ([app/eval/harness.py:84](../app/eval/harness.py#L84)) — Share of the JD's keywords found verbatim (whole term, any case) in
 - function **`run_case()`** ([app/eval/harness.py:93](../app/eval/harness.py#L93))
-- function **`_tailor_metrics()`** ([app/eval/harness.py:158](../app/eval/harness.py#L158))
-- function **`run()`** ([app/eval/harness.py:185](../app/eval/harness.py#L185))
-- function **`_flatten()`** ([app/eval/harness.py:201](../app/eval/harness.py#L201))
-- function **`compare()`** ([app/eval/harness.py:218](../app/eval/harness.py#L218)) — Human-readable differences per case between a report and a baseline.
-- function **`summary_lines()`** ([app/eval/harness.py:246](../app/eval/harness.py#L246))
+- function **`_tailor_metrics()`** ([app/eval/harness.py:166](../app/eval/harness.py#L166))
+- function **`run()`** ([app/eval/harness.py:192](../app/eval/harness.py#L192))
+- function **`_flatten()`** ([app/eval/harness.py:208](../app/eval/harness.py#L208))
+- function **`compare()`** ([app/eval/harness.py:225](../app/eval/harness.py#L225)) — Human-readable differences per case between a report and a baseline.
+- function **`summary_lines()`** ([app/eval/harness.py:253](../app/eval/harness.py#L253))
 - **Imports:** `analysis/jd_analyzer.py`, `eval/golden.py`, `llm/client.py`, `services/tailor.py`
 - **Imported by:** `eval/__main__.py`
 - **Tested by:** `tests/unit/test_eval_harness.py`
@@ -643,21 +646,21 @@ _Run evaluation cases through the pipeline and collect metrics (P4.1)._
 
 ### `app/services/tailor.py`
 
-**Layer:** Services · **Stage:** all · **Lines:** 696
+**Layer:** Services · **Stage:** all · **Lines:** 723
 
-- class **`TailorService`** ([app/services/tailor.py:34](../app/services/tailor.py#L34))
-  - `__init__()` :35
-  - `generate_preview_md()` :62
-  - `parse_resume()` :107 — File -> (raw document, ResumeDocument, evidence). The deterministic
-  - `normalize_raw()` :117
-  - `_copy_parsed()` :125 — Deep copies, so a parse kept in UI session state is never mutated.
-  - `apply_parse_corrections()` :130 — Apply the user's fixes from the "Check parsed resume" step (P3.5).
-  - `analyze_only()` :191
-  - `generate_proposals()` :214 — Generate rewrite proposals without applying them, plus advisory
-  - `incorporate_user_addition()` :273 — Fold a user-supplied free-text addition (a project, an
-  - `tailor_resume()` :347
-- function **`_merge_usage()`** ([app/services/tailor.py:687](../app/services/tailor.py#L687)) — Combine two LLMClient.get_usage_summary() dicts into one.
-- **Imports:** `analysis/jd_analyzer.py`, `analysis/matcher.py`, `analysis/resume_normalizer.py`, `analysis/rewriter.py`, `analysis/scoring.py`, `analysis/semantic_matcher.py`, `analysis/structure_extractor.py`, `analysis/tailor_planner.py`, `domain/evidence.py`, `domain/job.py`, `domain/report.py`, `domain/resume.py`, `domain/resume_document.py`, `domain/tailoring.py`, `ingestion/docx.py`, `ingestion/pdf.py`, `llm/client.py`, `rendering/docx_patcher.py`, `rendering/html_renderer.py`, `rendering/pdf_converter.py`, `rendering/template_renderer.py`, `services/run_manager.py`, `validation/factual.py`, `validation/output.py`, `validation/safety.py`, `validation/structural.py`
+- class **`TailorService`** ([app/services/tailor.py:35](../app/services/tailor.py#L35))
+  - `__init__()` :36
+  - `generate_preview_md()` :66
+  - `parse_resume()` :111 — File -> (raw document, ResumeDocument, evidence). The deterministic
+  - `normalize_raw()` :121
+  - `_copy_parsed()` :129 — Deep copies, so a parse kept in UI session state is never mutated.
+  - `apply_parse_corrections()` :134 — Apply the user's fixes from the "Check parsed resume" step (P3.5).
+  - `analyze_only()` :195
+  - `generate_proposals()` :221 — Generate rewrite proposals without applying them, plus advisory
+  - `incorporate_user_addition()` :283 — Fold a user-supplied free-text addition (a project, an
+  - `tailor_resume()` :357
+- function **`_merge_usage()`** ([app/services/tailor.py:714](../app/services/tailor.py#L714)) — Combine two LLMClient.get_usage_summary() dicts into one.
+- **Imports:** `analysis/jd_analyzer.py`, `analysis/keyword_match.py`, `analysis/matcher.py`, `analysis/resume_normalizer.py`, `analysis/rewriter.py`, `analysis/scoring.py`, `analysis/semantic_matcher.py`, `analysis/structure_extractor.py`, `analysis/tailor_planner.py`, `domain/evidence.py`, `domain/job.py`, `domain/report.py`, `domain/resume.py`, `domain/resume_document.py`, `domain/tailoring.py`, `ingestion/docx.py`, `ingestion/pdf.py`, `llm/client.py`, `rendering/docx_patcher.py`, `rendering/html_renderer.py`, `rendering/pdf_converter.py`, `rendering/template_renderer.py`, `services/run_manager.py`, `validation/factual.py`, `validation/output.py`, `validation/safety.py`, `validation/structural.py`
 - **Imported by:** `cli.py`, `eval/harness.py`, `ui.py`
 - **Tested by:** `tests/integration/test_end_to_end.py`, `tests/unit/test_check_parsed_resume.py`, `tests/unit/test_cli.py`, `tests/unit/test_tailor_resume_flow.py`, `tests/unit/test_tailor_service_addition.py`
 
@@ -672,13 +675,14 @@ _Run evaluation cases through the pipeline and collect metrics (P4.1)._
 
 ### `app/ui.py`
 
-**Layer:** Entry points · **Stage:** all · **Lines:** 641
+**Layer:** Entry points · **Stage:** all · **Lines:** 676
 
 - function **`get_local_pdf_preview_url()`** ([app/ui.py:25](../app/ui.py#L25)) — Serve a PDF from a temporary HTTP endpoint so Chrome can render it in an iframe.
 - function **`display_pdf_with_fallback()`** ([app/ui.py:42](../app/ui.py#L42)) — Try to use Streamlit's native PDF display if available, otherwise fall back
 - function **`_cleanup_session_state()`** ([app/ui.py:79](../app/ui.py#L79)) — Remove temp files from a previous run and reset to a clean 'idle' state.
 - function **`model_options()`** ([app/ui.py:136](../app/ui.py#L136)) — Models offered in the sidebar for the configured provider. The
-- function **`_draft_proposals()`** ([app/ui.py:265](../app/ui.py#L265))
+- function **`_show_keyword_match()`** ([app/ui.py:261](../app/ui.py#L261)) — Match rate against the target band, then the matched / missing table
+- function **`_draft_proposals()`** ([app/ui.py:290](../app/ui.py#L290))
 - **Imports:** `config/settings.py`, `llm/client.py`, `services/tailor.py`
 - **Tested by:** `tests/unit/test_ui.py`
 
@@ -822,6 +826,7 @@ flowchart LR
   rendering_docx_patcher --> analysis_rewriter
   rendering_docx_patcher --> rendering_document_map
   services_tailor --> analysis_jd_analyzer
+  services_tailor --> analysis_keyword_match
   services_tailor --> analysis_matcher
   services_tailor --> analysis_resume_normalizer
   services_tailor --> analysis_rewriter
@@ -891,7 +896,6 @@ From `app/config/settings.py`; each can be overridden by the env var of the same
 **No test file imports these directly** (they may still be exercised indirectly):
 
 - `app/analysis/change_proposal.py`
-- `app/analysis/keyword_match.py`
 - `app/analysis/terminology.py`
 - `app/config/settings.py`
 - `app/ingestion/ocr.py`
@@ -899,10 +903,9 @@ From `app/config/settings.py`; each can be overridden by the env var of the same
 
 **Not imported by any app code** (possibly dead code, or only used by tests/scripts):
 
-- `app/analysis/keyword_match.py`
 - `app/eval/__main__.py`
 - `app/services/validation_agent.py`
 
 **Not in `STAGE_MAP`** (add them in `scripts/update_docs.py`):
 
-- `app/analysis/keyword_match.py`
+- none

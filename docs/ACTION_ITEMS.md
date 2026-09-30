@@ -13,11 +13,11 @@ JD-aligned rewrites, a Novoresume-style ATS layout that fits the right length, a
 | Phase | Items | ✅ | 🟡 | ⬜ |
 |---|---|---|---|---|
 | 0: Make the LLM path work | 10 | 10 | 0 | 0 |
-| 1: Content quality | 14 | 6 | 0 | 8 |
+| 1: Content quality | 14 | 7 | 0 | 7 |
 | 2: Template, ATS, page-fit | 6 | 0 | 0 | 6 |
 | 3: Gap questions + UX | 6 | 1 | 0 | 5 |
 | 4: Evaluation harness | 3 | 1 | 0 | 2 |
-| **Total** | **39** | **18** | **0** | **21** |
+| **Total** | **39** | **19** | **0** | **20** |
 
 ## Decisions (fixed by the user, 2026-09-30)
 
@@ -60,6 +60,8 @@ anonymized replica of the layout.
 
 **After Stage A (2026-09-30, `python -m app.eval run --live --tailor --case real-fox`):** parse = golden match; JD 21 requirements / 4 preferred (LLM); score 0.0 (whole-line requirements never match the sentence matcher, F12); 7/28 JD keywords verbatim in the resume; 0 rewrites (the planner only rewrites matched bullets, F13); 8 LLM calls, 20.6K tokens, 4 × 429; 2 pages. → Stage B.
 
+**After Stage B (2026-09-30):** parse = golden match; JD 21 requirements / 4 preferred; keyword match rate **29.3%** (8 matched: ML, Databricks, MLOps, Python, LightGBM, Spark via PySpark, AWS, feature stores; missing incl. PyTorch, MLflow, A/B, NDCG, LLMs, FAISS, Kafka, title); 0 rewrites (planner, P1.3); 6 LLM calls, 10.5K tokens, 7 × 429; 2 pages.
+
 **Real-resume baseline (2026-09-30, user's PDF + FOX "SDE L2 / Senior Engineer, ML" JD, Groq gpt-oss-120b):** score 8.0 → 7.1; 3 rewrites proposed, 3 PASS; 5 suggestions (all invent metrics, e.g. "NDCG +12%"); 19 LLM calls, 28.6K tokens, 69 s, 4 rate-limit (429) retries; output 2 pages. **The output is unusable because of PDF parsing (P1.9):** the name was read as a project heading, the company became "Professional Experience" / title "Role", project headings became bullets, `●` glyphs and wrapped lines leaked through, skills/education were garbled, and certifications were filed as interests. JD analysis (P1.1): no title/company, junk requirements from "and"-splitting, and "Nice To Have" items marked required. → **P1.9 and P1.1 moved to the front of Phase 1.** Phase 0's own goal (a working LLM path) is met ✅.
 
 | ID | Action | Files | Resolves | Status | Notes |
@@ -80,7 +82,7 @@ anonymized replica of the layout.
 | ID | Action | Files | Resolves | Status | Notes |
 |---|---|---|---|---|---|
 | P1.1 | JD analysis v2: one structured call returns title, seniority, min years, hard skills, soft skills, must-have / nice-to-have, education, certs, each with a verbatim JD span (code drops anything not found in the JD). Frequency counted in code. No splitting on "and". Heuristic fallback stays | `jd_analyzer.py`, `domain/job.py`, `prompts/jd_analysis.txt` | F9, F11, F44–F47 | ✅ | One `JDAnalysisResult` call over all numbered lines (replaces line selection): title, company, seniority, min/max years, requirement lines by index with priority + category, hard/soft skills, education, certs. Verbatim guard: every string must occur in the JD (the JD's own spelling is kept), years must appear in the text, otherwise the deterministic value stands. Requirements are whole lines (no "and"-splitting) with `source_spans`. Deterministic side: title/company from "X is looking for a <title> to join", seniority from title, years regex, headings = known patterns / ALL-CAPS / short known-section lines, "Nice To Have, But Not Required" → preferred, intro prose skipped. Keywords = verified hard skills + certs, topped up with technical terms from requirement lines only (no heading/company/team words), ranked by `keyword_counts` (counted in code). FOX JD live: 1 call, ~5K tokens, 6 s; title/company/senior/3–7 years right, 21–22 whole-line requirements, 4 preferred |
-| P1.2 | Jobscan-style match rate as the headline score: keyword-level, weights hard skills > title > education/certs > soft skills, required ×1.5. Evidence strength becomes secondary. Target band 75–85% | `matcher.py`, `scoring.py`, `domain/report.py` | F10, F12 | ⬜ | |
+| P1.2 | Jobscan-style match rate as the headline score: keyword-level, weights hard skills > title > education/certs > soft skills, required ×1.5. Evidence strength becomes secondary. Target band 75–85% | `matcher.py`, `scoring.py`, `domain/report.py` | F10, F12 | ✅ | New `analysis/keyword_match.py`: one row per JD keyword (hard skills 3, title 2, education/certs 1.5, soft 1; ×1.5 when the keyword is in a required line) with found / where / JD count; rate = weighted share found. Matching is alias-aware (ML = machine learning), plural-insensitive, whole-token (R ≠ React, ML ≠ MLflow), with implied terms (PySpark → Spark) and multi-word terms allowed within one sentence; title gets partial credit from role titles / headline. Headline score everywhere (analyze, proposals, before/after tailoring); the old requirement score stays as `evidence_score`. UI: rate vs 75–85% band + matched/missing table (analysis, proposal review, results); `changes.md` gets a keyword table. `tailor_resume(job_desc=…)` reuses the proposal-time JD analysis (one fewer call; before/after rates now use the same keywords) |
 | P1.3 | Planner v2: relevance score per bullet, reorder within each role, trim candidates; rewriter gets only the relevant requirements + allowed keywords | `tailor_planner.py`, `domain/tailoring.py` | F13 | ⬜ | |
 | P1.4 | Rewrite v2, one call per role: strong verbs with no repeats, XYZ phrasing only with existing metrics, ≤28 words, JD spelling, no pronouns or buzzwords, never add numbers; returns `keywords_used` + `evidence_ids` | `rewriter.py`, `prompts/rewrite_role.txt`, `llm/schemas.py` | F14 | ⬜ | |
 | P1.5 | Summary tailoring: years computed in code, real title, top evidenced JD skills, one real metric; validated | new `analysis/summary_writer.py`, `tailor.py`, `ui.py` | F18 | ⬜ | |

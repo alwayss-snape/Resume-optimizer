@@ -5,6 +5,7 @@ from typing import Dict, List, Optional, Tuple
 from uuid import uuid4
 
 from app.analysis.jd_analyzer import JDAnalyzer
+from app.analysis.keyword_match import KeywordMatcher
 from app.analysis.matcher import EvidenceMatcher
 from app.analysis.resume_normalizer import ResumeNormalizer
 from app.analysis.rewriter import FAILED_STATUSES, LLMRewriter, RewriteProposal
@@ -47,6 +48,9 @@ class TailorService:
         # every analyze_only/generate_proposals/tailor_resume call.
         self.semantic_matcher = SemanticMatcher()
         self.scorer = AlignmentScorer()
+        # Headline score = keyword match rate (P1.2). The requirement-level
+        # AlignmentScorer result is kept as the secondary "evidence_score".
+        self.keyword_matcher = KeywordMatcher()
         self.planner = TailoringPlanner(self.llm_client)
         self.rewriter = LLMRewriter(self.llm_client)
         self.validator = FactualValidator()
@@ -196,8 +200,10 @@ class TailorService:
         job_desc = self.jd_analyzer.analyze(clean_jd_text)
         matches = self.matcher.match(job_desc, evidence_list)
         matches = self.semantic_matcher.match(job_desc.requirements, evidence_list, matches)
-        score = self.scorer.calculate_score(matches, job_desc.requirements)
-        score_components = self.scorer.calculate_components(matches, job_desc.requirements)
+        keyword_report = self.keyword_matcher.match(job_desc, resume)
+        score = keyword_report.rate
+        score_components = dict(self.scorer.calculate_components(matches, job_desc.requirements))
+        score_components["evidence_score"] = self.scorer.calculate_score(matches, job_desc.requirements)
 
         required_m = [m for m in matches if any(r.id == m.requirement_id and r.priority == "required" for r in job_desc.requirements)]
         preferred_m = [m for m in matches if any(r.id == m.requirement_id and r.priority == "preferred" for r in job_desc.requirements)]
@@ -208,7 +214,8 @@ class TailorService:
             required_matches=required_m,
             preferred_matches=preferred_m,
             missing_requirements=missing_m,
-            score_components=dict(score_components),
+            score_components=score_components,
+            keyword_match=keyword_report,
         )
 
     def generate_proposals(self, resume_path: str, jd_text: str, suggestion_limit: int = 5,
@@ -229,7 +236,8 @@ class TailorService:
         job_desc = self.jd_analyzer.analyze(clean_jd_text)
         matches = self.matcher.match(job_desc, evidence_list)
         matches = self.semantic_matcher.match(job_desc.requirements, evidence_list, matches)
-        score = self.scorer.calculate_score(matches, job_desc.requirements)
+        keyword_report = self.keyword_matcher.match(job_desc, resume)
+        score = keyword_report.rate
         plan = self.planner.create_plan(resume, job_desc, evidence_list, matches)
         proposals = self.rewriter.execute_plan(resume, plan, evidence_list, job_desc)
         # Fact-check now so the review UI can show each proposal's verdict
@@ -253,6 +261,8 @@ class TailorService:
             "proposals": proposals,
             "missing_suggestions": missing_suggestions,
             "alignment_score": score,
+            "keyword_match": keyword_report,
+            "job_description": job_desc,
             "llm_available": llm_available,
             # Why rewrites didn't happen, so the UI can say so instead of
             # silently presenting the original text as the "proposal".
@@ -357,6 +367,7 @@ class TailorService:
         proposal_usage: Optional[Dict] = None,
         parsed=None,
         parse_corrected: bool = False,
+        job_desc: Optional[JobDescription] = None,
     ) -> Dict[str, str]:
         run_dir = self.run_manager.create_run(resume_path, jd_text)
         clean_jd_text = self.safety_guard.sanitize(jd_text)
@@ -410,11 +421,15 @@ class TailorService:
             resume_doc.record_revision("Imported uploaded résumé", ["resume", "source"], actor="import")
         except Exception:
             pass
-        job_desc = self.jd_analyzer.analyze(clean_jd_text)
+        # Reuse the JD analysis from generate_proposals when given: a second LLM
+        # analysis costs a call and can return a slightly different keyword list,
+        # which made the before/after match rates disagree.
+        job_desc = job_desc or self.jd_analyzer.analyze(clean_jd_text)
         matches = self.matcher.match(job_desc, evidence_list)
         matches = self.semantic_matcher.match(job_desc.requirements, evidence_list, matches)
-        initial_score = self.scorer.calculate_score(matches, job_desc.requirements)
-        _append_progress(f"Analyzed JD and computed initial alignment score: {initial_score:.1f}")
+        initial_keywords = self.keyword_matcher.match(job_desc, resume)
+        initial_score = initial_keywords.rate
+        _append_progress(f"Analyzed JD and computed initial keyword match rate: {initial_score:.1f}%")
 
         # The planner is deterministic (no LLM calls), so it always runs: its
         # plan feeds plan.json and the unsupported-requirements report.
@@ -534,8 +549,10 @@ class TailorService:
 
         matches = self.matcher.match(job_desc, evidence_list)
         matches = self.semantic_matcher.match(job_desc.requirements, evidence_list, matches)
-        score = self.scorer.calculate_score(matches, job_desc.requirements)
-        _append_progress(f"Recomputed alignment score after applying changes: {score:.1f} (was {initial_score:.1f})")
+        keyword_report = self.keyword_matcher.match(job_desc, resume)
+        score = keyword_report.rate
+        evidence_score = self.scorer.calculate_score(matches, job_desc.requirements)
+        _append_progress(f"Recomputed keyword match rate after applying changes: {score:.1f}% (was {initial_score:.1f}%)")
 
         if mode == "PRESERVE" and not is_pdf:
             self.docx_patcher.patch(resume_path, raw_doc.document_map, approved_proposals, docx_output_path)
@@ -609,7 +626,15 @@ class TailorService:
         try:
             with open(report_md_path, "a", encoding="utf-8") as f:
                 f.write("\n## Final Summary\n\n")
-                f.write(f"**Alignment Score:** {score:.1f} / 100 (was {initial_score:.1f})\n\n")
+                low, high = keyword_report.target_band
+                f.write(f"**Keyword match rate:** {score:.1f}% (was {initial_score:.1f}%; "
+                        f"aim for {low:.0f}-{high:.0f}%)  \n")
+                f.write(f"**Evidence score (requirement level):** {evidence_score:.1f} / 100\n\n")
+                f.write("## Keyword Match\n\n| Keyword | Kind | Required | Found in |\n|---|---|---|---|\n")
+                for row in sorted(keyword_report.rows, key=lambda r: (not r.found, -r.weight)):
+                    found_in = ", ".join(row.where) if row.found else "❌ missing"
+                    f.write(f"| {row.keyword} | {row.kind} | {'yes' if row.required else 'no'} | {found_in} |\n")
+                f.write("\n")
                 f.write(f"## Accepted Rewrites ({len(approved_proposals)})\n\n")
                 for prop in approved_proposals:
                     f.write(f"### Bullet ({_prop_key(prop) or 'unknown'})\n")
@@ -674,6 +699,8 @@ class TailorService:
             "changes_md": report_md_path,
             "alignment_score": f"{score:.1f}",
             "initial_alignment_score": f"{initial_score:.1f}",
+            "evidence_score": f"{evidence_score:.1f}",
+            "keyword_match": keyword_report,
             "addition_note": addition_note,
             "run_dir": run_dir,
             "preview_md": preview_md,

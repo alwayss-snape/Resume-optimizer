@@ -121,8 +121,12 @@ def run_case(case: Case, *, live: bool = False, tailor: bool = False, out_dir: O
             parse["golden_mismatches"] = mismatches
         metrics["parse"] = parse
 
-        clean_jd = service.safety_guard.sanitize(jd_text)
-        job = service.jd_analyzer.analyze(clean_jd)
+        # With --tailor, use the JD analysis generate_proposals makes (as the
+        # UI does), so the metrics and the tailored output share one analysis
+        # and the run makes exactly the pipeline's LLM calls.
+        generated = service.generate_proposals(case.resume, jd_text, parsed=parsed) if tailor else None
+        job = generated["job_description"] if generated else service.jd_analyzer.analyze(
+            service.safety_guard.sanitize(jd_text))
         metrics["jd"] = {
             "source": job.analysis_source, "title": job.job_title, "company": job.company,
             "seniority": job.seniority, "years": [job.min_years, job.max_years],
@@ -133,14 +137,18 @@ def run_case(case: Case, *, live: bool = False, tailor: bool = False, out_dir: O
 
         matches = service.matcher.match(job, evidence)
         matches = service.semantic_matcher.match(job.requirements, evidence, matches)
+        keyword_report = service.keyword_matcher.match(job, resume)
         metrics["match"] = {
-            "score": round(service.scorer.calculate_score(matches, job.requirements), 1),
+            "score": keyword_report.rate,  # headline: keyword match rate (P1.2)
+            "evidence_score": round(service.scorer.calculate_score(matches, job.requirements), 1),
             "statuses": dict(Counter(m.status for m in matches)),
+            "keywords_matched": len(keyword_report.matched),
+            "keywords_missing": [r.keyword for r in keyword_report.missing],
             "keyword_coverage": keyword_coverage(job.keywords, raw_doc.raw_text),
         }
 
         if tailor:
-            metrics["tailor"] = _tailor_metrics(service, case, jd_text, parsed, out_dir)
+            metrics["tailor"] = _tailor_metrics(service, case, jd_text, parsed, generated, out_dir)
 
         usage = llm.get_usage_summary()
         metrics["llm"] = {
@@ -155,15 +163,14 @@ def run_case(case: Case, *, live: bool = False, tailor: bool = False, out_dir: O
         logging.getLogger("app.llm.client").removeHandler(counter)
 
 
-def _tailor_metrics(service, case: Case, jd_text: str, parsed, out_dir: Optional[str]) -> Dict:
-    generated = service.generate_proposals(case.resume, jd_text, parsed=parsed)
+def _tailor_metrics(service, case: Case, jd_text: str, parsed, generated: Dict, out_dir: Optional[str]) -> Dict:
     proposals = generated["proposals"]
     approved = [p.model_dump() for p in proposals if getattr(p, "validation", None) != "REJECT"]
     case_dir = os.path.join(out_dir or tempfile.mkdtemp(prefix="eval_"), case.name)
     os.makedirs(case_dir, exist_ok=True)
     result = service.tailor_resume(
         case.resume, jd_text, case_dir, mode="ATS_DEFAULT", preapproved_proposals=approved,
-        proposal_usage=generated.get("llm_usage"), parsed=parsed,
+        proposal_usage=generated.get("llm_usage"), parsed=parsed, job_desc=generated.get("job_description"),
     )
     pages = None
     if result.get("pdf") and os.path.exists(result["pdf"]):
@@ -226,7 +233,7 @@ def compare(report: Dict, baseline: Dict) -> List[str]:
         now_flat, base_flat = _flatten(metrics), _flatten(base)
         changes = []
         for key in sorted(set(now_flat) | set(base_flat)):
-            if key.endswith(("output_dir", "missing", "golden_mismatches")) or key == "elapsed_s":
+            if key.endswith(("output_dir", "missing", "keywords_missing", "golden_mismatches")) or key == "elapsed_s":
                 continue
             old, new = base_flat.get(key), now_flat.get(key)
             if old == new:

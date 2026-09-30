@@ -90,7 +90,7 @@ def _cleanup_session_state():
                 pass
 
     for key in (
-        "proposals", "missing_suggestions", "llm_available", "pre_score",
+        "proposals", "missing_suggestions", "llm_available", "pre_score", "keyword_match", "job_description",
         "resume_path", "jd_text", "model_choice", "render_mode", "strict_factual",
         "results", "output_dir", "analysis_report", "experience_options",
         "llm_status", "proposal_usage", "parsed", "parse_issues", "parse_corrected",
@@ -258,6 +258,31 @@ if btn_analyze or btn_tailor:
                 os.remove(tmp_resume_path)
 
 
+def _show_keyword_match(keyword_report, heading: str = "Keyword match") -> None:
+    """Match rate against the target band, then the matched / missing table
+    that explains it (P1.2)."""
+    if keyword_report is None:
+        return
+    low, high = keyword_report.target_band
+    rate = keyword_report.rate
+    if rate < low:
+        verdict = f"below the {low:.0f}-{high:.0f}% target"
+    elif rate > high:
+        verdict = f"above {high:.0f}%: check the resume doesn't read as keyword-stuffed"
+    else:
+        verdict = "in the target band"
+    st.metric(heading, f"{rate:.1f}%", help="Weighted share of the job description's keywords found in your "
+              "resume: hard skills count most, then the job title, education/certifications, soft skills; "
+              "required keywords count 1.5x.")
+    st.caption(f"{len(keyword_report.matched)} of {len(keyword_report.rows)} keywords found, {verdict}.")
+    rows = sorted(keyword_report.rows, key=lambda r: (r.found, -r.weight))
+    st.dataframe(
+        [{"Keyword": r.keyword, "Found": "✅" if r.found else "❌", "Kind": r.kind,
+          "Required": "yes" if r.required else "no", "Where": ", ".join(r.where)} for r in rows],
+        use_container_width=True, hide_index=True,
+    )
+
+
 # ---------------------------------------------------------------------------
 # Check parsed resume (P3.5): confirm or fix what was read from the file
 # before any rewriting. Bullet text is reviewed later, with the proposals.
@@ -278,6 +303,8 @@ def _draft_proposals(parsed, parse_corrected: bool) -> None:
     st.session_state.llm_status = generated.get("llm_status") or {}
     st.session_state.proposal_usage = generated.get("llm_usage")
     st.session_state.pre_score = generated["alignment_score"]
+    st.session_state.keyword_match = generated.get("keyword_match")
+    st.session_state.job_description = generated.get("job_description")
     st.session_state.experience_options = generated["experience_options"]
 
 
@@ -355,7 +382,9 @@ if st.session_state.stage == "analysis" and st.session_state.get("analysis_repor
     report = st.session_state.analysis_report
 
     st.success("Analysis Complete!")
-    st.metric("Alignment Score", f"{report.alignment_score:.1f} / 100")
+    _show_keyword_match(report.keyword_match)
+    if report.score_components and "evidence_score" in report.score_components:
+        st.caption(f"Evidence score (requirement level): {report.score_components['evidence_score']:.1f} / 100")
     if report.score_components and report.score_components.get("semantic_coverage", 0) > 0:
         st.caption(
             f"🔎 Semantic coverage: {report.score_components['semantic_coverage']:.1f}% "
@@ -434,6 +463,9 @@ if st.session_state.stage in ("proposals", "results"):
 
 if st.session_state.stage == "proposals":
     proposals = st.session_state.get("proposals", [])
+
+    with st.expander(f"🔑 Keyword match before tailoring: {st.session_state.get('pre_score', 0):.1f}%"):
+        _show_keyword_match(st.session_state.get("keyword_match"))
 
     st.markdown("### Review Proposed Rewrites")
     if proposals:
@@ -534,6 +566,7 @@ if st.session_state.stage == "proposals":
                     proposal_usage=st.session_state.get("proposal_usage"),
                     parsed=st.session_state.get("parsed"),
                     parse_corrected=bool(st.session_state.get("parse_corrected")),
+                    job_desc=st.session_state.get("job_description"),
                 )
             st.session_state.results = results
             st.session_state.output_dir = output_dir
@@ -556,12 +589,14 @@ if st.session_state.stage == "results" and st.session_state.get("results") is no
     pre_score = st.session_state.get("pre_score")
     score_suffix = ""
     if results.get("initial_alignment_score") is not None:
-        score_suffix = f" (was {results['initial_alignment_score']} / 100 before tailoring)"
+        score_suffix = f" (was {results['initial_alignment_score']}% before tailoring)"
 
     if results.get("success"):
-        st.success(f"Resume Tailoring Completed! Alignment Score: {results['alignment_score']} / 100{score_suffix}")
+        st.success(f"Resume Tailoring Completed! Keyword match: {results['alignment_score']}%{score_suffix}")
     else:
-        st.error(f"Resume Tailoring Completed with Warnings. Alignment Score: {results['alignment_score']} / 100{score_suffix}")
+        st.error(f"Resume Tailoring Completed with Warnings. Keyword match: {results['alignment_score']}%{score_suffix}")
+    with st.expander("Keyword match details"):
+        _show_keyword_match(results.get("keyword_match"), heading="Keyword match after tailoring")
 
     if results.get("addition_note"):
         st.caption(f"➕ Your addition was incorporated: {results['addition_note']}")

@@ -126,3 +126,21 @@ def test_generate_proposals_attaches_validation_verdicts(tmp_path):
     out = service.generate_proposals(SAMPLE_DOCX, SAMPLE_JD)
     assert out["proposals"] and all(p.validation in ("PASS", "NEEDS_CONFIRM", "REJECT") for p in out["proposals"])
     assert any(p.validation == "PASS" for p in out["proposals"])
+
+
+def test_jd_analysis_is_reused_and_scores_are_keyword_match_rates(tmp_path):
+    """The JD analysed for the proposals is passed on, so Apply & Generate
+    makes no second JD call and before/after rates use the same keywords."""
+    service = _service(tmp_path)
+    job = service.jd_analyzer.analyze(SAMPLE_JD)
+    service.jd_analyzer.analyze = MagicMock(side_effect=AssertionError("JD must not be re-analysed"))
+
+    result = service.tailor_resume(
+        SAMPLE_DOCX, SAMPLE_JD, str(tmp_path / "out"), mode="ATS_DEFAULT",
+        preapproved_proposals=[], job_desc=job,
+    )
+    report = result["keyword_match"]
+    assert float(result["alignment_score"]) == report.rate
+    assert result["initial_alignment_score"] == result["alignment_score"]  # nothing applied
+    changes = open(result["changes_md"], encoding="utf-8").read()
+    assert "## Keyword Match" in changes and "| Python |" in changes

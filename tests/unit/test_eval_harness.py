@@ -19,7 +19,8 @@ def test_offline_run_metrics_for_replica():
     assert m["parse"]["golden"] == "match" and m["parse"]["roles"] == 3 and m["parse"]["bullets"] == 7
     assert m["jd"]["requirements"] == 11 and m["jd"]["preferred"] == 3
     assert m["llm"]["calls"] == 0
-    assert set(m["match"]) == {"score", "statuses", "keyword_coverage"}
+    assert set(m["match"]) == {"score", "evidence_score", "statuses", "keywords_matched", "keywords_missing",
+                               "keyword_coverage"}
 
 
 def test_keyword_coverage_whole_terms():

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-30T12:35:26+00:00",
+  "generated_at": "2026-09-30T12:46:58+00:00",
   "mode": "offline",
   "tailor": false,
   "cases": {
@@ -28,10 +28,20 @@
         "keywords": 10
       },
       "match": {
-        "score": 0.0,
+        "score": 44.4,
+        "evidence_score": 0.0,
         "statuses": {
           "MISSING": 11
         },
+        "keywords_matched": 4,
+        "keywords_missing": [
+          "Snowflake",
+          "A/B",
+          "FAISS",
+          "Kafka",
+          "ML",
+          "Senior Engineer, Search (L3)"
+        ],
         "keyword_coverage": {
           "pct": 40.0,
           "found": 4,
@@ -53,7 +63,7 @@
         "llm_seconds": 0.0,
         "retries_429": 0
       },
-      "elapsed_s": 0.0
+      "elapsed_s": 0.1
     },
     "sample-docx": {
       "private": false,
@@ -78,11 +88,18 @@
         "keywords": 12
       },
       "match": {
-        "score": 10.3,
+        "score": 77.8,
+        "evidence_score": 10.3,
         "statuses": {
           "MISSING": 5,
           "PARTIAL": 1
         },
+        "keywords_matched": 10,
+        "keywords_missing": [
+          "ECS",
+          "Lambda",
+          "Kafka"
+        ],
         "keyword_coverage": {
           "pct": 75.0,
           "found": 9,
@@ -101,7 +118,7 @@
         "llm_seconds": 0.0,
         "retries_429": 0
       },
-      "elapsed_s": 0.0
+      "elapsed_s": 0.1
     },
     "sample-pdf": {
       "private": false,
@@ -128,11 +145,23 @@
         "keywords": 12
       },
       "match": {
-        "score": 5.1,
+        "score": 38.9,
+        "evidence_score": 5.1,
         "statuses": {
           "PARTIAL": 1,
           "MISSING": 5
         },
+        "keywords_matched": 5,
+        "keywords_missing": [
+          "Django",
+          "Redis",
+          "S3",
+          "ECS",
+          "Lambda",
+          "Kubernetes",
+          "Kafka",
+          "Terraform"
+        ],
         "keyword_coverage": {
           "pct": 33.3,
           "found": 4,

@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "cd244367439c5fae",
+  "source_hash": "ea245457999862b3",
   "stats": {
-    "files": 102,
-    "python_files": 79,
+    "files": 103,
+    "python_files": 80,
     "app_modules": 41,
-    "test_files": 31,
+    "test_files": 32,
     "classes": 73,
-    "functions": 417,
-    "lines_of_python": 10640
+    "functions": 431,
+    "lines_of_python": 10838
   },
   "axes": {
     "x": "location (path)",
@@ -340,51 +340,30 @@
       "id": "app/analysis/keyword_match.py",
       "type": "python",
       "layer": "Analysis",
-      "stages": [],
-      "lines": 190,
+      "stages": [
+        "5 Score"
+      ],
+      "lines": 162,
       "doc": "Keyword-level match rate, the headline score (P1.2).",
       "classes": [
         {
-          "name": "KeywordRow",
-          "line": 40,
-          "doc": "",
-          "methods": []
-        },
-        {
-          "name": "KeywordMatchReport",
-          "line": 51,
-          "doc": "",
-          "methods": [
-            {
-              "name": "matched",
-              "line": 57,
-              "doc": ""
-            },
-            {
-              "name": "missing",
-              "line": 61,
-              "doc": ""
-            }
-          ]
-        },
-        {
           "name": "KeywordMatcher",
-          "line": 122,
+          "line": 94,
           "doc": "",
           "methods": [
             {
               "name": "_find",
-              "line": 123,
+              "line": 95,
               "doc": ""
             },
             {
               "name": "_title_credit",
-              "line": 143,
+              "line": 115,
               "doc": ""
             },
             {
               "name": "match",
-              "line": 153,
+              "line": 125,
               "doc": ""
             }
           ]
@@ -393,27 +372,27 @@
       "functions": [
         {
           "name": "_stem",
-          "line": 65,
+          "line": 37,
           "doc": ""
         },
         {
           "name": "_alias",
-          "line": 73,
+          "line": 45,
           "doc": ""
         },
         {
           "name": "tokens",
-          "line": 80,
+          "line": 52,
           "doc": "Lowercased, alias-canonical, plural-insensitive tokens."
         },
         {
           "name": "_contains_seq",
-          "line": 85,
+          "line": 57,
           "doc": ""
         },
         {
           "name": "resume_sections",
-          "line": 90,
+          "line": 62,
           "doc": "(label, text) for every part of the resume a recruiter or ATS reads."
         }
       ]
@@ -903,18 +882,41 @@
         "4 Match",
         "5 Score"
       ],
-      "lines": 28,
+      "lines": 61,
       "doc": "",
       "classes": [
         {
           "name": "Match",
-          "line": 4,
+          "line": 8,
           "doc": "",
           "methods": []
         },
         {
+          "name": "KeywordRow",
+          "line": 23,
+          "doc": "",
+          "methods": []
+        },
+        {
+          "name": "KeywordMatchReport",
+          "line": 34,
+          "doc": "",
+          "methods": [
+            {
+              "name": "matched",
+              "line": 40,
+              "doc": ""
+            },
+            {
+              "name": "missing",
+              "line": 44,
+              "doc": ""
+            }
+          ]
+        },
+        {
           "name": "TailoringReport",
-          "line": 19,
+          "line": 49,
           "doc": "",
           "methods": []
         }
@@ -1137,7 +1139,7 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 264,
+      "lines": 271,
       "doc": "Run evaluation cases through the pipeline and collect metrics (P4.1).",
       "classes": [
         {
@@ -1199,27 +1201,27 @@
         },
         {
           "name": "_tailor_metrics",
-          "line": 158,
+          "line": 166,
           "doc": ""
         },
         {
           "name": "run",
-          "line": 185,
+          "line": 192,
           "doc": ""
         },
         {
           "name": "_flatten",
-          "line": 201,
+          "line": 208,
           "doc": ""
         },
         {
           "name": "compare",
-          "line": 218,
+          "line": 225,
           "doc": "Human-readable differences per case between a report and a baseline."
         },
         {
           "name": "summary_lines",
-          "line": 246,
+          "line": 253,
           "doc": ""
         }
       ]
@@ -1883,62 +1885,62 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 696,
+      "lines": 723,
       "doc": "",
       "classes": [
         {
           "name": "TailorService",
-          "line": 34,
+          "line": 35,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
-              "line": 35,
+              "line": 36,
               "doc": ""
             },
             {
               "name": "generate_preview_md",
-              "line": 62,
+              "line": 66,
               "doc": ""
             },
             {
               "name": "parse_resume",
-              "line": 107,
+              "line": 111,
               "doc": "File -> (raw document, ResumeDocument, evidence). The deterministic"
             },
             {
               "name": "normalize_raw",
-              "line": 117,
+              "line": 121,
               "doc": ""
             },
             {
               "name": "_copy_parsed",
-              "line": 125,
+              "line": 129,
               "doc": "Deep copies, so a parse kept in UI session state is never mutated."
             },
             {
               "name": "apply_parse_corrections",
-              "line": 130,
+              "line": 134,
               "doc": "Apply the user's fixes from the \"Check parsed resume\" step (P3.5)."
             },
             {
               "name": "analyze_only",
-              "line": 191,
+              "line": 195,
               "doc": ""
             },
             {
               "name": "generate_proposals",
-              "line": 214,
+              "line": 221,
               "doc": "Generate rewrite proposals without applying them, plus advisory"
             },
             {
               "name": "incorporate_user_addition",
-              "line": 273,
+              "line": 283,
               "doc": "Fold a user-supplied free-text addition (a project, an"
             },
             {
               "name": "tailor_resume",
-              "line": 347,
+              "line": 357,
               "doc": ""
             }
           ]
@@ -1947,7 +1949,7 @@
       "functions": [
         {
           "name": "_merge_usage",
-          "line": 687,
+          "line": 714,
           "doc": "Combine two LLMClient.get_usage_summary() dicts into one."
         }
       ]
@@ -1998,7 +2000,7 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 641,
+      "lines": 676,
       "doc": "",
       "classes": [],
       "functions": [
@@ -2023,8 +2025,13 @@
           "doc": "Models offered in the sidebar for the configured provider. The"
         },
         {
+          "name": "_show_keyword_match",
+          "line": 261,
+          "doc": "Match rate against the target band, then the matched / missing table"
+        },
+        {
           "name": "_draft_proposals",
-          "line": 265,
+          "line": 290,
           "doc": ""
         }
       ]
@@ -2267,118 +2274,118 @@
       "type": "python",
       "layer": "Tooling",
       "stages": [],
-      "lines": 722,
+      "lines": 723,
       "doc": "Regenerate the repo's living docs: the knowledge graph and the change log.",
       "classes": [],
       "functions": [
         {
           "name": "git",
-          "line": 120,
+          "line": 121,
           "doc": ""
         },
         {
           "name": "layer_of",
-          "line": 127,
+          "line": 128,
           "doc": ""
         },
         {
           "name": "module_name",
-          "line": 134,
+          "line": 135,
           "doc": ""
         },
         {
           "name": "first_line",
-          "line": 141,
+          "line": 142,
           "doc": ""
         },
         {
           "name": "list_files",
-          "line": 150,
+          "line": 151,
           "doc": "Tracked + new (not ignored) files, restricted to the project map."
         },
         {
           "name": "parse_python",
-          "line": 168,
+          "line": 169,
           "doc": ""
         },
         {
           "name": "symbols_of",
-          "line": 196,
+          "line": 197,
           "doc": ""
         },
         {
           "name": "settings_fields",
-          "line": 209,
+          "line": 210,
           "doc": ""
         },
         {
           "name": "build_graph",
-          "line": 228,
+          "line": 229,
           "doc": ""
         },
         {
           "name": "render_graph_md",
-          "line": 302,
+          "line": 303,
           "doc": ""
         },
         {
           "name": "write_graph",
-          "line": 500,
+          "line": 501,
           "doc": ""
         },
         {
           "name": "commit_info",
-          "line": 543,
+          "line": 544,
           "doc": ""
         },
         {
           "name": "changed_files",
-          "line": 554,
+          "line": 555,
           "doc": ""
         },
         {
           "name": "is_major",
-          "line": 567,
+          "line": 568,
           "doc": ""
         },
         {
           "name": "blob",
-          "line": 576,
+          "line": 577,
           "doc": ""
         },
         {
           "name": "structure_delta",
-          "line": 581,
+          "line": 582,
           "doc": ""
         },
         {
           "name": "render_entry",
-          "line": 604,
+          "line": 605,
           "doc": ""
         },
         {
           "name": "_split_entries",
-          "line": 647,
+          "line": 648,
           "doc": ""
         },
         {
           "name": "_join",
-          "line": 659,
+          "line": 660,
           "doc": ""
         },
         {
           "name": "log_entry",
-          "line": 663,
+          "line": 664,
           "doc": ""
         },
         {
           "name": "backfill",
-          "line": 681,
+          "line": 682,
           "doc": ""
         },
         {
           "name": "main",
-          "line": 698,
+          "line": 699,
           "doc": ""
         }
       ]
@@ -2659,7 +2666,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 51,
+      "lines": 52,
       "doc": "Evaluation harness (P4.1).",
       "classes": [],
       "functions": [
@@ -2675,22 +2682,22 @@
         },
         {
           "name": "test_keyword_coverage_whole_terms",
-          "line": 25,
+          "line": 26,
           "doc": ""
         },
         {
           "name": "test_compare_marks_regressions",
-          "line": 30,
+          "line": 31,
           "doc": ""
         },
         {
           "name": "test_error_in_one_case_does_not_stop_the_run",
-          "line": 39,
+          "line": 40,
           "doc": ""
         },
         {
           "name": "test_saved_committed_report_never_contains_private_cases",
-          "line": 44,
+          "line": 45,
           "doc": ""
         }
       ]
@@ -2891,6 +2898,77 @@
         {
           "name": "test_llm_keywords_are_topped_up_from_requirement_lines",
           "line": 111,
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "tests/unit/test_keyword_match.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 104,
+      "doc": "Keyword-level match rate as the headline score (P1.2).",
+      "classes": [],
+      "functions": [
+        {
+          "name": "_resume",
+          "line": 12,
+          "doc": ""
+        },
+        {
+          "name": "_job",
+          "line": 23,
+          "doc": ""
+        },
+        {
+          "name": "_rows",
+          "line": 32,
+          "doc": ""
+        },
+        {
+          "name": "test_aliases_plurals_and_implied_terms",
+          "line": 36,
+          "doc": ""
+        },
+        {
+          "name": "test_whole_tokens_only",
+          "line": 44,
+          "doc": ""
+        },
+        {
+          "name": "test_multi_word_term_within_one_sentence",
+          "line": 52,
+          "doc": ""
+        },
+        {
+          "name": "test_required_keywords_weigh_more_and_rate_is_weighted",
+          "line": 58,
+          "doc": ""
+        },
+        {
+          "name": "test_perfect_match_is_100_and_empty_is_0",
+          "line": 67,
+          "doc": ""
+        },
+        {
+          "name": "test_title_gets_partial_credit_from_role_titles",
+          "line": 73,
+          "doc": ""
+        },
+        {
+          "name": "test_soft_skills_count_less",
+          "line": 83,
+          "doc": ""
+        },
+        {
+          "name": "test_tokens_normalise_case_alias_and_plural",
+          "line": 90,
+          "doc": ""
+        },
+        {
+          "name": "test_analysis_view_shows_keyword_table",
+          "line": 94,
           "doc": ""
         }
       ]
@@ -3653,7 +3731,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 128,
+      "lines": 146,
       "doc": "tailor_resume orchestration: pre-approved proposals and Strict Factual Mode.",
       "classes": [],
       "functions": [
@@ -3701,6 +3779,11 @@
           "name": "test_generate_proposals_attaches_validation_verdicts",
           "line": 115,
           "doc": ""
+        },
+        {
+          "name": "test_jd_analysis_is_reused_and_scores_are_keyword_match_rates",
+          "line": 131,
+          "doc": "The JD analysed for the proposals is passed on, so Apply & Generate"
         }
       ]
     },
@@ -3907,17 +3990,7 @@
     },
     {
       "from": "app/analysis/keyword_match.py",
-      "to": "app/analysis/keyword_match.py::KeywordMatchReport",
-      "type": "contains"
-    },
-    {
-      "from": "app/analysis/keyword_match.py",
       "to": "app/analysis/keyword_match.py::KeywordMatcher",
-      "type": "contains"
-    },
-    {
-      "from": "app/analysis/keyword_match.py",
-      "to": "app/analysis/keyword_match.py::KeywordRow",
       "type": "contains"
     },
     {
@@ -3932,8 +4005,18 @@
     },
     {
       "from": "app/analysis/keyword_match.py",
+      "to": "app/domain/report.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/analysis/keyword_match.py",
       "to": "app/domain/resume.py",
       "type": "imports"
+    },
+    {
+      "from": "app/analysis/keyword_match.py",
+      "to": "tests/unit/test_keyword_match.py",
+      "type": "tested_by"
     },
     {
       "from": "app/analysis/matcher.py",
@@ -4332,6 +4415,11 @@
     },
     {
       "from": "app/domain/job.py",
+      "to": "tests/unit/test_keyword_match.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/job.py",
       "to": "tests/unit/test_matcher.py",
       "type": "tested_by"
     },
@@ -4362,6 +4450,16 @@
     },
     {
       "from": "app/domain/report.py",
+      "to": "app/domain/report.py::KeywordMatchReport",
+      "type": "contains"
+    },
+    {
+      "from": "app/domain/report.py",
+      "to": "app/domain/report.py::KeywordRow",
+      "type": "contains"
+    },
+    {
+      "from": "app/domain/report.py",
       "to": "app/domain/report.py::Match",
       "type": "contains"
     },
@@ -4369,6 +4467,11 @@
       "from": "app/domain/report.py",
       "to": "app/domain/report.py::TailoringReport",
       "type": "contains"
+    },
+    {
+      "from": "app/domain/report.py",
+      "to": "tests/unit/test_keyword_match.py",
+      "type": "tested_by"
     },
     {
       "from": "app/domain/report.py",
@@ -4438,6 +4541,11 @@
     {
       "from": "app/domain/resume.py",
       "to": "tests/unit/test_html_renderer.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/resume.py",
+      "to": "tests/unit/test_keyword_match.py",
       "type": "tested_by"
     },
     {
@@ -5003,6 +5111,11 @@
     {
       "from": "app/services/tailor.py",
       "to": "app/analysis/jd_analyzer.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/services/tailor.py",
+      "to": "app/analysis/keyword_match.py",
       "type": "imports"
     },
     {

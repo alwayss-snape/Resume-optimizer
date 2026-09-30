@@ -1,5 +1,9 @@
-from typing import Dict, List, Literal, Optional
+from typing import Dict, List, Literal, Optional, Tuple
 from pydantic import BaseModel, Field
+
+# Jobscan's guidance for a keyword match rate; above it a resume starts to
+# read as keyword-stuffed.
+TARGET_BAND = (75.0, 85.0)
 
 class Match(BaseModel):
     requirement_id: str
@@ -16,7 +20,34 @@ class Match(BaseModel):
     explanation: str = ""
     confidence: float = 1.0
 
+class KeywordRow(BaseModel):
+    keyword: str
+    kind: str  # hard | title | education | certification | soft
+    required: bool = True
+    weight: float
+    found: bool = False
+    credit: float = 0.0  # 0..1 (the title can match partially)
+    where: List[str] = Field(default_factory=list)  # e.g. "skills", "summary", "Epsilon (bullet)"
+    jd_count: int = 0
+
+
+class KeywordMatchReport(BaseModel):
+    rate: float  # 0..100, the headline score
+    rows: List[KeywordRow] = Field(default_factory=list)
+    target_band: Tuple[float, float] = TARGET_BAND
+
+    @property
+    def matched(self) -> List[KeywordRow]:
+        return [r for r in self.rows if r.found]
+
+    @property
+    def missing(self) -> List[KeywordRow]:
+        return [r for r in self.rows if not r.found]
+
+
+
 class TailoringReport(BaseModel):
+    # Headline score: the keyword match rate (P1.2), 0-100.
     alignment_score: float
     required_matches: List[Match] = Field(default_factory=list)
     preferred_matches: List[Match] = Field(default_factory=list)
@@ -26,3 +57,5 @@ class TailoringReport(BaseModel):
     # Populated by analyze_only; kept optional so existing callers that don't
     # need the breakdown are unaffected.
     score_components: Optional[Dict[str, float]] = None
+    # Matched / missing keyword table behind alignment_score.
+    keyword_match: Optional[KeywordMatchReport] = None
