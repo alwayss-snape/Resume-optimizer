@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Literal, Optional
 from pydantic import BaseModel, Field
 
 class LLMResponse(BaseModel):
@@ -45,13 +45,25 @@ class MissingRequirementSuggestion(BaseModel):
     keywords: List[str] = Field(default_factory=list)
 
 
-class JDRequirementSelection(BaseModel):
-    """Which job-description line indices (from a numbered list the caller
-    sent) are genuine candidate requirements — skills, qualifications,
-    responsibilities, or experience a candidate should be evaluated
-    against — as opposed to boilerplate (company/team description,
-    culture statements, benefits/perks, compensation, EEO/diversity
-    statements, application instructions, generic filler). Selecting by
-    INDEX rather than generating text keeps every requirement recoverable
-    verbatim from the JD — see JDAnalyzer._llm_select_requirement_lines."""
-    requirement_line_indices: List[int] = Field(default_factory=list)
+class JDRequirementLine(BaseModel):
+    """One JD line the LLM judged to be a candidate requirement, by index."""
+    index: int
+    priority: Literal["required", "preferred"] = "required"
+    category: Literal["skill", "responsibility", "qualification", "experience"] = "skill"
+
+
+class JDAnalysisResult(BaseModel):
+    """One structured JD analysis call (P1.1). Requirement lines are chosen
+    by INDEX, and every string field must be copied verbatim from the JD:
+    JDAnalyzer drops any value it can't find in the JD text, so the model
+    can classify but never invent."""
+    job_title: Optional[str] = None
+    company: Optional[str] = None
+    seniority: Optional[Literal["intern", "junior", "mid", "senior", "staff", "principal", "lead", "manager"]] = None
+    min_years: Optional[int] = None
+    max_years: Optional[int] = None
+    requirement_lines: List[JDRequirementLine] = Field(default_factory=list)
+    hard_skills: List[str] = Field(default_factory=list)
+    soft_skills: List[str] = Field(default_factory=list)
+    education: List[str] = Field(default_factory=list)
+    certifications: List[str] = Field(default_factory=list)

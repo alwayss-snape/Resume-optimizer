@@ -13,11 +13,11 @@ JD-aligned rewrites, a Novoresume-style ATS layout that fits the right length, a
 | Phase | Items | ✅ | 🟡 | ⬜ |
 |---|---|---|---|---|
 | 0: Make the LLM path work | 10 | 10 | 0 | 0 |
-| 1: Content quality | 14 | 5 | 0 | 9 |
+| 1: Content quality | 14 | 6 | 0 | 8 |
 | 2: Template, ATS, page-fit | 6 | 0 | 0 | 6 |
 | 3: Gap questions + UX | 6 | 0 | 0 | 6 |
 | 4: Evaluation harness | 3 | 0 | 0 | 3 |
-| **Total** | **39** | **15** | **0** | **24** |
+| **Total** | **39** | **16** | **0** | **23** |
 
 ## Decisions (fixed by the user, 2026-09-30)
 
@@ -77,7 +77,7 @@ anonymized replica of the layout.
 
 | ID | Action | Files | Resolves | Status | Notes |
 |---|---|---|---|---|---|
-| P1.1 | JD analysis v2: one structured call returns title, seniority, min years, hard skills, soft skills, must-have / nice-to-have, education, certs, each with a verbatim JD span (code drops anything not found in the JD). Frequency counted in code. No splitting on "and". Heuristic fallback stays | `jd_analyzer.py`, `domain/job.py`, `prompts/jd_analysis.txt` | F9, F11, F44–F47 | ⬜ | Must also extract title/company without a "Job Title:" label, treat "Nice To Have, But Not Required" as preferred, and drop heading/company words from keywords |
+| P1.1 | JD analysis v2: one structured call returns title, seniority, min years, hard skills, soft skills, must-have / nice-to-have, education, certs, each with a verbatim JD span (code drops anything not found in the JD). Frequency counted in code. No splitting on "and". Heuristic fallback stays | `jd_analyzer.py`, `domain/job.py`, `prompts/jd_analysis.txt` | F9, F11, F44–F47 | ✅ | One `JDAnalysisResult` call over all numbered lines (replaces line selection): title, company, seniority, min/max years, requirement lines by index with priority + category, hard/soft skills, education, certs. Verbatim guard: every string must occur in the JD (the JD's own spelling is kept), years must appear in the text, otherwise the deterministic value stands. Requirements are whole lines (no "and"-splitting) with `source_spans`. Deterministic side: title/company from "X is looking for a <title> to join", seniority from title, years regex, headings = known patterns / ALL-CAPS / short known-section lines, "Nice To Have, But Not Required" → preferred, intro prose skipped. Keywords = verified hard skills + certs, topped up with technical terms from requirement lines only (no heading/company/team words), ranked by `keyword_counts` (counted in code). FOX JD live: 1 call, ~5K tokens, 6 s; title/company/senior/3–7 years right, 21–22 whole-line requirements, 4 preferred |
 | P1.2 | Jobscan-style match rate as the headline score: keyword-level, weights hard skills > title > education/certs > soft skills, required ×1.5. Evidence strength becomes secondary. Target band 75–85% | `matcher.py`, `scoring.py`, `domain/report.py` | F10, F12 | ⬜ | |
 | P1.3 | Planner v2: relevance score per bullet, reorder within each role, trim candidates; rewriter gets only the relevant requirements + allowed keywords | `tailor_planner.py`, `domain/tailoring.py` | F13 | ⬜ | |
 | P1.4 | Rewrite v2, one call per role: strong verbs with no repeats, XYZ phrasing only with existing metrics, ≤28 words, JD spelling, no pronouns or buzzwords, never add numbers; returns `keywords_used` + `evidence_ids` | `rewriter.py`, `prompts/rewrite_role.txt`, `llm/schemas.py` | F14 | ⬜ | |

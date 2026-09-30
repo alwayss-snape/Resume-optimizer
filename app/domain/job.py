@@ -1,4 +1,4 @@
-from typing import List, Literal, Optional
+from typing import Dict, List, Literal, Optional
 from pydantic import BaseModel, Field
 
 class Requirement(BaseModel):
@@ -31,3 +31,15 @@ class JobDescription(BaseModel):
     requirements: List[Requirement] = Field(default_factory=list)
     keywords: List[str] = Field(default_factory=list)
     raw_text: str = ""
+    # JD analysis v2 (P1.1). Every string is copied verbatim from the JD.
+    seniority: Optional[str] = None
+    min_years: Optional[int] = None
+    max_years: Optional[int] = None
+    hard_skills: List[str] = Field(default_factory=list)
+    soft_skills: List[str] = Field(default_factory=list)
+    education: List[str] = Field(default_factory=list)
+    certifications: List[str] = Field(default_factory=list)
+    # How often each keyword appears in the JD (counted in code).
+    keyword_counts: Dict[str, int] = Field(default_factory=dict)
+    # "llm" or "heuristic": which path produced the requirement list.
+    analysis_source: str = "heuristic"

@@ -1,0 +1,25 @@
+About The Role
+
+Contoso Media is looking for a Senior Engineer, Search (L3) to join the Discovery team and help shape how viewers find content across our apps. In this role, you'll be a hands-on contributor responsible for designing and deploying ranking models.
+
+You will work at the intersection of modeling, production engineering, and experimentation, collaborating with cross-functional teams.
+
+WHAT YOU WILL DO
+
+ Design and build ranking and retrieval models for search and recommendations 
+ Own the full model lifecycle: data preparation, training, evaluation, and monitoring
+ Collaborate with data engineers and product managers to ship models into batch and real-time pipelines
+ Mentor junior engineers and review code
+
+WHAT YOU WILL NEED
+
+ At least 4-8 years of experience in machine learning or applied data science
+ Proficient in Python and libraries like PyTorch and XGBoost
+ Experience with Spark or Snowflake for large-scale data processing 
+ Strong grasp of A/B testing design and analysis
+ Experience with vector search (e.g., FAISS) is a plus 
+
+Nice To Have, But Not Required
+
+ Experience with Kafka and streaming architectures
+ Contributions to open-source ML tools

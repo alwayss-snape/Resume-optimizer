@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "140d93c0e93a6950",
+  "source_hash": "c3b0039df4885dfd",
   "stats": {
-    "files": 93,
-    "python_files": 71,
+    "files": 95,
+    "python_files": 72,
     "app_modules": 36,
-    "test_files": 28,
-    "classes": 65,
-    "functions": 359,
-    "lines_of_python": 9535
+    "test_files": 29,
+    "classes": 67,
+    "functions": 378,
+    "lines_of_python": 9784
   },
   "axes": {
     "x": "location (path)",
@@ -243,52 +243,92 @@
       "stages": [
         "3 JD analysis"
       ],
-      "lines": 307,
+      "lines": 418,
       "doc": "",
       "classes": [
         {
           "name": "JDAnalyzer",
-          "line": 8,
+          "line": 11,
           "doc": "Extract only text that is visibly present in the supplied job description.",
           "methods": [
             {
               "name": "__init__",
-              "line": 36,
+              "line": 65,
               "doc": ""
             },
             {
               "name": "extract_keywords_from_text",
-              "line": 64,
+              "line": 93,
               "doc": "Stopgap keyword extraction: keep only technical-looking terms,"
             },
             {
               "name": "_category",
-              "line": 107,
+              "line": 136,
               "doc": ""
+            },
+            {
+              "name": "_clean_line",
+              "line": 149,
+              "doc": "Strip a bullet marker, including private-use glyphs pasted from Word/PDF."
+            },
+            {
+              "name": "_is_heading",
+              "line": 154,
+              "doc": "A section heading: the known patterns, an ALL-CAPS short line"
             },
             {
               "name": "_is_requirement",
-              "line": 118,
+              "line": 171,
               "doc": ""
             },
             {
-              "name": "_segment_line",
-              "line": 127,
-              "doc": "Conservatively split a requirement line into atomic requirement phrases."
-            },
-            {
               "name": "_reflow_lines",
-              "line": 147,
+              "line": 180,
               "doc": "Undo hard line-wrapping from pasted JDs (job boards/PDFs often wrap"
             },
             {
-              "name": "_llm_select_requirement_lines",
-              "line": 182,
-              "doc": "Ask the LLM which of the given candidate line indices are genuine"
+              "name": "_verbatim",
+              "line": 218,
+              "doc": "The JD's own spelling of `value` if it occurs in the JD (case- and"
+            },
+            {
+              "name": "_verbatim_list",
+              "line": 228,
+              "doc": ""
+            },
+            {
+              "name": "_contains_term",
+              "line": 239,
+              "doc": "Whole-term containment: \"A/B\" is in \"A/B testing\", \"ML\" is not in \"MLflow\"."
+            },
+            {
+              "name": "count_occurrences",
+              "line": 244,
+              "doc": "Whole-term, case-insensitive count (\"R\" doesn't match \"React\")."
+            },
+            {
+              "name": "_heuristic_title_company",
+              "line": 250,
+              "doc": ""
+            },
+            {
+              "name": "_seniority",
+              "line": 271,
+              "doc": ""
+            },
+            {
+              "name": "_years",
+              "line": 278,
+              "doc": ""
+            },
+            {
+              "name": "_llm_analyze",
+              "line": 286,
+              "doc": "One structured call: metadata, requirement lines by index, skills."
             },
             {
               "name": "analyze",
-              "line": 233,
+              "line": 314,
               "doc": ""
             }
           ]
@@ -755,7 +795,7 @@
       "stages": [
         "3 JD analysis"
       ],
-      "lines": 33,
+      "lines": 45,
       "doc": "",
       "classes": [
         {
@@ -1253,7 +1293,7 @@
       "type": "prompt",
       "layer": "LLM",
       "stages": [],
-      "lines": 13
+      "lines": 18
     },
     {
       "id": "app/llm/prompts/resume_normalization.txt",
@@ -1291,7 +1331,7 @@
         "3 JD analysis",
         "7 Rewrite"
       ],
-      "lines": 57,
+      "lines": 69,
       "doc": "",
       "classes": [
         {
@@ -1337,9 +1377,15 @@
           "methods": []
         },
         {
-          "name": "JDRequirementSelection",
+          "name": "JDRequirementLine",
           "line": 48,
-          "doc": "Which job-description line indices (from a numbered list the caller",
+          "doc": "One JD line the LLM judged to be a candidate requirement, by index.",
+          "methods": []
+        },
+        {
+          "name": "JDAnalysisResult",
+          "line": 55,
+          "doc": "One structured JD analysis call (P1.1). Requirement lines are chosen",
           "methods": []
         }
       ],
@@ -2094,6 +2140,13 @@
       "functions": []
     },
     {
+      "id": "tests/fixtures/jds/replica_layout_jd.txt",
+      "type": "file",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 25
+    },
+    {
       "id": "tests/fixtures/jds/sample.txt",
       "type": "file",
       "layer": "Tests",
@@ -2438,6 +2491,80 @@
         {
           "name": "test_llm_hallucinated_index_out_of_range_is_ignored",
           "line": 113,
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "tests/unit/test_jd_analyzer_v2.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 114,
+      "doc": "JD analysis v2 (P1.1): title/company without labels, whole-line",
+      "classes": [
+        {
+          "name": "FakeLLM",
+          "line": 28,
+          "doc": "",
+          "methods": [
+            {
+              "name": "__init__",
+              "line": 29,
+              "doc": ""
+            },
+            {
+              "name": "is_available",
+              "line": 33,
+              "doc": ""
+            },
+            {
+              "name": "generate_json",
+              "line": 36,
+              "doc": ""
+            }
+          ]
+        }
+      ],
+      "functions": [
+        {
+          "name": "test_heuristic_title_company_seniority_years_without_labels",
+          "line": 42,
+          "doc": ""
+        },
+        {
+          "name": "test_heuristic_whole_lines_no_and_splitting_and_no_intro_or_headings",
+          "line": 51,
+          "doc": ""
+        },
+        {
+          "name": "test_nice_to_have_heading_and_is_a_plus_are_preferred",
+          "line": 60,
+          "doc": ""
+        },
+        {
+          "name": "test_keywords_skip_heading_and_company_words",
+          "line": 66,
+          "doc": ""
+        },
+        {
+          "name": "_llm_result",
+          "line": 74,
+          "doc": ""
+        },
+        {
+          "name": "test_llm_path_is_one_call_and_every_value_is_verbatim",
+          "line": 91,
+          "doc": ""
+        },
+        {
+          "name": "test_llm_invented_title_and_years_are_rejected",
+          "line": 102,
+          "doc": ""
+        },
+        {
+          "name": "test_llm_keywords_are_topped_up_from_requirement_lines",
+          "line": 111,
           "doc": ""
         }
       ]
@@ -3429,6 +3556,11 @@
     },
     {
       "from": "app/analysis/jd_analyzer.py",
+      "to": "app/llm/prompts/jd_analysis.txt",
+      "type": "uses_prompt"
+    },
+    {
+      "from": "app/analysis/jd_analyzer.py",
       "to": "app/llm/schemas.py",
       "type": "imports"
     },
@@ -3440,6 +3572,11 @@
     {
       "from": "app/analysis/jd_analyzer.py",
       "to": "tests/unit/test_jd_analyzer_llm.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/analysis/jd_analyzer.py",
+      "to": "tests/unit/test_jd_analyzer_v2.py",
       "type": "tested_by"
     },
     {
@@ -4224,7 +4361,12 @@
     },
     {
       "from": "app/llm/schemas.py",
-      "to": "app/llm/schemas.py::JDRequirementSelection",
+      "to": "app/llm/schemas.py::JDAnalysisResult",
+      "type": "contains"
+    },
+    {
+      "from": "app/llm/schemas.py",
+      "to": "app/llm/schemas.py::JDRequirementLine",
       "type": "contains"
     },
     {
@@ -4265,6 +4407,11 @@
     {
       "from": "app/llm/schemas.py",
       "to": "tests/unit/test_jd_analyzer_llm.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/llm/schemas.py",
+      "to": "tests/unit/test_jd_analyzer_v2.py",
       "type": "tested_by"
     },
     {
@@ -4730,6 +4877,11 @@
     {
       "from": "tests/unit/test_jd_analyzer_llm.py",
       "to": "tests/unit/test_jd_analyzer_llm.py::_FakeLLMClient",
+      "type": "contains"
+    },
+    {
+      "from": "tests/unit/test_jd_analyzer_v2.py",
+      "to": "tests/unit/test_jd_analyzer_v2.py::FakeLLM",
       "type": "contains"
     },
     {

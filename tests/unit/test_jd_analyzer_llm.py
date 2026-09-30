@@ -1,5 +1,5 @@
 from app.analysis.jd_analyzer import JDAnalyzer
-from app.llm.schemas import JDRequirementSelection
+from app.llm.schemas import JDAnalysisResult, JDRequirementLine
 
 
 class _FakeLLMClient:
@@ -20,7 +20,7 @@ class _FakeLLMClient:
         self.calls.append(messages)
         if self._raise_error:
             raise RuntimeError("simulated LLM failure")
-        return JDRequirementSelection(requirement_line_indices=self._selection)
+        return JDAnalysisResult(requirement_lines=[JDRequirementLine(index=i) for i in self._selection])
 
 
 def test_reflow_merges_hard_wrapped_bullet_before_scoring():

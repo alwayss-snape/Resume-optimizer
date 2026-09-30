@@ -27,7 +27,7 @@ Semantic matching uses a local embedding model (`all-MiniLM-L6-v2`).
 |---|---|---|---|
 | 1 | Ingest | `ingestion/docx.py`, `ingestion/pdf.py` | Reads the file into raw blocks and records where each paragraph lives (`DocumentMap`) |
 | 2 | Normalize | `analysis/resume_normalizer.py` | Builds a structured `Resume` + an **evidence ledger**, wrapped in a versioned `ResumeDocument` |
-| 3 | JD analysis | `analysis/jd_analyzer.py` | The LLM picks which JD lines are real requirements (by index, so text stays verbatim); falls back to heuristics |
+| 3 | JD analysis | `analysis/jd_analyzer.py` | One LLM call returns title, company, seniority, years, requirement lines (by index, so text stays verbatim) and skills; every value is checked against the JD; falls back to heuristics |
 | 4 | Match | `analysis/matcher.py`, `analysis/semantic_matcher.py` | Exact / alias / token matching first; embeddings only for what's still missing |
 | 5 | Score | `analysis/scoring.py` | Weighted 0–100 score; semantic-only matches reported separately, not counted |
 | 6 | Plan | `analysis/tailor_planner.py` | Chooses which bullets to rewrite and ranks missing requirements |
@@ -45,7 +45,7 @@ Semantic matching uses a local embedding model (`all-MiniLM-L6-v2`).
 |---|---|---|
 | DOCX parsing (incl. table layouts) | ✅ Works | Paragraphs and tables in document order, hyperlinks, page-header contact (P1.9) |
 | PDF parsing | ✅ Works | Layout-aware (font size, bold, indent, right columns; P1.11). Several roles per company and project sub-sections inside a job (P1.12). The user's resume matches its golden file. Text PDFs only; `ocr.py` is a stub path. PDF input always uses the ATS template |
-| JD requirement extraction | ✅ Works | LLM-assisted with deterministic fallback |
+| JD requirement extraction | ✅ Works | One structured LLM call (title, company, seniority, years, whole-line requirements with priority, skills), every value checked against the JD; deterministic fallback (P1.1) |
 | Matching + score | ✅ Works | Deterministic + semantic; score breakdown in `ScoreComponents` |
 | Rewrite experience bullets | ⚠️ Partial | Only experience bullets. Summary and skills are never rewritten. See issues 2–3 re: LLM actually firing |
 | Review / edit proposals in UI | ✅ Works | Checkbox + editable text per proposal |

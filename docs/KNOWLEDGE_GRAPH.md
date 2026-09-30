@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**36 app modules · 28 test files · 65 classes · 359 functions/methods · 9,535 lines of Python** · source hash `140d93c0e93a6950`
+**36 app modules · 29 test files · 67 classes · 378 functions/methods · 9,784 lines of Python** · source hash `c3b0039df4885dfd`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -93,6 +93,7 @@ tests/
   conftest.py                                    Test-wide isolation from the developer's .env.
   fixtures/
     jds/
+      replica_layout_jd.txt
       sample.txt
     resumes/
       make_replica_layout_pdf.py                 Generate replica_layout.pdf: an anonymized resume with the same PDF la…
@@ -112,6 +113,7 @@ tests/
     test_html_renderer.py                        test_html_renderer_outputs_ats_sections_and_escapes_content()
     test_jd_analyzer.py                          test_jd_analyzer_heuristic(), test_heading_variants_are_not_extracted_…
     test_jd_analyzer_llm.py                      _FakeLLMClient
+    test_jd_analyzer_v2.py                       JD analysis v2 (P1.1): title/company without labels, whole-line
     test_llm_client.py                           SampleSchema
     test_matcher.py                              test_evidence_matcher_exact_and_alias(), test_one_generic_word_cannot_…
     test_parsing_fixes_p19.py                    P1.9: links (DOCX hyperlinks, PDF link annotations, URLs in text),
@@ -163,20 +165,29 @@ Spanning all stages: `app/cli.py`, `app/services/tailor.py`, `app/ui.py`
 
 ### `app/analysis/jd_analyzer.py`
 
-**Layer:** Analysis · **Stage:** 3 JD analysis · **Lines:** 307
+**Layer:** Analysis · **Stage:** 3 JD analysis · **Lines:** 418
 
-- class **`JDAnalyzer`** ([app/analysis/jd_analyzer.py:8](../app/analysis/jd_analyzer.py#L8)) — Extract only text that is visibly present in the supplied job description.
-  - `__init__()` :36
-  - `extract_keywords_from_text()` :64 — Stopgap keyword extraction: keep only technical-looking terms,
-  - `_category()` :107
-  - `_is_requirement()` :118
-  - `_segment_line()` :127 — Conservatively split a requirement line into atomic requirement phrases.
-  - `_reflow_lines()` :147 — Undo hard line-wrapping from pasted JDs (job boards/PDFs often wrap
-  - `_llm_select_requirement_lines()` :182 — Ask the LLM which of the given candidate line indices are genuine
-  - `analyze()` :233
+- class **`JDAnalyzer`** ([app/analysis/jd_analyzer.py:11](../app/analysis/jd_analyzer.py#L11)) — Extract only text that is visibly present in the supplied job description.
+  - `__init__()` :65
+  - `extract_keywords_from_text()` :93 — Stopgap keyword extraction: keep only technical-looking terms,
+  - `_category()` :136
+  - `_clean_line()` :149 — Strip a bullet marker, including private-use glyphs pasted from Word/PDF.
+  - `_is_heading()` :154 — A section heading: the known patterns, an ALL-CAPS short line
+  - `_is_requirement()` :171
+  - `_reflow_lines()` :180 — Undo hard line-wrapping from pasted JDs (job boards/PDFs often wrap
+  - `_verbatim()` :218 — The JD's own spelling of `value` if it occurs in the JD (case- and
+  - `_verbatim_list()` :228
+  - `_contains_term()` :239 — Whole-term containment: "A/B" is in "A/B testing", "ML" is not in "MLflow".
+  - `count_occurrences()` :244 — Whole-term, case-insensitive count ("R" doesn't match "React").
+  - `_heuristic_title_company()` :250
+  - `_seniority()` :271
+  - `_years()` :278
+  - `_llm_analyze()` :286 — One structured call: metadata, requirement lines by index, skills.
+  - `analyze()` :314
 - **Imports:** `analysis/terminology.py`, `domain/job.py`, `llm/client.py`, `llm/schemas.py`
 - **Imported by:** `services/tailor.py`
-- **Tested by:** `tests/unit/test_jd_analyzer.py`, `tests/unit/test_jd_analyzer_llm.py`
+- **Tested by:** `tests/unit/test_jd_analyzer.py`, `tests/unit/test_jd_analyzer_llm.py`, `tests/unit/test_jd_analyzer_v2.py`
+- **Prompts:** `llm/prompts/jd_analysis.txt`
 
 ### `app/analysis/matcher.py`
 
@@ -323,7 +334,7 @@ _LLM-assisted resume structure extraction with a verbatim guard (P1.13)._
 
 ### `app/domain/job.py`
 
-**Layer:** Domain models · **Stage:** 3 JD analysis · **Lines:** 33
+**Layer:** Domain models · **Stage:** 3 JD analysis · **Lines:** 45
 
 - class **`Requirement`** ([app/domain/job.py:4](../app/domain/job.py#L4))
 - class **`JobDescription`** ([app/domain/job.py:28](../app/domain/job.py#L28))
@@ -457,7 +468,7 @@ _LLM-assisted resume structure extraction with a verbatim guard (P1.13)._
 
 ### `app/llm/schemas.py`
 
-**Layer:** LLM · **Stage:** 3 JD analysis, 7 Rewrite · **Lines:** 57
+**Layer:** LLM · **Stage:** 3 JD analysis, 7 Rewrite · **Lines:** 69
 
 - class **`LLMResponse`** ([app/llm/schemas.py:4](../app/llm/schemas.py#L4))
 - class **`LLMError`** ([app/llm/schemas.py:13](../app/llm/schemas.py#L13)) — Base exception for LLM errors.
@@ -466,9 +477,10 @@ _LLM-assisted resume structure extraction with a verbatim guard (P1.13)._
 - class **`LLMInvalidJSONError`** ([app/llm/schemas.py:28](../app/llm/schemas.py#L28)) — Raised when structured JSON output parsing fails after retries.
 - class **`BulletRewriteResult`** ([app/llm/schemas.py:32](../app/llm/schemas.py#L32)) — Structured response for a single bullet rewrite/composition call.
 - class **`MissingRequirementSuggestion`** ([app/llm/schemas.py:39](../app/llm/schemas.py#L39)) — Advisory-only suggestion for a JD requirement the resume doesn't
-- class **`JDRequirementSelection`** ([app/llm/schemas.py:48](../app/llm/schemas.py#L48)) — Which job-description line indices (from a numbered list the caller
+- class **`JDRequirementLine`** ([app/llm/schemas.py:48](../app/llm/schemas.py#L48)) — One JD line the LLM judged to be a candidate requirement, by index.
+- class **`JDAnalysisResult`** ([app/llm/schemas.py:55](../app/llm/schemas.py#L55)) — One structured JD analysis call (P1.1). Requirement lines are chosen
 - **Imported by:** `analysis/jd_analyzer.py`, `analysis/rewriter.py`, `cli.py`, `llm/client.py`
-- **Tested by:** `tests/unit/test_cli.py`, `tests/unit/test_jd_analyzer_llm.py`, `tests/unit/test_llm_client.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_tailor_resume_flow.py`
+- **Tested by:** `tests/unit/test_cli.py`, `tests/unit/test_jd_analyzer_llm.py`, `tests/unit/test_jd_analyzer_v2.py`, `tests/unit/test_llm_client.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_tailor_resume_flow.py`
 
 ### `app/rendering/document_map.py`
 
@@ -765,7 +777,7 @@ From `app/config/settings.py`; each can be overridden by the env var of the same
 | Prompt file | Loaded by |
 |---|---|
 | `final_review.txt` | **unused** |
-| `jd_analysis.txt` | **unused** |
+| `jd_analysis.txt` | `app/analysis/jd_analyzer.py` |
 | `resume_normalization.txt` | **unused** |
 | `rewrite_bullet.txt` | `app/analysis/rewriter.py` |
 | `tailoring_plan.txt` | **unused** |
