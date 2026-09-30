@@ -59,7 +59,8 @@ def normalize_phrase(phrase: str) -> str:
 # they appear, even sentence-initial ("Python and a web framework ...") or
 # written in lowercase ("pytest", "dbt"). Names that are also ordinary words
 # ("Go", "R", "Swift", "Rust", "Spark", "Excel", "Flask", "REST", "Spring",
-# "Express", "Helm", "Lambda", "Hive", "Jest", "Rails", "Looker") are left
+# "Express", "Helm", "Lambda", "Hive", "Jest", "Rails", "Looker", "React",
+# "Git") are left
 # out: for them only the capitalisation rule applies, so "the rest of the
 # team" doesn't yield REST.
 TECH_TERMS = frozenset({
@@ -67,7 +68,7 @@ TECH_TERMS = frozenset({
     "python", "java", "javascript", "typescript", "scala", "kotlin", "c++", "c#", "golang", "ruby", "php",
     "sql", "nosql", "bash", "perl", "matlab", "sas", "haskell", "elixir", "clojure", "objective-c",
     # web / frameworks
-    "react", "angular", "vue", "vue.js", "next.js", "node.js", "django", "fastapi", "graphql", "grpc", "html", "css", "redux", "storybook", "webpack",
+    "angular", "vue", "vue.js", "next.js", "node.js", "django", "fastapi", "graphql", "grpc", "html", "css", "redux", "storybook", "webpack",
     # data / ml
     "pandas", "numpy", "scikit-learn", "sklearn", "pytorch", "tensorflow", "keras", "xgboost", "lightgbm",
     "catboost", "pyspark", "hadoop", "airflow", "dbt", "mlflow", "kubeflow", "databricks",
@@ -78,8 +79,7 @@ TECH_TERMS = frozenset({
     "kafka", "flink", "rabbitmq", "kinesis", "pubsub",
     # cloud / ops
     "aws", "azure", "gcp", "kubernetes", "k8s", "docker", "terraform", "ansible", "jenkins",
-    "github actions", "gitlab ci", "ci/cd", "prometheus", "grafana", "datadog", "splunk", "linux", "git",
-    "serverless", "ec2", "s3",
+    "github actions", "gitlab ci", "ci/cd", "prometheus", "grafana", "datadog", "splunk", "linux", "serverless", "ec2", "s3",
     # testing / practice
     "pytest", "cypress", "selenium", "junit", "tdd", "microservices", "wcag",
     # product / compliance

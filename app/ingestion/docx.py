@@ -91,7 +91,9 @@ class DocxParser:
                     cells.append((text, bool(runs) and all(r.bold for r in runs)))
         if len(cells) != 2:
             return None
-        (label, label_bold), (values, _) = cells
+        (label, label_bold), (values, values_bold) = cells
+        if values_bold or values.lower().rstrip(":") in self._SKILL_CATEGORIES:
+            return None  # a header row ("Languages | Tools"), not label + values
         # A label cell (bold, "Label:", or a known category) next to a list;
         # two skills side by side ("Python | SQL, Excel") stay separate.
         is_label = label_bold or label.endswith(":") or label.lower().rstrip(":") in self._SKILL_CATEGORIES

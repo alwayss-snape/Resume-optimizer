@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**49 app modules · 47 test files · 86 classes · 734 functions/methods · 15,872 lines of Python** · source hash `f6703c92a77fe329`
+**49 app modules · 47 test files · 86 classes · 740 functions/methods · 15,958 lines of Python** · source hash `8ec1c1b9b46fe742`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -287,27 +287,28 @@ _Keyword-level match rate, the headline score (P1.2)._
 
 ### `app/analysis/resume_normalizer.py`
 
-**Layer:** Analysis · **Stage:** 2 Normalize · **Lines:** 699
+**Layer:** Analysis · **Stage:** 2 Normalize · **Lines:** 719
 
 - class **`ResumeNormalizer`** ([app/analysis/resume_normalizer.py:8](../app/analysis/resume_normalizer.py#L8))
   - `_header_urls()` :40
   - `_is_headline()` :51 — A short title line under the name, e.g. 'Senior Data Scientist |
-  - `_is_section_title()` :95
-  - `_looks_like_title()` :110
-  - `_title_score()` :113 — 2 when a role word ends the phrase ("Data Analyst"), 1 when it's
-  - `_split_skill_line()` :135 — 'Languages: Python, SQL<tab>Frameworks: Pandas, and XGBoost' ->
-  - `_skill_items()` :156
-  - `_looks_like_degree()` :171 — 'B.Tech in Computer Science' yes; 'State University' no.
-  - `_split_middle_dot()` :176 — 'Acme Corp · Pune, India' -> ('Acme Corp', 'Pune, India'), the
-  - `_is_dated_line()` :185 — A job title/company line carrying a date range or year.
-  - `_experience_line_kind()` :192 — 'dated' (title and/or company with dates), 'header_line' (a short
-  - `_add_role()` :211 — Record a role; the first one also fills the entry's title/dates.
-  - `_merge_links()` :221 — Profile links from the file's hyperlinks and from URLs written in
-  - `_extract_date_range()` :235
-  - `_strip_date_range()` :239
-  - `_parse_title_and_dates()` :243 — 'Data Scientist II | August 2024 - Present' ->
-  - `_split_respecting_parens()` :252 — Split on sep_chars, but never inside ( ) or [ ] groups — so
-  - `normalize()` :275
+  - `_is_section_title()` :99
+  - `_looks_like_title()` :119
+  - `_split_title_company()` :122 — 'Title | Company | Place', 'Company — Title', 'Title — Team — Company'
+  - `_title_score()` :139 — 2 when a role word ends the phrase ("Data Analyst"), 1 when it's
+  - `_split_skill_line()` :161 — 'Languages: Python, SQL<tab>Frameworks: Pandas, and XGBoost' ->
+  - `_skill_items()` :182
+  - `_looks_like_degree()` :197 — 'B.Tech in Computer Science' yes; 'State University' no.
+  - `_split_middle_dot()` :202 — 'Acme Corp · Pune, India' -> ('Acme Corp', 'Pune, India'), the
+  - `_is_dated_line()` :211 — A job title/company line carrying a date range or year.
+  - `_experience_line_kind()` :218 — 'dated' (title and/or company with dates), 'header_line' (a short
+  - `_add_role()` :237 — Record a role; the first one also fills the entry's title/dates.
+  - `_merge_links()` :247 — Profile links from the file's hyperlinks and from URLs written in
+  - `_extract_date_range()` :261
+  - `_strip_date_range()` :265
+  - `_parse_title_and_dates()` :269 — 'Data Scientist II | August 2024 - Present' ->
+  - `_split_respecting_parens()` :278 — Split on sep_chars, but never inside ( ) or [ ] groups — so
+  - `normalize()` :301
 - **Imports:** `domain/evidence.py`, `domain/resume.py`, `domain/resume_document.py`, `ingestion/docx.py`
 - **Imported by:** `analysis/structure_extractor.py`, `eval/golden.py`, `services/tailor.py`, `validation/output.py`
 - **Tested by:** `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_ats_round_trip.py`, `tests/unit/test_parser_regressions_p42.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_structure_extractor.py`, `tests/unit/test_tailor_resume_flow.py`
@@ -586,15 +587,15 @@ _Run evaluation cases through the pipeline and collect metrics (P4.1)._
 
 ### `app/ingestion/docx.py`
 
-**Layer:** Ingestion · **Stage:** 1 Ingest · **Lines:** 222
+**Layer:** Ingestion · **Stage:** 1 Ingest · **Lines:** 224
 
 - class **`RawBlock`** ([app/ingestion/docx.py:11](../app/ingestion/docx.py#L11))
 - class **`RawDocument`** ([app/ingestion/docx.py:27](../app/ingestion/docx.py#L27))
 - class **`DocxParser`** ([app/ingestion/docx.py:35](../app/ingestion/docx.py#L35))
   - `_classify()` :46 — -> (block_type, text without a bullet glyph, whole line bold).
   - `_skills_label_row()` :80 — 'Label: values' for a two-cell row of a skills table, else None.
-  - `_hyperlinks()` :103 — Targets of every external hyperlink in the body, in rId order
-  - `parse()` :114
+  - `_hyperlinks()` :105 — Targets of every external hyperlink in the body, in rId order
+  - `parse()` :116
 - **Imports:** `rendering/document_map.py`
 - **Imported by:** `analysis/resume_normalizer.py`, `analysis/structure_extractor.py`, `eval/golden.py`, `ingestion/pdf.py`, `services/tailor.py`, `validation/output.py`
 - **Tested by:** `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_ats_round_trip.py`, `tests/unit/test_docx_parser.py`, `tests/unit/test_docx_renderer.py`, `tests/unit/test_parser_regressions_p42.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_pdf_parser.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_structure_extractor.py`, `tests/unit/test_tailor_resume_flow.py`
@@ -611,7 +612,7 @@ _Run evaluation cases through the pipeline and collect metrics (P4.1)._
 
 ### `app/ingestion/pdf.py`
 
-**Layer:** Ingestion · **Stage:** 1 Ingest · **Lines:** 356
+**Layer:** Ingestion · **Stage:** 1 Ingest · **Lines:** 362
 
 - class **`_Line`** ([app/ingestion/pdf.py:41](../app/ingestion/pdf.py#L41)) — One visual text line with the layout facts the parser needs.
 - class **`PdfParser`** ([app/ingestion/pdf.py:64](../app/ingestion/pdf.py#L64))
@@ -620,12 +621,12 @@ _Run evaluation cases through the pipeline and collect metrics (P4.1)._
   - `_merge_wrapped_lines()` :80 — Text-only fallback for joining word-wrapped lines: a line is joined
   - `_page_lines()` :101
   - `_attach_right_columns()` :123 — A short, right-aligned run printed on the same row as a left-hand
-  - `_split_bullet()` :164 — Return the bullet text without its glyph, or None if not a bullet.
-  - `_continues()` :171 — Is `line` a word-wrap continuation of the item ending with `prev`?
-  - `_assemble()` :194 — Join continuation lines onto their bullet/paragraph. Each returned
-  - `_body_size()` :218
-  - `_is_heading()` :225
-  - `parse()` :241
+  - `_split_bullet()` :170 — Return the bullet text without its glyph, or None if not a bullet.
+  - `_continues()` :177 — Is `line` a word-wrap continuation of the item ending with `prev`?
+  - `_assemble()` :200 — Join continuation lines onto their bullet/paragraph. Each returned
+  - `_body_size()` :224
+  - `_is_heading()` :231
+  - `parse()` :247
 - function **`_clean()`** ([app/ingestion/pdf.py:54](../app/ingestion/pdf.py#L54))
 - function **`_is_bold_span()`** ([app/ingestion/pdf.py:60](../app/ingestion/pdf.py#L60))
 - **Imports:** `ingestion/docx.py`, `ingestion/ocr.py`, `rendering/document_map.py`

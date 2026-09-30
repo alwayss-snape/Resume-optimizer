@@ -143,3 +143,61 @@ def test_title_and_company_split(line, company, title, tmp_path):
     doc.add_paragraph("Did the work.", style="List Bullet")
     exp = _parse(doc, tmp_path).experience[0]
     assert (exp.company, exp.title) == (company, title)
+
+
+# -- second review ---------------------------------------------------------------
+
+@pytest.mark.parametrize("heading", ["University Projects", "College Activities", "University Education"])
+def test_headings_naming_a_school_type_still_switch(heading, tmp_path):
+    doc = docx.Document()
+    _bold(doc, "Avery Lee")
+    _bold(doc, "SKILLS")
+    doc.add_paragraph("Languages: Python, SQL")
+    _bold(doc, heading)
+    doc.add_paragraph("Something done at university.")
+    skills = {s for items in _parse(doc, tmp_path).skills.values() for s in items}
+    assert skills == {"Python", "SQL"}  # the line after the heading left the skills section
+
+
+@pytest.mark.parametrize("line, company, title", [
+    ("Software Engineer | Google | Mountain View | 2020 - 2022", "Google", "Software Engineer"),
+    ("Google | Software Engineer | Mountain View | 2020 - 2022", "Google", "Software Engineer"),
+    ("Data Analyst — Payments Team — Acme Corp | 2020 - 2022", "Acme Corp", "Data Analyst"),
+])
+def test_location_or_team_is_not_the_company(line, company, title, tmp_path):
+    doc = docx.Document()
+    _bold(doc, "Avery Lee")
+    _bold(doc, "EXPERIENCE")
+    doc.add_paragraph(line)
+    doc.add_paragraph("Did the work.", style="List Bullet")
+    exp = _parse(doc, tmp_path).experience[0]
+    assert (exp.company, exp.title) == (company, title)
+
+
+def test_lone_date_in_a_two_column_pdf_is_not_attached(tmp_path):
+    pdf = pymupdf.open()
+    page = pdf.new_page(width=595, height=842)
+    page.insert_text((40, 100), "Automated weekly reporting pipelines", fontsize=10)
+    page.insert_text((340, 100), "2019 - 2021", fontsize=10)
+    page.insert_text((40, 120), "Sidebar skill list", fontsize=10)
+    page.insert_text((300, 120), "Main column text that is fairly long here", fontsize=10)
+    path = str(tmp_path / "twocol2.pdf")
+    pdf.save(path)
+    assert not any("\t2019 - 2021" in b.text for b in PdfParser().parse(path).blocks)
+
+
+def test_skills_table_header_row_is_not_merged(tmp_path):
+    doc = docx.Document()
+    _bold(doc, "Avery Lee")
+    _bold(doc, "SKILLS")
+    table = doc.add_table(rows=2, cols=2)
+    for c, text in enumerate(("Languages", "Tools")):
+        table.cell(0, c).paragraphs[0].add_run(text).bold = True
+    table.cell(1, 0).text, table.cell(1, 1).text = "Python", "Docker"
+    skills = _parse(doc, tmp_path).skills
+    assert "Languages" not in skills  # never "Languages: Tools"
+
+
+def test_react_and_git_need_capitals():
+    lowered = {k.lower() for k in JDAnalyzer().extract_keywords_from_text("We react quickly and use git daily.")}
+    assert not lowered & {"react", "git"}

@@ -132,9 +132,15 @@ class PdfParser:
         out: List[_Line] = []
         used = set()
 
+        left_margin = min(l.x0 for l in lines)
+
         def meta_column(x0: float) -> bool:
+            """A tab-stop column: only dates / places start at this x, and
+            some line from the left margin runs straight across it (so the
+            page is single-column)."""
             at_x = [l for l in lines if abs(l.x0 - x0) < 3]
-            return bool(at_x) and all(self._DATE_OR_PLACE_RE.search(l.text.strip()) for l in at_x)
+            crosses = any(l.x0 <= left_margin + 25 and l.x1 > x0 + 10 for l in lines)
+            return bool(at_x) and crosses and all(self._DATE_OR_PLACE_RE.search(l.text.strip()) for l in at_x)
 
         for i, line in enumerate(lines):
             if i in used:

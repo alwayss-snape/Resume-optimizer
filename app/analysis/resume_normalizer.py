@@ -92,11 +92,20 @@ class ResumeNormalizer:
         r"\b(?:university|institute|college|school|academy|inc|ltd|llc|corp|corporation|gmbh|pvt)\b\.?",
         re.IGNORECASE)
 
+    # Keywords that are also part of institution names; a heading whose only
+    # keywords are these and which names an institution is content.
+    _NAME_KEYWORDS = {"technology", "technologies", "technological", "university"}
+
     def _is_section_title(self, text: str) -> bool:
-        if not self.SECTION_KEYWORDS_RE.search(text):
+        keywords = {m.group(0).lower() for m in self.SECTION_KEYWORDS_RE.finditer(text)}
+        if not keywords:
             return False
         words = [w for w in re.split(r"[\s,:/()&]+", text) if w]
-        return len(words) <= 6 and not self._CONTENT_HEADING_RE.search(text)
+        if len(words) > 6:
+            return False
+        # "Riverside Institute of Technology" is a school; "University
+        # Projects" is still a Projects section.
+        return not (keywords <= self._NAME_KEYWORDS and self._CONTENT_HEADING_RE.search(text))
 
     # "Senior Data Scientist", "Software Engineering Intern": the title side
     # of a "Title | Company" or "Company — Title" job line.
@@ -109,6 +118,23 @@ class ResumeNormalizer:
 
     def _looks_like_title(self, text: str) -> bool:
         return bool(self._ROLE_WORDS_RE.search(text or ""))
+
+    def _split_title_company(self, body: str) -> Tuple[str, str]:
+        """'Title | Company | Place', 'Company — Title', 'Title — Team — Company'
+        -> (title, company). The most title-like part is the title. With
+        pipes, the company is the first other pipe segment (a trailing
+        location is ignored); with dashes only, the last other part."""
+        split_dash = lambda t: [p.strip() for p in re.split(r"\s+—\s+|\s+-\s+", t) if p.strip()]
+        segments = [seg.strip() for seg in re.split(r"\s+\|\s+", body) if seg.strip()]
+        parts = [p for seg in segments for p in split_dash(seg)]
+        scores = [self._title_score(p) for p in parts]
+        if len(set(scores)) == 1:  # nothing to tell them apart: "Company — Title"
+            return parts[1], parts[0]
+        title = parts[scores.index(max(scores))]
+        if len(segments) >= 2:
+            others = [seg for seg in segments if title not in split_dash(seg)]
+            return title, split_dash(others[0])[0]
+        return title, [p for p in parts if p is not title][-1]
 
     def _title_score(self, text: str) -> int:
         """2 when a role word ends the phrase ("Data Analyst"), 1 when it's
@@ -437,13 +463,7 @@ class ResumeNormalizer:
                         # "Title | Company | dates"; role words decide which is which.
                         # The most title-like part is the title; the company is
                         # the last remaining part ("Title - Team | Company").
-                        scores = [self._title_score(p) for p in dash_parts]
-                        if len(set(scores)) == 1:
-                            title_part, rest = dash_parts[1], [dash_parts[0]] + dash_parts[2:]  # "Company — Title"
-                        else:
-                            title_part = dash_parts[scores.index(max(scores))]
-                            rest = [p for p in dash_parts if p is not title_part]
-                        company_part = rest[-1] if len(dash_parts) > 2 and "|" in body else rest[0]
+                        title_part, company_part = self._split_title_company(body)
                         current_exp = new_experience(company_part, right_col)
                         self._add_role(current_exp, Role(title=title_part, start_date=start, end_date=end))
                     elif current_exp is None:
