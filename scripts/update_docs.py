@@ -110,6 +110,7 @@ STAGE_MAP: Dict[str, List[str]] = {
     "app/rendering/review_view.py": ["7 Rewrite"],
     "app/rendering/pdf_converter.py": ["9 Render"],
     "app/services/run_manager.py": ["10 Report"],
+    "app/services/profile_store.py": ["7 Rewrite"],
     "app/services/tailor.py": STAGES,  # the orchestrator touches every stage
     "app/ui.py": STAGES,
     "app/cli.py": STAGES,

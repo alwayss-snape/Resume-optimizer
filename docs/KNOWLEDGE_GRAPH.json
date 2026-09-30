@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "e65452bca19c8ad7",
+  "source_hash": "89a6450050db3b52",
   "stats": {
     "files": 122,
     "python_files": 100,
     "app_modules": 49,
     "test_files": 44,
     "classes": 86,
-    "functions": 674,
-    "lines_of_python": 14423
+    "functions": 679,
+    "lines_of_python": 14527
   },
   "axes": {
     "x": "location (path)",
@@ -2300,7 +2300,9 @@
       "id": "app/services/profile_store.py",
       "type": "python",
       "layer": "Services",
-      "stages": [],
+      "stages": [
+        "7 Rewrite"
+      ],
       "lines": 102,
       "doc": "Local profile of facts the user has confirmed (P3.2).",
       "classes": [
@@ -2407,122 +2409,127 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 1032,
+      "lines": 1056,
       "doc": "",
       "classes": [
         {
           "name": "TailorService",
-          "line": 43,
+          "line": 44,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
-              "line": 44,
+              "line": 45,
               "doc": ""
             },
             {
               "name": "generate_preview_md",
-              "line": 76,
+              "line": 78,
               "doc": ""
             },
             {
               "name": "_patchable",
-              "line": 122,
+              "line": 124,
               "doc": "Proposals as in-place DOCX patches. A summary proposal targets the"
             },
             {
               "name": "_apply_gap_answers",
-              "line": 145,
+              "line": 147,
               "doc": "Ticked keywords join the skills section; a typed answer becomes a"
             },
             {
+              "name": "_prefill_from_profile",
+              "line": 171,
+              "doc": "Answers confirmed for an earlier JD pre-fill the same questions"
+            },
+            {
               "name": "_draft_from_answer",
-              "line": 169,
+              "line": 183,
               "doc": "Polish the candidate's answer into one bullet that may use only"
             },
             {
               "name": "_split_description",
-              "line": 188,
+              "line": 202,
               "doc": "Pasted role description -> bullet-sized chunks: one per line (list"
             },
             {
               "name": "add_new_role",
-              "line": 197,
+              "line": 211,
               "doc": "Add a job the resume doesn't have yet (P3.3). Each chunk of the"
             },
             {
               "name": "_skills_proposals",
-              "line": 261,
+              "line": 275,
               "doc": "The skills section with the JD's skills first, when that changes it (P1.6)."
             },
             {
               "name": "_summary_proposals",
-              "line": 266,
+              "line": 280,
               "doc": "The tailored summary as a proposal, when one was written (P1.5)."
             },
             {
               "name": "_embed",
-              "line": 271,
+              "line": 285,
               "doc": "Sentence embeddings for the planner, loaded lazily; raises when the"
             },
             {
               "name": "_fit_relevance",
-              "line": 280,
+              "line": 294,
               "doc": "Planner relevance per bullet for the page-fit loop. Bullets the user"
             },
             {
               "name": "_render_template",
-              "line": 290,
+              "line": 304,
               "doc": "One template render plus PDF conversion (the page-fit loop's step)."
             },
             {
               "name": "_apply_bullet_order",
-              "line": 296,
+              "line": 310,
               "doc": "Reorder bullets as planned (most relevant first within each"
             },
             {
               "name": "parse_resume",
-              "line": 311,
+              "line": 325,
               "doc": "File -> (raw document, ResumeDocument, evidence). The deterministic"
             },
             {
               "name": "normalize_raw",
-              "line": 321,
+              "line": 335,
               "doc": ""
             },
             {
               "name": "_copy_parsed",
-              "line": 329,
+              "line": 343,
               "doc": "Deep copies, so a parse kept in UI session state is never mutated."
             },
             {
               "name": "preview_keyword_match",
-              "line": 334,
+              "line": 348,
               "doc": "Match rate if these proposals were applied (P3.4 \"recalculate\"):"
             },
             {
               "name": "apply_parse_corrections",
-              "line": 357,
+              "line": 371,
               "doc": "Apply the user's fixes from the \"Check parsed resume\" step (P3.5)."
             },
             {
               "name": "analyze_only",
-              "line": 418,
+              "line": 432,
               "doc": ""
             },
             {
               "name": "generate_proposals",
-              "line": 444,
+              "line": 458,
               "doc": "Generate rewrite proposals without applying them, plus questions"
             },
             {
               "name": "incorporate_user_addition",
-              "line": 505,
+              "line": 520,
               "doc": "Fold a user-supplied free-text addition (a project, an"
             },
             {
               "name": "tailor_resume",
-              "line": 584,
+              "line": 599,
               "doc": ""
             }
           ]
@@ -2531,7 +2538,7 @@
       "functions": [
         {
           "name": "_merge_usage",
-          "line": 1023,
+          "line": 1047,
           "doc": "Combine two LLMClient.get_usage_summary() dicts into one."
         }
       ]
@@ -2552,43 +2559,43 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 792,
+      "lines": 809,
       "doc": "",
       "classes": [],
       "functions": [
         {
           "name": "get_local_pdf_preview_url",
-          "line": 27,
+          "line": 28,
           "doc": "Serve a PDF from a temporary HTTP endpoint so Chrome can render it in an iframe."
         },
         {
           "name": "display_pdf_with_fallback",
-          "line": 44,
+          "line": 45,
           "doc": "Try to use Streamlit's native PDF display if available, otherwise fall back"
         },
         {
           "name": "_cleanup_session_state",
-          "line": 81,
+          "line": 82,
           "doc": "Remove temp files from a previous run and reset to a clean 'idle' state."
         },
         {
           "name": "_show_content_checks",
-          "line": 144,
+          "line": 145,
           "doc": "P2.6: advice on the finished resume; nothing is changed automatically."
         },
         {
           "name": "model_options",
-          "line": 155,
+          "line": 156,
           "doc": "Models offered in the sidebar for the configured provider. The"
         },
         {
           "name": "_show_keyword_match",
-          "line": 284,
+          "line": 295,
           "doc": "Match rate against the target band, then the matched / missing table"
         },
         {
           "name": "_draft_proposals",
-          "line": 316,
+          "line": 327,
           "doc": ""
         }
       ]
@@ -2918,118 +2925,118 @@
       "type": "python",
       "layer": "Tooling",
       "stages": [],
-      "lines": 730,
+      "lines": 731,
       "doc": "Regenerate the repo's living docs: the knowledge graph and the change log.",
       "classes": [],
       "functions": [
         {
           "name": "git",
-          "line": 128,
+          "line": 129,
           "doc": ""
         },
         {
           "name": "layer_of",
-          "line": 135,
+          "line": 136,
           "doc": ""
         },
         {
           "name": "module_name",
-          "line": 142,
+          "line": 143,
           "doc": ""
         },
         {
           "name": "first_line",
-          "line": 149,
+          "line": 150,
           "doc": ""
         },
         {
           "name": "list_files",
-          "line": 158,
+          "line": 159,
           "doc": "Tracked + new (not ignored) files, restricted to the project map."
         },
         {
           "name": "parse_python",
-          "line": 176,
+          "line": 177,
           "doc": ""
         },
         {
           "name": "symbols_of",
-          "line": 204,
+          "line": 205,
           "doc": ""
         },
         {
           "name": "settings_fields",
-          "line": 217,
+          "line": 218,
           "doc": ""
         },
         {
           "name": "build_graph",
-          "line": 236,
+          "line": 237,
           "doc": ""
         },
         {
           "name": "render_graph_md",
-          "line": 310,
+          "line": 311,
           "doc": ""
         },
         {
           "name": "write_graph",
-          "line": 508,
+          "line": 509,
           "doc": ""
         },
         {
           "name": "commit_info",
-          "line": 551,
+          "line": 552,
           "doc": ""
         },
         {
           "name": "changed_files",
-          "line": 562,
+          "line": 563,
           "doc": ""
         },
         {
           "name": "is_major",
-          "line": 575,
+          "line": 576,
           "doc": ""
         },
         {
           "name": "blob",
-          "line": 584,
+          "line": 585,
           "doc": ""
         },
         {
           "name": "structure_delta",
-          "line": 589,
+          "line": 590,
           "doc": ""
         },
         {
           "name": "render_entry",
-          "line": 612,
+          "line": 613,
           "doc": ""
         },
         {
           "name": "_split_entries",
-          "line": 655,
+          "line": 656,
           "doc": ""
         },
         {
           "name": "_join",
-          "line": 667,
+          "line": 668,
           "doc": ""
         },
         {
           "name": "log_entry",
-          "line": 671,
+          "line": 672,
           "doc": ""
         },
         {
           "name": "backfill",
-          "line": 689,
+          "line": 690,
           "doc": ""
         },
         {
           "name": "main",
-          "line": 706,
+          "line": 707,
           "doc": ""
         }
       ]
@@ -4343,7 +4350,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 62,
+      "lines": 124,
       "doc": "P3.2: confirmed gap answers are saved locally and offered on the next JD.",
       "classes": [],
       "functions": [
@@ -4380,6 +4387,26 @@
         {
           "name": "test_tests_never_touch_the_real_profile",
           "line": 60,
+          "doc": ""
+        },
+        {
+          "name": "_service",
+          "line": 67,
+          "doc": ""
+        },
+        {
+          "name": "test_saved_answers_prefill_the_next_jds_questions",
+          "line": 81,
+          "doc": ""
+        },
+        {
+          "name": "test_tailor_saves_ticked_answers_unless_told_not_to",
+          "line": 90,
+          "doc": ""
+        },
+        {
+          "name": "test_ui_prefills_and_forgets",
+          "line": 100,
           "doc": ""
         }
       ]
@@ -6633,6 +6660,11 @@
       "type": "tested_by"
     },
     {
+      "from": "app/eval/harness.py",
+      "to": "tests/unit/test_profile_store.py",
+      "type": "tested_by"
+    },
+    {
       "from": "app/ingestion/docx.py",
       "to": "app/ingestion/docx.py::DocxParser",
       "type": "contains"
@@ -7159,6 +7191,11 @@
     },
     {
       "from": "app/services/run_manager.py",
+      "to": "tests/unit/test_profile_store.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/services/run_manager.py",
       "to": "tests/unit/test_project_rewrites.py",
       "type": "tested_by"
     },
@@ -7319,6 +7356,11 @@
     },
     {
       "from": "app/services/tailor.py",
+      "to": "app/services/profile_store.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/services/tailor.py",
       "to": "app/services/run_manager.py",
       "type": "imports"
     },
@@ -7379,6 +7421,11 @@
     },
     {
       "from": "app/services/tailor.py",
+      "to": "tests/unit/test_profile_store.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/services/tailor.py",
       "to": "tests/unit/test_project_rewrites.py",
       "type": "tested_by"
     },
@@ -7425,6 +7472,11 @@
     {
       "from": "app/ui.py",
       "to": "app/rendering/review_view.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/ui.py",
+      "to": "app/services/profile_store.py",
       "type": "imports"
     },
     {

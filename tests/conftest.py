@@ -9,9 +9,12 @@ default client to an unreachable local Ollama with no cloud keys. Tests
 that exercise a specific provider pass provider=/api_key= explicitly.
 """
 import os
+import tempfile
 
 os.environ["LLM_PROVIDER"] = "ollama"
 os.environ["LLM_HOST"] = "http://127.0.0.1:9"  # discard port: fails fast, never reachable
 os.environ["GROQ_API_KEY"] = ""
 os.environ["ANTHROPIC_API_KEY"] = ""
 os.environ["SEMANTIC_MATCH_ENABLED"] = os.environ.get("SEMANTIC_MATCH_ENABLED", "true")
+# Never read or write the developer's real confirmed-facts profile (P3.2).
+os.environ["PROFILE_PATH"] = os.path.join(tempfile.mkdtemp(prefix="profile_test_"), "facts.json")

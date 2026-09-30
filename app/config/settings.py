@@ -31,6 +31,10 @@ class Settings(BaseSettings):
     anthropic_api_key: str = ""
     anthropic_model: str = "claude-opus-5-5"
 
+    # Facts the user confirmed in gap questions, reused across JDs (P3.2).
+    # Personal data: gitignored, never sent anywhere.
+    profile_path: str = "data/profile/facts.json"
+
     # Semantic matching (local sentence-transformers embedding layer).
     # Only applied to requirements the deterministic EvidenceMatcher leaves MISSING.
     semantic_match_enabled: bool = True

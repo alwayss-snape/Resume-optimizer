@@ -34,3 +34,5 @@ Claude outputs/
 
 # Private evaluation data (real resumes, golden files) — never commit
 data/eval/private/
+# Confirmed facts reused across JDs (P3.2): personal data
+data/profile/

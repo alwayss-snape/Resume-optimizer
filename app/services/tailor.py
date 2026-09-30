@@ -33,6 +33,7 @@ from app.rendering.layout import output_basename, section_order_for
 from app.rendering.page_fit import PageFitter
 from app.rendering.pdf_converter import PdfConverter
 from app.rendering.template_renderer import TemplateRenderer
+from app.services.profile_store import ProfileStore
 from app.services.run_manager import RunManager
 from app.validation.content_lint import lint as content_lint
 from app.validation.factual import FactualValidator
@@ -63,6 +64,7 @@ class TailorService:
         self.rewriter = LLMRewriter(self.llm_client)
         self.summary_writer = SummaryWriter(self.llm_client)
         self.skills_tailor = SkillsTailor()
+        self.profile_store = ProfileStore()
         self.validator = FactualValidator()
         self.struct_validator = StructuralValidator()
         self.docx_patcher = DocxPatcher()
@@ -165,6 +167,18 @@ class TailorService:
                 evidence_list[:] = updated
                 notes.append(f"Added from your answer: {text}")
         return notes
+
+    def _prefill_from_profile(self, questions: List) -> None:
+        """Answers confirmed for an earlier JD pre-fill the same questions
+        now (P3.2). Only a pre-fill: the user still sees and keeps them."""
+        try:
+            known = self.profile_store.known([k for q in questions for k in q.keywords])
+        except Exception:
+            return  # a profile problem must never block tailoring
+        for q in questions:
+            facts = [known[k] for k in q.keywords if k in known]
+            q.saved_keywords = [k for k in q.keywords if k in known]
+            q.saved_answer = next((f.answer for f in facts if f.answer), "")
 
     def _draft_from_answer(self, resume: Resume, evidence_list: List, ans: GapAnswer):
         """Polish the candidate's answer into one bullet that may use only
@@ -476,6 +490,7 @@ class TailorService:
         # resume doesn't show, instead of drafting experience the candidate
         # may not have. Built in code, no LLM call.
         gap_questions = build_questions(job_desc, keyword_report, limit=suggestion_limit)
+        self._prefill_from_profile(gap_questions)
 
         llm_available = bool(self.llm_client and self.llm_client.is_available())
         failed = [p for p in proposals if getattr(p, "status", None) in FAILED_STATUSES]
@@ -597,6 +612,8 @@ class TailorService:
         job_desc: Optional[JobDescription] = None,
         gap_answers: Optional[List] = None,
         new_role: Optional[Dict] = None,
+        gap_questions: Optional[List] = None,
+        remember_answers: bool = True,
     ) -> Dict[str, str]:
         run_dir = self.run_manager.create_run(resume_path, jd_text)
         clean_jd_text = self.safety_guard.sanitize(jd_text)
@@ -801,6 +818,13 @@ class TailorService:
         # Answers to the gap questions (P3.1): only what the candidate
         # confirmed, in their own words.
         gap_notes = self._apply_gap_answers(resume, evidence_list, job_desc, gap_answers or [])
+        if remember_answers and gap_answers:
+            try:
+                saved = self.profile_store.record(gap_answers, gap_questions or [])
+                if saved:
+                    _append_progress(f"Saved for future applications: {', '.join(saved)}")
+            except Exception as e:
+                warnings.append(f"Could not save your answers for next time: {e}")
         for note in gap_notes:
             _append_progress(note)
             warnings.append(note)

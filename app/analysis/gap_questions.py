@@ -22,6 +22,10 @@ class GapQuestion(BaseModel):
     priority: str  # required | preferred
     keywords: List[str] = Field(default_factory=list)  # JD keywords the resume doesn't show
     question: str
+    # Pre-fill from the saved profile (P3.2): keywords confirmed for an
+    # earlier JD and the answer given then. Shown ticked, still editable.
+    saved_keywords: List[str] = Field(default_factory=list)
+    saved_answer: str = ""
 
 
 class GapAnswer(BaseModel):

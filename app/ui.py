@@ -15,6 +15,7 @@ import streamlit as st
 from app.config.settings import settings
 from app.llm.client import LLMClient
 from app.rendering.review_view import diff_html, gap_table, score_breakdown, status_badge
+from app.services.profile_store import ProfileStore
 from app.services.tailor import TailorService
 
 st.set_page_config(
@@ -191,6 +192,16 @@ with st.sidebar.expander("Advanced"):
         help="Patches the rewritten text into your uploaded DOCX instead of using the ATS template. "
         "Bullets aren't reordered and the page length isn't adjusted. Ignored for PDF uploads.",
     )
+    # Saved answers to gap questions (P3.2), kept only on this computer.
+    remember_answers = st.checkbox(
+        "Remember my answers for future jobs", value=True,
+        help="Skills you confirm and what you wrote about them are saved locally and pre-filled "
+        "next time. Nothing is added without you keeping it ticked.",
+    )
+    saved_count = len(ProfileStore().load().facts)
+    if saved_count and st.button(f"Forget {saved_count} saved answer(s)"):
+        ProfileStore().forget()
+        st.rerun()
 render_mode = "PRESERVE" if keep_layout else "ATS_DEFAULT"
 strict_factual = st.sidebar.checkbox(
     "Strict Factual Mode",
@@ -562,9 +573,13 @@ if st.session_state.stage == "proposals":
                        "added unless you tick it or describe it.")
             for q in gap_questions:
                 st.markdown(f"*{q.requirement}*" + (" (nice to have)" if q.priority == "preferred" else ""))
-                ticked = [k for k in q.keywords if st.checkbox(f"I have used {k}", key=f"{q.id}_{k}")]
+                if q.saved_keywords:
+                    st.caption(f"💾 You confirmed {', '.join(q.saved_keywords)} for an earlier application; "
+                               "untick anything that doesn't apply here.")
+                ticked = [k for k in q.keywords
+                          if st.checkbox(f"I have used {k}", value=k in q.saved_keywords, key=f"{q.id}_{k}")]
                 answer = st.text_area("Where and how? (optional, your own words; becomes a bullet)",
-                                      key=f"{q.id}_answer", height=68)
+                                      value=q.saved_answer, key=f"{q.id}_answer", height=68)
                 where = st.selectbox("Add the bullet to", options=target_labels, key=f"{q.id}_target")
                 gap_inputs.append((q, ticked, answer, where))
 
@@ -682,6 +697,8 @@ if st.session_state.stage == "proposals":
                     job_desc=st.session_state.get("job_description"),
                     gap_answers=gap_answers,
                     new_role=new_role,
+                    gap_questions=gap_questions,
+                    remember_answers=remember_answers,
                 )
             st.session_state.results = results
             st.session_state.output_dir = output_dir
