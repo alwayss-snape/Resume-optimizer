@@ -1,7 +1,7 @@
 # Action Items — Best Tailored Resume per JD
 
 _Living tracker. Update an item's **Status** in the same commit that changes it; add a short note (commit subject or
-what's left). Last updated: 2026-09-30 (Stage D started)._
+what's left). Last updated: 2026-09-30 (Stage D done; live re-check pending)._
 
 **Goal:** every resume + JD run produces the best possible tailored resume: an accurate match score, strong
 JD-aligned rewrites, a Novoresume-style ATS layout that fits the right length, and nothing fabricated.
@@ -61,6 +61,8 @@ anonymized replica of the layout.
 **After Stage A (2026-09-30, `python -m app.eval run --live --tailor --case real-fox`):** parse = golden match; JD 21 requirements / 4 preferred (LLM); score 0.0 (whole-line requirements never match the sentence matcher, F12); 7/28 JD keywords verbatim in the resume; 0 rewrites (the planner only rewrites matched bullets, F13); 8 LLM calls, 20.6K tokens, 4 × 429; 2 pages. → Stage B.
 
 **After Stage C (2026-09-30, live):** 12 proposals (summary + skills order + 10 of 12 bullets; 2 judged irrelevant and kept), 9 changed, 11 PASS / 1 NEEDS_CONFIRM, 0 rejected; 3 LLM calls (JD, role, summary; was 6), 12.9K tokens, 2 × 429; summary now says 4+ years (computed). The model skipped the last 3 bullets of the role, so a one-shot follow-up call was added afterwards (not yet re-measured: the free tier's 200K tokens/day limit was reached by the day's development runs). Keyword match rate 26.8% before and after: rewrites add no new skills by design, so the rate rises only through confirmed gap answers (5 questions asked).
+
+**After Stage D (2026-09-30):** layout gate met: the real resume renders as **1 A4 page** (target 1 for 3.6 years; was 2) in 2 renders (Interests + 4 lowest-relevance bullets trimmed, keyword rate unchanged), roles, dates, sub-sections and education laid out per the template spec, ATS round-trip clean on DOCX and PDF, file named `First_Last_Resume_<Company>`. Content checks: 4 buzzwords, 2 repeated verbs, 25% of bullets with a number (offline, before rewrites). Stage C follow-up (`breaks_bullet_rules` retry) added after a re-run where 6 of 12 bullets came back unchanged; **its live measurement is still pending**: every live attempt since hit Groq's 200K tokens/day limit (JD / role calls refused).
 
 **After Stage B (2026-09-30):** parse = golden match; JD 21 requirements / 4 preferred; keyword match rate **29.3%** (8 matched: ML, Databricks, MLOps, Python, LightGBM, Spark via PySpark, AWS, feature stores; missing incl. PyTorch, MLflow, A/B, NDCG, LLMs, FAISS, Kafka, title); 0 rewrites (planner, P1.3); 6 LLM calls, 10.5K tokens, 7 × 429; 2 pages.
 
