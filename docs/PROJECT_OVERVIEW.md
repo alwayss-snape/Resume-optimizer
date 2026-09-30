@@ -57,35 +57,24 @@ Semantic matching uses a local embedding model (`all-MiniLM-L6-v2`).
 | Strict Factual Mode | ⚠️ Cosmetic | See issue 4 |
 | DOCX / PDF / HTML output | ✅ Works | Re-parsed after rendering to prove it reads back intact (ATS round-trip, P2.5). ATS template (P2.1): A4, Arial, standard headings, section order by experience, "Jan 2022 – Present" dates; files named `First_Last_Resume_<Company>`. Auto page-fit to 1 page (< 8 years) or 2, trimming the least relevant content and reporting it (P2.3–P2.4). PDF and page-fit need LibreOffice installed |
 | CLI | ✅ Works | `analyze` and `tailor` only; no review step, no addition text |
-| Tests | ✅ 259 passing | `pytest -q` (~35 s, loads the cached embedding model) |
+| Tests | ✅ 261 passing | `pytest -q` (~35 s, loads the cached embedding model) |
 | Multiple JDs / history / cover letter | ❌ Not built | — |
 
-## Open issues (found 2026-09-29, not yet fixed)
+## Open issues
 
-Ordered by impact. None are fixed yet; they're recorded so they can be prioritized.
+Last reviewed 2026-09-30. The 2026-09-29 audit list is resolved: the Ollama stub shadowing (P0.6), the UI passing an
+Ollama model name to Groq (P0.2), cosmetic Strict Mode (P0.8), the double LLM run on Apply (P0.7) and the dead code
+and unused prompts (P0.8, P1.10) are all fixed. What remains:
 
-1. ~~**Leaked SSH key**~~ (resolved 2026-09-29): a private key (`/Resume-optimizer`) was committed in `4054827` and
-   pushed. It was checked and found to be registered nowhere on GitHub (not as a repo deploy key, not as an account
-   key), so it never granted access. It's now untracked, gitignored and deleted locally. It still exists in git
-   history, so **never register that key anywhere**.
-2. **Local Ollama can never work.** The root-level `ollama.py` (a test stub) shadows the real `ollama` package,
-   because `app/ui.py` and `app/cli.py` put the repo root first on `sys.path`. Its `list()` returns no models, so
-   `LLMClient.is_available()` is always False on the Ollama path and every rewrite silently returns the original text.
-   Fix: move the stub under `tests/` (e.g. a `conftest.py` fixture).
-3. **UI overrides the Groq model.** The sidebar always passes an Ollama model name (`qwen3:4b`) into
-   `LLMClient(model=...)`, which overrides `GROQ_MODEL` when `LLM_PROVIDER=groq`. Groq is then asked for a model it
-   doesn't have → calls likely fail → silent no-op rewrites. Needs a quick live confirmation. Fix: make the model
-   picker provider-aware.
-4. **Strict Factual Mode doesn't change the output.** `tailor_resume()` clears `approved_proposals` (`tailor.py` ~L422)
-   *after* the DOCX was already rendered with them (~L391–397) and after they were applied to the resume model.
-   It's on by default in the UI.
-5. **"Apply & Generate" runs the LLM twice.** `tailor_resume()` always re-runs planner + rewriter (~L298–299) and
-   then discards the result in favour of the UI's pre-approved list, which doubles LLM time and tokens.
-6. **Dead code:** a duplicate block after `except Exception: pass` in `tailor_resume()` (~L532–539) writes to a
-   closed file if reached. `app/services/validation_agent.py` isn't imported anywhere. 5 of 6 prompt files in
-   `app/llm/prompts/` are unused (only `rewrite_bullet.txt` is loaded; see KNOWLEDGE_GRAPH §6).
-7. **User's source resume** has "LinkedIn | Email | Leetcode" as placeholder text with no hyperlinks. The user will
-   fix this in their own file. Since P1.9, hyperlinks (DOCX and PDF) and written-out URLs are picked up as links.
+1. **Leaked SSH key in git history** (resolved 2026-09-29): a private key committed in `4054827` was registered
+   nowhere on GitHub, so it never granted access. It's untracked, gitignored and deleted locally, but still in history,
+   so **never register that key anywhere**.
+2. **Groq free-tier daily limit (200K tokens/day)** is shared by all development runs; a full real-resume run costs
+   ~13K. Live gate runs can be blocked for hours. Local Ollama (`qwen3:4b`) is too heavy for the 8 GB development
+   machine; its config fixes are parked in `git stash` ("ollama backup").
+3. **Live measurement pending** for the P1.4 unchanged-bullet retry and Stage D content (see ACTION_ITEMS.md).
+4. **User's source resume** has "LinkedIn | Email | Leetcode" placeholder text with no hyperlinks (to fix in their
+   own file).
 
 ## Open work: "Add as a new Job Role" (designed, approved, not coded)
 

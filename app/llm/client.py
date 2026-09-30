@@ -27,6 +27,7 @@ except Exception:
 from pydantic import BaseModel, ValidationError
 
 from app.config.settings import settings
+from app.validation.safety import SafetyGuard
 from app.llm.schemas import (
     LLMConnectionError,
     LLMError,
@@ -39,6 +40,9 @@ logger = logging.getLogger(__name__)
 T = TypeVar("T", bound=BaseModel)
 
 PROVIDERS = ("anthropic", "groq", "ollama")
+
+# Every prompt passes through this: resume / JD text is untrusted (F35).
+_GUARD = SafetyGuard()
 
 # Server-side refusal fallback for Claude: if a request is declined by a
 # safety classifier, the API re-runs it on a suitable fallback model inside
@@ -242,6 +246,7 @@ class LLMClient:
         see `get_usage_summary()`. `effort` ("low" | "medium" | "high") tunes
         reasoning depth where the provider supports it; others ignore it.
         """
+        messages = _GUARD.guard_messages(messages)
         try:
             if self.provider == "anthropic":
                 response = self._generate_anthropic(messages, effort=effort)
@@ -512,6 +517,7 @@ class LLMClient:
         Claude uses native structured outputs. Groq gpt-oss models use strict
         json_schema mode. Other models get the schema in the prompt, with
         parse-and-retry on invalid output."""
+        messages = _GUARD.guard_messages(messages)
         if self.provider == "anthropic":
             return self._generate_json_anthropic(messages, schema_model, effort)
 

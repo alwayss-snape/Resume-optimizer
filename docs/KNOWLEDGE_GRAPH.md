@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**48 app modules · 41 test files · 84 classes · 608 functions/methods · 13,533 lines of Python** · source hash `665a54eeeaea70c4`
+**47 app modules · 41 test files · 83 classes · 610 functions/methods · 13,549 lines of Python** · source hash `93e9b81a02b70da8`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -72,12 +72,9 @@ app/
     prompts/
       final_review.txt
       jd_analysis.txt
-      resume_normalization.txt
       rewrite_bullet.txt
       rewrite_role.txt
       summary.txt
-      tailoring_plan.txt
-      validate_claims.txt
   rendering/
     document_map.py                              DocumentLocation, DocumentMap
     docx_patcher.py                              DocxPatcher
@@ -89,7 +86,6 @@ app/
   services/
     run_manager.py                               RunManager
     tailor.py                                    TailorService
-    validation_agent.py                          ValidationAgent
   validation/
     content_lint.py                              Content checks on the finished resume (P2.6). Deterministic, no LLM.
     factual.py                                   ClaimCheck, ValidationResult, FactualValidator
@@ -173,7 +169,7 @@ Rows = layer (what kind of code), columns = pipeline stage (when it runs during 
 | **Validation** | · | · | `safety` | · | · | · | · | `content_lint`<br>`factual`<br>`output`<br>`structural` | · | · |
 | **Rendering** | `document_map` | · | · | · | · | · | · | · | `document_map`<br>`docx_patcher`<br>`html_renderer`<br>`layout`<br>`page_fit`<br>`pdf_converter`<br>`template_renderer` | · |
 | **Domain models** | · | `evidence`<br>`resume`<br>`resume_document` | `job` | `evidence`<br>`report` | `report` | `tailoring` | · | · | `resume_document` | · |
-| **Services** | · | · | · | · | · | · | · | `validation_agent` | · | `run_manager` |
+| **Services** | · | · | · | · | · | · | · | · | · | `run_manager` |
 
 Spanning all stages: `app/cli.py`, `app/eval/harness.py`, `app/services/tailor.py`, `app/ui.py`
 
@@ -317,7 +313,7 @@ _Keyword-level match rate, the headline score (P1.2)._
 - function **`_same_wording()`** ([app/analysis/rewriter.py:34](../app/analysis/rewriter.py#L34)) — Equal apart from case, whitespace and closing punctuation, so adding a
 - function **`breaks_bullet_rules()`** ([app/analysis/rewriter.py:50](../app/analysis/rewriter.py#L50)) — True when a bullet is over the word limit or uses a filler word.
 - **Imports:** `analysis/change_proposal.py`, `domain/evidence.py`, `domain/job.py`, `domain/resume.py`, `domain/tailoring.py`, `llm/client.py`, `llm/schemas.py`
-- **Imported by:** `analysis/summary_writer.py`, `rendering/docx_patcher.py`, `services/tailor.py`, `services/validation_agent.py`, `validation/content_lint.py`, `validation/factual.py`
+- **Imported by:** `analysis/summary_writer.py`, `rendering/docx_patcher.py`, `services/tailor.py`, `validation/content_lint.py`, `validation/factual.py`
 - **Tested by:** `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_docx_renderer.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_tailor_planner.py`, `tests/unit/test_tailor_resume_flow.py`, `tests/unit/test_validation.py`
 - **Prompts:** `llm/prompts/rewrite_bullet.txt`, `llm/prompts/rewrite_role.txt`
 
@@ -496,7 +492,7 @@ _Tailored professional summary (P1.5)._
   - `record_revision()` :52
   - `snapshot()` :77 — Return a JSON-serializable, versioned document for storage or export.
 - **Imports:** `domain/resume.py`
-- **Imported by:** `analysis/resume_normalizer.py`, `analysis/structure_extractor.py`, `rendering/html_renderer.py`, `rendering/layout.py`, `rendering/page_fit.py`, `rendering/template_renderer.py`, `services/tailor.py`, `services/validation_agent.py`
+- **Imported by:** `analysis/resume_normalizer.py`, `analysis/structure_extractor.py`, `rendering/html_renderer.py`, `rendering/layout.py`, `rendering/page_fit.py`, `rendering/template_renderer.py`, `services/tailor.py`
 - **Tested by:** `tests/unit/test_ats_round_trip.py`, `tests/unit/test_docx_renderer.py`, `tests/unit/test_html_renderer.py`, `tests/unit/test_page_fit.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_resume_document.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_template_layout.py`, `tests/unit/test_template_renderer_standalone.py`
 
 ### `app/domain/tailoring.py`
@@ -613,33 +609,33 @@ _Run evaluation cases through the pipeline and collect metrics (P4.1)._
 
 ### `app/llm/client.py`
 
-**Layer:** LLM · **Stage:** 3 JD analysis, 7 Rewrite · **Lines:** 635
+**Layer:** LLM · **Stage:** 3 JD analysis, 7 Rewrite · **Lines:** 641
 
-- class **`LLMClient`** ([app/llm/client.py:54](../app/llm/client.py#L54)) — Unified client for text generation across three interchangeable providers:
-  - `__init__()` :70
-  - `is_available()` :139 — Whether the configured provider is reachable AND the configured
-  - `_check_available()` :151
-  - `_ollama_check()` :158
-  - `_groq_check()` :170
-  - `_anthropic_check()` :191
-  - `_record()` :212
-  - `generate()` :230 — Generate text from the LLM using the chat interface.
-  - `get_usage_summary()` :259 — Aggregate every LLM call made on this client instance so far
-  - `_generate_ollama()` :281
-  - `_groq_supports_strict_schema()` :326
-  - `_generate_groq()` :330
-  - `_split_system()` :414 — The Messages API takes the system prompt as a top-level field,
-  - `_anthropic_request()` :421
-  - `_anthropic_response()` :458
-  - `_generate_anthropic()` :475
-  - `_generate_json_anthropic()` :480 — Structured outputs guarantee the response matches the schema, so
-  - `generate_json()` :501 — Generate structured JSON conforming to a Pydantic model.
-- function **`_requested_wait()`** ([app/llm/client.py:591](../app/llm/client.py#L591)) — How long Groq asks us to wait: the retry-after header, else the
-- function **`_retry_after_seconds()`** ([app/llm/client.py:607](../app/llm/client.py#L607)) — Seconds to wait before retrying a 429: the server's `retry-after`
-- function **`strict_json_schema()`** ([app/llm/client.py:622](../app/llm/client.py#L622)) — Adapt a Pydantic JSON schema for strict structured-output modes: every
-- **Imports:** `config/settings.py`, `llm/schemas.py`
+- class **`LLMClient`** ([app/llm/client.py:58](../app/llm/client.py#L58)) — Unified client for text generation across three interchangeable providers:
+  - `__init__()` :74
+  - `is_available()` :143 — Whether the configured provider is reachable AND the configured
+  - `_check_available()` :155
+  - `_ollama_check()` :162
+  - `_groq_check()` :174
+  - `_anthropic_check()` :195
+  - `_record()` :216
+  - `generate()` :234 — Generate text from the LLM using the chat interface.
+  - `get_usage_summary()` :264 — Aggregate every LLM call made on this client instance so far
+  - `_generate_ollama()` :286
+  - `_groq_supports_strict_schema()` :331
+  - `_generate_groq()` :335
+  - `_split_system()` :419 — The Messages API takes the system prompt as a top-level field,
+  - `_anthropic_request()` :426
+  - `_anthropic_response()` :463
+  - `_generate_anthropic()` :480
+  - `_generate_json_anthropic()` :485 — Structured outputs guarantee the response matches the schema, so
+  - `generate_json()` :506 — Generate structured JSON conforming to a Pydantic model.
+- function **`_requested_wait()`** ([app/llm/client.py:597](../app/llm/client.py#L597)) — How long Groq asks us to wait: the retry-after header, else the
+- function **`_retry_after_seconds()`** ([app/llm/client.py:613](../app/llm/client.py#L613)) — Seconds to wait before retrying a 429: the server's `retry-after`
+- function **`strict_json_schema()`** ([app/llm/client.py:628](../app/llm/client.py#L628)) — Adapt a Pydantic JSON schema for strict structured-output modes: every
+- **Imports:** `config/settings.py`, `llm/schemas.py`, `validation/safety.py`
 - **Imported by:** `analysis/jd_analyzer.py`, `analysis/matcher.py`, `analysis/rewriter.py`, `analysis/structure_extractor.py`, `analysis/summary_writer.py`, `analysis/tailor_planner.py`, `cli.py`, `eval/harness.py`, `services/tailor.py`, `ui.py`, `scripts/benchmark_model.py`
-- **Tested by:** `tests/unit/test_llm_client.py`, `tests/unit/test_rewriter.py`
+- **Tested by:** `tests/unit/test_llm_client.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_validation.py`
 
 ### `app/llm/schemas.py`
 
@@ -813,15 +809,6 @@ _Page-fit loop (P2.4): render, count pages, trim, render again._
 - **Imported by:** `cli.py`, `eval/harness.py`, `ui.py`
 - **Tested by:** `tests/integration/test_end_to_end.py`, `tests/unit/test_check_parsed_resume.py`, `tests/unit/test_cli.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_tailor_resume_flow.py`, `tests/unit/test_tailor_service_addition.py`, `tests/unit/test_ui.py`
 
-### `app/services/validation_agent.py`
-
-**Layer:** Services · **Stage:** 8 Validate · **Lines:** 71
-
-- class **`ValidationAgent`** ([app/services/validation_agent.py:8](../app/services/validation_agent.py#L8))
-  - `__init__()` :9
-  - `validate_run()` :14
-- **Imports:** `analysis/rewriter.py`, `domain/resume_document.py`, `validation/factual.py`, `validation/output.py`, `validation/structural.py`
-
 ### `app/ui.py`
 
 **Layer:** Entry points · **Stage:** all · **Lines:** 708
@@ -871,7 +858,7 @@ _Content checks on the finished resume (P2.6). Deterministic, no LLM._
   - `_validate_summary()` :195 — A summary may draw on the whole resume (P1.5): every factual term
   - `validate_proposal()` :232
 - **Imports:** `analysis/rewriter.py`, `analysis/skills_tailor.py`, `analysis/terminology.py`, `domain/evidence.py`
-- **Imported by:** `services/tailor.py`, `services/validation_agent.py`
+- **Imported by:** `services/tailor.py`
 - **Tested by:** `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_validation.py`
 
 ### `app/validation/output.py`
@@ -883,16 +870,18 @@ _Content checks on the finished resume (P2.6). Deterministic, no LLM._
   - `validate_pdf()` :30
   - `round_trip()` :63 — Re-parse a rendered DOCX / PDF the way an ATS would (our own
 - **Imports:** `analysis/resume_normalizer.py`, `ingestion/docx.py`, `ingestion/pdf.py`, `rendering/layout.py`
-- **Imported by:** `services/tailor.py`, `services/validation_agent.py`
+- **Imported by:** `services/tailor.py`
 - **Tested by:** `tests/integration/test_end_to_end.py`, `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_ats_round_trip.py`, `tests/unit/test_pdf_converter.py`
 
 ### `app/validation/safety.py`
 
-**Layer:** Validation · **Stage:** 3 JD analysis · **Lines:** 16
+**Layer:** Validation · **Stage:** 3 JD analysis · **Lines:** 69
 
-- class **`SafetyGuard`** ([app/validation/safety.py:3](../app/validation/safety.py#L3))
-  - `sanitize()` :11 — Sanitize text input by escaping system prompt injection attempts.
-- **Imported by:** `services/tailor.py`
+- class **`SafetyGuard`** ([app/validation/safety.py:14](../app/validation/safety.py#L14))
+  - `sanitize()` :36 — Sanitize JD text by escaping system prompt injection attempts.
+  - `sanitize_untrusted()` :43 — Clean resume / user text before it goes into a prompt: strip
+  - `guard_messages()` :53 — A copy of chat messages with user content sanitised and the
+- **Imported by:** `llm/client.py`, `services/tailor.py`
 - **Tested by:** `tests/unit/test_validation.py`
 
 ### `app/validation/structural.py`
@@ -902,7 +891,7 @@ _Content checks on the finished resume (P2.6). Deterministic, no LLM._
 - class **`StructuralValidator`** ([app/validation/structural.py:4](../app/validation/structural.py#L4))
   - `validate()` :5
 - **Imports:** `domain/resume.py`
-- **Imported by:** `services/tailor.py`, `services/validation_agent.py`
+- **Imported by:** `services/tailor.py`
 - **Tested by:** `tests/unit/test_validation.py`
 
 ## 4. Dependency diagram
@@ -961,7 +950,6 @@ flowchart LR
   subgraph Services[Services]
     services_run_manager[run_manager]
     services_tailor[tailor]
-    services_validation_agent[validation_agent]
   end
   subgraph Validation[Validation]
     validation_content_lint[content_lint]
@@ -1011,6 +999,7 @@ flowchart LR
   ingestion_pdf --> rendering_document_map
   llm_client --> config_settings
   llm_client --> llm_schemas
+  llm_client --> validation_safety
   rendering_docx_patcher --> analysis_rewriter
   rendering_docx_patcher --> rendering_document_map
   rendering_html_renderer --> rendering_layout
@@ -1044,10 +1033,6 @@ flowchart LR
   services_tailor --> validation_output
   services_tailor --> validation_safety
   services_tailor --> validation_structural
-  services_validation_agent --> analysis_rewriter
-  services_validation_agent --> validation_factual
-  services_validation_agent --> validation_output
-  services_validation_agent --> validation_structural
   ui --> config_settings
   ui --> llm_client
   ui --> services_tailor
@@ -1091,12 +1076,9 @@ From `app/config/settings.py`; each can be overridden by the env var of the same
 |---|---|
 | `final_review.txt` | **unused** |
 | `jd_analysis.txt` | `app/analysis/jd_analyzer.py` |
-| `resume_normalization.txt` | **unused** |
 | `rewrite_bullet.txt` | `app/analysis/rewriter.py` |
 | `rewrite_role.txt` | `app/analysis/rewriter.py` |
 | `summary.txt` | `app/analysis/summary_writer.py` |
-| `tailoring_plan.txt` | **unused** |
-| `validate_claims.txt` | **unused** |
 
 ## 7. Gaps: untested and unmapped modules
 
@@ -1105,12 +1087,10 @@ From `app/config/settings.py`; each can be overridden by the env var of the same
 - `app/analysis/terminology.py`
 - `app/config/settings.py`
 - `app/ingestion/ocr.py`
-- `app/services/validation_agent.py`
 
 **Not imported by any app code** (possibly dead code, or only used by tests/scripts):
 
 - `app/eval/__main__.py`
-- `app/services/validation_agent.py`
 
 **Not in `STAGE_MAP`** (add them in `scripts/update_docs.py`):
 

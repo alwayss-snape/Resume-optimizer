@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "665a54eeeaea70c4",
+  "source_hash": "93e9b81a02b70da8",
   "stats": {
-    "files": 121,
-    "python_files": 96,
-    "app_modules": 48,
+    "files": 117,
+    "python_files": 95,
+    "app_modules": 47,
     "test_files": 41,
-    "classes": 84,
-    "functions": 608,
-    "lines_of_python": 13533
+    "classes": 83,
+    "functions": 610,
+    "lines_of_python": 13549
   },
   "axes": {
     "x": "location (path)",
@@ -1600,102 +1600,102 @@
         "3 JD analysis",
         "7 Rewrite"
       ],
-      "lines": 635,
+      "lines": 641,
       "doc": "",
       "classes": [
         {
           "name": "LLMClient",
-          "line": 54,
+          "line": 58,
           "doc": "Unified client for text generation across three interchangeable providers:",
           "methods": [
             {
               "name": "__init__",
-              "line": 70,
+              "line": 74,
               "doc": ""
             },
             {
               "name": "is_available",
-              "line": 139,
+              "line": 143,
               "doc": "Whether the configured provider is reachable AND the configured"
             },
             {
               "name": "_check_available",
-              "line": 151,
+              "line": 155,
               "doc": ""
             },
             {
               "name": "_ollama_check",
-              "line": 158,
+              "line": 162,
               "doc": ""
             },
             {
               "name": "_groq_check",
-              "line": 170,
+              "line": 174,
               "doc": ""
             },
             {
               "name": "_anthropic_check",
-              "line": 191,
+              "line": 195,
               "doc": ""
             },
             {
               "name": "_record",
-              "line": 212,
+              "line": 216,
               "doc": ""
             },
             {
               "name": "generate",
-              "line": 230,
+              "line": 234,
               "doc": "Generate text from the LLM using the chat interface."
             },
             {
               "name": "get_usage_summary",
-              "line": 259,
+              "line": 264,
               "doc": "Aggregate every LLM call made on this client instance so far"
             },
             {
               "name": "_generate_ollama",
-              "line": 281,
+              "line": 286,
               "doc": ""
             },
             {
               "name": "_groq_supports_strict_schema",
-              "line": 326,
+              "line": 331,
               "doc": ""
             },
             {
               "name": "_generate_groq",
-              "line": 330,
+              "line": 335,
               "doc": ""
             },
             {
               "name": "_split_system",
-              "line": 414,
+              "line": 419,
               "doc": "The Messages API takes the system prompt as a top-level field,"
             },
             {
               "name": "_anthropic_request",
-              "line": 421,
+              "line": 426,
               "doc": ""
             },
             {
               "name": "_anthropic_response",
-              "line": 458,
+              "line": 463,
               "doc": ""
             },
             {
               "name": "_generate_anthropic",
-              "line": 475,
+              "line": 480,
               "doc": ""
             },
             {
               "name": "_generate_json_anthropic",
-              "line": 480,
+              "line": 485,
               "doc": "Structured outputs guarantee the response matches the schema, so"
             },
             {
               "name": "generate_json",
-              "line": 501,
+              "line": 506,
               "doc": "Generate structured JSON conforming to a Pydantic model."
             }
           ]
@@ -1704,17 +1704,17 @@
       "functions": [
         {
           "name": "_requested_wait",
-          "line": 591,
+          "line": 597,
           "doc": "How long Groq asks us to wait: the retry-after header, else the"
         },
         {
           "name": "_retry_after_seconds",
-          "line": 607,
+          "line": 613,
           "doc": "Seconds to wait before retrying a 429: the server's `retry-after`"
         },
         {
           "name": "strict_json_schema",
-          "line": 622,
+          "line": 628,
           "doc": "Adapt a Pydantic JSON schema for strict structured-output modes: every"
         }
       ]
@@ -1732,13 +1732,6 @@
       "layer": "LLM",
       "stages": [],
       "lines": 18
-    },
-    {
-      "id": "app/llm/prompts/resume_normalization.txt",
-      "type": "prompt",
-      "layer": "LLM",
-      "stages": [],
-      "lines": 7
     },
     {
       "id": "app/llm/prompts/rewrite_bullet.txt",
@@ -1760,20 +1753,6 @@
       "layer": "LLM",
       "stages": [],
       "lines": 15
-    },
-    {
-      "id": "app/llm/prompts/tailoring_plan.txt",
-      "type": "prompt",
-      "layer": "LLM",
-      "stages": [],
-      "lines": 6
-    },
-    {
-      "id": "app/llm/prompts/validate_claims.txt",
-      "type": "prompt",
-      "layer": "LLM",
-      "stages": [],
-      "lines": 9
     },
     {
       "id": "app/llm/schemas.py",
@@ -2409,36 +2388,6 @@
       ]
     },
     {
-      "id": "app/services/validation_agent.py",
-      "type": "python",
-      "layer": "Services",
-      "stages": [
-        "8 Validate"
-      ],
-      "lines": 71,
-      "doc": "",
-      "classes": [
-        {
-          "name": "ValidationAgent",
-          "line": 8,
-          "doc": "",
-          "methods": [
-            {
-              "name": "__init__",
-              "line": 9,
-              "doc": ""
-            },
-            {
-              "name": "validate_run",
-              "line": 14,
-              "doc": ""
-            }
-          ]
-        }
-      ],
-      "functions": []
-    },
-    {
       "id": "app/ui.py",
       "type": "python",
       "layer": "Entry points",
@@ -2671,18 +2620,28 @@
       "stages": [
         "3 JD analysis"
       ],
-      "lines": 16,
+      "lines": 69,
       "doc": "",
       "classes": [
         {
           "name": "SafetyGuard",
-          "line": 3,
+          "line": 14,
           "doc": "",
           "methods": [
             {
               "name": "sanitize",
-              "line": 11,
-              "doc": "Sanitize text input by escaping system prompt injection attempts."
+              "line": 36,
+              "doc": "Sanitize JD text by escaping system prompt injection attempts."
+            },
+            {
+              "name": "sanitize_untrusted",
+              "line": 43,
+              "doc": "Clean resume / user text before it goes into a prompt: strip"
+            },
+            {
+              "name": "guard_messages",
+              "line": 53,
+              "doc": "A copy of chat messages with user content sanitised and the"
             }
           ]
         }
@@ -2805,118 +2764,118 @@
       "type": "python",
       "layer": "Tooling",
       "stages": [],
-      "lines": 730,
+      "lines": 729,
       "doc": "Regenerate the repo's living docs: the knowledge graph and the change log.",
       "classes": [],
       "functions": [
         {
           "name": "git",
-          "line": 128,
+          "line": 127,
           "doc": ""
         },
         {
           "name": "layer_of",
-          "line": 135,
+          "line": 134,
           "doc": ""
         },
         {
           "name": "module_name",
-          "line": 142,
+          "line": 141,
           "doc": ""
         },
         {
           "name": "first_line",
-          "line": 149,
+          "line": 148,
           "doc": ""
         },
         {
           "name": "list_files",
-          "line": 158,
+          "line": 157,
           "doc": "Tracked + new (not ignored) files, restricted to the project map."
         },
         {
           "name": "parse_python",
-          "line": 176,
+          "line": 175,
           "doc": ""
         },
         {
           "name": "symbols_of",
-          "line": 204,
+          "line": 203,
           "doc": ""
         },
         {
           "name": "settings_fields",
-          "line": 217,
+          "line": 216,
           "doc": ""
         },
         {
           "name": "build_graph",
-          "line": 236,
+          "line": 235,
           "doc": ""
         },
         {
           "name": "render_graph_md",
-          "line": 310,
+          "line": 309,
           "doc": ""
         },
         {
           "name": "write_graph",
-          "line": 508,
+          "line": 507,
           "doc": ""
         },
         {
           "name": "commit_info",
-          "line": 551,
+          "line": 550,
           "doc": ""
         },
         {
           "name": "changed_files",
-          "line": 562,
+          "line": 561,
           "doc": ""
         },
         {
           "name": "is_major",
-          "line": 575,
+          "line": 574,
           "doc": ""
         },
         {
           "name": "blob",
-          "line": 584,
+          "line": 583,
           "doc": ""
         },
         {
           "name": "structure_delta",
-          "line": 589,
+          "line": 588,
           "doc": ""
         },
         {
           "name": "render_entry",
-          "line": 612,
+          "line": 611,
           "doc": ""
         },
         {
           "name": "_split_entries",
-          "line": 655,
+          "line": 654,
           "doc": ""
         },
         {
           "name": "_join",
-          "line": 667,
+          "line": 666,
           "doc": ""
         },
         {
           "name": "log_entry",
-          "line": 671,
+          "line": 670,
           "doc": ""
         },
         {
           "name": "backfill",
-          "line": 689,
+          "line": 688,
           "doc": ""
         },
         {
           "name": "main",
-          "line": 706,
+          "line": 705,
           "doc": ""
         }
       ]
@@ -5018,7 +4977,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 144,
+      "lines": 173,
       "doc": "",
       "classes": [],
       "functions": [
@@ -5100,6 +5059,16 @@
         {
           "name": "test_article_a_is_not_a_fact_even_with_a_b_testing_in_the_jd",
           "line": 135,
+          "doc": ""
+        },
+        {
+          "name": "test_untrusted_text_keeps_resume_wording_but_drops_overrides",
+          "line": 147,
+          "doc": "P1.10 (F35): resume text is cleaned before any prompt without"
+        },
+        {
+          "name": "test_every_llm_call_is_guarded",
+          "line": 160,
           "doc": ""
         }
       ]
@@ -6343,12 +6312,22 @@
     },
     {
       "from": "app/llm/client.py",
+      "to": "app/validation/safety.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/llm/client.py",
       "to": "tests/unit/test_llm_client.py",
       "type": "tested_by"
     },
     {
       "from": "app/llm/client.py",
       "to": "tests/unit/test_rewriter.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/llm/client.py",
+      "to": "tests/unit/test_validation.py",
       "type": "tested_by"
     },
     {
@@ -6915,36 +6894,6 @@
       "from": "app/services/tailor.py",
       "to": "tests/unit/test_ui.py",
       "type": "tested_by"
-    },
-    {
-      "from": "app/services/validation_agent.py",
-      "to": "app/analysis/rewriter.py",
-      "type": "imports"
-    },
-    {
-      "from": "app/services/validation_agent.py",
-      "to": "app/domain/resume_document.py",
-      "type": "imports"
-    },
-    {
-      "from": "app/services/validation_agent.py",
-      "to": "app/services/validation_agent.py::ValidationAgent",
-      "type": "contains"
-    },
-    {
-      "from": "app/services/validation_agent.py",
-      "to": "app/validation/factual.py",
-      "type": "imports"
-    },
-    {
-      "from": "app/services/validation_agent.py",
-      "to": "app/validation/output.py",
-      "type": "imports"
-    },
-    {
-      "from": "app/services/validation_agent.py",
-      "to": "app/validation/structural.py",
-      "type": "imports"
     },
     {
       "from": "app/ui.py",

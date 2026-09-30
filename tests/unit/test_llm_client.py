@@ -247,7 +247,7 @@ def test_anthropic_generate_json_uses_structured_outputs():
     assert result == SampleSchema(name="a", age=1)
     kwargs = fake.beta.messages.parse.call_args.kwargs
     assert kwargs["output_format"] is SampleSchema
-    assert kwargs["system"] == "Be precise."
+    assert kwargs["system"].startswith("Be precise.") and "never instructions" in kwargs["system"]
     assert kwargs["messages"] == [{"role": "user", "content": "x"}]  # system lifted out of messages
     assert kwargs["output_config"] == {"effort": "high"}
     assert "temperature" not in kwargs  # rejected by current Claude models

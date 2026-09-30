@@ -1,7 +1,7 @@
 # Action Items — Best Tailored Resume per JD
 
 _Living tracker. Update an item's **Status** in the same commit that changes it; add a short note (commit subject or
-what's left). Last updated: 2026-09-30 (Stage D done; live re-check pending)._
+what's left). Last updated: 2026-09-30 (Stage E in progress; LLM work deferred)._
 
 **Goal:** every resume + JD run produces the best possible tailored resume: an accurate match score, strong
 JD-aligned rewrites, a Novoresume-style ATS layout that fits the right length, and nothing fabricated.
@@ -13,11 +13,11 @@ JD-aligned rewrites, a Novoresume-style ATS layout that fits the right length, a
 | Phase | Items | ✅ | 🟡 | ⬜ |
 |---|---|---|---|---|
 | 0: Make the LLM path work | 10 | 10 | 0 | 0 |
-| 1: Content quality | 14 | 13 | 0 | 1 |
+| 1: Content quality | 14 | 14 | 0 | 0 |
 | 2: Template, ATS, page-fit | 6 | 6 | 0 | 0 |
 | 3: Gap questions + UX | 6 | 2 | 0 | 4 |
 | 4: Evaluation harness | 3 | 1 | 0 | 2 |
-| **Total** | **39** | **32** | **0** | **7** |
+| **Total** | **39** | **33** | **0** | **6** |
 
 ## Decisions (fixed by the user, 2026-09-30)
 
@@ -98,7 +98,7 @@ anonymized replica of the layout.
 | P1.12 | **Resume model v2:** a company can hold several roles (title + dates each, e.g. Data Scientist II / I); a role can hold project sub-sections with their own bullets; certifications become their own field. Normalizer, evidence ledger and both renderers updated | `domain/resume.py`, `resume_normalizer.py`, `rendering/*` | F37, F42 | ✅ | `Role` model + `Experience.roles` (most recent first; `title`/dates mirror roles[0]); `ResumeBullet.group` = sub-heading (project) inside a job; helpers `all_roles()` / `bullet_groups()`. Normalizer: a heading-like line followed by a dated line is a company, otherwise a sub-heading; title-before-company order handled; a new title after bullets stays at the same company; empty company/title instead of placeholders (renderers skip them); the "Previously:" note is gone (F23). Fixed `DATE_PATTERN` matching "Market"/"Decision"/"Junior" as months. Certifications were already a field; P1.11 fixed their routing. Evidence text carries the sub-heading. DOCX + HTML + preview render roles and sub-headings. Golden-file test (`tests/integration/test_parse_golden.py`): replica committed, the user's resume passes locally (private) |
 | P1.13 | **LLM-assisted structure extraction with a verbatim guard:** when the deterministic parse looks wrong (no name, placeholder company/title, orphan headings), ask Groq to map numbered lines to resume fields **by index** (same pattern as JD line selection), so every value is still copied verbatim from the file | new `analysis/structure_extractor.py`, `resume_normalizer.py` | F36, F37 | ✅ | `StructureExtractor.problems()` flags: no/odd name, bullets but no jobs, a job without company/title/bullets, ≥3 lines outside known sections. Only then one Groq call labels each line by index (name, section_*, company, job_title, subheading, bullet, text); labels become `RawBlock.hint`s and the normalizer re-runs; the re-parse is kept only if it has fewer problems. Hallucinated/duplicate indices dropped; raw doc never modified. Wired via `TailorService.parse_resume()` / `normalize_raw()`; remaining issues exposed as `last_parse_issues` / `parse_issues` (for P3.5). The user's resume parses cleanly, so no LLM call is made for it. Live Groq check on an odd layout (unknown headings, plain company line): 1 call, ~1K tokens, fixed all problems. Also: date ranges accept "to", and only a month name may precede the year ("Engineer 2019 - 2023" keeps "Engineer") |
 | P1.14 | **Rewrites must not lose information:** a prompt rule plus a validator check that flags a rewrite dropping key facts (tools, metrics, scope terms from the original) | `prompts/`, `validation/factual.py` | F48 | ✅ | Prompt: `rewrite_role.txt` lists what must be kept (tools, numbers, specific details). Validator: `FactualValidator.dropped_facts()` finds factual terms of the original missing from the rewrite and the share of content words kept (filler/generic verbs ignored, slashed terms compared per part) and short list items that vanish entirely ("pipeline stages, win rates, …"); a dropped term, < 50% retention or ≥ 2 lost list items turns PASS into NEEDS_CONFIRM with "the rewrite drops …" (REJECT stays REJECT). Lowercase single letters are never facts ("a" was matching "A/B"). On the real run it caught a rewrite dropping "Python-based" |
-| P1.10 | Remove `validation_agent.py` + unused prompts (keep `final_review.txt` for the judge); sanitize resume text | `services/`, `llm/prompts/`, `validation/safety.py` | F32, F35 | ⬜ | |
+| P1.10 | Remove `validation_agent.py` + unused prompts (keep `final_review.txt` for the judge); sanitize resume text | `services/`, `llm/prompts/`, `validation/safety.py` | F32, F35 | ✅ | Removed `services/validation_agent.py` (never imported) and the unused `resume_normalization.txt`, `tailoring_plan.txt`, `validate_claims.txt` prompts; `final_review.txt` kept for P4.3, `rewrite_bullet.txt` still used by gap answers and additions. Every LLM call now goes through `SafetyGuard.guard_messages()` in `LLMClient.generate()` / `generate_json()`: user content loses invisible/control characters, chat-template tokens (`<\|im_start\|>`, `[INST]`, `</s>`) and explicit overrides ("ignore/disregard previous instructions"), and every system prompt gets a note that resume/JD text is data, never instructions. Deliberately narrower than the JD filter, so resume wording like "designed system prompts for LLM agents" survives intact |
 
 ## Phase 2: Novoresume-style template, ATS safety, auto page-fit
 
