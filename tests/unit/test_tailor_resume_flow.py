@@ -147,3 +147,29 @@ def test_jd_analysis_is_reused_and_scores_are_keyword_match_rates(tmp_path):
     assert result["initial_alignment_score"] == result["alignment_score"]  # nothing applied
     changes = open(result["changes_md"], encoding="utf-8").read()
     assert "## Keyword Match" in changes and "| Python |" in changes
+
+
+def test_page_fit_trims_are_reported_and_rendered(tmp_path, monkeypatch):
+    """P2.4: tailor_resume fits the template to the page target and reports
+    each step, respecting the per-role bullet minimums."""
+    import app.services.tailor as tailor_module
+    from app.rendering.page_fit import PAGE_BODY_PT, PageFitter
+
+    service = _service(tmp_path)
+    fake_pdf = str(tmp_path / "fake.pdf")
+    service.pdf_converter.convert_docx_to_pdf = MagicMock(return_value=fake_pdf)
+    service.qa_validator.validate_pdf = MagicMock(return_value=[])
+    lengths = iter([(2, 30.0), (1, PAGE_BODY_PT - 50)])  # first render overflows, second fits
+    monkeypatch.setattr(tailor_module, "target_pages", lambda resume: 1)  # the fixture has 8+ years
+    monkeypatch.setattr(tailor_module, "PageFitter",
+                        lambda render: PageFitter(render, measure=lambda _pdf: next(lengths)))
+
+    result = service.tailor_resume(SAMPLE_DOCX, SAMPLE_JD, str(tmp_path / "out"), mode="ATS_DEFAULT")
+    # The fixture is already at the bullet minimums (3 and 2), so compact
+    # spacing is the only step allowed; no bullet is removed.
+    trims = [w for w in result["warnings"] if "to fit the page" in w]
+    assert trims == ["Used compact spacing to fit the page."], result["warnings"]
+    assert result["pdf"] and result["target_pages"] == 1
+    report = open(result["changes_md"], encoding="utf-8").read()
+    assert all(t in report for t in trims)
+    assert "1 page(s), target 1, 2 render(s)" in report

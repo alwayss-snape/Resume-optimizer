@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "70fc879080fdfcc7",
+  "source_hash": "44dc52688e4cafc4",
   "stats": {
-    "files": 116,
-    "python_files": 91,
-    "app_modules": 46,
-    "test_files": 38,
-    "classes": 79,
-    "functions": 558,
-    "lines_of_python": 12627
+    "files": 118,
+    "python_files": 93,
+    "app_modules": 47,
+    "test_files": 39,
+    "classes": 82,
+    "functions": 583,
+    "lines_of_python": 13016
   },
   "axes": {
     "x": "location (path)",
@@ -2016,6 +2016,89 @@
       ]
     },
     {
+      "id": "app/rendering/page_fit.py",
+      "type": "python",
+      "layer": "Rendering",
+      "stages": [
+        "9 Render"
+      ],
+      "lines": 206,
+      "doc": "Page-fit loop (P2.4): render, count pages, trim, render again.",
+      "classes": [
+        {
+          "name": "FitResult",
+          "line": 43,
+          "doc": "",
+          "methods": [
+            {
+              "name": "trimmed",
+              "line": 51,
+              "doc": ""
+            },
+            {
+              "name": "fits",
+              "line": 55,
+              "doc": ""
+            }
+          ]
+        },
+        {
+          "name": "PageFitter",
+          "line": 74,
+          "doc": "`render(document, docx_path, out_dir)` writes the DOCX and returns the",
+          "methods": [
+            {
+              "name": "__init__",
+              "line": 79,
+              "doc": ""
+            },
+            {
+              "name": "fit",
+              "line": 84,
+              "doc": ""
+            },
+            {
+              "name": "_drop_interests",
+              "line": 127,
+              "doc": ""
+            },
+            {
+              "name": "_trim_bullets",
+              "line": 134,
+              "doc": "Least relevant bullets first, within the per-role minimums."
+            },
+            {
+              "name": "_drop_sections",
+              "line": 163,
+              "doc": "Least relevant job sub-section or project, as a whole."
+            },
+            {
+              "name": "_compact",
+              "line": 197,
+              "doc": ""
+            }
+          ]
+        }
+      ],
+      "functions": [
+        {
+          "name": "measure_pdf",
+          "line": 59,
+          "doc": "(page count, points of the last page used by text below its top margin)."
+        },
+        {
+          "name": "bullet_height",
+          "line": 70,
+          "doc": ""
+        },
+        {
+          "name": "_short",
+          "line": 204,
+          "doc": ""
+        }
+      ]
+    },
+    {
       "id": "app/rendering/pdf_converter.py",
       "type": "python",
       "layer": "Rendering",
@@ -2052,7 +2135,7 @@
       "stages": [
         "9 Render"
       ],
-      "lines": 275,
+      "lines": 279,
       "doc": "",
       "classes": [
         {
@@ -2062,92 +2145,92 @@
           "methods": [
             {
               "name": "render_ats_default",
-              "line": 25,
+              "line": 27,
               "doc": "Render the ATS template (P2.1): A4, single column, Arial,"
             },
             {
               "name": "_add_header",
-              "line": 59,
+              "line": 63,
               "doc": ""
             },
             {
               "name": "_add_summary",
-              "line": 83,
+              "line": 87,
               "doc": ""
             },
             {
               "name": "_add_experience",
-              "line": 89,
+              "line": 93,
               "doc": ""
             },
             {
               "name": "_add_skills",
-              "line": 118,
+              "line": 122,
               "doc": ""
             },
             {
               "name": "_add_education",
-              "line": 129,
+              "line": 133,
               "doc": ""
             },
             {
               "name": "_add_projects",
-              "line": 141,
+              "line": 145,
               "doc": ""
             },
             {
               "name": "_add_certifications",
-              "line": 164,
+              "line": 168,
               "doc": ""
             },
             {
               "name": "_add_achievements",
-              "line": 170,
+              "line": 174,
               "doc": ""
             },
             {
               "name": "_add_interests",
-              "line": 175,
+              "line": 179,
               "doc": ""
             },
             {
               "name": "_set_document_defaults",
-              "line": 182,
+              "line": 186,
               "doc": "A4, the template's margins and font, instead of python-docx's"
             },
             {
               "name": "_content_width",
-              "line": 204,
+              "line": 208,
               "doc": ""
             },
             {
               "name": "_add_section_heading",
-              "line": 208,
+              "line": 212,
               "doc": "A section label in the accent color with a rule underneath \u2014"
             },
             {
               "name": "_role_dates",
-              "line": 223,
+              "line": 227,
               "doc": ""
             },
             {
               "name": "_add_meta_line",
-              "line": 226,
+              "line": 230,
               "doc": "'Company \u00b7 Location' in italic grey under a title line."
             },
             {
               "name": "_add_bullets",
-              "line": 235,
+              "line": 239,
               "doc": ""
             },
             {
               "name": "_add_title_dates_line",
-              "line": 240,
+              "line": 244,
               "doc": "Title (bold) on the left, date range right-aligned on the same"
             },
             {
               "name": "_add_bottom_border",
-              "line": 262,
+              "line": 266,
               "doc": "Adds a single bottom border to a paragraph via raw OOXML \u2014 the"
             }
           ]
@@ -2206,97 +2289,102 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 876,
+      "lines": 897,
       "doc": "",
       "classes": [
         {
           "name": "TailorService",
-          "line": 41,
+          "line": 42,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
-              "line": 42,
+              "line": 43,
               "doc": ""
             },
             {
               "name": "generate_preview_md",
-              "line": 74,
+              "line": 75,
               "doc": ""
             },
             {
               "name": "_patchable",
-              "line": 120,
+              "line": 121,
               "doc": "Proposals as in-place DOCX patches. A summary proposal targets the"
             },
             {
               "name": "_apply_gap_answers",
-              "line": 143,
+              "line": 144,
               "doc": "Ticked keywords join the skills section; a typed answer becomes a"
             },
             {
               "name": "_draft_from_answer",
-              "line": 167,
+              "line": 168,
               "doc": "Polish the candidate's answer into one bullet that may use only"
             },
             {
               "name": "_skills_proposals",
-              "line": 183,
+              "line": 184,
               "doc": "The skills section with the JD's skills first, when that changes it (P1.6)."
             },
             {
               "name": "_summary_proposals",
-              "line": 188,
+              "line": 189,
               "doc": "The tailored summary as a proposal, when one was written (P1.5)."
             },
             {
               "name": "_embed",
-              "line": 193,
+              "line": 194,
               "doc": "Sentence embeddings for the planner, loaded lazily; raises when the"
             },
             {
-              "name": "_apply_bullet_order",
+              "name": "_render_template",
               "line": 202,
+              "doc": "One template render plus PDF conversion (the page-fit loop's step)."
+            },
+            {
+              "name": "_apply_bullet_order",
+              "line": 208,
               "doc": "Reorder bullets as planned (most relevant first within each"
             },
             {
               "name": "parse_resume",
-              "line": 217,
+              "line": 223,
               "doc": "File -> (raw document, ResumeDocument, evidence). The deterministic"
             },
             {
               "name": "normalize_raw",
-              "line": 227,
+              "line": 233,
               "doc": ""
             },
             {
               "name": "_copy_parsed",
-              "line": 235,
+              "line": 241,
               "doc": "Deep copies, so a parse kept in UI session state is never mutated."
             },
             {
               "name": "apply_parse_corrections",
-              "line": 240,
+              "line": 246,
               "doc": "Apply the user's fixes from the \"Check parsed resume\" step (P3.5)."
             },
             {
               "name": "analyze_only",
-              "line": 301,
+              "line": 307,
               "doc": ""
             },
             {
               "name": "generate_proposals",
-              "line": 327,
+              "line": 333,
               "doc": "Generate rewrite proposals without applying them, plus questions"
             },
             {
               "name": "incorporate_user_addition",
-              "line": 388,
+              "line": 394,
               "doc": "Fold a user-supplied free-text addition (a project, an"
             },
             {
               "name": "tailor_resume",
-              "line": 467,
+              "line": 473,
               "doc": ""
             }
           ]
@@ -2305,7 +2393,7 @@
       "functions": [
         {
           "name": "_merge_usage",
-          "line": 867,
+          "line": 888,
           "doc": "Combine two LLMClient.get_usage_summary() dicts into one."
         }
       ]
@@ -2650,118 +2738,118 @@
       "type": "python",
       "layer": "Tooling",
       "stages": [],
-      "lines": 728,
+      "lines": 729,
       "doc": "Regenerate the repo's living docs: the knowledge graph and the change log.",
       "classes": [],
       "functions": [
         {
           "name": "git",
-          "line": 126,
+          "line": 127,
           "doc": ""
         },
         {
           "name": "layer_of",
-          "line": 133,
+          "line": 134,
           "doc": ""
         },
         {
           "name": "module_name",
-          "line": 140,
+          "line": 141,
           "doc": ""
         },
         {
           "name": "first_line",
-          "line": 147,
+          "line": 148,
           "doc": ""
         },
         {
           "name": "list_files",
-          "line": 156,
+          "line": 157,
           "doc": "Tracked + new (not ignored) files, restricted to the project map."
         },
         {
           "name": "parse_python",
-          "line": 174,
+          "line": 175,
           "doc": ""
         },
         {
           "name": "symbols_of",
-          "line": 202,
+          "line": 203,
           "doc": ""
         },
         {
           "name": "settings_fields",
-          "line": 215,
+          "line": 216,
           "doc": ""
         },
         {
           "name": "build_graph",
-          "line": 234,
+          "line": 235,
           "doc": ""
         },
         {
           "name": "render_graph_md",
-          "line": 308,
+          "line": 309,
           "doc": ""
         },
         {
           "name": "write_graph",
-          "line": 506,
+          "line": 507,
           "doc": ""
         },
         {
           "name": "commit_info",
-          "line": 549,
+          "line": 550,
           "doc": ""
         },
         {
           "name": "changed_files",
-          "line": 560,
+          "line": 561,
           "doc": ""
         },
         {
           "name": "is_major",
-          "line": 573,
+          "line": 574,
           "doc": ""
         },
         {
           "name": "blob",
-          "line": 582,
+          "line": 583,
           "doc": ""
         },
         {
           "name": "structure_delta",
-          "line": 587,
+          "line": 588,
           "doc": ""
         },
         {
           "name": "render_entry",
-          "line": 610,
+          "line": 611,
           "doc": ""
         },
         {
           "name": "_split_entries",
-          "line": 653,
+          "line": 654,
           "doc": ""
         },
         {
           "name": "_join",
-          "line": 665,
+          "line": 666,
           "doc": ""
         },
         {
           "name": "log_entry",
-          "line": 669,
+          "line": 670,
           "doc": ""
         },
         {
           "name": "backfill",
-          "line": 687,
+          "line": 688,
           "doc": ""
         },
         {
           "name": "main",
-          "line": 704,
+          "line": 705,
           "doc": ""
         }
       ]
@@ -3626,6 +3714,85 @@
       ]
     },
     {
+      "id": "tests/unit/test_page_fit.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 131,
+      "doc": "P2.4: the page-fit loop trims in a fixed order, keeps minimums, reports",
+      "classes": [
+        {
+          "name": "FakeLayout",
+          "line": 19,
+          "doc": "Pages follow the content: a fixed height per bullet / section.",
+          "methods": [
+            {
+              "name": "__init__",
+              "line": 22,
+              "doc": ""
+            },
+            {
+              "name": "height",
+              "line": 26,
+              "doc": ""
+            },
+            {
+              "name": "render",
+              "line": 32,
+              "doc": ""
+            },
+            {
+              "name": "measure",
+              "line": 37,
+              "doc": ""
+            }
+          ]
+        }
+      ],
+      "functions": [
+        {
+          "name": "_doc",
+          "line": 9,
+          "doc": ""
+        },
+        {
+          "name": "test_fits_without_trimming",
+          "line": 46,
+          "doc": ""
+        },
+        {
+          "name": "test_interests_go_first",
+          "line": 53,
+          "doc": ""
+        },
+        {
+          "name": "test_least_relevant_bullets_older_roles_first_within_minimums",
+          "line": 63,
+          "doc": ""
+        },
+        {
+          "name": "test_minimums_hold_and_render_cap_is_respected",
+          "line": 76,
+          "doc": ""
+        },
+        {
+          "name": "test_lone_irrelevant_bullet_goes_with_its_sub_heading",
+          "line": 88,
+          "doc": ""
+        },
+        {
+          "name": "test_whole_sub_section_removed_when_bullets_are_at_minimum",
+          "line": 105,
+          "doc": ""
+        },
+        {
+          "name": "test_no_pdf_converter_renders_once",
+          "line": 127,
+          "doc": ""
+        }
+      ]
+    },
+    {
       "id": "tests/unit/test_parsing_fixes_p19.py",
       "type": "python",
       "layer": "Tests",
@@ -4462,7 +4629,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 149,
+      "lines": 175,
       "doc": "tailor_resume orchestration: pre-approved proposals and Strict Factual Mode.",
       "classes": [],
       "functions": [
@@ -4515,6 +4682,11 @@
           "name": "test_jd_analysis_is_reused_and_scores_are_keyword_match_rates",
           "line": 134,
           "doc": "The JD analysed for the proposals is passed on, so Apply & Generate"
+        },
+        {
+          "name": "test_page_fit_trims_are_reported_and_rendered",
+          "line": 152,
+          "doc": "P2.4: tailor_resume fits the template to the page target and reports"
         }
       ]
     },
@@ -5602,6 +5774,11 @@
     },
     {
       "from": "app/domain/resume.py",
+      "to": "tests/unit/test_page_fit.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/resume.py",
       "to": "tests/unit/test_parsing_fixes_p19.py",
       "type": "tested_by"
     },
@@ -5693,6 +5870,11 @@
     {
       "from": "app/domain/resume_document.py",
       "to": "tests/unit/test_html_renderer.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/resume_document.py",
+      "to": "tests/unit/test_page_fit.py",
       "type": "tested_by"
     },
     {
@@ -6186,6 +6368,36 @@
       "type": "tested_by"
     },
     {
+      "from": "app/rendering/page_fit.py",
+      "to": "app/domain/resume.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/rendering/page_fit.py",
+      "to": "app/domain/resume_document.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/rendering/page_fit.py",
+      "to": "app/rendering/page_fit.py::FitResult",
+      "type": "contains"
+    },
+    {
+      "from": "app/rendering/page_fit.py",
+      "to": "app/rendering/page_fit.py::PageFitter",
+      "type": "contains"
+    },
+    {
+      "from": "app/rendering/page_fit.py",
+      "to": "tests/unit/test_page_fit.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/rendering/page_fit.py",
+      "to": "tests/unit/test_tailor_resume_flow.py",
+      "type": "tested_by"
+    },
+    {
       "from": "app/rendering/pdf_converter.py",
       "to": "app/rendering/pdf_converter.py::PdfConverter",
       "type": "contains"
@@ -6393,6 +6605,11 @@
     {
       "from": "app/services/tailor.py",
       "to": "app/rendering/layout.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/services/tailor.py",
+      "to": "app/rendering/page_fit.py",
       "type": "imports"
     },
     {
@@ -6653,6 +6870,11 @@
     {
       "from": "tests/unit/test_llm_client.py",
       "to": "tests/unit/test_llm_client.py::SampleSchema",
+      "type": "contains"
+    },
+    {
+      "from": "tests/unit/test_page_fit.py",
+      "to": "tests/unit/test_page_fit.py::FakeLayout",
       "type": "contains"
     },
     {

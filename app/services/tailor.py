@@ -30,6 +30,7 @@ from app.llm.client import LLMClient
 from app.rendering.docx_patcher import DocxPatcher
 from app.rendering.html_renderer import HtmlResumeRenderer
 from app.rendering.layout import output_basename, section_order_for
+from app.rendering.page_fit import PageFitter
 from app.rendering.pdf_converter import PdfConverter
 from app.rendering.template_renderer import TemplateRenderer
 from app.services.run_manager import RunManager
@@ -197,6 +198,11 @@ class TailorService:
         if encode is None:
             raise RuntimeError("embedding model unavailable")
         return encode(texts)
+
+    def _render_template(self, resume_doc: ResumeDocument, docx_path: str, output_dir: str) -> Optional[str]:
+        """One template render plus PDF conversion (the page-fit loop's step)."""
+        self.template_renderer.render_ats_default(resume_doc, docx_path)
+        return self.pdf_converter.convert_docx_to_pdf(docx_path, output_dir)
 
     @staticmethod
     def _apply_bullet_order(resume: Resume, bullet_order: Dict[str, List[str]]) -> int:
@@ -704,15 +710,30 @@ class TailorService:
 
         # Education goes first for someone early in their career (P2.1).
         resume_doc.presentation.section_order = section_order_for(resume)
+        fit = None
 
         if mode == "PRESERVE" and not is_pdf:
             self.docx_patcher.patch(resume_path, raw_doc.document_map,
                                     self._patchable(approved_proposals, original_evidence), docx_output_path)
             _append_progress(f"DOCX preserve-mode patch applied to {docx_output_path}")
         else:
-            # Pass the ResumeDocument so renderers can access revisions and metadata
-            self.template_renderer.render_ats_default(resume_doc, docx_output_path)
-            _append_progress(f"DOCX reconstructed via template renderer at {docx_output_path}")
+            # Render, count pages and trim the least relevant content until
+            # it fits the page target (P2.4). This also produces the PDF.
+            page_target = target_pages(resume)
+            fit = PageFitter(self._render_template).fit(
+                resume_doc, docx_output_path, output_dir, page_target,
+                relevance={a.source_id: a.relevance for a in plan.actions if a.source_id},
+                trim_candidates={a.source_id for a in plan.actions if a.trim_candidate},
+            )
+            _append_progress(f"DOCX reconstructed via template renderer at {docx_output_path} "
+                             f"({fit.pages or '?'} page(s), target {page_target}, {fit.renders} render(s))")
+            for note in fit.notes:
+                _append_progress(note)
+                warnings.append(note)
+            if fit.trimmed and fit.pages is not None:
+                keyword_report = self.keyword_matcher.match(job_desc, resume)
+                score = keyword_report.rate
+                _append_progress(f"Keyword match rate after page fit: {score:.1f}%")
 
         # Canonical ATS HTML is available for browser preview and print workflows.
         try:
@@ -732,7 +753,7 @@ class TailorService:
 
         # PDF Conversion and QA
         pdf_warnings = []
-        pdf_res = self.pdf_converter.convert_docx_to_pdf(docx_output_path, output_dir)
+        pdf_res = fit.pdf_path if fit else self.pdf_converter.convert_docx_to_pdf(docx_output_path, output_dir)
         if not pdf_res:
             warnings.append("LibreOffice not available or PDF conversion failed; DOCX rendered successfully.")
             _append_progress("PDF conversion failed or LibreOffice unavailable")

@@ -22,6 +22,8 @@ BODY_COLOR = RGBColor(0x11, 0x18, 0x27)
 class TemplateRenderer:
     """Standard single-column, ATS-safe DOCX renderer with support for ResumeDocument."""
 
+    _gap = 1.0  # vertical spacing factor; 0.5 in compact mode
+
     def render_ats_default(self, resume_or_doc: Any, output_path: str) -> str:
         """Render the ATS template (P2.1): A4, single column, Arial,
         standard headings in `presentation.section_order`. Accepts a Resume
@@ -32,6 +34,8 @@ class TemplateRenderer:
             resume, presentation = resume_or_doc, ResumePresentation()
 
         doc = docx.Document()
+        # Compact spacing (page-fit, P2.4): vertical gaps are halved.
+        self._gap = 0.5 if presentation.compact else 1.0
         self._set_document_defaults(doc, presentation)
         content_width = self._content_width(doc)
         self._add_header(doc, resume)
@@ -108,7 +112,7 @@ class TemplateRenderer:
             for group, bullets in exp.bullet_groups():
                 if group:
                     gp = doc.add_paragraph()
-                    gp.paragraph_format.space_before = Pt(3)
+                    gp.paragraph_format.space_before = Pt(3 * self._gap)
                     gp.paragraph_format.space_after = Pt(1)
                     grun = gp.add_run(group)
                     grun.bold = True
@@ -195,11 +199,11 @@ class TemplateRenderer:
             style.font.name = presentation.font_family
             # East-Asian / complex-script fallbacks too, or Word substitutes a font.
             style.element.get_or_add_rPr().get_or_add_rFonts().set(qn("w:eastAsia"), presentation.font_family)
-            style.font.size = Pt(10.5)
+            style.font.size = Pt(10 if presentation.compact else 10.5)
         normal = doc.styles["Normal"]
         normal.font.color.rgb = BODY_COLOR
         normal.paragraph_format.space_after = Pt(4)
-        normal.paragraph_format.line_spacing = 1.1
+        normal.paragraph_format.line_spacing = 1.0 if presentation.compact else 1.1
 
     def _content_width(self, doc: "docx.Document") -> float:
         section = doc.sections[0]
@@ -210,8 +214,8 @@ class TemplateRenderer:
         the DOCX equivalent of the HTML renderer's <h2>, so both outputs
         read as the same design rather than a plain Word heading."""
         p = doc.add_paragraph()
-        p.paragraph_format.space_before = Pt(10)
-        p.paragraph_format.space_after = Pt(4)
+        p.paragraph_format.space_before = Pt(10 * self._gap)
+        p.paragraph_format.space_after = Pt(4 * self._gap)
         p.paragraph_format.keep_with_next = True
         run = p.add_run(text.upper())
         run.bold = True
@@ -244,7 +248,7 @@ class TemplateRenderer:
         (Novoresume/Overleaf-style templates all do this) instead of
         stacking title and dates as two separate left-aligned lines."""
         p = doc.add_paragraph()
-        p.paragraph_format.space_before = Pt(space_before)
+        p.paragraph_format.space_before = Pt(space_before * self._gap)
         p.paragraph_format.space_after = Pt(1)
         p.paragraph_format.keep_with_next = True
         if dates:

@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**46 app modules · 38 test files · 79 classes · 558 functions/methods · 12,627 lines of Python** · source hash `70fc879080fdfcc7`
+**47 app modules · 39 test files · 82 classes · 583 functions/methods · 13,016 lines of Python** · source hash `44dc52688e4cafc4`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -83,6 +83,7 @@ app/
     docx_patcher.py                              DocxPatcher
     html_renderer.py                             HtmlResumeRenderer
     layout.py                                    Shared layout rules for the ATS template (P2.1).
+    page_fit.py                                  Page-fit loop (P2.4): render, count pages, trim, render again.
     pdf_converter.py                             PdfConverter
     template_renderer.py                         TemplateRenderer
   services/
@@ -134,6 +135,7 @@ tests/
     test_keyword_match.py                        Keyword-level match rate as the headline score (P1.2).
     test_llm_client.py                           SampleSchema
     test_matcher.py                              test_evidence_matcher_exact_and_alias(), test_one_generic_word_cannot_…
+    test_page_fit.py                             P2.4: the page-fit loop trims in a fixed order, keeps minimums, reports
     test_parsing_fixes_p19.py                    P1.9: links (DOCX hyperlinks, PDF link annotations, URLs in text),
     test_pdf_converter.py                        test_pdf_converter_find_binary_or_graceful_none(), test_output_qa_vali…
     test_pdf_parser.py                           test_pdf_parser_text_layer(), test_pdf_parser_file_not_found(), test_m…
@@ -166,7 +168,7 @@ Rows = layer (what kind of code), columns = pipeline stage (when it runs during 
 | **Analysis** | · | `experience`<br>`resume_normalizer`<br>`structure_extractor` | `jd_analyzer` | `matcher`<br>`semantic_matcher`<br>`terminology` | `keyword_match`<br>`scoring` | `gap_questions`<br>`tailor_planner` | `change_proposal`<br>`experience`<br>`rewriter`<br>`skills_tailor`<br>`summary_writer` | · | · | · |
 | **LLM** | · | · | `client`<br>`schemas` | · | · | · | `client`<br>`schemas` | · | · | · |
 | **Validation** | · | · | `safety` | · | · | · | · | `factual`<br>`output`<br>`structural` | · | · |
-| **Rendering** | `document_map` | · | · | · | · | · | · | · | `document_map`<br>`docx_patcher`<br>`html_renderer`<br>`layout`<br>`pdf_converter`<br>`template_renderer` | · |
+| **Rendering** | `document_map` | · | · | · | · | · | · | · | `document_map`<br>`docx_patcher`<br>`html_renderer`<br>`layout`<br>`page_fit`<br>`pdf_converter`<br>`template_renderer` | · |
 | **Domain models** | · | `evidence`<br>`resume`<br>`resume_document` | `job` | `evidence`<br>`report` | `report` | `tailoring` | · | · | `resume_document` | · |
 | **Services** | · | · | · | · | · | · | · | `validation_agent` | · | `run_manager` |
 
@@ -475,8 +477,8 @@ _Tailored professional summary (P1.5)._
 - class **`Project`** ([app/domain/resume.py:64](../app/domain/resume.py#L64))
 - class **`Education`** ([app/domain/resume.py:71](../app/domain/resume.py#L71))
 - class **`Resume`** ([app/domain/resume.py:79](../app/domain/resume.py#L79))
-- **Imported by:** `analysis/experience.py`, `analysis/keyword_match.py`, `analysis/resume_normalizer.py`, `analysis/rewriter.py`, `analysis/skills_tailor.py`, `analysis/structure_extractor.py`, `analysis/summary_writer.py`, `analysis/tailor_planner.py`, `domain/resume_document.py`, `eval/golden.py`, `rendering/html_renderer.py`, `rendering/layout.py`, `services/tailor.py`, `validation/structural.py`
-- **Tested by:** `tests/unit/test_docx_renderer.py`, `tests/unit/test_experience.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_html_renderer.py`, `tests/unit/test_keyword_match.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_resume_document.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_tailor_planner.py`, `tests/unit/test_tailor_service_addition.py`, `tests/unit/test_template_layout.py`, `tests/unit/test_template_renderer_standalone.py`
+- **Imported by:** `analysis/experience.py`, `analysis/keyword_match.py`, `analysis/resume_normalizer.py`, `analysis/rewriter.py`, `analysis/skills_tailor.py`, `analysis/structure_extractor.py`, `analysis/summary_writer.py`, `analysis/tailor_planner.py`, `domain/resume_document.py`, `eval/golden.py`, `rendering/html_renderer.py`, `rendering/layout.py`, `rendering/page_fit.py`, `services/tailor.py`, `validation/structural.py`
+- **Tested by:** `tests/unit/test_docx_renderer.py`, `tests/unit/test_experience.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_html_renderer.py`, `tests/unit/test_keyword_match.py`, `tests/unit/test_page_fit.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_resume_document.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_tailor_planner.py`, `tests/unit/test_tailor_service_addition.py`, `tests/unit/test_template_layout.py`, `tests/unit/test_template_renderer_standalone.py`
 
 ### `app/domain/resume_document.py`
 
@@ -489,8 +491,8 @@ _Tailored professional summary (P1.5)._
   - `record_revision()` :52
   - `snapshot()` :77 — Return a JSON-serializable, versioned document for storage or export.
 - **Imports:** `domain/resume.py`
-- **Imported by:** `analysis/resume_normalizer.py`, `analysis/structure_extractor.py`, `rendering/html_renderer.py`, `rendering/layout.py`, `rendering/template_renderer.py`, `services/tailor.py`, `services/validation_agent.py`
-- **Tested by:** `tests/unit/test_docx_renderer.py`, `tests/unit/test_html_renderer.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_resume_document.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_template_layout.py`, `tests/unit/test_template_renderer_standalone.py`
+- **Imported by:** `analysis/resume_normalizer.py`, `analysis/structure_extractor.py`, `rendering/html_renderer.py`, `rendering/layout.py`, `rendering/page_fit.py`, `rendering/template_renderer.py`, `services/tailor.py`, `services/validation_agent.py`
+- **Tested by:** `tests/unit/test_docx_renderer.py`, `tests/unit/test_html_renderer.py`, `tests/unit/test_page_fit.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_resume_document.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_template_layout.py`, `tests/unit/test_template_renderer_standalone.py`
 
 ### `app/domain/tailoring.py`
 
@@ -707,6 +709,29 @@ _Shared layout rules for the ATS template (P2.1)._
 - **Imported by:** `rendering/html_renderer.py`, `rendering/template_renderer.py`, `services/tailor.py`
 - **Tested by:** `tests/unit/test_template_layout.py`
 
+### `app/rendering/page_fit.py`
+
+**Layer:** Rendering · **Stage:** 9 Render · **Lines:** 206
+
+_Page-fit loop (P2.4): render, count pages, trim, render again._
+
+- class **`FitResult`** ([app/rendering/page_fit.py:43](../app/rendering/page_fit.py#L43))
+  - `trimmed()` :51
+  - `fits()` :55
+- class **`PageFitter`** ([app/rendering/page_fit.py:74](../app/rendering/page_fit.py#L74)) — `render(document, docx_path, out_dir)` writes the DOCX and returns the
+  - `__init__()` :79
+  - `fit()` :84
+  - `_drop_interests()` :127
+  - `_trim_bullets()` :134 — Least relevant bullets first, within the per-role minimums.
+  - `_drop_sections()` :163 — Least relevant job sub-section or project, as a whole.
+  - `_compact()` :197
+- function **`measure_pdf()`** ([app/rendering/page_fit.py:59](../app/rendering/page_fit.py#L59)) — (page count, points of the last page used by text below its top margin).
+- function **`bullet_height()`** ([app/rendering/page_fit.py:70](../app/rendering/page_fit.py#L70))
+- function **`_short()`** ([app/rendering/page_fit.py:204](../app/rendering/page_fit.py#L204))
+- **Imports:** `domain/resume.py`, `domain/resume_document.py`
+- **Imported by:** `services/tailor.py`
+- **Tested by:** `tests/unit/test_page_fit.py`, `tests/unit/test_tailor_resume_flow.py`
+
 ### `app/rendering/pdf_converter.py`
 
 **Layer:** Rendering · **Stage:** 9 Render · **Lines:** 60
@@ -719,27 +744,27 @@ _Shared layout rules for the ATS template (P2.1)._
 
 ### `app/rendering/template_renderer.py`
 
-**Layer:** Rendering · **Stage:** 9 Render · **Lines:** 275
+**Layer:** Rendering · **Stage:** 9 Render · **Lines:** 279
 
 - class **`TemplateRenderer`** ([app/rendering/template_renderer.py:22](../app/rendering/template_renderer.py#L22)) — Standard single-column, ATS-safe DOCX renderer with support for ResumeDocument.
-  - `render_ats_default()` :25 — Render the ATS template (P2.1): A4, single column, Arial,
-  - `_add_header()` :59
-  - `_add_summary()` :83
-  - `_add_experience()` :89
-  - `_add_skills()` :118
-  - `_add_education()` :129
-  - `_add_projects()` :141
-  - `_add_certifications()` :164
-  - `_add_achievements()` :170
-  - `_add_interests()` :175
-  - `_set_document_defaults()` :182 — A4, the template's margins and font, instead of python-docx's
-  - `_content_width()` :204
-  - `_add_section_heading()` :208 — A section label in the accent color with a rule underneath —
-  - `_role_dates()` :223
-  - `_add_meta_line()` :226 — 'Company · Location' in italic grey under a title line.
-  - `_add_bullets()` :235
-  - `_add_title_dates_line()` :240 — Title (bold) on the left, date range right-aligned on the same
-  - `_add_bottom_border()` :262 — Adds a single bottom border to a paragraph via raw OOXML — the
+  - `render_ats_default()` :27 — Render the ATS template (P2.1): A4, single column, Arial,
+  - `_add_header()` :63
+  - `_add_summary()` :87
+  - `_add_experience()` :93
+  - `_add_skills()` :122
+  - `_add_education()` :133
+  - `_add_projects()` :145
+  - `_add_certifications()` :168
+  - `_add_achievements()` :174
+  - `_add_interests()` :179
+  - `_set_document_defaults()` :186 — A4, the template's margins and font, instead of python-docx's
+  - `_content_width()` :208
+  - `_add_section_heading()` :212 — A section label in the accent color with a rule underneath —
+  - `_role_dates()` :227
+  - `_add_meta_line()` :230 — 'Company · Location' in italic grey under a title line.
+  - `_add_bullets()` :239
+  - `_add_title_dates_line()` :244 — Title (bold) on the left, date range right-aligned on the same
+  - `_add_bottom_border()` :266 — Adds a single bottom border to a paragraph via raw OOXML — the
 - **Imports:** `domain/resume_document.py`, `rendering/layout.py`
 - **Imported by:** `services/tailor.py`
 - **Tested by:** `tests/unit/test_docx_renderer.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_template_layout.py`, `tests/unit/test_template_renderer_standalone.py`
@@ -757,28 +782,29 @@ _Shared layout rules for the ATS template (P2.1)._
 
 ### `app/services/tailor.py`
 
-**Layer:** Services · **Stage:** all · **Lines:** 876
+**Layer:** Services · **Stage:** all · **Lines:** 897
 
-- class **`TailorService`** ([app/services/tailor.py:41](../app/services/tailor.py#L41))
-  - `__init__()` :42
-  - `generate_preview_md()` :74
-  - `_patchable()` :120 — Proposals as in-place DOCX patches. A summary proposal targets the
-  - `_apply_gap_answers()` :143 — Ticked keywords join the skills section; a typed answer becomes a
-  - `_draft_from_answer()` :167 — Polish the candidate's answer into one bullet that may use only
-  - `_skills_proposals()` :183 — The skills section with the JD's skills first, when that changes it (P1.6).
-  - `_summary_proposals()` :188 — The tailored summary as a proposal, when one was written (P1.5).
-  - `_embed()` :193 — Sentence embeddings for the planner, loaded lazily; raises when the
-  - `_apply_bullet_order()` :202 — Reorder bullets as planned (most relevant first within each
-  - `parse_resume()` :217 — File -> (raw document, ResumeDocument, evidence). The deterministic
-  - `normalize_raw()` :227
-  - `_copy_parsed()` :235 — Deep copies, so a parse kept in UI session state is never mutated.
-  - `apply_parse_corrections()` :240 — Apply the user's fixes from the "Check parsed resume" step (P3.5).
-  - `analyze_only()` :301
-  - `generate_proposals()` :327 — Generate rewrite proposals without applying them, plus questions
-  - `incorporate_user_addition()` :388 — Fold a user-supplied free-text addition (a project, an
-  - `tailor_resume()` :467
-- function **`_merge_usage()`** ([app/services/tailor.py:867](../app/services/tailor.py#L867)) — Combine two LLMClient.get_usage_summary() dicts into one.
-- **Imports:** `analysis/experience.py`, `analysis/gap_questions.py`, `analysis/jd_analyzer.py`, `analysis/keyword_match.py`, `analysis/matcher.py`, `analysis/resume_normalizer.py`, `analysis/rewriter.py`, `analysis/scoring.py`, `analysis/semantic_matcher.py`, `analysis/skills_tailor.py`, `analysis/structure_extractor.py`, `analysis/summary_writer.py`, `analysis/tailor_planner.py`, `domain/evidence.py`, `domain/job.py`, `domain/report.py`, `domain/resume.py`, `domain/resume_document.py`, `domain/tailoring.py`, `ingestion/docx.py`, `ingestion/pdf.py`, `llm/client.py`, `rendering/docx_patcher.py`, `rendering/html_renderer.py`, `rendering/layout.py`, `rendering/pdf_converter.py`, `rendering/template_renderer.py`, `services/run_manager.py`, `validation/factual.py`, `validation/output.py`, `validation/safety.py`, `validation/structural.py`
+- class **`TailorService`** ([app/services/tailor.py:42](../app/services/tailor.py#L42))
+  - `__init__()` :43
+  - `generate_preview_md()` :75
+  - `_patchable()` :121 — Proposals as in-place DOCX patches. A summary proposal targets the
+  - `_apply_gap_answers()` :144 — Ticked keywords join the skills section; a typed answer becomes a
+  - `_draft_from_answer()` :168 — Polish the candidate's answer into one bullet that may use only
+  - `_skills_proposals()` :184 — The skills section with the JD's skills first, when that changes it (P1.6).
+  - `_summary_proposals()` :189 — The tailored summary as a proposal, when one was written (P1.5).
+  - `_embed()` :194 — Sentence embeddings for the planner, loaded lazily; raises when the
+  - `_render_template()` :202 — One template render plus PDF conversion (the page-fit loop's step).
+  - `_apply_bullet_order()` :208 — Reorder bullets as planned (most relevant first within each
+  - `parse_resume()` :223 — File -> (raw document, ResumeDocument, evidence). The deterministic
+  - `normalize_raw()` :233
+  - `_copy_parsed()` :241 — Deep copies, so a parse kept in UI session state is never mutated.
+  - `apply_parse_corrections()` :246 — Apply the user's fixes from the "Check parsed resume" step (P3.5).
+  - `analyze_only()` :307
+  - `generate_proposals()` :333 — Generate rewrite proposals without applying them, plus questions
+  - `incorporate_user_addition()` :394 — Fold a user-supplied free-text addition (a project, an
+  - `tailor_resume()` :473
+- function **`_merge_usage()`** ([app/services/tailor.py:888](../app/services/tailor.py#L888)) — Combine two LLMClient.get_usage_summary() dicts into one.
+- **Imports:** `analysis/experience.py`, `analysis/gap_questions.py`, `analysis/jd_analyzer.py`, `analysis/keyword_match.py`, `analysis/matcher.py`, `analysis/resume_normalizer.py`, `analysis/rewriter.py`, `analysis/scoring.py`, `analysis/semantic_matcher.py`, `analysis/skills_tailor.py`, `analysis/structure_extractor.py`, `analysis/summary_writer.py`, `analysis/tailor_planner.py`, `domain/evidence.py`, `domain/job.py`, `domain/report.py`, `domain/resume.py`, `domain/resume_document.py`, `domain/tailoring.py`, `ingestion/docx.py`, `ingestion/pdf.py`, `llm/client.py`, `rendering/docx_patcher.py`, `rendering/html_renderer.py`, `rendering/layout.py`, `rendering/page_fit.py`, `rendering/pdf_converter.py`, `rendering/template_renderer.py`, `services/run_manager.py`, `validation/factual.py`, `validation/output.py`, `validation/safety.py`, `validation/structural.py`
 - **Imported by:** `cli.py`, `eval/harness.py`, `ui.py`
 - **Tested by:** `tests/integration/test_end_to_end.py`, `tests/unit/test_check_parsed_resume.py`, `tests/unit/test_cli.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_tailor_resume_flow.py`, `tests/unit/test_tailor_service_addition.py`, `tests/unit/test_ui.py`
 
@@ -899,6 +925,7 @@ flowchart LR
     rendering_docx_patcher[docx_patcher]
     rendering_html_renderer[html_renderer]
     rendering_layout[layout]
+    rendering_page_fit[page_fit]
     rendering_pdf_converter[pdf_converter]
     rendering_template_renderer[template_renderer]
   end
@@ -983,6 +1010,7 @@ flowchart LR
   services_tailor --> rendering_docx_patcher
   services_tailor --> rendering_html_renderer
   services_tailor --> rendering_layout
+  services_tailor --> rendering_page_fit
   services_tailor --> rendering_pdf_converter
   services_tailor --> rendering_template_renderer
   services_tailor --> services_run_manager
