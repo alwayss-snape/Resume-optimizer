@@ -1,7 +1,7 @@
 # Action Items — Best Tailored Resume per JD
 
 _Living tracker. Update an item's **Status** in the same commit that changes it; add a short note (commit subject or
-what's left). Last updated: 2026-09-30._
+what's left). Last updated: 2026-09-30 (strategy revised after the real-resume run)._
 
 **Goal:** every resume + JD run produces the best possible tailored resume: an accurate match score, strong
 JD-aligned rewrites, a Novoresume-style ATS layout that fits the right length, and nothing fabricated.
@@ -13,11 +13,11 @@ JD-aligned rewrites, a Novoresume-style ATS layout that fits the right length, a
 | Phase | Items | ✅ | 🟡 | ⬜ |
 |---|---|---|---|---|
 | 0: Make the LLM path work | 10 | 10 | 0 | 0 |
-| 1: Content quality | 10 | 1 | 0 | 9 |
+| 1: Content quality | 14 | 1 | 0 | 13 |
 | 2: Template, ATS, page-fit | 6 | 0 | 0 | 6 |
 | 3: Gap questions + UX | 6 | 0 | 0 | 6 |
 | 4: Evaluation harness | 3 | 0 | 0 | 3 |
-| **Total** | **35** | **11** | **0** | **24** |
+| **Total** | **39** | **11** | **0** | **28** |
 
 ## Decisions (fixed by the user, 2026-09-30)
 
@@ -29,6 +29,26 @@ JD-aligned rewrites, a Novoresume-style ATS layout that fits the right length, a
 | Gaps | Suggest-and-confirm: the tool asks, and drafts only from the user's answer. Never fabricate |
 | Confirmed facts | Saved locally (`data/profile/facts.json`, gitignored) and reused across JDs |
 | LLM | **Groq free tier only** (`openai/gpt-oss-120b`), with no paid APIs (decided 2026-09-30). The Claude provider (P0.1) stays in the code but is shelved: not used, not even as a fallback. Claude Pro does not include API access |
+
+---
+
+## Implementation strategy (revised 2026-09-30 after the real-resume run)
+
+The real-resume run showed the biggest problem isn't rewriting: **the tool misreads its inputs.** The resume PDF was
+parsed wrongly (name, jobs, bullets, skills, education) and the JD was split into fragments. So the work is ordered
+**inputs → measurement → content → output → extras**. Each stage ends with a gate: re-run the user's resume against the
+FOX JD and compare with the baseline. The phase tables below stay the catalogue; this is the order to work through them.
+
+| Stage | Goal | Items (in order) | Exit gate |
+|---|---|---|---|
+| **A. Read inputs correctly** | The resume and JD are understood exactly | P1.11 → P1.12 → P1.13 → P1.9 → P1.1 → P3.5 | The user's resume parses 100% correctly against a hand-checked golden file (kept locally, never committed). An anonymized replica PDF of the same layout is committed as a test fixture. The FOX JD yields title, company and clean must-have / nice-to-have lists |
+| **B. Measure truthfully** | A score you can trust, and a way to prove improvement | P4.1 → P1.2 | The score for this resume vs the FOX JD is plausible and explained by a matched/missing keyword table; baseline re-recorded |
+| **C. Better content** | Every relevant bullet improved, nothing invented, nothing lost | P1.3 → P1.4 → P1.14 → P1.5 → P1.6 → P1.7 → P3.1 | All relevant bullets considered (not just 3 of 13); ≤ ~8 LLM calls per run (fits the Groq free tier without 429s); zero fabrication; no information dropped; harness metrics up vs baseline |
+| **D. Output** | A Novoresume-style A4 resume at the right length | P2.1 → P2.2 → P2.3 → P2.4 → P2.5 → P2.6 | This resume (3.6 years) renders as 1 A4 page with roles and projects laid out correctly; ATS round-trip passes |
+| **E. Extras & polish** | Convenience and full evaluation | P3.2, P3.3, P3.4, P3.6, P1.10, P4.2, P4.3 | Full eval set green |
+
+**Privacy:** the user's resume and its golden file live in `data/eval/private/` (gitignored). Committed tests use an
+anonymized replica of the layout.
 
 ---
 
@@ -57,7 +77,7 @@ JD-aligned rewrites, a Novoresume-style ATS layout that fits the right length, a
 
 | ID | Action | Files | Resolves | Status | Notes |
 |---|---|---|---|---|---|
-| P1.1 | JD analysis v2: one structured call returns title, seniority, min years, hard skills, soft skills, must-have / nice-to-have, education, certs, each with a verbatim JD span (code drops anything not found in the JD). Frequency counted in code. No splitting on "and". Heuristic fallback stays | `jd_analyzer.py`, `domain/job.py`, `prompts/jd_analysis.txt` | F9, F11 | ⬜ | |
+| P1.1 | JD analysis v2: one structured call returns title, seniority, min years, hard skills, soft skills, must-have / nice-to-have, education, certs, each with a verbatim JD span (code drops anything not found in the JD). Frequency counted in code. No splitting on "and". Heuristic fallback stays | `jd_analyzer.py`, `domain/job.py`, `prompts/jd_analysis.txt` | F9, F11, F44–F47 | ⬜ | Must also extract title/company without a "Job Title:" label, treat "Nice To Have, But Not Required" as preferred, and drop heading/company words from keywords |
 | P1.2 | Jobscan-style match rate as the headline score: keyword-level, weights hard skills > title > education/certs > soft skills, required ×1.5. Evidence strength becomes secondary. Target band 75–85% | `matcher.py`, `scoring.py`, `domain/report.py` | F10, F12 | ⬜ | |
 | P1.3 | Planner v2: relevance score per bullet, reorder within each role, trim candidates; rewriter gets only the relevant requirements + allowed keywords | `tailor_planner.py`, `domain/tailoring.py` | F13 | ⬜ | |
 | P1.4 | Rewrite v2, one call per role: strong verbs with no repeats, XYZ phrasing only with existing metrics, ≤28 words, JD spelling, no pronouns or buzzwords, never add numbers; returns `keywords_used` + `evidence_ids` | `rewriter.py`, `prompts/rewrite_role.txt`, `llm/schemas.py` | F14 | ⬜ | |
@@ -66,6 +86,10 @@ JD-aligned rewrites, a Novoresume-style ATS layout that fits the right length, a
 | P1.7 | Rewrite project bullets through the same flow | `tailor_planner.py`, `rewriter.py`, `tailor.py` | F18 | ⬜ | |
 | P1.8 | Validator v2: PASS / NEEDS_CONFIRM / REJECT; action-verb allowlist + alias-aware; reject new numbers and unevidenced tools or orgs; keep the user's own edits (logged as user-attested) | `factual.py`, `tailor.py:321-334`, `ui.py` | F15, F16, F17 | ✅ | Ordinary words pass; factual-looking terms (tools, acronyms, proper nouns, JD skills, scope claims like "led a team") must be in this bullet's source (PASS) or elsewhere in the resume (NEEDS_CONFIRM) or it's REJECT. Alias- and inflection-aware. Verdicts shown per proposal before Apply; user-edited text kept as user-attested. Live Groq fixture: 0/2 → 2/2 rewrites survive. Strict Mode stays opt-in |
 | P1.9 | Parsing fixes: LinkedIn/GitHub links (incl. DOCX hyperlinks), `headline` field, no placeholder rendering, handle "Previously:", DOCX walked in document order | `resume_normalizer.py`, `domain/resume.py`, `ingestion/docx.py`, `ingestion/pdf.py` | F21–F25 | ⬜ | |
+| P1.11 | **Layout-aware PDF parsing:** name = largest font on page 1; join bullet continuation lines by indent (not "starts lowercase"); strip `●` glyphs + zero-width spaces; detect headings by uppercase/known section names even when not bold; read right-aligned columns on the same line as location/dates; split multi-category skill lines (`Languages: … Frameworks: …`); route labelled `Certifications:` / `Interests:` lines | `ingestion/pdf.py`, `resume_normalizer.py` | F36, F38–F43 | ⬜ | Root causes confirmed from the real PDF's font/position dump |
+| P1.12 | **Resume model v2:** a company can hold several roles (title + dates each, e.g. Data Scientist II / I); a role can hold project sub-sections with their own bullets; certifications become their own field. Normalizer, evidence ledger and both renderers updated | `domain/resume.py`, `resume_normalizer.py`, `rendering/*` | F37, F42 | ⬜ | Needed for the user's own resume layout |
+| P1.13 | **LLM-assisted structure extraction with a verbatim guard:** when the deterministic parse looks wrong (no name, placeholder company/title, orphan headings), ask Groq to map numbered lines to resume fields **by index** (same pattern as JD line selection), so every value is still copied verbatim from the file | new `analysis/structure_extractor.py`, `resume_normalizer.py` | F36, F37 | ⬜ | Makes parsing robust to layouts we haven't seen |
+| P1.14 | **Rewrites must not lose information:** a prompt rule plus a validator check that flags a rewrite dropping key facts (tools, metrics, scope terms from the original) | `prompts/`, `validation/factual.py` | F48 | ⬜ | e.g. the Tableau bullet lost which KPIs it tracked |
 | P1.10 | Remove `validation_agent.py` + unused prompts (keep `final_review.txt` for the judge); sanitize resume text | `services/`, `llm/prompts/`, `validation/safety.py` | F32, F35 | ⬜ | |
 
 ## Phase 2: Novoresume-style template, ATS safety, auto page-fit
@@ -156,6 +180,19 @@ JD-aligned rewrites, a Novoresume-style ATS layout that fits the right length, a
 | F33 | `changes.md` sections written twice; unreachable writes | Low |
 | F34 | LLM usage not saved for `generate_proposals` | Low-Med |
 | F35 | Resume text not sanitized before prompts | Low |
+| F36 | PDF: candidate name taken from a project heading instead of the largest-font line | High |
+| F37 | Model can't express several roles at one company or projects inside a role, so jobs are scrambled | High |
+| F38 | PDF: `●` glyphs and zero-width spaces leak into bullets, education and the rendered output | High |
+| F39 | PDF: wrapped bullet lines joined by the "starts lowercase" rule instead of indentation, so sentences split across bullets | High |
+| F40 | PDF: non-bold section heading ("WORK EXPERIENCE") not detected | Med |
+| F41 | PDF: right-aligned location/dates on the same line land in the wrong field (degree = "Bhubaneswar, India") | Med |
+| F42 | Multi-category skill lines and labelled certification lines mis-split; certifications filed as interests | Med |
+| F43 | Heading lines typeset in bold mid-paragraph confuse block typing | Low |
+| F44 | JD: no title/company detected without explicit "Job Title:" / "Company:" labels | Med |
+| F45 | JD: "Nice To Have, But Not Required" heading not recognised, so preferred items are marked required | High |
+| F46 | JD: "and"-splitting creates junk requirements ("Design", "Mentor", "Develop") | High |
+| F47 | JD keywords include heading and company words (WHAT, WILL, FOX, Corporation) | Med |
+| F48 | A rewrite can drop information (Tableau bullet lost its KPI details) and still PASS | Med |
 
 Research sources:
 - Jobscan: [match rate](https://www.jobscan.co/blog/what-jobscan-match-rate-should-i-aim-for/), [ATS formats](https://www.jobscan.co/blog/20-ats-friendly-resume-templates/)
