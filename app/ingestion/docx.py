@@ -38,6 +38,8 @@ class DocxParser:
     # baked into bullet text (double-bulleted output: "• ● Built...").
     BULLET_PREFIXES = ("•", "●", "◦", "‣", "▸", "▪", "-", "*", "–", "—", "o ")
 
+    _LABEL_RE = re.compile(r"^[^:\t]{1,40}:\s+\S")
+
     # Invisible characters some exporters leave in text (see ingestion/pdf.py).
     _INVISIBLE_RE = re.compile("[\u200b\u200c\u200d\u2060\ufeff]")
 
@@ -50,9 +52,12 @@ class DocxParser:
             style_name.lower().startswith("list bullet")
             or text.startswith(self.BULLET_PREFIXES)
         )
+        # "Tools: Docker, Git" with only the label bold is a content line.
+        bold_label_only = bool(self._LABEL_RE.match(text)) and not all_bold
         is_heading = (
             style_name.lower().startswith("heading")
-            or (len(text) < 60 and paragraph.runs and any(r.bold for r in paragraph.runs) and not is_bullet)
+            or (len(text) < 60 and paragraph.runs and any(r.bold for r in paragraph.runs)
+                and not is_bullet and not bold_label_only)
         )
         if is_heading:
             return "heading", text, all_bold

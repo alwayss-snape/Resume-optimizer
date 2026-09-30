@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**47 app modules · 39 test files · 82 classes · 583 functions/methods · 13,016 lines of Python** · source hash `44dc52688e4cafc4`
+**47 app modules · 40 test files · 82 classes · 594 functions/methods · 13,283 lines of Python** · source hash `7e17dd0b2b698547`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -120,6 +120,7 @@ tests/
     test_parse_golden.py                         Parse a resume and compare it, field by field, with a hand-checked gol…
     test_preserve_rewrite_end_to_end.py          test_approved_rewrite_appears_in_all_outputs()
   unit/
+    test_ats_round_trip.py                       P2.5: the rendered template must read back exactly as rendered, and the
     test_check_parsed_resume.py                  P3.5: "Check parsed resume" step: corrections applied by the service,
     test_cli.py                                  test_tailor_service_analyze_only(), test_tailor_service_end_to_end_doc…
     test_docx_parser.py                          test_docx_parser_sample(), test_docx_parser_file_not_found()
@@ -278,25 +279,27 @@ _Keyword-level match rate, the headline score (P1.2)._
 
 ### `app/analysis/resume_normalizer.py`
 
-**Layer:** Analysis · **Stage:** 2 Normalize · **Lines:** 602
+**Layer:** Analysis · **Stage:** 2 Normalize · **Lines:** 655
 
 - class **`ResumeNormalizer`** ([app/analysis/resume_normalizer.py:8](../app/analysis/resume_normalizer.py#L8))
   - `_header_urls()` :40
   - `_is_headline()` :51 — A short title line under the name, e.g. 'Senior Data Scientist |
   - `_split_skill_line()` :101 — 'Languages: Python, SQL<tab>Frameworks: Pandas, and XGBoost' ->
   - `_skill_items()` :122
-  - `_is_dated_line()` :132 — A job title/company line carrying a date range or year.
-  - `_experience_line_kind()` :139 — 'dated' (title and/or company with dates), 'header_line' (a short
-  - `_add_role()` :158 — Record a role; the first one also fills the entry's title/dates.
-  - `_merge_links()` :168 — Profile links from the file's hyperlinks and from URLs written in
-  - `_extract_date_range()` :182
-  - `_strip_date_range()` :186
-  - `_parse_title_and_dates()` :190 — 'Data Scientist II | August 2024 - Present' ->
-  - `_split_respecting_parens()` :199 — Split on sep_chars, but never inside ( ) or [ ] groups — so
-  - `normalize()` :222
+  - `_looks_like_degree()` :137 — 'B.Tech in Computer Science' yes; 'State University' no.
+  - `_split_middle_dot()` :142 — 'Acme Corp · Pune, India' -> ('Acme Corp', 'Pune, India'), the
+  - `_is_dated_line()` :151 — A job title/company line carrying a date range or year.
+  - `_experience_line_kind()` :158 — 'dated' (title and/or company with dates), 'header_line' (a short
+  - `_add_role()` :177 — Record a role; the first one also fills the entry's title/dates.
+  - `_merge_links()` :187 — Profile links from the file's hyperlinks and from URLs written in
+  - `_extract_date_range()` :201
+  - `_strip_date_range()` :205
+  - `_parse_title_and_dates()` :209 — 'Data Scientist II | August 2024 - Present' ->
+  - `_split_respecting_parens()` :218 — Split on sep_chars, but never inside ( ) or [ ] groups — so
+  - `normalize()` :241
 - **Imports:** `domain/evidence.py`, `domain/resume.py`, `domain/resume_document.py`, `ingestion/docx.py`
-- **Imported by:** `analysis/structure_extractor.py`, `eval/golden.py`, `services/tailor.py`
-- **Tested by:** `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_structure_extractor.py`, `tests/unit/test_tailor_resume_flow.py`
+- **Imported by:** `analysis/structure_extractor.py`, `eval/golden.py`, `services/tailor.py`, `validation/output.py`
+- **Tested by:** `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_ats_round_trip.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_structure_extractor.py`, `tests/unit/test_tailor_resume_flow.py`
 
 ### `app/analysis/rewriter.py`
 
@@ -478,7 +481,7 @@ _Tailored professional summary (P1.5)._
 - class **`Education`** ([app/domain/resume.py:71](../app/domain/resume.py#L71))
 - class **`Resume`** ([app/domain/resume.py:79](../app/domain/resume.py#L79))
 - **Imported by:** `analysis/experience.py`, `analysis/keyword_match.py`, `analysis/resume_normalizer.py`, `analysis/rewriter.py`, `analysis/skills_tailor.py`, `analysis/structure_extractor.py`, `analysis/summary_writer.py`, `analysis/tailor_planner.py`, `domain/resume_document.py`, `eval/golden.py`, `rendering/html_renderer.py`, `rendering/layout.py`, `rendering/page_fit.py`, `services/tailor.py`, `validation/structural.py`
-- **Tested by:** `tests/unit/test_docx_renderer.py`, `tests/unit/test_experience.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_html_renderer.py`, `tests/unit/test_keyword_match.py`, `tests/unit/test_page_fit.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_resume_document.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_tailor_planner.py`, `tests/unit/test_tailor_service_addition.py`, `tests/unit/test_template_layout.py`, `tests/unit/test_template_renderer_standalone.py`
+- **Tested by:** `tests/unit/test_ats_round_trip.py`, `tests/unit/test_docx_renderer.py`, `tests/unit/test_experience.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_html_renderer.py`, `tests/unit/test_keyword_match.py`, `tests/unit/test_page_fit.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_resume_document.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_tailor_planner.py`, `tests/unit/test_tailor_service_addition.py`, `tests/unit/test_template_layout.py`, `tests/unit/test_template_renderer_standalone.py`
 
 ### `app/domain/resume_document.py`
 
@@ -492,7 +495,7 @@ _Tailored professional summary (P1.5)._
   - `snapshot()` :77 — Return a JSON-serializable, versioned document for storage or export.
 - **Imports:** `domain/resume.py`
 - **Imported by:** `analysis/resume_normalizer.py`, `analysis/structure_extractor.py`, `rendering/html_renderer.py`, `rendering/layout.py`, `rendering/page_fit.py`, `rendering/template_renderer.py`, `services/tailor.py`, `services/validation_agent.py`
-- **Tested by:** `tests/unit/test_docx_renderer.py`, `tests/unit/test_html_renderer.py`, `tests/unit/test_page_fit.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_resume_document.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_template_layout.py`, `tests/unit/test_template_renderer_standalone.py`
+- **Tested by:** `tests/unit/test_ats_round_trip.py`, `tests/unit/test_docx_renderer.py`, `tests/unit/test_html_renderer.py`, `tests/unit/test_page_fit.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_resume_document.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_template_layout.py`, `tests/unit/test_template_renderer_standalone.py`
 
 ### `app/domain/tailoring.py`
 
@@ -536,7 +539,7 @@ _Canonical projection of a parsed resume, compared against hand-checked_
 
 ### `app/eval/harness.py`
 
-**Layer:** Root · **Stage:** all · **Lines:** 272
+**Layer:** Root · **Stage:** all · **Lines:** 274
 
 _Run evaluation cases through the pipeline and collect metrics (P4.1)._
 
@@ -551,27 +554,27 @@ _Run evaluation cases through the pipeline and collect metrics (P4.1)._
 - function **`keyword_coverage()`** ([app/eval/harness.py:84](../app/eval/harness.py#L84)) — Share of the JD's keywords found verbatim (whole term, any case) in
 - function **`run_case()`** ([app/eval/harness.py:93](../app/eval/harness.py#L93))
 - function **`_tailor_metrics()`** ([app/eval/harness.py:166](../app/eval/harness.py#L166))
-- function **`run()`** ([app/eval/harness.py:193](../app/eval/harness.py#L193))
-- function **`_flatten()`** ([app/eval/harness.py:209](../app/eval/harness.py#L209))
-- function **`compare()`** ([app/eval/harness.py:226](../app/eval/harness.py#L226)) — Human-readable differences per case between a report and a baseline.
-- function **`summary_lines()`** ([app/eval/harness.py:254](../app/eval/harness.py#L254))
+- function **`run()`** ([app/eval/harness.py:195](../app/eval/harness.py#L195))
+- function **`_flatten()`** ([app/eval/harness.py:211](../app/eval/harness.py#L211))
+- function **`compare()`** ([app/eval/harness.py:228](../app/eval/harness.py#L228)) — Human-readable differences per case between a report and a baseline.
+- function **`summary_lines()`** ([app/eval/harness.py:256](../app/eval/harness.py#L256))
 - **Imports:** `analysis/jd_analyzer.py`, `eval/golden.py`, `llm/client.py`, `services/tailor.py`
 - **Imported by:** `eval/__main__.py`
 - **Tested by:** `tests/unit/test_eval_harness.py`, `tests/unit/test_gap_questions.py`
 
 ### `app/ingestion/docx.py`
 
-**Layer:** Ingestion · **Stage:** 1 Ingest · **Lines:** 179
+**Layer:** Ingestion · **Stage:** 1 Ingest · **Lines:** 184
 
 - class **`RawBlock`** ([app/ingestion/docx.py:11](../app/ingestion/docx.py#L11))
 - class **`RawDocument`** ([app/ingestion/docx.py:27](../app/ingestion/docx.py#L27))
 - class **`DocxParser`** ([app/ingestion/docx.py:35](../app/ingestion/docx.py#L35))
-  - `_classify()` :44 — -> (block_type, text without a bullet glyph, whole line bold).
-  - `_hyperlinks()` :69 — Targets of every external hyperlink in the body, in rId order
-  - `parse()` :80
+  - `_classify()` :46 — -> (block_type, text without a bullet glyph, whole line bold).
+  - `_hyperlinks()` :74 — Targets of every external hyperlink in the body, in rId order
+  - `parse()` :85
 - **Imports:** `rendering/document_map.py`
-- **Imported by:** `analysis/resume_normalizer.py`, `analysis/structure_extractor.py`, `eval/golden.py`, `ingestion/pdf.py`, `services/tailor.py`
-- **Tested by:** `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_docx_parser.py`, `tests/unit/test_docx_renderer.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_pdf_parser.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_structure_extractor.py`, `tests/unit/test_tailor_resume_flow.py`
+- **Imported by:** `analysis/resume_normalizer.py`, `analysis/structure_extractor.py`, `eval/golden.py`, `ingestion/pdf.py`, `services/tailor.py`, `validation/output.py`
+- **Tested by:** `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_ats_round_trip.py`, `tests/unit/test_docx_parser.py`, `tests/unit/test_docx_renderer.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_pdf_parser.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_structure_extractor.py`, `tests/unit/test_tailor_resume_flow.py`
 
 ### `app/ingestion/ocr.py`
 
@@ -603,7 +606,7 @@ _Run evaluation cases through the pipeline and collect metrics (P4.1)._
 - function **`_clean()`** ([app/ingestion/pdf.py:54](../app/ingestion/pdf.py#L54))
 - function **`_is_bold_span()`** ([app/ingestion/pdf.py:60](../app/ingestion/pdf.py#L60))
 - **Imports:** `ingestion/docx.py`, `ingestion/ocr.py`, `rendering/document_map.py`
-- **Imported by:** `eval/golden.py`, `services/tailor.py`
+- **Imported by:** `eval/golden.py`, `services/tailor.py`, `validation/output.py`
 - **Tested by:** `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_pdf_parser.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_structure_extractor.py`
 
 ### `app/llm/client.py`
@@ -706,7 +709,7 @@ _Shared layout rules for the ATS template (P2.1)._
 - function **`display_skills()`** ([app/rendering/layout.py:94](../app/rendering/layout.py#L94)) — At most `max_categories` lines: the first ones as they are (JD-relevant
 - function **`output_basename()`** ([app/rendering/layout.py:108](../app/rendering/layout.py#L108)) — First_Last_Resume_<Company>, using only file-name-safe characters.
 - **Imports:** `analysis/experience.py`, `domain/resume.py`, `domain/resume_document.py`
-- **Imported by:** `rendering/html_renderer.py`, `rendering/template_renderer.py`, `services/tailor.py`
+- **Imported by:** `rendering/html_renderer.py`, `rendering/template_renderer.py`, `services/tailor.py`, `validation/output.py`
 - **Tested by:** `tests/unit/test_template_layout.py`
 
 ### `app/rendering/page_fit.py`
@@ -740,7 +743,7 @@ _Page-fit loop (P2.4): render, count pages, trim, render again._
   - `find_libreoffice_binary()` :10
   - `convert_docx_to_pdf()` :27
 - **Imported by:** `services/tailor.py`
-- **Tested by:** `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_pdf_converter.py`
+- **Tested by:** `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_ats_round_trip.py`, `tests/unit/test_pdf_converter.py`
 
 ### `app/rendering/template_renderer.py`
 
@@ -767,7 +770,7 @@ _Page-fit loop (P2.4): render, count pages, trim, render again._
   - `_add_bottom_border()` :266 — Adds a single bottom border to a paragraph via raw OOXML — the
 - **Imports:** `domain/resume_document.py`, `rendering/layout.py`
 - **Imported by:** `services/tailor.py`
-- **Tested by:** `tests/unit/test_docx_renderer.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_template_layout.py`, `tests/unit/test_template_renderer_standalone.py`
+- **Tested by:** `tests/unit/test_ats_round_trip.py`, `tests/unit/test_docx_renderer.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_template_layout.py`, `tests/unit/test_template_renderer_standalone.py`
 
 ### `app/services/run_manager.py`
 
@@ -782,7 +785,7 @@ _Page-fit loop (P2.4): render, count pages, trim, render again._
 
 ### `app/services/tailor.py`
 
-**Layer:** Services · **Stage:** all · **Lines:** 897
+**Layer:** Services · **Stage:** all · **Lines:** 902
 
 - class **`TailorService`** ([app/services/tailor.py:42](../app/services/tailor.py#L42))
   - `__init__()` :43
@@ -803,7 +806,7 @@ _Page-fit loop (P2.4): render, count pages, trim, render again._
   - `generate_proposals()` :333 — Generate rewrite proposals without applying them, plus questions
   - `incorporate_user_addition()` :394 — Fold a user-supplied free-text addition (a project, an
   - `tailor_resume()` :473
-- function **`_merge_usage()`** ([app/services/tailor.py:888](../app/services/tailor.py#L888)) — Combine two LLMClient.get_usage_summary() dicts into one.
+- function **`_merge_usage()`** ([app/services/tailor.py:893](../app/services/tailor.py#L893)) — Combine two LLMClient.get_usage_summary() dicts into one.
 - **Imports:** `analysis/experience.py`, `analysis/gap_questions.py`, `analysis/jd_analyzer.py`, `analysis/keyword_match.py`, `analysis/matcher.py`, `analysis/resume_normalizer.py`, `analysis/rewriter.py`, `analysis/scoring.py`, `analysis/semantic_matcher.py`, `analysis/skills_tailor.py`, `analysis/structure_extractor.py`, `analysis/summary_writer.py`, `analysis/tailor_planner.py`, `domain/evidence.py`, `domain/job.py`, `domain/report.py`, `domain/resume.py`, `domain/resume_document.py`, `domain/tailoring.py`, `ingestion/docx.py`, `ingestion/pdf.py`, `llm/client.py`, `rendering/docx_patcher.py`, `rendering/html_renderer.py`, `rendering/layout.py`, `rendering/page_fit.py`, `rendering/pdf_converter.py`, `rendering/template_renderer.py`, `services/run_manager.py`, `validation/factual.py`, `validation/output.py`, `validation/safety.py`, `validation/structural.py`
 - **Imported by:** `cli.py`, `eval/harness.py`, `ui.py`
 - **Tested by:** `tests/integration/test_end_to_end.py`, `tests/unit/test_check_parsed_resume.py`, `tests/unit/test_cli.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_tailor_resume_flow.py`, `tests/unit/test_tailor_service_addition.py`, `tests/unit/test_ui.py`
@@ -854,13 +857,15 @@ _Page-fit loop (P2.4): render, count pages, trim, render again._
 
 ### `app/validation/output.py`
 
-**Layer:** Validation · **Stage:** 8 Validate · **Lines:** 56
+**Layer:** Validation · **Stage:** 8 Validate · **Lines:** 137
 
-- class **`OutputQAValidator`** ([app/validation/output.py:6](../app/validation/output.py#L6))
-  - `validate_docx()` :7
-  - `validate_pdf()` :29
+- class **`OutputQAValidator`** ([app/validation/output.py:7](../app/validation/output.py#L7))
+  - `validate_docx()` :8
+  - `validate_pdf()` :30
+  - `round_trip()` :63 — Re-parse a rendered DOCX / PDF the way an ATS would (our own
+- **Imports:** `analysis/resume_normalizer.py`, `ingestion/docx.py`, `ingestion/pdf.py`, `rendering/layout.py`
 - **Imported by:** `services/tailor.py`, `services/validation_agent.py`
-- **Tested by:** `tests/integration/test_end_to_end.py`, `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_pdf_converter.py`
+- **Tested by:** `tests/integration/test_end_to_end.py`, `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_ats_round_trip.py`, `tests/unit/test_pdf_converter.py`
 
 ### `app/validation/safety.py`
 
@@ -1028,6 +1033,10 @@ flowchart LR
   validation_factual --> analysis_rewriter
   validation_factual --> analysis_skills_tailor
   validation_factual --> analysis_terminology
+  validation_output --> analysis_resume_normalizer
+  validation_output --> ingestion_docx
+  validation_output --> ingestion_pdf
+  validation_output --> rendering_layout
 ```
 
 ## 5. Configuration keys

@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "44dc52688e4cafc4",
+  "source_hash": "7e17dd0b2b698547",
   "stats": {
-    "files": 118,
-    "python_files": 93,
+    "files": 119,
+    "python_files": 94,
     "app_modules": 47,
-    "test_files": 39,
+    "test_files": 40,
     "classes": 82,
-    "functions": 583,
-    "lines_of_python": 13016
+    "functions": 594,
+    "lines_of_python": 13283
   },
   "axes": {
     "x": "location (path)",
@@ -524,7 +524,7 @@
       "stages": [
         "2 Normalize"
       ],
-      "lines": 602,
+      "lines": 655,
       "doc": "",
       "classes": [
         {
@@ -553,48 +553,58 @@
               "doc": ""
             },
             {
+              "name": "_looks_like_degree",
+              "line": 137,
+              "doc": "'B.Tech in Computer Science' yes; 'State University' no."
+            },
+            {
+              "name": "_split_middle_dot",
+              "line": 142,
+              "doc": "'Acme Corp \u00b7 Pune, India' -> ('Acme Corp', 'Pune, India'), the"
+            },
+            {
               "name": "_is_dated_line",
-              "line": 132,
+              "line": 151,
               "doc": "A job title/company line carrying a date range or year."
             },
             {
               "name": "_experience_line_kind",
-              "line": 139,
+              "line": 158,
               "doc": "'dated' (title and/or company with dates), 'header_line' (a short"
             },
             {
               "name": "_add_role",
-              "line": 158,
+              "line": 177,
               "doc": "Record a role; the first one also fills the entry's title/dates."
             },
             {
               "name": "_merge_links",
-              "line": 168,
+              "line": 187,
               "doc": "Profile links from the file's hyperlinks and from URLs written in"
             },
             {
               "name": "_extract_date_range",
-              "line": 182,
+              "line": 201,
               "doc": ""
             },
             {
               "name": "_strip_date_range",
-              "line": 186,
+              "line": 205,
               "doc": ""
             },
             {
               "name": "_parse_title_and_dates",
-              "line": 190,
+              "line": 209,
               "doc": "'Data Scientist II | August 2024 - Present' ->"
             },
             {
               "name": "_split_respecting_parens",
-              "line": 199,
+              "line": 218,
               "doc": "Split on sep_chars, but never inside ( ) or [ ] groups \u2014 so"
             },
             {
               "name": "normalize",
-              "line": 222,
+              "line": 241,
               "doc": ""
             }
           ]
@@ -1321,7 +1331,7 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 272,
+      "lines": 274,
       "doc": "Run evaluation cases through the pipeline and collect metrics (P4.1).",
       "classes": [
         {
@@ -1388,22 +1398,22 @@
         },
         {
           "name": "run",
-          "line": 193,
+          "line": 195,
           "doc": ""
         },
         {
           "name": "_flatten",
-          "line": 209,
+          "line": 211,
           "doc": ""
         },
         {
           "name": "compare",
-          "line": 226,
+          "line": 228,
           "doc": "Human-readable differences per case between a report and a baseline."
         },
         {
           "name": "summary_lines",
-          "line": 254,
+          "line": 256,
           "doc": ""
         }
       ]
@@ -1415,7 +1425,7 @@
       "stages": [
         "1 Ingest"
       ],
-      "lines": 179,
+      "lines": 184,
       "doc": "",
       "classes": [
         {
@@ -1437,17 +1447,17 @@
           "methods": [
             {
               "name": "_classify",
-              "line": 44,
+              "line": 46,
               "doc": "-> (block_type, text without a bullet glyph, whole line bold)."
             },
             {
               "name": "_hyperlinks",
-              "line": 69,
+              "line": 74,
               "doc": "Targets of every external hyperlink in the body, in rId order"
             },
             {
               "name": "parse",
-              "line": 80,
+              "line": 85,
               "doc": ""
             }
           ]
@@ -2289,7 +2299,7 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 897,
+      "lines": 902,
       "doc": "",
       "classes": [
         {
@@ -2393,7 +2403,7 @@
       "functions": [
         {
           "name": "_merge_usage",
-          "line": 888,
+          "line": 893,
           "doc": "Combine two LLMClient.get_usage_summary() dicts into one."
         }
       ]
@@ -2574,23 +2584,28 @@
       "stages": [
         "8 Validate"
       ],
-      "lines": 56,
+      "lines": 137,
       "doc": "",
       "classes": [
         {
           "name": "OutputQAValidator",
-          "line": 6,
+          "line": 7,
           "doc": "",
           "methods": [
             {
               "name": "validate_docx",
-              "line": 7,
+              "line": 8,
               "doc": ""
             },
             {
               "name": "validate_pdf",
-              "line": 29,
+              "line": 30,
               "doc": ""
+            },
+            {
+              "name": "round_trip",
+              "line": 63,
+              "doc": "Re-parse a rendered DOCX / PDF the way an ATS would (our own"
             }
           ]
         }
@@ -2997,6 +3012,57 @@
           "name": "test_approved_rewrite_appears_in_all_outputs",
           "line": 14,
           "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "tests/unit/test_ats_round_trip.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 121,
+      "doc": "P2.5: the rendered template must read back exactly as rendered, and the",
+      "classes": [],
+      "functions": [
+        {
+          "name": "_resume",
+          "line": 15,
+          "doc": ""
+        },
+        {
+          "name": "_render",
+          "line": 38,
+          "doc": ""
+        },
+        {
+          "name": "test_template_docx_round_trips_cleanly",
+          "line": 42,
+          "doc": ""
+        },
+        {
+          "name": "test_template_pdf_round_trips_cleanly",
+          "line": 48,
+          "doc": ""
+        },
+        {
+          "name": "test_round_trip_flags_what_does_not_read_back",
+          "line": 54,
+          "doc": ""
+        },
+        {
+          "name": "test_round_trip_flags_a_broken_file",
+          "line": 70,
+          "doc": ""
+        },
+        {
+          "name": "test_bold_label_skill_line_is_not_a_heading",
+          "line": 77,
+          "doc": "DOCX parser: 'Tools: Spark, Docker' with only the label bold is content."
+        },
+        {
+          "name": "test_normalizer_reads_title_first_layout",
+          "line": 92,
+          "doc": "Title<tab>dates, then 'Company \u00b7 Location'; a second job's company line"
         }
       ]
     },
@@ -5149,6 +5215,11 @@
     },
     {
       "from": "app/analysis/resume_normalizer.py",
+      "to": "tests/unit/test_ats_round_trip.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/analysis/resume_normalizer.py",
       "to": "tests/unit/test_parsing_fixes_p19.py",
       "type": "tested_by"
     },
@@ -5749,6 +5820,11 @@
     },
     {
       "from": "app/domain/resume.py",
+      "to": "tests/unit/test_ats_round_trip.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/resume.py",
       "to": "tests/unit/test_docx_renderer.py",
       "type": "tested_by"
     },
@@ -5861,6 +5937,11 @@
       "from": "app/domain/resume_document.py",
       "to": "app/domain/resume_document.py::ResumeSource",
       "type": "contains"
+    },
+    {
+      "from": "app/domain/resume_document.py",
+      "to": "tests/unit/test_ats_round_trip.py",
+      "type": "tested_by"
     },
     {
       "from": "app/domain/resume_document.py",
@@ -6035,6 +6116,11 @@
     {
       "from": "app/ingestion/docx.py",
       "to": "tests/integration/test_preserve_rewrite_end_to_end.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/ingestion/docx.py",
+      "to": "tests/unit/test_ats_round_trip.py",
       "type": "tested_by"
     },
     {
@@ -6409,6 +6495,11 @@
     },
     {
       "from": "app/rendering/pdf_converter.py",
+      "to": "tests/unit/test_ats_round_trip.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/rendering/pdf_converter.py",
       "to": "tests/unit/test_pdf_converter.py",
       "type": "tested_by"
     },
@@ -6426,6 +6517,11 @@
       "from": "app/rendering/template_renderer.py",
       "to": "app/rendering/template_renderer.py::TemplateRenderer",
       "type": "contains"
+    },
+    {
+      "from": "app/rendering/template_renderer.py",
+      "to": "tests/unit/test_ats_round_trip.py",
+      "type": "tested_by"
     },
     {
       "from": "app/rendering/template_renderer.py",
@@ -6804,6 +6900,26 @@
     },
     {
       "from": "app/validation/output.py",
+      "to": "app/analysis/resume_normalizer.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/validation/output.py",
+      "to": "app/ingestion/docx.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/validation/output.py",
+      "to": "app/ingestion/pdf.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/validation/output.py",
+      "to": "app/rendering/layout.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/validation/output.py",
       "to": "app/validation/output.py::OutputQAValidator",
       "type": "contains"
     },
@@ -6815,6 +6931,11 @@
     {
       "from": "app/validation/output.py",
       "to": "tests/integration/test_preserve_rewrite_end_to_end.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/validation/output.py",
+      "to": "tests/unit/test_ats_round_trip.py",
       "type": "tested_by"
     },
     {

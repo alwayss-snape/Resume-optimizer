@@ -746,6 +746,8 @@ class TailorService:
         docx_warnings = []
         try:
             docx_warnings = self.qa_validator.validate_docx(docx_output_path, expected_candidate_name=resume.candidate.name)
+            if fit:  # template output: it must read back exactly as rendered (P2.5)
+                docx_warnings += self.qa_validator.round_trip(docx_output_path, resume)
             warnings.extend(docx_warnings)
         except Exception:
             # Never fail the tailoring flow due to QA check exceptions
@@ -760,6 +762,8 @@ class TailorService:
         else:
             try:
                 pdf_warnings = self.qa_validator.validate_pdf(pdf_res, expected_candidate_name=resume.candidate.name)
+                if fit:
+                    pdf_warnings += self.qa_validator.round_trip(pdf_res, resume)
                 warnings.extend(pdf_warnings)
             except Exception:
                 warnings.append("Output QA PDF validation failed unexpectedly.")
@@ -854,6 +858,7 @@ class TailorService:
             "Failed to parse rendered DOCX",
             "Failed to parse rendered PDF",
             "Expected candidate name",
+            OutputQAValidator.ROUND_TRIP_PREFIX,
         ]
 
         def has_critical(warnings_list):

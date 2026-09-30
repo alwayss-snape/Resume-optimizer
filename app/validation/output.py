@@ -1,4 +1,5 @@
 import os
+import re
 from typing import List, Optional
 import docx
 import pymupdf as fitz  # PyMuPDF
@@ -54,3 +55,83 @@ class OutputQAValidator:
             warnings.append(f"Failed to parse rendered PDF: {e}")
 
         return warnings
+
+    # -- ATS round trip (P2.5) ------------------------------------------------
+
+    ROUND_TRIP_PREFIX = "ATS round-trip"
+
+    def round_trip(self, path: str, expected) -> List[str]:
+        """Re-parse a rendered DOCX / PDF the way an ATS would (our own
+        parser, no LLM) and compare it with the Resume that was rendered:
+        name, email, phone, links, sections, companies, role titles and
+        dates, education, skills and every bullet. Returns one warning per
+        problem, each starting with ROUND_TRIP_PREFIX."""
+        from app.analysis.resume_normalizer import ResumeNormalizer
+        from app.ingestion.docx import DocxParser
+        from app.ingestion.pdf import PdfParser
+        from app.rendering.layout import date_range, display_skills, format_date_text
+
+        kind = "PDF" if path.lower().endswith(".pdf") else "DOCX"
+        prefix = f"{self.ROUND_TRIP_PREFIX} ({kind}):"
+        try:
+            raw = (PdfParser() if kind == "PDF" else DocxParser()).parse(path)
+            got = ResumeNormalizer().normalize(raw)[0].resume
+        except Exception as e:
+            return [f"{prefix} the file could not be re-parsed: {e}"]
+
+        norm = lambda t: re.sub(r"\s+", " ", (t or "")).strip().lower()
+        digits = lambda t: re.sub(r"\D", "", t or "")
+        problems: List[str] = []
+        exp_c, got_c = expected.candidate, got.candidate
+        if norm(exp_c.name) != norm(got_c.name):
+            problems.append(f"name read as \"{got_c.name}\"")
+        if exp_c.email and norm(exp_c.email) != norm(got_c.email):
+            problems.append("email not found")
+        if exp_c.phone and digits(exp_c.phone) != digits(got_c.phone):
+            problems.append("phone not found")
+        raw_text = norm(raw.raw_text)
+        missing_links = [l for l in exp_c.display_links() if norm(l) not in raw_text]
+        if missing_links:
+            problems.append(f"link(s) not found: {', '.join(missing_links)}")
+
+        sections = {"summary": (expected.summary, got.summary), "work experience": (expected.experience, got.experience),
+                    "skills": (expected.skills, got.skills), "education": (expected.education, got.education),
+                    "projects": (expected.projects, got.projects),
+                    "certifications": (expected.certifications, got.certifications)}
+        for name, (want, have) in sections.items():
+            if want and not have:
+                problems.append(f"the {name} section was not recognised")
+
+        if expected.experience and got.experience:
+            want_jobs = [(norm(e.company), [(norm(r.title), date_range(r.start_date, r.end_date))
+                                            for r in e.all_roles()]) for e in expected.experience]
+            have_jobs = [(norm(e.company), [(norm(r.title), date_range(r.start_date, r.end_date))
+                                            for r in e.all_roles()]) for e in got.experience]
+            if len(want_jobs) != len(have_jobs):
+                problems.append(f"{len(have_jobs)} job entries read, {len(want_jobs)} rendered")
+            for (w_co, w_roles), (h_co, h_roles) in zip(want_jobs, have_jobs):
+                if w_co and w_co != h_co:
+                    problems.append(f"company read as \"{h_co}\" instead of \"{w_co}\"")
+                if w_roles != h_roles:
+                    problems.append("role titles or dates differ: "
+                                    + "; ".join(f"{t} {d}".strip() for t, d in h_roles))
+
+        want_bullets = [norm(b.text) for s in [*expected.experience, *expected.projects] for b in s.bullets]
+        have_bullets = {norm(b.text) for s in [*got.experience, *got.projects] for b in s.bullets}
+        lost = [b for b in want_bullets if b and b not in have_bullets]
+        if lost:
+            problems.append(f"{len(lost)} of {len(want_bullets)} bullets not read back intact "
+                            f"(e.g. \"{lost[0][:60]}\")")
+
+        have_skills = {norm(v) for values in got.skills.values() for v in values}
+        lost_skills = [v for values in display_skills(expected.skills).values() for v in values
+                       if norm(v) not in have_skills]
+        if lost_skills:
+            problems.append(f"skill(s) not read back: {', '.join(lost_skills[:5])}")
+
+        have_edu = {(norm(e.degree), norm(e.institution), format_date_text(e.dates)) for e in got.education}
+        for e in expected.education:
+            if (norm(e.degree), norm(e.institution), format_date_text(e.dates)) not in have_edu:
+                problems.append(f"education entry \"{e.degree or e.institution}\" not read back")
+
+        return [f"{prefix} {p}" for p in problems]

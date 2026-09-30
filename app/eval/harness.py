@@ -186,6 +186,8 @@ def _tailor_metrics(service, case: Case, jd_text: str, parsed, generated: Dict, 
         "score_after": float(result.get("alignment_score") or 0.0),
         "pages": pages,
         "target_pages": result.get("target_pages"),
+        # P2.5: problems found re-parsing the rendered DOCX / PDF (0 = passes)
+        "ats_round_trip": [w for w in result.get("warnings", []) if w.startswith("ATS round-trip")],
         "output_dir": case_dir,
     }
 

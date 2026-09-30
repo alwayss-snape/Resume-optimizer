@@ -32,7 +32,7 @@ Semantic matching uses a local embedding model (`all-MiniLM-L6-v2`).
 | 5 | Score | `analysis/keyword_match.py`, `analysis/scoring.py` | Keyword match rate (weighted share of JD keywords found) is the headline; requirement-level evidence score kept as secondary |
 | 6 | Plan | `analysis/tailor_planner.py` | Chooses which bullets to rewrite and ranks missing requirements |
 | 7 | Rewrite | `analysis/rewriter.py` + `llm/client.py` | The LLM rewrites each bullet grounded in its evidence; suggests phrasing for gaps |
-| 8 | Validate | `validation/factual.py`, `structural.py`, `output.py` | Rejects rewrites that add new numbers or terms; checks identity and the output files |
+| 8 | Validate | `validation/factual.py`, `structural.py`, `output.py` | Rejects rewrites that add new numbers or terms; checks identity; re-parses the output files (ATS round-trip) |
 | 9 | Render | `rendering/*` | **ATS_DEFAULT** (clean A4 template, the default) or **PRESERVE** (patches your original DOCX in place; UI "Advanced" option); PDF via LibreOffice |
 | 10 | Report | `services/tailor.py`, `services/run_manager.py` | `changes.md`, artifacts in `data/runs/<id>/`, LLM token usage |
 
@@ -54,9 +54,9 @@ Semantic matching uses a local embedding model (`all-MiniLM-L6-v2`).
 | Add free-text content | ✅ Works | Append to an existing role or create a new project |
 | Add a **new job role** | ❌ Not built | Designed, see "Open work" |
 | Strict Factual Mode | ⚠️ Cosmetic | See issue 4 |
-| DOCX / PDF / HTML output | ✅ Works | ATS template (P2.1): A4, Arial, standard headings, section order by experience, "Jan 2022 – Present" dates; files named `First_Last_Resume_<Company>`. Auto page-fit to 1 page (< 8 years) or 2, trimming the least relevant content and reporting it (P2.3–P2.4). PDF and page-fit need LibreOffice installed |
+| DOCX / PDF / HTML output | ✅ Works | Re-parsed after rendering to prove it reads back intact (ATS round-trip, P2.5). ATS template (P2.1): A4, Arial, standard headings, section order by experience, "Jan 2022 – Present" dates; files named `First_Last_Resume_<Company>`. Auto page-fit to 1 page (< 8 years) or 2, trimming the least relevant content and reporting it (P2.3–P2.4). PDF and page-fit need LibreOffice installed |
 | CLI | ✅ Works | `analyze` and `tailor` only; no review step, no addition text |
-| Tests | ✅ 246 passing | `pytest -q` (~35 s, loads the cached embedding model) |
+| Tests | ✅ 252 passing | `pytest -q` (~35 s, loads the cached embedding model) |
 | Multiple JDs / history / cover letter | ❌ Not built | — |
 
 ## Open issues (found 2026-09-29, not yet fixed)

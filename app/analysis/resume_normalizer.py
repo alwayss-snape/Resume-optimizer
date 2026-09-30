@@ -129,6 +129,25 @@ class ResumeNormalizer:
     # Experience line kinds forced by an LLM structure hint (P1.13).
     _HINT_KINDS = {"company": "company", "job_title": "dated", "subheading": "subheading", "bullet": "content"}
 
+    _DEGREE_RE = re.compile(
+        r"\b(?:B\.?\s?(?:Tech|E|Sc|S|A|Com)|M\.?\s?(?:Tech|E|Sc|S|A|Com)|Bachelor|Master|Ph\.?\s?D|MBA|BBA|BCA|MCA"
+        r"|Diploma|Associate(?:'s)? (?:of|in|degree))\b", re.IGNORECASE)
+    _INSTITUTION_RE = re.compile(r"\b(?:University|Institute|College|School|Academy|IIT|NIT)\b", re.IGNORECASE)
+
+    def _looks_like_degree(self, text: str) -> bool:
+        """'B.Tech in Computer Science' yes; 'State University' no."""
+        return bool(self._DEGREE_RE.search(text)) and not self._INSTITUTION_RE.search(text)
+
+    @staticmethod
+    def _split_middle_dot(text: str) -> Tuple[str, Optional[str]]:
+        """'Acme Corp · Pune, India' -> ('Acme Corp', 'Pune, India'), the
+        ATS template's company / institution line."""
+        if " · " in text:
+            main, rest = text.split(" · ", 1)
+            if main.strip() and rest.strip():
+                return main.strip(), rest.strip()
+        return text, None
+
     def _is_dated_line(self, block) -> bool:
         """A job title/company line carrying a date range or year."""
         if block is None or block.block_type in ("bullet", "name"):
@@ -254,6 +273,10 @@ class ResumeNormalizer:
         edu_counter = 0
         ev_counter = 0
 
+        # Jobs whose company was carried over from the previous entry (a new
+        # title after bullets); a company line right after the title wins.
+        inherited_company: set = set()
+
         def new_experience(company: str, location: Optional[str]) -> Experience:
             nonlocal exp_counter, current_exp_has_content
             exp_counter += 1
@@ -346,8 +369,16 @@ class ResumeNormalizer:
                 if "\t" in text:
                     left, right_col = [p.strip() for p in text.split("\t", 1)]
                 else:
-                    left, right_col = text, None
+                    left, right_col = self._split_middle_dot(text)
                 kind = self._HINT_KINDS.get(block.hint or "")
+                if (kind is None and current_exp is not None and current_exp.title
+                        and (not current_exp.company or current_exp.id in inherited_company)
+                        and not current_exp_has_content and block.block_type != "bullet"
+                        and len(text) < 90 and not left.rstrip().endswith(".")
+                        and not self._is_dated_line(block)):
+                    # Title line first, then "Company · Location" (the ATS
+                    # template's order): this line names the job's company.
+                    kind = "company_of_current"
                 if kind is None:
                     kind = self._experience_line_kind(block, text)
                     next_is_dated = self._is_dated_line(blocks[idx + 1] if idx + 1 < len(blocks) else None)
@@ -358,6 +389,11 @@ class ResumeNormalizer:
 
                 if kind == "dated":
                     title, start, end = self._parse_title_and_dates(left)
+                    if start is None and right_col and self.DATE_RANGE_RE.search(right_col):
+                        # "Title<tab>Aug 2024 – Present": the dates are the
+                        # right column, not a location.
+                        _, start, end = self._parse_title_and_dates(right_col)
+                        right_col = None
                     body = self._strip_date_range(left)
                     dash_parts = [p.strip() for p in re.split(r"\s+—\s+|\s+-\s+", body) if p.strip()]
                     role = Role(title=title, start_date=start, end_date=end)
@@ -374,6 +410,7 @@ class ResumeNormalizer:
                         # between: another role at the same company, listed
                         # with its own bullets.
                         current_exp = new_experience(current_exp.company, current_exp.location)
+                        inherited_company.add(current_exp.id)
                         self._add_role(current_exp, role)
                     else:
                         # First role for a company header, or a second role
@@ -382,6 +419,14 @@ class ResumeNormalizer:
                         if right_col and not current_exp.location:
                             current_exp.location = right_col
                     current_group = None
+
+                elif kind == "company_of_current":
+                    if current_exp.id in inherited_company:
+                        inherited_company.discard(current_exp.id)
+                        current_exp.location = None
+                    current_exp.company = left
+                    if right_col and not current_exp.location:
+                        current_exp.location = right_col
 
                 elif kind == "company" or (kind == "header_line" and current_exp is None):
                     # "Northwind Analytics - A Contoso Company<tab>Pune, India"
@@ -470,7 +515,7 @@ class ResumeNormalizer:
                 if "\t" in text:
                     left, right_col = [p.strip() for p in text.split("\t", 1)]
                 else:
-                    left, right_col = text, None
+                    left, right_col = self._split_middle_dot(text)
 
                 body = self._strip_date_range(left)
                 dates = right_col if (right_col and self.DATE_PATTERN.search(right_col)) else (
@@ -488,6 +533,10 @@ class ResumeNormalizer:
                             location=right_col if right_col and right_col != dates else None,
                             dates=dates,
                         )
+                    elif has_date and self._looks_like_degree(body):
+                        # "B.Tech in X<tab>2016 – 2020", institution on the next line
+                        current_edu = Education(id=edu_id, institution="", degree=body, dates=dates,
+                                                location=right_col if right_col and right_col != dates else None)
                     elif has_date:
                         current_edu = Education(id=edu_id, institution=body, degree="", location=right_col, dates=dates)
                     else:
@@ -496,6 +545,10 @@ class ResumeNormalizer:
                         # with the degree (+ dates).
                         current_edu = Education(id=edu_id, institution=body, degree="", location=right_col, dates=None)
                     education_list.append(current_edu)
+                elif not current_edu.institution:
+                    current_edu.institution = body
+                    if right_col and not current_edu.location and right_col != dates:
+                        current_edu.location = right_col
                 elif not current_edu.degree:
                     current_edu.degree = body
                     if dates:
