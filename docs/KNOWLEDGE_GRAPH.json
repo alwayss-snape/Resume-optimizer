@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "5965172be25a67a7",
+  "source_hash": "d47c86338152897b",
   "stats": {
-    "files": 83,
-    "python_files": 63,
+    "files": 85,
+    "python_files": 65,
     "app_modules": 35,
-    "test_files": 23,
+    "test_files": 24,
     "classes": 59,
-    "functions": 226,
-    "lines_of_python": 7265
+    "functions": 232,
+    "lines_of_python": 7346
   },
   "axes": {
     "x": "location (path)",
@@ -1306,7 +1306,7 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 578,
+      "lines": 550,
       "doc": "",
       "classes": [
         {
@@ -1395,7 +1395,7 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 502,
+      "lines": 507,
       "doc": "",
       "classes": [],
       "functions": [
@@ -1754,6 +1754,16 @@
           "doc": ""
         }
       ]
+    },
+    {
+      "id": "tests/conftest.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 17,
+      "doc": "Test-wide isolation from the developer's .env.",
+      "classes": [],
+      "functions": []
     },
     {
       "id": "tests/fixtures/jds/sample.txt",
@@ -2446,6 +2456,47 @@
       ]
     },
     {
+      "id": "tests/unit/test_tailor_resume_flow.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 87,
+      "doc": "tailor_resume orchestration: pre-approved proposals and Strict Factual Mode.",
+      "classes": [],
+      "functions": [
+        {
+          "name": "_service",
+          "line": 18,
+          "doc": ""
+        },
+        {
+          "name": "_bullets_with_evidence",
+          "line": 25,
+          "doc": ""
+        },
+        {
+          "name": "_proposal",
+          "line": 37,
+          "doc": ""
+        },
+        {
+          "name": "_docx_text",
+          "line": 44,
+          "doc": ""
+        },
+        {
+          "name": "test_preapproved_proposals_skip_the_rewriter",
+          "line": 48,
+          "doc": ""
+        },
+        {
+          "name": "test_strict_mode_is_decided_before_rendering",
+          "line": 62,
+          "doc": ""
+        }
+      ]
+    },
+    {
       "id": "tests/unit/test_tailor_service_addition.py",
       "type": "python",
       "layer": "Tests",
@@ -2682,6 +2733,11 @@
       "type": "tested_by"
     },
     {
+      "from": "app/analysis/resume_normalizer.py",
+      "to": "tests/unit/test_tailor_resume_flow.py",
+      "type": "tested_by"
+    },
+    {
       "from": "app/analysis/rewriter.py",
       "to": "app/analysis/change_proposal.py",
       "type": "imports"
@@ -2739,6 +2795,11 @@
     {
       "from": "app/analysis/rewriter.py",
       "to": "tests/unit/test_rewriter.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/analysis/rewriter.py",
+      "to": "tests/unit/test_tailor_resume_flow.py",
       "type": "tested_by"
     },
     {
@@ -3157,6 +3218,11 @@
       "type": "tested_by"
     },
     {
+      "from": "app/ingestion/docx.py",
+      "to": "tests/unit/test_tailor_resume_flow.py",
+      "type": "tested_by"
+    },
+    {
       "from": "app/ingestion/ocr.py",
       "to": "app/ingestion/ocr.py::OCREngine",
       "type": "contains"
@@ -3372,6 +3438,11 @@
       "type": "contains"
     },
     {
+      "from": "app/services/run_manager.py",
+      "to": "tests/unit/test_tailor_resume_flow.py",
+      "type": "tested_by"
+    },
+    {
       "from": "app/services/tailor.py",
       "to": "app/analysis/jd_analyzer.py",
       "type": "imports"
@@ -3509,6 +3580,11 @@
     {
       "from": "app/services/tailor.py",
       "to": "tests/unit/test_cli.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/services/tailor.py",
+      "to": "tests/unit/test_tailor_resume_flow.py",
       "type": "tested_by"
     },
     {

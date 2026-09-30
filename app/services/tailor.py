@@ -295,44 +295,37 @@ class TailorService:
         initial_score = self.scorer.calculate_score(matches, job_desc.requirements)
         _append_progress(f"Analyzed JD and computed initial alignment score: {initial_score:.1f}")
 
+        # The planner is deterministic (no LLM calls), so it always runs: its
+        # plan feeds plan.json and the unsupported-requirements report.
         plan = self.planner.create_plan(resume, job_desc, evidence_list, matches)
-        proposals = self.rewriter.execute_plan(resume, plan, evidence_list, job_desc)
         if preapproved_proposals is not None:
-            # Accept externally provided proposals (e.g., from UI review). They may
-            # be plain dicts — coerce to the model if necessary.
-            coerced = []
-            for p in preapproved_proposals:
-                if isinstance(p, dict):
-                    # Import lazily to avoid cycles
-                    from app.analysis.rewriter import RewriteProposal
-                    coerced.append(RewriteProposal(**p))
-                else:
-                    coerced.append(p)
-            proposals = coerced
-        _append_progress(f"Planner created plan with {len(plan.actions)} actions; generated {len(proposals)} proposals")
+            # The user already reviewed proposals in the UI. Re-running the
+            # rewriter here would repeat every LLM call and then throw the
+            # result away, so use theirs. They may arrive as plain dicts.
+            proposals = [RewriteProposal(**p) if isinstance(p, dict) else p for p in preapproved_proposals]
+            _append_progress(f"Using {len(proposals)} user-approved proposals (rewriter skipped)")
+        else:
+            proposals = self.rewriter.execute_plan(resume, plan, evidence_list, job_desc)
+            _append_progress(f"Planner created plan with {len(plan.actions)} actions; generated {len(proposals)} proposals")
 
         approved_proposals: List[RewriteProposal] = []
         warnings: List[str] = []
 
-        # Keep a copy of the original resume model for structural validation
+        # Keep copies of the pre-tailoring state: for structural validation,
+        # and to roll back if Strict Factual Mode withholds the rewrites.
         import copy
         original_resume = copy.deepcopy(resume)
+        original_evidence = copy.deepcopy(evidence_list)
 
+        rejected_count = 0
         for prop in proposals:
             res = self.validator.validate_proposal(prop, evidence_list)
             if res.approved:
                 approved_proposals.append(prop)
-                # Record AI-applied rewrite as a revision on the ResumeDocument
-                try:
-                    prop_sem = getattr(prop, "semantic_id", None) or getattr(prop, "target_semantic_id", None) or getattr(prop, "source_id", None)
-                    rev_id = f"ai_{prop_sem}"
-                    resume_doc.record_revision(rev_id=rev_id, actor="ai", original=getattr(prop, "original_text", ""), rewritten=(getattr(prop, "rewritten_text", None) or getattr(prop, "proposed_text", None) or ""), evidence_ids=getattr(prop, "evidence_ids", []), source="llm_rewriter")
-                except Exception:
-                    # don't fail tailoring flow if recording revision fails
-                    pass
             else:
+                rejected_count += 1
                 warnings.extend(res.warnings)
-        _append_progress(f"Validation complete: {len(approved_proposals)} approved, {len(proposals)-len(approved_proposals)} rejected")
+        _append_progress(f"Validation complete: {len(approved_proposals)} approved, {rejected_count} rejected")
 
         # Output file generation
         os.makedirs(output_dir, exist_ok=True)
@@ -340,34 +333,60 @@ class TailorService:
         pdf_output_path = os.path.join(output_dir, "tailored_resume.pdf")
         html_output_path = os.path.join(output_dir, "tailored_resume.html")
 
-        # Update resume model with approved rewrites for ATS & preview rendering
-        # Apply approved rewrites to the canonical resume model using semantic ids
-        prop_dict = { (getattr(p, "semantic_id", None) or getattr(p, "target_semantic_id", None) or getattr(p, "source_id", None)) : (getattr(p, "rewritten_text", None) or getattr(p, "proposed_text", None) or "") for p in approved_proposals}
+        def _prop_key(p):
+            return getattr(p, "semantic_id", None) or getattr(p, "target_semantic_id", None) or getattr(p, "source_id", None)
+
+        def _prop_text(p):
+            return getattr(p, "rewritten_text", None) or getattr(p, "proposed_text", None) or ""
+
+        # Apply approved rewrites to the canonical resume model (semantic ids).
+        prop_dict = {_prop_key(p): _prop_text(p) for p in approved_proposals}
         for exp in resume.experience:
             for b in exp.bullets:
                 if b.id in prop_dict:
                     b.text = prop_dict[b.id]
 
-        if approved_proposals:
-            try:
-                resume_doc.record_revision(
-                    "Applied evidence-approved AI rewrites",
-                    [f"resume.experience.{(getattr(proposal, 'semantic_id', None) or getattr(proposal, 'target_semantic_id', None) or getattr(proposal, 'source_id', None))}" for proposal in approved_proposals],
-                    actor="ai",
-                    evidence_ids=[evidence_id for proposal in approved_proposals for evidence_id in getattr(proposal, "evidence_ids", [])],
-                )
-            except Exception:
-                pass
-            _append_progress(f"Applied {len(approved_proposals)} approved rewrites to canonical resume model")
-
         # Keep the evidence ledger in sync with rewritten bullet text so that
-        # rescoring below (and any future analysis) reflects the tailored
-        # wording rather than the pre-tailoring original.
+        # rescoring below reflects the tailored wording, not the original.
         for b_id, new_text in prop_dict.items():
             for ev in evidence_list:
                 if ev.source_id == b_id and ev.source_type in ("experience", "project"):
                     prefix = ev.text.split(":", 1)[0] if ":" in ev.text else None
                     ev.text = f"{prefix}: {new_text}" if prefix else new_text
+
+        # Structural validation: tailoring must not alter identity/structure.
+        struct_warnings = self.struct_validator.validate(original_resume, resume)
+        warnings.extend(struct_warnings)
+
+        # Strict Factual Mode is all-or-nothing, and it must be decided BEFORE
+        # anything is rendered (it used to clear the list after the DOCX was
+        # already written, so the output kept rewrites the report said were
+        # withheld). If any rewrite was rejected or the structure changed,
+        # roll back every rewrite.
+        if strict_factual and approved_proposals and (rejected_count or struct_warnings):
+            original_text = {b.id: b.text for e in original_resume.experience for b in e.bullets}
+            for exp in resume.experience:
+                for b in exp.bullets:
+                    if b.id in original_text:
+                        b.text = original_text[b.id]
+            evidence_list[:] = original_evidence
+            approved_proposals = []
+            warnings.append(
+                "Strict Factual Mode: all rewrites withheld because at least one rewrite failed validation."
+            )
+            _append_progress("Strict factual mode triggered: all rewrites withheld")
+
+        if approved_proposals:
+            try:
+                for prop in approved_proposals:
+                    resume_doc.record_revision(
+                        rev_id=f"ai_{_prop_key(prop)}", actor="ai", original=getattr(prop, "original_text", ""),
+                        rewritten=_prop_text(prop), evidence_ids=getattr(prop, "evidence_ids", []) or [],
+                        source="llm_rewriter",
+                    )
+            except Exception:
+                pass  # revision history is best-effort; never fail the run for it
+            _append_progress(f"Applied {len(approved_proposals)} approved rewrites to canonical resume model")
 
         # Fold in any free-text content the candidate typed in the UI (a
         # project, an achievement, a skill) as one more polished, evidence-
@@ -403,11 +422,6 @@ class TailorService:
         except Exception:
             pass
 
-        # Structural validation: ensure tailoring didn't alter identity/content unexpectedly
-        struct_warnings = self.struct_validator.validate(original_resume, resume)
-        if struct_warnings:
-            warnings.extend(struct_warnings)
-
         # Output QA validations (DOCX and PDF) to catch rendering issues
         docx_warnings = []
         try:
@@ -416,13 +430,6 @@ class TailorService:
         except Exception:
             # Never fail the tailoring flow due to QA check exceptions
             warnings.append("Output QA DOCX validation failed unexpectedly.")
-
-        # Respect strict factual mode: if enabled and any validation warnings exist,
-        # withhold applying rewrites to avoid introducing potentially unsupported claims.
-        if strict_factual and warnings:
-            approved_proposals = []
-            warnings.append("Strict Factual Mode enabled: rewrites withheld due to validation warnings.")
-            _append_progress("Strict factual mode triggered: rewrites withheld")
 
         # PDF Conversion and QA
         pdf_warnings = []
@@ -462,50 +469,27 @@ class TailorService:
         except Exception:
             pass
 
-        # Generate human-readable change log / report
-        report_md_path = os.path.join(output_dir, "changes.md")
-        with open(report_md_path, "w", encoding="utf-8") as f:
-            f.write(f"# Tailoring Report & Change Log\n\n")
-            f.write(f"**Alignment Score:** {score:.1f} / 100\n\n")
-            f.write(f"## Accepted Rewrites\n\n")
-            for prop in approved_proposals:
-                bullet_id = prop.semantic_id or prop.source_id or "unknown"
-                f.write(f"### Bullet ({bullet_id})\n")
-                f.write(f"- **Original:** {prop.original_text}\n")
-                f.write(f"- **Tailored:** {prop.rewritten_text}\n")
-                f.write(f"- **Rationale:** {prop.rationale}\n\n")
-            if plan.unsupported_requirements:
-                f.write(f"## Unsupported Missing Requirements\n\n")
-                for req in plan.unsupported_requirements:
-                    f.write(f"- {req}\n")
-            if warnings:
-                f.write("\n## Validation Warnings\n\n")
-                for w in warnings:
-                    f.write(f"- {w}\n")
-        
-        # Overwrite the progress log with a final, complete change log that
-        # includes accepted rewrites and validation summaries. This preserves
-        # the earlier progress entries written incrementally.
+        # Append the final report to changes.md, below the progress log that
+        # was written incrementally during the run (which is kept as-is).
+        # Everything listed here reflects what was actually rendered.
         try:
             with open(report_md_path, "a", encoding="utf-8") as f:
-                f.write(f"\n\n## Final Summary\n\n")
-                f.write(f"**Alignment Score:** {score:.1f} / 100\n\n")
-                f.write(f"## Accepted Rewrites\n\n")
+                f.write("\n## Final Summary\n\n")
+                f.write(f"**Alignment Score:** {score:.1f} / 100 (was {initial_score:.1f})\n\n")
+                f.write(f"## Accepted Rewrites ({len(approved_proposals)})\n\n")
                 for prop in approved_proposals:
-                    bullet_id = prop.semantic_id or prop.source_id or "unknown"
-                    f.write(f"### Bullet ({bullet_id})\n")
+                    f.write(f"### Bullet ({_prop_key(prop) or 'unknown'})\n")
                     f.write(f"- **Original:** {prop.original_text}\n")
-                    f.write(f"- **Tailored:** {prop.rewritten_text}\n")
+                    f.write(f"- **Tailored:** {_prop_text(prop)}\n")
                     f.write(f"- **Rationale:** {prop.rationale}\n\n")
                 if plan.unsupported_requirements:
-                    f.write(f"## Unsupported Missing Requirements\n\n")
+                    f.write("## Unsupported Missing Requirements\n\n")
                     for req in plan.unsupported_requirements:
                         f.write(f"- {req}\n")
                 if warnings:
                     f.write("\n## Validation Warnings\n\n")
                     for w in warnings:
                         f.write(f"- {w}\n")
-
                 if usage_summary:
                     f.write("\n## LLM Usage\n\n")
                     f.write(f"- Provider: {usage_summary['provider']}\n")
@@ -516,8 +500,6 @@ class TailorService:
                             f"{usage_summary['total_completion_tokens']} completion = "
                             f"{usage_summary['total_tokens']} total\n")
                     f.write(f"- Time in LLM calls: {usage_summary['total_duration_seconds']}s\n")
-        
-                # Summarize artifact verification state
                 f.write("\n## Artifact Verification\n\n")
                 f.write(f"- DOCX warnings ({len(docx_warnings)}):\n")
                 for w in docx_warnings:
@@ -526,17 +508,7 @@ class TailorService:
                 for w in pdf_warnings:
                     f.write(f"  - {w}\n")
         except Exception:
-            # Non-fatal: continue even if final logging fails
-            pass
-
-            # Summarize artifact verification state
-            f.write("\n## Artifact Verification\n\n")
-            f.write(f"- DOCX warnings ({len(docx_warnings)}):\n")
-            for w in docx_warnings:
-                f.write(f"  - {w}\n")
-            f.write(f"- PDF warnings ({len(pdf_warnings)}):\n")
-            for w in pdf_warnings:
-                f.write(f"  - {w}\n")
+            pass  # non-fatal: the run's outputs don't depend on the report
 
         preview_md = self.generate_preview_md(resume)
 

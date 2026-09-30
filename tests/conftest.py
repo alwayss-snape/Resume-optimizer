@@ -1,0 +1,17 @@
+"""Test-wide isolation from the developer's .env.
+
+Settings are read once at import time, and .env may point at a real cloud
+provider with a real API key. Without this, any test that builds a default
+TailorService/LLMClient would make live (paid, flaky) network calls. Real
+environment variables take precedence over .env in pydantic-settings, so
+setting them here, before app.config.settings is first imported, pins every
+default client to an unreachable local Ollama with no cloud keys. Tests
+that exercise a specific provider pass provider=/api_key= explicitly.
+"""
+import os
+
+os.environ["LLM_PROVIDER"] = "ollama"
+os.environ["LLM_HOST"] = "http://127.0.0.1:9"  # discard port: fails fast, never reachable
+os.environ["GROQ_API_KEY"] = ""
+os.environ["ANTHROPIC_API_KEY"] = ""
+os.environ["SEMANTIC_MATCH_ENABLED"] = os.environ.get("SEMANTIC_MATCH_ENABLED", "true")

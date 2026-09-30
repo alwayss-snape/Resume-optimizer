@@ -146,7 +146,12 @@ render_mode = st.sidebar.radio(
     index=0,
     help="PRESERVE mode patches existing DOCX in-place. ATS_DEFAULT reconstructs standard template."
 )
-strict_factual = st.sidebar.checkbox("Strict Factual Mode", value=True)
+strict_factual = st.sidebar.checkbox(
+    "Strict Factual Mode",
+    value=False,
+    help="All-or-nothing: if any rewrite fails fact validation, withhold every rewrite. "
+    "With this off, each failing rewrite is still dropped individually.",
+)
 
 if st.session_state.stage != "idle":
     if st.sidebar.button("🔄 Start Over", use_container_width=True):

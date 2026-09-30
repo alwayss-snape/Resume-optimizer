@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**35 app modules · 23 test files · 59 classes · 226 functions/methods · 7,265 lines of Python** · source hash `5965172be25a67a7`
+**35 app modules · 24 test files · 59 classes · 232 functions/methods · 7,346 lines of Python** · source hash `d47c86338152897b`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -89,6 +89,7 @@ scripts/
   install_hooks.sh
   update_docs.py                                 Regenerate the repo's living docs: the knowledge graph and the change …
 tests/
+  conftest.py                                    Test-wide isolation from the developer's .env.
   fixtures/
     jds/
       sample.txt
@@ -116,6 +117,7 @@ tests/
     test_scoring.py                              _req(), _match(), test_semantic_partial_excluded_from_headline_score()…
     test_semantic_matcher.py                     Tests for SemanticMatcher.
     test_tailor_planner.py                       test_tailor_planner(), test_semantic_only_match_produces_rewrite_with_…
+    test_tailor_resume_flow.py                   tailor_resume orchestration: pre-approved proposals and Strict Factual…
     test_tailor_service_addition.py              _service(), test_incorporate_user_addition_appends_bullet_to_most_rece…
     test_template_renderer_standalone.py         _full_text(), test_template_renderer_ats_mode(), test_template_rendere…
     test_ui.py                                   test_ui_importable()
@@ -195,7 +197,7 @@ Spanning all stages: `app/cli.py`, `app/services/tailor.py`, `app/ui.py`
   - `normalize()` :93
 - **Imports:** `domain/evidence.py`, `domain/resume.py`, `domain/resume_document.py`, `ingestion/docx.py`
 - **Imported by:** `services/tailor.py`
-- **Tested by:** `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_resume_normalizer.py`
+- **Tested by:** `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_tailor_resume_flow.py`
 
 ### `app/analysis/rewriter.py`
 
@@ -208,7 +210,7 @@ Spanning all stages: `app/cli.py`, `app/services/tailor.py`, `app/ui.py`
   - `execute_plan()` :135
 - **Imports:** `analysis/change_proposal.py`, `domain/evidence.py`, `domain/job.py`, `domain/resume.py`, `domain/tailoring.py`, `llm/client.py`, `llm/schemas.py`
 - **Imported by:** `rendering/docx_patcher.py`, `services/tailor.py`, `services/validation_agent.py`, `validation/factual.py`
-- **Tested by:** `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_docx_renderer.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_validation.py`
+- **Tested by:** `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_docx_renderer.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_tailor_resume_flow.py`, `tests/unit/test_validation.py`
 - **Prompts:** `llm/prompts/rewrite_bullet.txt`
 
 ### `app/analysis/scoring.py`
@@ -345,7 +347,7 @@ _Semantic (embedding-based) matching layer._
   - `parse()` :28
 - **Imports:** `rendering/document_map.py`
 - **Imported by:** `analysis/resume_normalizer.py`, `ingestion/pdf.py`, `services/tailor.py`
-- **Tested by:** `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_docx_parser.py`, `tests/unit/test_docx_renderer.py`, `tests/unit/test_pdf_parser.py`, `tests/unit/test_resume_normalizer.py`
+- **Tested by:** `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_docx_parser.py`, `tests/unit/test_docx_renderer.py`, `tests/unit/test_pdf_parser.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_tailor_resume_flow.py`
 
 ### `app/ingestion/ocr.py`
 
@@ -471,10 +473,11 @@ _Semantic (embedding-based) matching layer._
   - `create_run()` :12
   - `save_json()` :30
 - **Imported by:** `services/tailor.py`
+- **Tested by:** `tests/unit/test_tailor_resume_flow.py`
 
 ### `app/services/tailor.py`
 
-**Layer:** Services · **Stage:** all · **Lines:** 578
+**Layer:** Services · **Stage:** all · **Lines:** 550
 
 - class **`TailorService`** ([app/services/tailor.py:33](../app/services/tailor.py#L33))
   - `__init__()` :34
@@ -485,7 +488,7 @@ _Semantic (embedding-based) matching layer._
   - `tailor_resume()` :235
 - **Imports:** `analysis/jd_analyzer.py`, `analysis/matcher.py`, `analysis/resume_normalizer.py`, `analysis/rewriter.py`, `analysis/scoring.py`, `analysis/semantic_matcher.py`, `analysis/tailor_planner.py`, `domain/evidence.py`, `domain/job.py`, `domain/report.py`, `domain/resume.py`, `domain/resume_document.py`, `domain/tailoring.py`, `ingestion/docx.py`, `ingestion/pdf.py`, `llm/client.py`, `rendering/docx_patcher.py`, `rendering/html_renderer.py`, `rendering/pdf_converter.py`, `rendering/template_renderer.py`, `services/run_manager.py`, `validation/factual.py`, `validation/output.py`, `validation/safety.py`, `validation/structural.py`
 - **Imported by:** `cli.py`, `ui.py`
-- **Tested by:** `tests/integration/test_end_to_end.py`, `tests/unit/test_cli.py`, `tests/unit/test_tailor_service_addition.py`
+- **Tested by:** `tests/integration/test_end_to_end.py`, `tests/unit/test_cli.py`, `tests/unit/test_tailor_resume_flow.py`, `tests/unit/test_tailor_service_addition.py`
 
 ### `app/services/validation_agent.py`
 
@@ -498,7 +501,7 @@ _Semantic (embedding-based) matching layer._
 
 ### `app/ui.py`
 
-**Layer:** Entry points · **Stage:** all · **Lines:** 502
+**Layer:** Entry points · **Stage:** all · **Lines:** 507
 
 - function **`get_local_pdf_preview_url()`** ([app/ui.py:25](../app/ui.py#L25)) — Serve a PDF from a temporary HTTP endpoint so Chrome can render it in an iframe.
 - function **`display_pdf_with_fallback()`** ([app/ui.py:42](../app/ui.py#L42)) — Try to use Streamlit's native PDF display if available, otherwise fall back
@@ -690,7 +693,6 @@ From `app/config/settings.py`; each can be overridden by the env var of the same
 - `app/cli.py`
 - `app/config/settings.py`
 - `app/ingestion/ocr.py`
-- `app/services/run_manager.py`
 - `app/services/validation_agent.py`
 
 **Not imported by any app code** (possibly dead code, or only used by tests/scripts):
