@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**45 app modules · 36 test files · 79 classes · 519 functions/methods · 12,266 lines of Python** · source hash `5ea76fcbf350ae6f`
+**45 app modules · 36 test files · 79 classes · 523 functions/methods · 12,337 lines of Python** · source hash `e6ce96bc6e2ef52b`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -294,16 +294,17 @@ _Keyword-level match rate, the headline score (P1.2)._
 
 ### `app/analysis/rewriter.py`
 
-**Layer:** Analysis · **Stage:** 7 Rewrite · **Lines:** 268
+**Layer:** Analysis · **Stage:** 7 Rewrite · **Lines:** 289
 
-- class **`LLMRewriter`** ([app/analysis/rewriter.py:55](../app/analysis/rewriter.py#L55))
-  - `__init__()` :56
-  - `rewrite_bullet()` :59 — Rewrite (or, given a single free-text `original_text` with no
-  - `rewrite_bullet_with_status()` :79 — Like rewrite_bullet, plus what happened, so failures are visible
-  - `rewrite_role()` :137 — Rewrite several bullets of one role in ONE call (P1.4).
-  - `execute_plan()` :195 — One LLM call per role (P1.4): all of a job's bullets that the
+- class **`LLMRewriter`** ([app/analysis/rewriter.py:69](../app/analysis/rewriter.py#L69))
+  - `__init__()` :70
+  - `rewrite_bullet()` :73 — Rewrite (or, given a single free-text `original_text` with no
+  - `rewrite_bullet_with_status()` :93 — Like rewrite_bullet, plus what happened, so failures are visible
+  - `rewrite_role()` :151 — Rewrite several bullets of one role in ONE call (P1.4).
+  - `execute_plan()` :210 — One LLM call per role (P1.4): all of a job's bullets that the
 - function **`normalize_llm_text()`** ([app/analysis/rewriter.py:27](../app/analysis/rewriter.py#L27))
 - function **`_same_wording()`** ([app/analysis/rewriter.py:34](../app/analysis/rewriter.py#L34)) — Equal apart from case, whitespace and closing punctuation, so adding a
+- function **`breaks_bullet_rules()`** ([app/analysis/rewriter.py:50](../app/analysis/rewriter.py#L50)) — True when a bullet is over the word limit or uses a filler word.
 - **Imports:** `analysis/change_proposal.py`, `domain/evidence.py`, `domain/job.py`, `domain/resume.py`, `domain/tailoring.py`, `llm/client.py`, `llm/schemas.py`
 - **Imported by:** `analysis/summary_writer.py`, `rendering/docx_patcher.py`, `services/tailor.py`, `services/validation_agent.py`, `validation/factual.py`
 - **Tested by:** `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_docx_renderer.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_tailor_planner.py`, `tests/unit/test_tailor_resume_flow.py`, `tests/unit/test_validation.py`

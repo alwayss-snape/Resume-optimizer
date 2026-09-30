@@ -229,3 +229,53 @@ def test_skipped_bullets_get_one_follow_up_call():
     assert "b2" in client.generate_json.call_args_list[1].kwargs["messages"][1]["content"]
     assert "b1" not in client.generate_json.call_args_list[1].kwargs["messages"][1]["content"]
     assert proposals["b1"].status == proposals["b2"].status == "ok"
+
+
+def test_breaks_bullet_rules():
+    from app.analysis.rewriter import breaks_bullet_rules
+    assert breaks_bullet_rules("Built a robust pipeline.")
+    assert breaks_bullet_rules(" ".join(["word"] * 29))
+    assert not breaks_bullet_rules("Built Spark pipelines for feature data.")
+
+
+def test_unchanged_bullet_breaking_rules_gets_follow_up():
+    from app.analysis.rewriter import LLMRewriter
+    from app.domain.resume import ResumeBullet
+    from app.llm.schemas import RoleBulletRewrite, RoleRewriteResult
+    resume, evidence, job, plan = _role_setup()
+    wordy = "Built robust and seamless Spark pipelines for feature data."
+    resume.experience[0].bullets[1] = ResumeBullet(id="b2", text=wordy)
+    client = _role_client()
+    client.generate_json.side_effect = [
+        RoleRewriteResult(bullets=[
+            RoleBulletRewrite(bullet_id="b1", rewritten="Built LightGBM models in Python for fraud."),  # fine as is
+            RoleBulletRewrite(bullet_id="b2", rewritten=wordy),  # kept despite filler words
+        ]),
+        RoleRewriteResult(bullets=[RoleBulletRewrite(bullet_id="b2", rewritten="Built Spark feature pipelines.")]),
+    ]
+    proposals = {p.target_semantic_id: p for p in LLMRewriter(client).execute_plan(resume, plan, evidence, job)}
+    assert client.generate_json.call_count == 2
+    retry_prompt = client.generate_json.call_args_list[1].kwargs["messages"][1]["content"]
+    assert "b2" in retry_prompt and "b1" not in retry_prompt and "must not be returned unchanged" in retry_prompt
+    assert proposals["b1"].status == "unchanged"
+    assert proposals["b2"].status == "ok" and proposals["b2"].proposed_text == "Built Spark feature pipelines."
+
+
+def test_retry_that_stays_unchanged_keeps_first_result():
+    from app.analysis.rewriter import LLMRewriter
+    from app.domain.resume import ResumeBullet
+    from app.llm.schemas import RoleBulletRewrite, RoleRewriteResult
+    resume, evidence, job, plan = _role_setup()
+    wordy = "Built robust Spark pipelines for feature data."
+    resume.experience[0].bullets[1] = ResumeBullet(id="b2", text=wordy)
+    client = _role_client()
+    client.generate_json.side_effect = [
+        RoleRewriteResult(bullets=[
+            RoleBulletRewrite(bullet_id="b1", rewritten="Developed LightGBM fraud models in Python."),
+            RoleBulletRewrite(bullet_id="b2", rewritten=wordy),
+        ]),
+        RoleRewriteResult(bullets=[RoleBulletRewrite(bullet_id="b2", rewritten=wordy)]),
+    ]
+    proposals = {p.target_semantic_id: p for p in LLMRewriter(client).execute_plan(resume, plan, evidence, job)}
+    assert client.generate_json.call_count == 2  # never more than one follow-up
+    assert proposals["b2"].status == "unchanged" and proposals["b2"].error is None

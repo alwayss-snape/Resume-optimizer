@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "5ea76fcbf350ae6f",
+  "source_hash": "e6ce96bc6e2ef52b",
   "stats": {
     "files": 113,
     "python_files": 88,
     "app_modules": 45,
     "test_files": 36,
     "classes": 79,
-    "functions": 519,
-    "lines_of_python": 12266
+    "functions": 523,
+    "lines_of_python": 12337
   },
   "axes": {
     "x": "location (path)",
@@ -604,37 +604,37 @@
       "stages": [
         "7 Rewrite"
       ],
-      "lines": 268,
+      "lines": 289,
       "doc": "",
       "classes": [
         {
           "name": "LLMRewriter",
-          "line": 55,
+          "line": 69,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
-              "line": 56,
+              "line": 70,
               "doc": ""
             },
             {
               "name": "rewrite_bullet",
-              "line": 59,
+              "line": 73,
               "doc": "Rewrite (or, given a single free-text `original_text` with no"
             },
             {
               "name": "rewrite_bullet_with_status",
-              "line": 79,
+              "line": 93,
               "doc": "Like rewrite_bullet, plus what happened, so failures are visible"
             },
             {
               "name": "rewrite_role",
-              "line": 137,
+              "line": 151,
               "doc": "Rewrite several bullets of one role in ONE call (P1.4)."
             },
             {
               "name": "execute_plan",
-              "line": 195,
+              "line": 210,
               "doc": "One LLM call per role (P1.4): all of a job's bullets that the"
             }
           ]
@@ -650,6 +650,11 @@
           "name": "_same_wording",
           "line": 34,
           "doc": "Equal apart from case, whitespace and closing punctuation, so adding a"
+        },
+        {
+          "name": "breaks_bullet_rules",
+          "line": 50,
+          "doc": "True when a bullet is over the word limit or uses a filler word."
         }
       ]
     },
@@ -3818,7 +3823,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 231,
+      "lines": 281,
       "doc": "",
       "classes": [],
       "functions": [
@@ -3890,6 +3895,21 @@
         {
           "name": "test_skipped_bullets_get_one_follow_up_call",
           "line": 217,
+          "doc": ""
+        },
+        {
+          "name": "test_breaks_bullet_rules",
+          "line": 234,
+          "doc": ""
+        },
+        {
+          "name": "test_unchanged_bullet_breaking_rules_gets_follow_up",
+          "line": 241,
+          "doc": ""
+        },
+        {
+          "name": "test_retry_that_stays_unchanged_keeps_first_result",
+          "line": 264,
           "doc": ""
         }
       ]

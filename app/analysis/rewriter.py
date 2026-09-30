@@ -38,6 +38,20 @@ def _same_wording(a: str, b: str) -> bool:
     return norm(a) == norm(b)
 
 
+# Filler words the role prompt tells the model to cut, and its word limit.
+# A bullet the model returns unchanged while still breaking these rules gets
+# a second chance in the follow-up call.
+FILLER_WORDS = ("robust", "seamless", "seamlessly", "dynamic", "intelligent", "fully", "leveraged",
+                "leveraging", "synergy", "results-driven", "cutting-edge")
+MAX_BULLET_WORDS = 28
+_FILLER_RE = re.compile(r"\b(" + "|".join(re.escape(w) for w in FILLER_WORDS) + r")\b", re.IGNORECASE)
+
+
+def breaks_bullet_rules(text: str) -> bool:
+    """True when a bullet is over the word limit or uses a filler word."""
+    return len((text or "").split()) > MAX_BULLET_WORDS or bool(_FILLER_RE.search(text or ""))
+
+
 # Outcome of one rewrite attempt (stored on ChangeProposal.status).
 STATUS_OK = "ok"                            # the LLM produced a changed bullet
 STATUS_UNCHANGED = "unchanged"              # the LLM kept the original wording
@@ -139,6 +153,7 @@ class LLMRewriter:
         exp: Optional[Experience],
         items: List[Dict],
         header: Optional[List[str]] = None,
+        note: Optional[str] = None,
     ) -> Tuple[Dict[str, Dict], Optional[str], str]:
         """Rewrite several bullets of one role in ONE call (P1.4).
 
@@ -157,7 +172,7 @@ class LLMRewriter:
         if exp is not None:
             titles = ", ".join(r.title for r in exp.all_roles() if r.title) or "(not given)"
             header = [f"Company: {exp.company or '(not given)'}", f"Titles: {titles}"]
-        lines = list(header or []) + ["", "Bullets:"]
+        lines = list(header or []) + (["", note] if note else []) + ["", "Bullets:"]
         for item in items:
             lines.append(f"- bullet_id: {item['bullet_id']}")
             lines.append(f"  text: {item['text']}")
@@ -245,12 +260,18 @@ class LLMRewriter:
 
         def rewrite_with_follow_up(exp, items, header=None):
             """One call, plus at most one more for bullets the model skipped
-            (it sometimes returns only the first few of a long role)."""
+            (it sometimes returns only the first few of a long role) or
+            returned unchanged although they break the length / filler rules."""
             results, error, missing_status = self.rewrite_role(exp, items, header=header)
-            skipped = [i for i in items if i["bullet_id"] not in results]
-            if results and skipped and not error:
-                more, error, missing_status = self.rewrite_role(exp, skipped, header=header)
-                results = {**results, **more}
+            retry = [i for i in items if i["bullet_id"] not in results
+                     or (results[i["bullet_id"]]["status"] == STATUS_UNCHANGED and breaks_bullet_rules(i["text"]))]
+            if results and retry and not error:
+                more, error, missing_status = self.rewrite_role(exp, retry, header=header, note=(
+                    f"Rewrite every bullet below: any that is over {MAX_BULLET_WORDS} words or uses a filler "
+                    "word must not be returned unchanged."))
+                # A retry only replaces a kept bullet when it actually changed it.
+                results = {**results, **{k: v for k, v in more.items()
+                                         if k not in results or v["status"] == STATUS_OK}}
             return results, error, missing_status
 
         for exp in resume.experience:
