@@ -76,3 +76,59 @@ def test_pdf_parser_end_to_end_no_truncated_bullets():
     # Name and contact info must remain distinct blocks (regression guard).
     assert "Jane Doe" in texts
     assert not any(t.startswith("Jane Doe Email") for t in texts)
+
+
+# -- Layout-aware parsing (P1.11), against an anonymized replica of a real
+# resume layout that the old line-based parser misread.
+REPLICA = "tests/fixtures/resumes/replica_layout.pdf"
+
+
+def _replica_blocks():
+    return PdfParser().parse(REPLICA).blocks
+
+
+def test_replica_name_is_largest_font_line():
+    blocks = _replica_blocks()
+    names = [b for b in blocks if b.block_type == "name"]
+    assert [b.text for b in names] == ["Jordan Avery"]
+    # The lowercase contact line right under it is not glued onto the name.
+    assert blocks[1].text == "jordan.avery@example.com | +91-9000000000 | Pune, India"
+
+
+def test_replica_no_glyphs_or_invisible_chars_leak():
+    for b in _replica_blocks():
+        assert "●" not in b.text
+        assert "​" not in b.text and "\xa0" not in b.text and "\xad" not in b.text
+
+
+def test_replica_bullets_joined_by_indent_including_bold_continuations():
+    bullets = [b.text for b in _replica_blocks() if b.block_type == "bullet"]
+    assert len(bullets) == 7
+    # Continuation line set in bold (was split off as its own block before).
+    assert "Reported late-delivery hotspots to regional managers across three distribution networks" in bullets
+    assert "Trained an XGBoost churn model with engineered tenure and usage features, lifting retention campaign response by 15%" in bullets
+    # Continuation that starts with a lowercase word, the old rule's only case.
+    assert any(t.endswith("covering 1,200 stores and replacing a spreadsheet process.") for t in bullets)
+
+
+def test_replica_headings_detected_even_with_leading_spaces():
+    headings = [b.text for b in _replica_blocks() if b.block_type == "heading"]
+    assert headings == [
+        "PROFESSIONAL SUMMARY", "WORK EXPERIENCE", "SKILLS", "EDUCATION", "CERTIFICATIONS & INTERESTS",
+    ]
+
+
+def test_replica_right_columns_become_tabs():
+    texts = [b.text for b in _replica_blocks()]
+    # Pushed right with spaces, in the same text run:
+    assert "Northwind Analytics - A Contoso Group Company\tPune, India" in texts
+    # A separate right-aligned run on the same row:
+    assert "Riverside Institute of Technology\tChennai, India" in texts
+    assert "B.Tech in Electronics Engineering(CGPA : 8.5/10)\t2016-2020" in texts
+
+
+def test_replica_summary_wrapped_lines_joined_but_labelled_lines_kept_apart():
+    texts = [b.text for b in _replica_blocks()]
+    assert any(t.startswith("Data Scientist with 4 years") and t.endswith("measurable business outcomes.") for t in texts)
+    assert "Tools: PostgreSQL, Tableau, Airflow, GCP, Excel" in texts
+    assert "Interests: Chess • Cycling • Photography" in texts

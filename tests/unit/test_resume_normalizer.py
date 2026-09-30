@@ -31,3 +31,55 @@ def test_resume_normalizer():
     first_ev = evidence_list[0]
     assert isinstance(first_ev, Evidence)
     assert first_ev.id.startswith("ev_")
+
+
+def _normalize_replica():
+    from app.ingestion.pdf import PdfParser
+    raw = PdfParser().parse("tests/fixtures/resumes/replica_layout.pdf")
+    resume_doc, evidence = ResumeNormalizer().normalize(raw)
+    return resume_doc.resume, evidence
+
+
+def test_replica_header_summary_and_contact():
+    resume, _ = _normalize_replica()
+    assert resume.candidate.name == "Jordan Avery"
+    assert resume.candidate.email == "jordan.avery@example.com"
+    assert resume.candidate.phone == "+91-9000000000"
+    assert resume.candidate.location == "Pune, India"
+    assert resume.summary.startswith("Data Scientist with 4 years")
+    assert resume.summary.endswith("measurable business outcomes.")
+
+
+def test_replica_multi_category_skill_line_split():
+    resume, _ = _normalize_replica()
+    assert resume.skills == {
+        "Languages": ["Python", "Scala", "SQL", "R"],
+        "Frameworks": ["Pandas", "NumPy", "PyTorch", "XGBoost"],
+        "Tools": ["PostgreSQL", "Tableau", "Airflow", "GCP", "Excel"],
+    }
+
+
+def test_replica_education_right_columns():
+    resume, _ = _normalize_replica()
+    [edu] = resume.education
+    assert edu.institution == "Riverside Institute of Technology"
+    assert edu.location == "Chennai, India"
+    assert edu.degree == "B.Tech in Electronics Engineering(CGPA : 8.5/10)"
+    assert edu.dates == "2016-2020"
+
+
+def test_replica_labelled_certifications_not_filed_as_interests():
+    resume, evidence = _normalize_replica()
+    assert [c["name"] for c in resume.certifications] == [
+        "Google Cloud Professional Data Engineer", "Statistics for Data Science",
+    ]
+    assert resume.interests == ["Chess", "Cycling", "Photography"]
+    assert any(e.source_type == "certification" for e in evidence)
+
+
+def test_split_skill_line_single_space_before_label():
+    n = ResumeNormalizer()
+    assert n._split_skill_line("Languages: Python, SQL Frameworks: Pandas, and XGBoost") == [
+        ("Languages", ["Python", "SQL"]), ("Frameworks", ["Pandas", "XGBoost"]),
+    ]
+    assert n._split_skill_line("Python, Java") == [("Skills", ["Python", "Java"])]

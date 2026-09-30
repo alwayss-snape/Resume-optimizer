@@ -50,6 +50,41 @@ class ResumeNormalizer:
     # for resumes that separate title from dates with " | " rather than ",".
     _TRIM_CHARS = " \t,|()-–—"
 
+    # Where a new "Label:" starts inside a skills line, e.g. the gap before
+    # "Frameworks:" in "Languages: Python, SQL<tab>Frameworks: Pandas". A single
+    # capitalised word right before the colon, so "SQL Frameworks:" splits
+    # before "Frameworks", not before "SQL".
+    _SKILL_LABEL_SPLIT_RE = re.compile(r"\t+|\s{2,}|\s(?=[A-Z][A-Za-z/&+-]*:\s)")
+    _LABEL_RE = re.compile(r"^([A-Za-z][\w &/+-]{0,30}):\s*(.*)$", re.DOTALL)
+
+    def _split_skill_line(self, text: str) -> List[Tuple[str, List[str]]]:
+        """'Languages: Python, SQL<tab>Frameworks: Pandas, and XGBoost' ->
+        [('Languages', ['Python', 'SQL']), ('Frameworks', ['Pandas', 'XGBoost'])].
+        An unlabelled line goes under 'Skills'."""
+        result: List[Tuple[str, List[str]]] = []
+        for segment in self._SKILL_LABEL_SPLIT_RE.split(text):
+            segment = segment.strip()
+            if not segment:
+                continue
+            m = self._LABEL_RE.match(segment)
+            if m and m.group(2).strip():
+                category, values = m.group(1).strip(), m.group(2)
+            elif result:
+                # A tab or double space inside one category's list, not a new label.
+                result[-1][1].extend(self._skill_items(segment))
+                continue
+            else:
+                category, values = "Skills", segment
+            result.append((category, self._skill_items(values)))
+        return result
+
+    def _skill_items(self, values: str) -> List[str]:
+        # Parenthesis-aware split: "Python (pandas, scikit-learn,
+        # transformers)" must stay one skill entry, not four. A list's last
+        # item often reads "and XGBoost".
+        items = self._split_respecting_parens(values, ",;|*•\n")
+        return [re.sub(r"^(?:and|&)\s+", "", item, flags=re.IGNORECASE) for item in items]
+
     def _extract_date_range(self, text: str) -> Optional[str]:
         m = self.DATE_RANGE_RE.search(text)
         return f"{m.group(1).strip()} – {m.group(2).strip()}" if m else None
@@ -124,6 +159,10 @@ class ResumeNormalizer:
         for block in raw_doc.blocks:
             text = block.text.strip()
             if not text:
+                continue
+
+            if block.block_type == "name":
+                candidate_name = text
                 continue
 
             if block.block_type == "heading":
@@ -267,6 +306,7 @@ class ResumeNormalizer:
                         )
                         experiences.append(current_exp)
 
+                    text = re.sub(r"\s+", " ", text)
                     bullet_counter += 1
                     bullet_id = f"{current_exp.id}_b{bullet_counter:02d}"
                     bullet = ResumeBullet(id=bullet_id, text=text, source_location_id=block.id)
@@ -308,17 +348,11 @@ class ResumeNormalizer:
 
             # Skills section
             elif any(k in section_lower for k in ("skill", "technolog", "competenc", "expertise", "tools")):
-                parts = text.split(":", 1)
-                category = parts[0].strip() if len(parts) > 1 else "Skills"
-                raw_skills_text = parts[1] if len(parts) > 1 else parts[0]
-                # Parenthesis-aware split: "Python (pandas, scikit-learn,
-                # transformers)" must stay one skill entry, not four.
-                skills_list = self._split_respecting_parens(raw_skills_text, ",;|*•\n")
-                
-                if category not in skills_dict:
-                    skills_dict[category] = []
-                skills_dict[category].extend(skills_list)
-                
+                skills_list = []
+                for category, items in self._split_skill_line(text):
+                    skills_dict.setdefault(category, []).extend(items)
+                    skills_list.extend(items)
+
                 for skill in skills_list:
                     ev_id = f"ev_{ev_counter:04d}"
                     ev_counter += 1
@@ -384,31 +418,37 @@ class ResumeNormalizer:
 
             # Certifications / interests / awards section
             elif any(k in section_lower for k in ("certification", "interest", "award", "achievement", "activit")):
-                lowered_text = text.lower()
-                # Decide the bucket from the SECTION heading first (e.g. a
-                # block under "INTERESTS" belongs in interests even though
-                # the line itself is just "Graphic Design • Badminton...").
-                # A line's own "Awards: ..." / "Interests: ..." prefix is
-                # only used as a tie-breaker for a section that mixes
-                # categories (e.g. "Certifications & Awards").
-                if "interest" in section_lower or lowered_text.startswith("interest"):
-                    remainder = text.split(":", 1)[1] if ":" in text else text
-                    interests.extend(self._split_respecting_parens(remainder))
-                elif any(k in section_lower for k in ("award", "achievement", "activit")) or lowered_text.startswith(("award", "achievement")):
-                    remainder = text.split(":", 1)[1] if ":" in text else text
-                    achievements.extend(self._split_respecting_parens(remainder))
-                elif "certif" in section_lower or lowered_text.startswith("certif"):
-                    remainder = text.split(":", 1)[1] if ":" in text else text
-                    for cert in self._split_respecting_parens(remainder):
-                        certifications.append({"name": cert})
+                # A line's own label ("Certifications: ...", "Interests: ...")
+                # decides the bucket; otherwise the section heading does.
+                # A mixed "CERTIFICATIONS & INTERESTS" section must not file
+                # labelled certifications as interests.
+                label_match = self._LABEL_RE.match(text)
+                label = label_match.group(1).lower() if label_match else ""
+                bucket_key = label if any(
+                    k in label for k in ("interest", "hobb", "award", "achievement", "activit", "certif", "licen")
+                ) else section_lower
+                remainder = label_match.group(2) if label_match and label == bucket_key else text
+                items = self._split_respecting_parens(remainder)
+                if "certif" in bucket_key or "licen" in bucket_key:
+                    bucket, source_type = "certifications", "certification"
+                elif "interest" in bucket_key or "hobb" in bucket_key:
+                    bucket, source_type = "interests", "general"
+                elif any(k in bucket_key for k in ("award", "achievement", "activit")):
+                    bucket, source_type = "achievements", "achievement"
                 else:
-                    certifications.append({"name": text})
+                    bucket, source_type = "certifications", "certification"
+                if bucket == "certifications":
+                    certifications.extend({"name": item} for item in items)
+                elif bucket == "interests":
+                    interests.extend(items)
+                else:
+                    achievements.extend(items)
 
                 ev_id = f"ev_{ev_counter:04d}"
                 ev_counter += 1
                 evidence_list.append(Evidence(
                     id=ev_id,
-                    source_type="general",
+                    source_type=source_type,
                     source_id=block.id,
                     source_location_id=block.id,
                     text=text,

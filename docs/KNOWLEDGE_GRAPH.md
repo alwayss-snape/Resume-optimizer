@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**35 app modules · 24 test files · 59 classes · 274 functions/methods · 8,168 lines of Python** · source hash `06a43a2929586a9d`
+**35 app modules · 24 test files · 60 classes · 302 functions/methods · 8,615 lines of Python** · source hash `4e24ad37de85754a`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -54,7 +54,7 @@ app/
   ingestion/
     docx.py                                      RawBlock, RawDocument, DocxParser
     ocr.py                                       OCREngine
-    pdf.py                                       PdfParser
+    pdf.py                                       _Line, PdfParser
   llm/
     client.py                                    LLMClient
     schemas.py                                   LLMResponse, LLMError, LLMConnectionError, LLMTimeoutError, LLMInvalid…
@@ -94,6 +94,8 @@ tests/
     jds/
       sample.txt
     resumes/
+      make_replica_layout_pdf.py                 Generate replica_layout.pdf: an anonymized resume with the same PDF la…
+      replica_layout.pdf
       sample.docx
       sample.pdf
   integration/
@@ -112,7 +114,7 @@ tests/
     test_pdf_converter.py                        test_pdf_converter_find_binary_or_graceful_none(), test_output_qa_vali…
     test_pdf_parser.py                           test_pdf_parser_text_layer(), test_pdf_parser_file_not_found(), test_m…
     test_resume_document.py                      test_resume_document_has_versioned_json_snapshot(), test_resume_docume…
-    test_resume_normalizer.py                    test_resume_normalizer()
+    test_resume_normalizer.py                    test_resume_normalizer(), _normalize_replica(), test_replica_header_su…
     test_rewriter.py                             test_rewriter_deterministic_fallback(), test_rewrite_bullet_parses_str…
     test_scoring.py                              _req(), _match(), test_semantic_partial_excluded_from_headline_score()…
     test_semantic_matcher.py                     Tests for SemanticMatcher.
@@ -187,14 +189,16 @@ Spanning all stages: `app/cli.py`, `app/services/tailor.py`, `app/ui.py`
 
 ### `app/analysis/resume_normalizer.py`
 
-**Layer:** Analysis · **Stage:** 2 Normalize · **Lines:** 452
+**Layer:** Analysis · **Stage:** 2 Normalize · **Lines:** 492
 
 - class **`ResumeNormalizer`** ([app/analysis/resume_normalizer.py:8](../app/analysis/resume_normalizer.py#L8))
-  - `_extract_date_range()` :53
-  - `_strip_date_range()` :57
-  - `_parse_title_and_dates()` :61 — 'Data Scientist II | August 2024 - Present' ->
-  - `_split_respecting_parens()` :70 — Split on sep_chars, but never inside ( ) or [ ] groups — so
-  - `normalize()` :93
+  - `_split_skill_line()` :60 — 'Languages: Python, SQL<tab>Frameworks: Pandas, and XGBoost' ->
+  - `_skill_items()` :81
+  - `_extract_date_range()` :88
+  - `_strip_date_range()` :92
+  - `_parse_title_and_dates()` :96 — 'Data Scientist II | August 2024 - Present' ->
+  - `_split_respecting_parens()` :105 — Split on sep_chars, but never inside ( ) or [ ] groups — so
+  - `normalize()` :128
 - **Imports:** `domain/evidence.py`, `domain/resume.py`, `domain/resume_document.py`, `ingestion/docx.py`
 - **Imported by:** `services/tailor.py`
 - **Tested by:** `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_tailor_resume_flow.py`
@@ -343,12 +347,12 @@ _Semantic (embedding-based) matching layer._
 
 ### `app/ingestion/docx.py`
 
-**Layer:** Ingestion · **Stage:** 1 Ingest · **Lines:** 128
+**Layer:** Ingestion · **Stage:** 1 Ingest · **Lines:** 135
 
 - class **`RawBlock`** ([app/ingestion/docx.py:9](../app/ingestion/docx.py#L9))
-- class **`RawDocument`** ([app/ingestion/docx.py:16](../app/ingestion/docx.py#L16))
-- class **`DocxParser`** ([app/ingestion/docx.py:22](../app/ingestion/docx.py#L22))
-  - `parse()` :28
+- class **`RawDocument`** ([app/ingestion/docx.py:21](../app/ingestion/docx.py#L21))
+- class **`DocxParser`** ([app/ingestion/docx.py:29](../app/ingestion/docx.py#L29))
+  - `parse()` :35
 - **Imports:** `rendering/document_map.py`
 - **Imported by:** `analysis/resume_normalizer.py`, `ingestion/pdf.py`, `services/tailor.py`
 - **Tested by:** `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_docx_parser.py`, `tests/unit/test_docx_renderer.py`, `tests/unit/test_pdf_parser.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_tailor_resume_flow.py`
@@ -365,16 +369,26 @@ _Semantic (embedding-based) matching layer._
 
 ### `app/ingestion/pdf.py`
 
-**Layer:** Ingestion · **Stage:** 1 Ingest · **Lines:** 167
+**Layer:** Ingestion · **Stage:** 1 Ingest · **Lines:** 339
 
-- class **`PdfParser`** ([app/ingestion/pdf.py:18](../app/ingestion/pdf.py#L18))
-  - `__init__()` :21
-  - `_ensure_fitz()` :24
-  - `_merge_wrapped_lines()` :32 — Join PDF-extracted lines that are word-wrap continuations of one
-  - `parse()` :63
+- class **`_Line`** ([app/ingestion/pdf.py:41](../app/ingestion/pdf.py#L41)) — One visual text line with the layout facts the parser needs.
+- class **`PdfParser`** ([app/ingestion/pdf.py:64](../app/ingestion/pdf.py#L64))
+  - `__init__()` :69
+  - `_ensure_fitz()` :72
+  - `_merge_wrapped_lines()` :80 — Text-only fallback for joining word-wrapped lines: a line is joined
+  - `_page_lines()` :101
+  - `_attach_right_columns()` :119 — A short, right-aligned run printed on the same row as a left-hand
+  - `_split_bullet()` :147 — Return the bullet text without its glyph, or None if not a bullet.
+  - `_continues()` :154 — Is `line` a word-wrap continuation of the item ending with `prev`?
+  - `_assemble()` :177 — Join continuation lines onto their bullet/paragraph. Each returned
+  - `_body_size()` :201
+  - `_is_heading()` :208
+  - `parse()` :224
+- function **`_clean()`** ([app/ingestion/pdf.py:54](../app/ingestion/pdf.py#L54))
+- function **`_is_bold_span()`** ([app/ingestion/pdf.py:60](../app/ingestion/pdf.py#L60))
 - **Imports:** `ingestion/docx.py`, `ingestion/ocr.py`, `rendering/document_map.py`
 - **Imported by:** `services/tailor.py`
-- **Tested by:** `tests/unit/test_pdf_parser.py`
+- **Tested by:** `tests/unit/test_pdf_parser.py`, `tests/unit/test_resume_normalizer.py`
 
 ### `app/llm/client.py`
 

@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "06a43a2929586a9d",
+  "source_hash": "4e24ad37de85754a",
   "stats": {
-    "files": 85,
-    "python_files": 65,
+    "files": 87,
+    "python_files": 66,
     "app_modules": 35,
     "test_files": 24,
-    "classes": 59,
-    "functions": 274,
-    "lines_of_python": 8168
+    "classes": 60,
+    "functions": 302,
+    "lines_of_python": 8615
   },
   "axes": {
     "x": "location (path)",
@@ -347,7 +347,7 @@
       "stages": [
         "2 Normalize"
       ],
-      "lines": 452,
+      "lines": 492,
       "doc": "",
       "classes": [
         {
@@ -356,28 +356,38 @@
           "doc": "",
           "methods": [
             {
+              "name": "_split_skill_line",
+              "line": 60,
+              "doc": "'Languages: Python, SQL<tab>Frameworks: Pandas, and XGBoost' ->"
+            },
+            {
+              "name": "_skill_items",
+              "line": 81,
+              "doc": ""
+            },
+            {
               "name": "_extract_date_range",
-              "line": 53,
+              "line": 88,
               "doc": ""
             },
             {
               "name": "_strip_date_range",
-              "line": 57,
+              "line": 92,
               "doc": ""
             },
             {
               "name": "_parse_title_and_dates",
-              "line": 61,
+              "line": 96,
               "doc": "'Data Scientist II | August 2024 - Present' ->"
             },
             {
               "name": "_split_respecting_parens",
-              "line": 70,
+              "line": 105,
               "doc": "Split on sep_chars, but never inside ( ) or [ ] groups \u2014 so"
             },
             {
               "name": "normalize",
-              "line": 93,
+              "line": 128,
               "doc": ""
             }
           ]
@@ -826,7 +836,7 @@
       "stages": [
         "1 Ingest"
       ],
-      "lines": 128,
+      "lines": 135,
       "doc": "",
       "classes": [
         {
@@ -837,18 +847,18 @@
         },
         {
           "name": "RawDocument",
-          "line": 16,
+          "line": 21,
           "doc": "",
           "methods": []
         },
         {
           "name": "DocxParser",
-          "line": 22,
+          "line": 29,
           "doc": "",
           "methods": [
             {
               "name": "parse",
-              "line": 28,
+              "line": 35,
               "doc": ""
             }
           ]
@@ -898,38 +908,90 @@
       "stages": [
         "1 Ingest"
       ],
-      "lines": 167,
+      "lines": 339,
       "doc": "",
       "classes": [
         {
+          "name": "_Line",
+          "line": 41,
+          "doc": "One visual text line with the layout facts the parser needs.",
+          "methods": []
+        },
+        {
           "name": "PdfParser",
-          "line": 18,
+          "line": 64,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
-              "line": 21,
+              "line": 69,
               "doc": ""
             },
             {
               "name": "_ensure_fitz",
-              "line": 24,
+              "line": 72,
               "doc": ""
             },
             {
               "name": "_merge_wrapped_lines",
-              "line": 32,
-              "doc": "Join PDF-extracted lines that are word-wrap continuations of one"
+              "line": 80,
+              "doc": "Text-only fallback for joining word-wrapped lines: a line is joined"
+            },
+            {
+              "name": "_page_lines",
+              "line": 101,
+              "doc": ""
+            },
+            {
+              "name": "_attach_right_columns",
+              "line": 119,
+              "doc": "A short, right-aligned run printed on the same row as a left-hand"
+            },
+            {
+              "name": "_split_bullet",
+              "line": 147,
+              "doc": "Return the bullet text without its glyph, or None if not a bullet."
+            },
+            {
+              "name": "_continues",
+              "line": 154,
+              "doc": "Is `line` a word-wrap continuation of the item ending with `prev`?"
+            },
+            {
+              "name": "_assemble",
+              "line": 177,
+              "doc": "Join continuation lines onto their bullet/paragraph. Each returned"
+            },
+            {
+              "name": "_body_size",
+              "line": 201,
+              "doc": ""
+            },
+            {
+              "name": "_is_heading",
+              "line": 208,
+              "doc": ""
             },
             {
               "name": "parse",
-              "line": 63,
+              "line": 224,
               "doc": ""
             }
           ]
         }
       ],
-      "functions": []
+      "functions": [
+        {
+          "name": "_clean",
+          "line": 54,
+          "doc": ""
+        },
+        {
+          "name": "_is_bold_span",
+          "line": 60,
+          "doc": ""
+        }
+      ]
     },
     {
       "id": "app/llm/client.py",
@@ -1888,6 +1950,44 @@
       "lines": 15
     },
     {
+      "id": "tests/fixtures/resumes/make_replica_layout_pdf.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 120,
+      "doc": "Generate replica_layout.pdf: an anonymized resume with the same PDF layout",
+      "classes": [],
+      "functions": [
+        {
+          "name": "line",
+          "line": 29,
+          "doc": "parts: list of (text, font). One text line made of several spans."
+        },
+        {
+          "name": "bullet",
+          "line": 36,
+          "doc": "A '\u25cf' bullet; `first` / each item of `rest` is a list of (text, font)."
+        },
+        {
+          "name": "right",
+          "line": 45,
+          "doc": "A separate text run right-aligned on the same row as a left one."
+        },
+        {
+          "name": "build",
+          "line": 51,
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "tests/fixtures/resumes/replica_layout.pdf",
+      "type": "file",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 363
+    },
+    {
       "id": "tests/fixtures/resumes/sample.docx",
       "type": "file",
       "layer": "Tests",
@@ -2363,7 +2463,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 78,
+      "lines": 134,
       "doc": "",
       "classes": [],
       "functions": [
@@ -2401,6 +2501,41 @@
           "name": "test_pdf_parser_end_to_end_no_truncated_bullets",
           "line": 70,
           "doc": "Regression guard: sample.pdf's known multi-line bullet must come"
+        },
+        {
+          "name": "_replica_blocks",
+          "line": 86,
+          "doc": ""
+        },
+        {
+          "name": "test_replica_name_is_largest_font_line",
+          "line": 90,
+          "doc": ""
+        },
+        {
+          "name": "test_replica_no_glyphs_or_invisible_chars_leak",
+          "line": 98,
+          "doc": ""
+        },
+        {
+          "name": "test_replica_bullets_joined_by_indent_including_bold_continuations",
+          "line": 104,
+          "doc": ""
+        },
+        {
+          "name": "test_replica_headings_detected_even_with_leading_spaces",
+          "line": 114,
+          "doc": ""
+        },
+        {
+          "name": "test_replica_right_columns_become_tabs",
+          "line": 121,
+          "doc": ""
+        },
+        {
+          "name": "test_replica_summary_wrapped_lines_joined_but_labelled_lines_kept_apart",
+          "line": 130,
+          "doc": ""
         }
       ]
     },
@@ -2430,13 +2565,43 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 33,
+      "lines": 85,
       "doc": "",
       "classes": [],
       "functions": [
         {
           "name": "test_resume_normalizer",
           "line": 7,
+          "doc": ""
+        },
+        {
+          "name": "_normalize_replica",
+          "line": 36,
+          "doc": ""
+        },
+        {
+          "name": "test_replica_header_summary_and_contact",
+          "line": 43,
+          "doc": ""
+        },
+        {
+          "name": "test_replica_multi_category_skill_line_split",
+          "line": 53,
+          "doc": ""
+        },
+        {
+          "name": "test_replica_education_right_columns",
+          "line": 62,
+          "doc": ""
+        },
+        {
+          "name": "test_replica_labelled_certifications_not_filed_as_interests",
+          "line": 71,
+          "doc": ""
+        },
+        {
+          "name": "test_split_skill_line_single_space_before_label",
+          "line": 80,
           "doc": ""
         }
       ]
@@ -3484,12 +3649,22 @@
     },
     {
       "from": "app/ingestion/pdf.py",
+      "to": "app/ingestion/pdf.py::_Line",
+      "type": "contains"
+    },
+    {
+      "from": "app/ingestion/pdf.py",
       "to": "app/rendering/document_map.py",
       "type": "imports"
     },
     {
       "from": "app/ingestion/pdf.py",
       "to": "tests/unit/test_pdf_parser.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/ingestion/pdf.py",
+      "to": "tests/unit/test_resume_normalizer.py",
       "type": "tested_by"
     },
     {

@@ -13,11 +13,11 @@ JD-aligned rewrites, a Novoresume-style ATS layout that fits the right length, a
 | Phase | Items | ✅ | 🟡 | ⬜ |
 |---|---|---|---|---|
 | 0: Make the LLM path work | 10 | 10 | 0 | 0 |
-| 1: Content quality | 14 | 1 | 0 | 13 |
+| 1: Content quality | 14 | 2 | 0 | 12 |
 | 2: Template, ATS, page-fit | 6 | 0 | 0 | 6 |
 | 3: Gap questions + UX | 6 | 0 | 0 | 6 |
 | 4: Evaluation harness | 3 | 0 | 0 | 3 |
-| **Total** | **39** | **11** | **0** | **28** |
+| **Total** | **39** | **12** | **0** | **27** |
 
 ## Decisions (fixed by the user, 2026-09-30)
 
@@ -86,7 +86,7 @@ anonymized replica of the layout.
 | P1.7 | Rewrite project bullets through the same flow | `tailor_planner.py`, `rewriter.py`, `tailor.py` | F18 | ⬜ | |
 | P1.8 | Validator v2: PASS / NEEDS_CONFIRM / REJECT; action-verb allowlist + alias-aware; reject new numbers and unevidenced tools or orgs; keep the user's own edits (logged as user-attested) | `factual.py`, `tailor.py:321-334`, `ui.py` | F15, F16, F17 | ✅ | Ordinary words pass; factual-looking terms (tools, acronyms, proper nouns, JD skills, scope claims like "led a team") must be in this bullet's source (PASS) or elsewhere in the resume (NEEDS_CONFIRM) or it's REJECT. Alias- and inflection-aware. Verdicts shown per proposal before Apply; user-edited text kept as user-attested. Live Groq fixture: 0/2 → 2/2 rewrites survive. Strict Mode stays opt-in |
 | P1.9 | Parsing fixes: LinkedIn/GitHub links (incl. DOCX hyperlinks), `headline` field, no placeholder rendering, handle "Previously:", DOCX walked in document order | `resume_normalizer.py`, `domain/resume.py`, `ingestion/docx.py`, `ingestion/pdf.py` | F21–F25 | ⬜ | |
-| P1.11 | **Layout-aware PDF parsing:** name = largest font on page 1; join bullet continuation lines by indent (not "starts lowercase"); strip `●` glyphs + zero-width spaces; detect headings by uppercase/known section names even when not bold; read right-aligned columns on the same line as location/dates; split multi-category skill lines (`Languages: … Frameworks: …`); route labelled `Certifications:` / `Interests:` lines | `ingestion/pdf.py`, `resume_normalizer.py` | F36, F38–F43 | ⬜ | Root causes confirmed from the real PDF's font/position dump |
+| P1.11 | **Layout-aware PDF parsing:** name = largest font on page 1; join bullet continuation lines by indent (not "starts lowercase"); strip `●` glyphs + zero-width spaces; detect headings by uppercase/known section names even when not bold; read right-aligned columns on the same line as location/dates; split multi-category skill lines (`Languages: … Frameworks: …`); route labelled `Certifications:` / `Interests:` lines | `ingestion/pdf.py`, `resume_normalizer.py` | F36, F38–F43 | ✅ | Parser reads `get_text("dict")`: name = largest font (≥1.3× body), bullets joined by indent (bold continuations too), paragraphs joined when a line reaches the right margin, lowercase rule kept as fallback; never joins across a font-size jump or onto a `Label:` line. Right-aligned runs on the same row and 3+ space gaps become a tab (right column). `●`, ZWSP, NBSP, soft hyphen cleaned. `RawBlock` gains `bold` / `font_size`, `RawDocument` gains `links`. Anonymized fixture `tests/fixtures/resumes/replica_layout.pdf` (+ generator script). Real resume: name, contact, summary, 13 complete bullets, skills, education, certs/interests all read right; roles and project sub-sections need P1.12 |
 | P1.12 | **Resume model v2:** a company can hold several roles (title + dates each, e.g. Data Scientist II / I); a role can hold project sub-sections with their own bullets; certifications become their own field. Normalizer, evidence ledger and both renderers updated | `domain/resume.py`, `resume_normalizer.py`, `rendering/*` | F37, F42 | ⬜ | Needed for the user's own resume layout |
 | P1.13 | **LLM-assisted structure extraction with a verbatim guard:** when the deterministic parse looks wrong (no name, placeholder company/title, orphan headings), ask Groq to map numbered lines to resume fields **by index** (same pattern as JD line selection), so every value is still copied verbatim from the file | new `analysis/structure_extractor.py`, `resume_normalizer.py` | F36, F37 | ⬜ | Makes parsing robust to layouts we haven't seen |
 | P1.14 | **Rewrites must not lose information:** a prompt rule plus a validator check that flags a rewrite dropping key facts (tools, metrics, scope terms from the original) | `prompts/`, `validation/factual.py` | F48 | ⬜ | e.g. the Tableau bullet lost which KPIs it tracked |

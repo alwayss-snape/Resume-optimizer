@@ -1,6 +1,6 @@
 import os
 import re
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 import docx
 from pydantic import BaseModel, Field
 
@@ -12,12 +12,19 @@ class RawBlock(BaseModel):
     text: str
     section: str = "general"
     location: DocumentLocation
+    # Layout hints (set when the parser knows them): the whole line is bold,
+    # and its font size in points. The normalizer uses them to tell a
+    # project sub-heading from a bullet or a company line.
+    bold: bool = False
+    font_size: Optional[float] = None
 
 class RawDocument(BaseModel):
     filename: str
     blocks: List[RawBlock] = Field(default_factory=list)
     document_map: DocumentMap = Field(default_factory=DocumentMap)
     raw_text: str = ""
+    # Hyperlink targets found in the file (LinkedIn, GitHub, portfolio...).
+    links: List[str] = Field(default_factory=list)
 
 class DocxParser:
     # "●" (U+25CF) and friends are common Word bullet glyphs that are NOT the
