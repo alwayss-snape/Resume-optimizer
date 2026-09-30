@@ -73,11 +73,17 @@ class TailoringPlanner:
         requirements = job_description.requirements
         keyword_rows = [r for r in self.keyword_matcher.match(job_description, resume).rows if r.kind != "title"]
 
-        entries = []  # (exp, bullet, evidence ids, context text)
+        entries = []  # (section, bullet, evidence ids, context text)
         for exp in resume.experience:
             for bullet in exp.bullets:
                 ev_ids = [ev.id for ev in evidence_list if ev.source_id == bullet.id]
-                entries.append((exp, bullet, ev_ids, f"{bullet.group or ''} {bullet.text}"))
+                entries.append(("experience", bullet, ev_ids, f"{bullet.group or ''} {bullet.text}"))
+        # Project bullets go through the same flow (P1.7); the project name
+        # is their context, like a sub-heading inside a job.
+        for proj in resume.projects:
+            for bullet in proj.bullets:
+                ev_ids = [ev.id for ev in evidence_list if ev.source_id == bullet.id]
+                entries.append(("projects", bullet, ev_ids, f"{proj.name} {bullet.text}"))
 
         sims = self._similarities([e[1].text for e in entries], [r.text for r in requirements])
 
@@ -98,7 +104,7 @@ class TailoringPlanner:
         max_weight = max(keyword_weight, default=0.0) or 1.0
 
         actions: List[TailoringAction] = []
-        for idx, (exp, bullet, ev_ids, _) in enumerate(entries):
+        for idx, (section_name, bullet, ev_ids, _) in enumerate(entries):
             matched = [m for m in matches if set(m.evidence_ids) & set(ev_ids) and m.status != "MISSING"]
             deterministic = [m for m in matched if m.status != "SEMANTIC_PARTIAL"]
             ranked_reqs = sorted(range(len(requirements)), key=lambda j: -sims[idx][j])
@@ -134,7 +140,7 @@ class TailoringPlanner:
             actions.append(TailoringAction(
                 action="REWRITE" if rewrite else "KEEP",
                 source_id=bullet.id,
-                target_section="experience",
+                target_section=section_name,
                 evidence_ids=ev_ids,
                 rationale=rationale if rewrite else "Not relevant to this JD; kept as written.",
                 relevance=relevance,
@@ -152,6 +158,8 @@ class TailoringPlanner:
             for _, group_bullets in exp.bullet_groups():
                 ordered += [b.id for b in sorted(group_bullets, key=lambda b: -relevance_by_id.get(b.id, 0.0))]
             bullet_order[exp.id] = ordered
+        for proj in resume.projects:
+            bullet_order[proj.id] = [b.id for b in sorted(proj.bullets, key=lambda b: -relevance_by_id.get(b.id, 0.0))]
 
         return TailoringPlan(actions=actions, unsupported_requirements=unsupported, bullet_order=bullet_order)
 

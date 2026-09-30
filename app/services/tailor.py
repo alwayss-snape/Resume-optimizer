@@ -156,7 +156,7 @@ class TailorService:
         """Reorder bullets as planned (most relevant first within each
         sub-heading). Returns how many experience entries changed order."""
         changed = 0
-        for exp in resume.experience:
+        for exp in [*resume.experience, *resume.projects]:
             order = bullet_order.get(exp.id)
             if not order:
                 continue
@@ -565,8 +565,8 @@ class TailorService:
         # Apply approved rewrites to the canonical resume model (semantic ids).
         prop_dict = {_prop_key(p): _prop_text(p) for p in approved_proposals
                      if getattr(p, "kind", "bullet") == "bullet"}
-        for exp in resume.experience:
-            for b in exp.bullets:
+        for section in [*resume.experience, *resume.projects]:  # project bullets too (P1.7)
+            for b in section.bullets:
                 if b.id in prop_dict:
                     b.text = prop_dict[b.id]
 
@@ -588,9 +588,10 @@ class TailorService:
         # withheld). If any rewrite was rejected or the structure changed,
         # roll back every rewrite.
         if strict_factual and approved_proposals and (rejected_count or struct_warnings):
-            original_text = {b.id: b.text for e in original_resume.experience for b in e.bullets}
-            for exp in resume.experience:
-                for b in exp.bullets:
+            original_text = {b.id: b.text for e in [*original_resume.experience, *original_resume.projects]
+                             for b in e.bullets}
+            for section in [*resume.experience, *resume.projects]:
+                for b in section.bullets:
                     if b.id in original_text:
                         b.text = original_text[b.id]
             resume.summary = original_resume.summary

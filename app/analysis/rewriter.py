@@ -184,8 +184,9 @@ class LLMRewriter:
 
     def rewrite_role(
         self,
-        exp: Experience,
+        exp: Optional[Experience],
         items: List[Dict],
+        header: Optional[List[str]] = None,
     ) -> Tuple[Dict[str, Dict], Optional[str], str]:
         """Rewrite several bullets of one role in ONE call (P1.4).
 
@@ -201,8 +202,10 @@ class LLMRewriter:
         with open(prompt_path, "r", encoding="utf-8") as f:
             system_prompt = f.read()
 
-        titles = ", ".join(r.title for r in exp.all_roles() if r.title) or "(not given)"
-        lines = [f"Company: {exp.company or '(not given)'}", f"Titles: {titles}", "", "Bullets:"]
+        if exp is not None:
+            titles = ", ".join(r.title for r in exp.all_roles() if r.title) or "(not given)"
+            header = [f"Company: {exp.company or '(not given)'}", f"Titles: {titles}"]
+        lines = list(header or []) + ["", "Bullets:"]
         for item in items:
             lines.append(f"- bullet_id: {item['bullet_id']}")
             lines.append(f"  text: {item['text']}")
@@ -252,30 +255,25 @@ class LLMRewriter:
         req_by_id = {r.id: r.text for r in job_description.requirements}
         actions = {a.source_id: a for a in plan.actions if a.action == "REWRITE"}
 
-        for exp in resume.experience:
-            todo = [b for b in exp.bullets if b.id in actions]
-            if not todo:
-                continue
-            items = []
-            for b in todo:
-                action = actions[b.id]
-                items.append({
-                    "bullet_id": b.id, "text": b.text, "group": b.group,
-                    # Only this bullet's closest requirements and the JD
-                    # keywords it already contains (P1.3).
-                    "requirements": [req_by_id[i] for i in action.requirement_ids if i in req_by_id],
-                    "keywords": list(action.keywords),
-                    "evidence_ids": list(action.evidence_ids),
-                })
-            results, error, missing_status = self.rewrite_role(exp, items)
+        def item_for(b, group):
+            action = actions[b.id]
+            return {
+                "bullet_id": b.id, "text": b.text, "group": group,
+                # Only this bullet's closest requirements and the JD
+                # keywords it already contains (P1.3).
+                "requirements": [req_by_id[i] for i in action.requirement_ids if i in req_by_id],
+                "keywords": list(action.keywords),
+                "evidence_ids": list(action.evidence_ids),
+            }
+
+        def collect(todo, results, error, missing_status):
             for b in todo:
                 action = actions[b.id]
                 res = results.get(b.id)
+                item_error = None
                 if res is None:
                     res = {"text": b.text, "keywords_used": [], "status": missing_status}
                     item_error = error or "the model returned no rewrite for this bullet"
-                else:
-                    item_error = None
                 rationale = action.rationale
                 if res["keywords_used"]:
                     rationale += f" — worked in: {', '.join(res['keywords_used'])}"
@@ -292,4 +290,17 @@ class LLMRewriter:
                     relevance=action.relevance,
                     target_keywords=list(action.keywords),
                 ))
+
+        for exp in resume.experience:
+            todo = [b for b in exp.bullets if b.id in actions]
+            if todo:
+                collect(todo, *self.rewrite_role(exp, [item_for(b, b.group) for b in todo]))
+
+        # All project bullets in one more call (P1.7), each with its
+        # project name as the sub-heading.
+        project_todo = [(b, p.name) for p in resume.projects for b in p.bullets if b.id in actions]
+        if project_todo:
+            header = ["Section: Projects (each bullet's sub-heading is its project name)"]
+            results = self.rewrite_role(None, [item_for(b, name) for b, name in project_todo], header=header)
+            collect([b for b, _ in project_todo], *results)
         return proposals

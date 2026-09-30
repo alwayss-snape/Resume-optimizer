@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "8f454ae208a64137",
+  "source_hash": "1181ec7869523b1e",
   "stats": {
-    "files": 110,
-    "python_files": 85,
+    "files": 111,
+    "python_files": 86,
     "app_modules": 44,
-    "test_files": 34,
+    "test_files": 35,
     "classes": 78,
-    "functions": 503,
-    "lines_of_python": 11983
+    "functions": 507,
+    "lines_of_python": 12076
   },
   "axes": {
     "x": "location (path)",
@@ -573,7 +573,7 @@
       "stages": [
         "7 Rewrite"
       ],
-      "lines": 295,
+      "lines": 306,
       "doc": "",
       "classes": [
         {
@@ -608,7 +608,7 @@
             },
             {
               "name": "execute_plan",
-              "line": 240,
+              "line": 243,
               "doc": "One LLM call per role (P1.4): all of a job's bullets that the"
             }
           ]
@@ -859,7 +859,7 @@
       "stages": [
         "6 Plan"
       ],
-      "lines": 175,
+      "lines": 183,
       "doc": "",
       "classes": [
         {
@@ -884,7 +884,7 @@
             },
             {
               "name": "rank_missing_requirements",
-              "line": 158,
+              "line": 166,
               "doc": "Order MISSING matches so the most important, still-unaddressed"
             }
           ]
@@ -2063,7 +2063,7 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 812,
+      "lines": 813,
       "doc": "",
       "classes": [
         {
@@ -2152,7 +2152,7 @@
       "functions": [
         {
           "name": "_merge_usage",
-          "line": 803,
+          "line": 804,
           "doc": "Combine two LLMClient.get_usage_summary() dicts into one."
         }
       ]
@@ -3549,6 +3549,37 @@
       ]
     },
     {
+      "id": "tests/unit/test_project_rewrites.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 73,
+      "doc": "Project bullets go through the same plan -> rewrite -> validate flow (P1.7).",
+      "classes": [],
+      "functions": [
+        {
+          "name": "_setup",
+          "line": 13,
+          "doc": ""
+        },
+        {
+          "name": "test_planner_scores_project_bullets",
+          "line": 34,
+          "doc": ""
+        },
+        {
+          "name": "test_projects_get_one_extra_call_with_project_names",
+          "line": 42,
+          "doc": ""
+        },
+        {
+          "name": "test_tailor_applies_project_rewrite",
+          "line": 59,
+          "doc": ""
+        }
+      ]
+    },
+    {
       "id": "tests/unit/test_resume_document.py",
       "type": "python",
       "layer": "Tests",
@@ -4670,6 +4701,11 @@
     },
     {
       "from": "app/analysis/rewriter.py",
+      "to": "tests/unit/test_project_rewrites.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/analysis/rewriter.py",
       "to": "tests/unit/test_rewriter.py",
       "type": "tested_by"
     },
@@ -4935,6 +4971,11 @@
     },
     {
       "from": "app/analysis/tailor_planner.py",
+      "to": "tests/unit/test_project_rewrites.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/analysis/tailor_planner.py",
       "to": "tests/unit/test_rewriter.py",
       "type": "tested_by"
     },
@@ -4976,6 +5017,11 @@
     {
       "from": "app/domain/evidence.py",
       "to": "tests/unit/test_matcher.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/evidence.py",
+      "to": "tests/unit/test_project_rewrites.py",
       "type": "tested_by"
     },
     {
@@ -5036,6 +5082,11 @@
     {
       "from": "app/domain/job.py",
       "to": "tests/unit/test_matcher.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/job.py",
+      "to": "tests/unit/test_project_rewrites.py",
       "type": "tested_by"
     },
     {
@@ -5180,6 +5231,11 @@
     },
     {
       "from": "app/domain/resume.py",
+      "to": "tests/unit/test_project_rewrites.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/resume.py",
       "to": "tests/unit/test_resume_document.py",
       "type": "tested_by"
     },
@@ -5261,6 +5317,11 @@
     {
       "from": "app/domain/resume_document.py",
       "to": "tests/unit/test_parsing_fixes_p19.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/resume_document.py",
+      "to": "tests/unit/test_project_rewrites.py",
       "type": "tested_by"
     },
     {
@@ -5600,6 +5661,11 @@
     },
     {
       "from": "app/llm/schemas.py",
+      "to": "tests/unit/test_project_rewrites.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/llm/schemas.py",
       "to": "tests/unit/test_rewriter.py",
       "type": "tested_by"
     },
@@ -5757,6 +5823,11 @@
       "from": "app/services/run_manager.py",
       "to": "app/services/run_manager.py::RunManager",
       "type": "contains"
+    },
+    {
+      "from": "app/services/run_manager.py",
+      "to": "tests/unit/test_project_rewrites.py",
+      "type": "tested_by"
     },
     {
       "from": "app/services/run_manager.py",
@@ -5936,6 +6007,11 @@
     {
       "from": "app/services/tailor.py",
       "to": "tests/unit/test_cli.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/services/tailor.py",
+      "to": "tests/unit/test_project_rewrites.py",
       "type": "tested_by"
     },
     {
