@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**41 app modules · 32 test files · 75 classes · 460 functions/methods · 11,325 lines of Python** · source hash `70bf4b270caa2542`
+**41 app modules · 32 test files · 75 classes · 460 functions/methods · 11,334 lines of Python** · source hash `d13ee80c68fa0968`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -698,19 +698,19 @@ _Run evaluation cases through the pipeline and collect metrics (P4.1)._
 
 ### `app/validation/factual.py`
 
-**Layer:** Validation · **Stage:** 8 Validate · **Lines:** 251
+**Layer:** Validation · **Stage:** 8 Validate · **Lines:** 260
 
 - class **`ClaimCheck`** ([app/validation/factual.py:13](../app/validation/factual.py#L13))
 - class **`ValidationResult`** ([app/validation/factual.py:20](../app/validation/factual.py#L20))
 - class **`FactualValidator`** ([app/validation/factual.py:32](../app/validation/factual.py#L32)) — Checks that a rewrite adds no facts beyond the resume's evidence.
-  - `dropped_facts()` :80 — (dropped factual terms, dropped content words, retention share):
-  - `__init__()` :100
-  - `extract_numbers()` :112
-  - `_stem()` :117 — Crude stemmer so inflections compare equal:
-  - `_keys()` :131 — All forms a term can match by: stem plus canonical alias.
-  - `_term_keys()` :139
-  - `_is_factual()` :152
-  - `validate_proposal()` :168
+  - `dropped_facts()` :80 — (dropped factual terms, dropped content words, retention share,
+  - `__init__()` :108
+  - `extract_numbers()` :120
+  - `_stem()` :125 — Crude stemmer so inflections compare equal:
+  - `_keys()` :139 — All forms a term can match by: stem plus canonical alias.
+  - `_term_keys()` :147
+  - `_is_factual()` :160
+  - `validate_proposal()` :176
 - **Imports:** `analysis/rewriter.py`, `analysis/terminology.py`, `domain/evidence.py`
 - **Imported by:** `services/tailor.py`, `services/validation_agent.py`
 - **Tested by:** `tests/unit/test_validation.py`

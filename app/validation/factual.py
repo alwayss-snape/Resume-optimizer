@@ -59,6 +59,52 @@ class FactualValidator:
         "director", "architect", "principal", "senior", "staff",
     }
 
+    # Words that don't carry a bullet's facts, so dropping them loses nothing:
+    # connectors, generic verbs and adjectives a rewrite normally changes.
+    FILLER_WORDS = {
+        "and", "the", "with", "for", "from", "into", "that", "this", "these", "those", "their", "them", "then",
+        "than", "through", "across", "using", "used", "use", "via", "over", "under", "about", "while", "which",
+        "where", "when", "also", "more", "most", "such", "including", "include", "includes", "other", "each",
+        "both", "very", "well", "key", "various", "multiple", "several", "enabling", "enable", "ensuring",
+        "ensure", "helping", "help", "built", "build", "developed", "develop", "designed", "design",
+        "implemented", "implement", "created", "create", "delivered", "deliver", "worked", "work", "working",
+        "improved", "improve", "increased", "increase", "reduced", "reduce", "reducing", "cutting", "boost",
+        "boosting", "drive", "driving", "driven", "support", "supported", "supporting", "streamlined",
+        "robust", "seamless", "dynamic", "effective", "efficient", "strong", "clear", "actionable",
+        "end-to-end", "fully", "highly", "based", "leveraged", "leveraging", "utilized", "utilizing",
+    }
+    # A rewrite keeping less than this share of the original's content words
+    # probably dropped information (P1.14).
+    MIN_CONTENT_RETENTION = 0.5
+
+    def dropped_facts(self, original: str, rewritten: str, vocab: Optional[Set[str]] = None):
+        """(dropped factual terms, dropped content words, retention share,
+        dropped list items): what of the original a rewrite no longer says."""
+        vocab = vocab if vocab is not None else set(self._canon.values()) | set(self._canon)
+        new_keys = self._term_keys([rewritten])
+        dropped_terms: List[str] = []
+        for i, token in enumerate(self.TOKEN_RE.findall(original)):
+            if not self._is_factual(token, is_first=(i == 0), vocab=vocab) or token.lower() in self.SCOPE_CLAIMS:
+                continue
+            if not all(self._keys(p) & new_keys for p in token.split("/") if p) and token not in dropped_terms:
+                dropped_terms.append(token)
+        content = []
+        for token in self.TOKEN_RE.findall(original):
+            low = token.lower()
+            if len(low) > 3 and low not in self.FILLER_WORDS and low not in {c.lower() for c in content}:
+                content.append(token)
+        lost = [t for t in content if not all(self._keys(p) & new_keys for p in t.split("/") if p)]
+        retention = 1.0 - len(lost) / len(content) if content else 1.0
+        # Short list items ("pipeline stages, win rates, and renewal
+        # conversion") that vanish entirely: the details a rewrite most
+        # often drops while keeping the overall word share high.
+        lost_items: List[str] = []
+        for chunk in re.split(r"[,;()]|\band\b|\bincluding\b|\bsuch as\b", original):
+            words = [w for w in self.TOKEN_RE.findall(chunk) if len(w) > 3 and w.lower() not in self.FILLER_WORDS]
+            if 1 <= len(self.TOKEN_RE.findall(chunk)) <= 4 and words and not any(self._keys(w) & new_keys for w in words):
+                lost_items.append(chunk.strip())
+        return dropped_terms, lost, retention, lost_items
+
     def __init__(self) -> None:
         # alias -> canonical and canonical -> canonical, lower-cased (k8s -> kubernetes).
         self._canon = {}
@@ -113,6 +159,8 @@ class FactualValidator:
 
     def _is_factual(self, token: str, is_first: bool, vocab: Set[str]) -> bool:
         low = token.lower()
+        if len(token) == 1 and token.islower():
+            return False  # "a" (the vocab holds "a" from "A/B"); "R" and "C" stay facts
         if low in self.SCOPE_CLAIMS:
             return True
         if re.search(r"[0-9+#./]", token):
@@ -175,6 +223,17 @@ class FactualValidator:
                 elif token not in unsupported:
                     unsupported.append(token)
 
+            # P1.14: a rewrite must not lose information either.
+            dropped_terms, lost_words, retention, lost_items = self.dropped_facts(
+                getattr(proposal, "original_text", ""), rewritten_text, vocab)
+            drops_info = bool(dropped_terms) or retention < self.MIN_CONTENT_RETENTION or len(lost_items) >= 2
+            if drops_info:
+                lost_note = dropped_terms or (lost_items if len(lost_items) >= 2 else lost_words[:6])
+                warnings.append(
+                    "Please check: the rewrite drops " + ", ".join(f"'{t}'" for t in lost_note)
+                    + " from the original bullet."
+                )
+
             if unsupported:
                 verdict = "REJECT"
                 warnings.append(
@@ -186,6 +245,8 @@ class FactualValidator:
                     "Please check: uses " + ", ".join(f"'{t}'" for t in confirm_terms)
                     + ", which appears elsewhere in your resume but not in this bullet's source."
                 )
+            if verdict == "PASS" and drops_info:
+                verdict = "NEEDS_CONFIRM"
 
         status: Literal["SUPPORTED", "UNSUPPORTED", "AMBIGUOUS"] = {
             "PASS": "SUPPORTED", "NEEDS_CONFIRM": "AMBIGUOUS", "REJECT": "UNSUPPORTED"}[verdict]

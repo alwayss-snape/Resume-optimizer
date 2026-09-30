@@ -91,3 +91,54 @@ def test_unevidenced_tool_or_scope_claim_is_rejected():
     assert _check("Cut latency by 35% via PostgreSQL, Redis and Terraform.").verdict == "REJECT"
     assert _check("Led a team to cut latency by 35% via PostgreSQL and Redis caching.").verdict == "REJECT"
     assert _check("reduced latency by 35% with postgresql, redis and terraform.").verdict == "REJECT"  # lowercase JD skill
+
+
+# -- P1.14: rewrites must not lose information ----------------------------
+
+DASHBOARD = ("Designed a Looker dashboard to track key sales KPIs, including pipeline stages, win rates, "
+             "and renewal conversion metrics, reducing weekly reporting effort by 12 hours")
+
+
+def _check_drop(original, rewritten):
+    from app.analysis.rewriter import RewriteProposal
+    from app.domain.evidence import Evidence
+    from app.validation.factual import FactualValidator
+    ev = Evidence(id="ev1", source_type="experience", source_id="b1", text=original)
+    prop = RewriteProposal(target_semantic_id="b1", target_source_location_id="b1", original_text=original,
+                           proposed_text=rewritten, evidence_ids=["ev1"])
+    return FactualValidator().validate_proposal(prop, [ev])
+
+
+def test_rewrite_that_drops_details_needs_confirmation():
+    result = _check_drop(DASHBOARD, "Built a Looker dashboard tracking sales KPIs, reducing weekly reporting effort by 12 hours")
+    assert result.verdict == "NEEDS_CONFIRM" and result.approved
+    assert any("drops" in w and "'win rates'" in w for w in result.warnings)
+
+
+def test_faithful_rewrite_passes():
+    result = _check_drop(DASHBOARD, "Designed a Looker dashboard tracking sales KPIs (pipeline stages, win rates, "
+                                "renewal conversion metrics), cutting weekly reporting effort by 12 hours")
+    assert result.verdict == "PASS", result.warnings
+
+
+def test_dropped_tool_is_flagged():
+    result = _check_drop("Built LightGBM fraud models in Python.", "Developed fraud detection models.")
+    assert result.verdict == "NEEDS_CONFIRM"
+    assert any("'LightGBM'" in w and "'Python'" in w for w in result.warnings)
+
+
+def test_changed_numbers_still_reject_even_if_nothing_dropped():
+    result = _check_drop("Cut latency by 35% in Python.", "Cut latency by 40% in Python.")
+    assert result.verdict == "REJECT"
+
+
+def test_article_a_is_not_a_fact_even_with_a_b_testing_in_the_jd():
+    from app.analysis.rewriter import RewriteProposal
+    from app.domain.evidence import Evidence
+    from app.validation.factual import FactualValidator
+    original = "Designed a Looker dashboard for sales KPIs"
+    ev = Evidence(id="ev1", source_type="experience", source_id="b1", text=original)
+    prop = RewriteProposal(target_semantic_id="b1", target_source_location_id="b1", original_text=original,
+                           proposed_text="Designed Looker dashboard for sales KPIs", evidence_ids=["ev1"])
+    result = FactualValidator().validate_proposal(prop, [ev], jd_keywords=["A/B testing", "R"])
+    assert result.verdict == "PASS", result.warnings

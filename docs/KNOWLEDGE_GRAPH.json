@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "source_hash": "70bf4b270caa2542",
+  "source_hash": "d13ee80c68fa0968",
   "stats": {
     "files": 104,
     "python_files": 80,
@@ -8,7 +8,7 @@
     "test_files": 32,
     "classes": 75,
     "functions": 460,
-    "lines_of_python": 11325
+    "lines_of_python": 11334
   },
   "axes": {
     "x": "location (path)",
@@ -2098,7 +2098,7 @@
       "stages": [
         "8 Validate"
       ],
-      "lines": 251,
+      "lines": 260,
       "doc": "",
       "classes": [
         {
@@ -2121,41 +2121,41 @@
             {
               "name": "dropped_facts",
               "line": 80,
-              "doc": "(dropped factual terms, dropped content words, retention share):"
+              "doc": "(dropped factual terms, dropped content words, retention share,"
             },
             {
               "name": "__init__",
-              "line": 100,
+              "line": 108,
               "doc": ""
             },
             {
               "name": "extract_numbers",
-              "line": 112,
+              "line": 120,
               "doc": ""
             },
             {
               "name": "_stem",
-              "line": 117,
+              "line": 125,
               "doc": "Crude stemmer so inflections compare equal:"
             },
             {
               "name": "_keys",
-              "line": 131,
+              "line": 139,
               "doc": "All forms a term can match by: stem plus canonical alias."
             },
             {
               "name": "_term_keys",
-              "line": 139,
+              "line": 147,
               "doc": ""
             },
             {
               "name": "_is_factual",
-              "line": 152,
+              "line": 160,
               "doc": ""
             },
             {
               "name": "validate_proposal",
-              "line": 168,
+              "line": 176,
               "doc": ""
             }
           ]
