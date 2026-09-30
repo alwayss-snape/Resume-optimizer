@@ -37,5 +37,9 @@ python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
 pythonpath = ["."]
+# The full offline eval of every generated case (P4.2) takes ~1 min with
+# LibreOffice; run it with `pytest -m eval`.
+markers = ["eval: full offline evaluation of the anonymized case set (slow)"]
+addopts = "-m 'not eval'"
 
 

@@ -1,0 +1,43 @@
+{
+  "name": "Jordan Ellis",
+  "email": "jordan.ellis@example.com",
+  "jobs": 2,
+  "companies": [
+    "Tailspin Clinics",
+    "Initech Health"
+  ],
+  "roles": [
+    [
+      "Data Engineer"
+    ],
+    [
+      "ETL Developer"
+    ]
+  ],
+  "bullets": 5,
+  "projects": 0,
+  "skills": [
+    "Airflow",
+    "Python",
+    "SQL",
+    "Snowflake",
+    "dbt"
+  ],
+  "education": 1,
+  "target_pages": 2,
+  "education_first": false,
+  "jd_company": "Tailspin Health",
+  "must_find": [
+    "Airflow",
+    "Snowflake",
+    "dbt",
+    "HIPAA",
+    "SQL",
+    "Python"
+  ],
+  "must_not_be_keywords": [
+    "401(k)",
+    "diversity",
+    "wellness"
+  ]
+}

@@ -1,0 +1,13 @@
+Staff Engineer, Payments
+Umbrella Fintech is looking for a Staff Engineer to join our payments group.
+What you'll do
+- Lead the design of high-throughput payment services in Java
+- Own reliability: SLOs, on-call and incident reviews
+- Mentor senior engineers
+Requirements
+- 10+ years of software engineering experience
+- Deep experience with Kafka and event-driven systems
+- Production experience with Kubernetes on AWS
+Nice to have
+- Go
+- PCI DSS

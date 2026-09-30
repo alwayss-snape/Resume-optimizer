@@ -116,6 +116,10 @@ class PdfParser:
                 lines.append(_Line(text, x0, x1, y0, y1, size, bold, page_num))
         return self._attach_right_columns(lines)
 
+    _DATE_OR_PLACE_RE = re.compile(
+        r"^(?:(?:[A-Za-z]{3,9}\.?\s+)?(?:19|20)\d{2}\s*(?:[-–—]|to)\s*(?:(?:[A-Za-z]{3,9}\.?\s+)?(?:19|20)\d{2}|"
+        r"Present|Current|Now)|[A-Z][A-Za-z .'-]+,\s*[A-Z][A-Za-z .'-]+)$")
+
     def _attach_right_columns(self, lines: List[_Line]) -> List[_Line]:
         """A short, right-aligned run printed on the same row as a left-hand
         line (a location or date column) is appended to that line after a
@@ -135,7 +139,12 @@ class PdfParser:
                     continue
                 overlap = min(line.y1, other.y1) - max(line.y0, other.y0)
                 same_row = overlap > 0.5 * min(line.y1 - line.y0, other.y1 - other.y0)
-                if (same_row and other.x0 > line.x1 + 20 and other.x1 >= right_edge - 60
+                # A tab-stop column mid-page ("Title    Jan 2020 - Present")
+                # counts too when the run is plainly a date range or a place.
+                right_aligned = other.x1 >= right_edge - 60
+                date_or_place = bool(self._DATE_OR_PLACE_RE.search(other.text.strip()))
+                min_gap = 20 if right_aligned else 6  # a tab stop can sit close to a bold name
+                if (same_row and other.x0 > line.x1 + min_gap and (right_aligned or date_or_place)
                         and len(other.text.strip()) <= 40):
                     line.text = f"{line.text.rstrip()}\t{other.text.strip()}"
                     line.x1 = other.x1

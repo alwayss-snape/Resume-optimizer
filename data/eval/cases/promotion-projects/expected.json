@@ -1,0 +1,37 @@
+{
+  "name": "Taylor Brooks",
+  "email": "taylor.brooks@example.com",
+  "jobs": 1,
+  "companies": [
+    "Northwind Analytics"
+  ],
+  "roles": [
+    [
+      "Senior Data Scientist",
+      "Data Scientist"
+    ]
+  ],
+  "bullets": 4,
+  "projects": 0,
+  "skills": [
+    "Azure",
+    "Databricks",
+    "LightGBM",
+    "MLflow",
+    "PySpark",
+    "Python",
+    "SQL",
+    "XGBoost"
+  ],
+  "education": 1,
+  "target_pages": 2,
+  "education_first": false,
+  "jd_company": "Globex AI",
+  "must_find": [
+    "Python",
+    "LightGBM",
+    "XGBoost",
+    "Databricks",
+    "MLflow"
+  ]
+}

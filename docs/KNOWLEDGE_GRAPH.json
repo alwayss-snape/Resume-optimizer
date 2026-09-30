@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "8d5f2acaaaa856ab",
+  "source_hash": "4581d2c0b51b300f",
   "stats": {
-    "files": 124,
-    "python_files": 102,
+    "files": 125,
+    "python_files": 103,
     "app_modules": 49,
-    "test_files": 45,
+    "test_files": 46,
     "classes": 86,
-    "functions": 708,
-    "lines_of_python": 15386
+    "functions": 720,
+    "lines_of_python": 15681
   },
   "axes": {
     "x": "location (path)",
@@ -193,7 +193,7 @@
       "type": "file",
       "layer": "Root",
       "stages": [],
-      "lines": 28
+      "lines": 30
     },
     {
       "id": "README.md",
@@ -324,7 +324,7 @@
       "stages": [
         "3 JD analysis"
       ],
-      "lines": 418,
+      "lines": 429,
       "doc": "",
       "classes": [
         {
@@ -344,72 +344,72 @@
             },
             {
               "name": "_category",
-              "line": 136,
+              "line": 147,
               "doc": ""
             },
             {
               "name": "_clean_line",
-              "line": 149,
+              "line": 160,
               "doc": "Strip a bullet marker, including private-use glyphs pasted from Word/PDF."
             },
             {
               "name": "_is_heading",
-              "line": 154,
+              "line": 165,
               "doc": "A section heading: the known patterns, an ALL-CAPS short line"
             },
             {
               "name": "_is_requirement",
-              "line": 171,
+              "line": 182,
               "doc": ""
             },
             {
               "name": "_reflow_lines",
-              "line": 180,
+              "line": 191,
               "doc": "Undo hard line-wrapping from pasted JDs (job boards/PDFs often wrap"
             },
             {
               "name": "_verbatim",
-              "line": 218,
+              "line": 229,
               "doc": "The JD's own spelling of `value` if it occurs in the JD (case- and"
             },
             {
               "name": "_verbatim_list",
-              "line": 228,
+              "line": 239,
               "doc": ""
             },
             {
               "name": "_contains_term",
-              "line": 239,
+              "line": 250,
               "doc": "Whole-term containment: \"A/B\" is in \"A/B testing\", \"ML\" is not in \"MLflow\"."
             },
             {
               "name": "count_occurrences",
-              "line": 244,
+              "line": 255,
               "doc": "Whole-term, case-insensitive count (\"R\" doesn't match \"React\")."
             },
             {
               "name": "_heuristic_title_company",
-              "line": 250,
+              "line": 261,
               "doc": ""
             },
             {
               "name": "_seniority",
-              "line": 271,
+              "line": 282,
               "doc": ""
             },
             {
               "name": "_years",
-              "line": 278,
+              "line": 289,
               "doc": ""
             },
             {
               "name": "_llm_analyze",
-              "line": 286,
+              "line": 297,
               "doc": "One structured call: metadata, requirement lines by index, skills."
             },
             {
               "name": "analyze",
-              "line": 314,
+              "line": 325,
               "doc": ""
             }
           ]
@@ -424,7 +424,7 @@
       "stages": [
         "5 Score"
       ],
-      "lines": 162,
+      "lines": 165,
       "doc": "Keyword-level match rate, the headline score (P1.2).",
       "classes": [
         {
@@ -439,12 +439,12 @@
             },
             {
               "name": "_title_credit",
-              "line": 115,
+              "line": 118,
               "doc": ""
             },
             {
               "name": "match",
-              "line": 125,
+              "line": 128,
               "doc": ""
             }
           ]
@@ -535,7 +535,7 @@
       "stages": [
         "2 Normalize"
       ],
-      "lines": 655,
+      "lines": 690,
       "doc": "",
       "classes": [
         {
@@ -554,68 +554,78 @@
               "doc": "A short title line under the name, e.g. 'Senior Data Scientist |"
             },
             {
+              "name": "_is_section_title",
+              "line": 99,
+              "doc": ""
+            },
+            {
+              "name": "_looks_like_title",
+              "line": 115,
+              "doc": ""
+            },
+            {
               "name": "_split_skill_line",
-              "line": 101,
+              "line": 132,
               "doc": "'Languages: Python, SQL<tab>Frameworks: Pandas, and XGBoost' ->"
             },
             {
               "name": "_skill_items",
-              "line": 122,
+              "line": 153,
               "doc": ""
             },
             {
               "name": "_looks_like_degree",
-              "line": 137,
+              "line": 168,
               "doc": "'B.Tech in Computer Science' yes; 'State University' no."
             },
             {
               "name": "_split_middle_dot",
-              "line": 142,
+              "line": 173,
               "doc": "'Acme Corp \u00b7 Pune, India' -> ('Acme Corp', 'Pune, India'), the"
             },
             {
               "name": "_is_dated_line",
-              "line": 151,
+              "line": 182,
               "doc": "A job title/company line carrying a date range or year."
             },
             {
               "name": "_experience_line_kind",
-              "line": 158,
+              "line": 189,
               "doc": "'dated' (title and/or company with dates), 'header_line' (a short"
             },
             {
               "name": "_add_role",
-              "line": 177,
+              "line": 208,
               "doc": "Record a role; the first one also fills the entry's title/dates."
             },
             {
               "name": "_merge_links",
-              "line": 187,
+              "line": 218,
               "doc": "Profile links from the file's hyperlinks and from URLs written in"
             },
             {
               "name": "_extract_date_range",
-              "line": 201,
+              "line": 232,
               "doc": ""
             },
             {
               "name": "_strip_date_range",
-              "line": 205,
+              "line": 236,
               "doc": ""
             },
             {
               "name": "_parse_title_and_dates",
-              "line": 209,
+              "line": 240,
               "doc": "'Data Scientist II | August 2024 - Present' ->"
             },
             {
               "name": "_split_respecting_parens",
-              "line": 218,
+              "line": 249,
               "doc": "Split on sep_chars, but never inside ( ) or [ ] groups \u2014 so"
             },
             {
               "name": "normalize",
-              "line": 241,
+              "line": 272,
               "doc": ""
             }
           ]
@@ -967,7 +977,7 @@
       "stages": [
         "4 Match"
       ],
-      "lines": 55,
+      "lines": 86,
       "doc": "",
       "classes": [],
       "functions": [
@@ -1307,7 +1317,7 @@
       "type": "python",
       "layer": "Root",
       "stages": [],
-      "lines": 62,
+      "lines": 71,
       "doc": "python -m app.eval run [--live] [--tailor] [--case NAME] [--compare BASELINE] [--save PATH]",
       "classes": [],
       "functions": [
@@ -1362,45 +1372,45 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 277,
+      "lines": 400,
       "doc": "Run evaluation cases through the pipeline and collect metrics (P4.1).",
       "classes": [
         {
           "name": "Case",
-          "line": 32,
+          "line": 35,
           "doc": "",
           "methods": []
         },
         {
           "name": "OfflineLLM",
-          "line": 40,
+          "line": 44,
           "doc": "Stands in for LLMClient when no model should be called: every",
           "methods": [
             {
               "name": "is_available",
-              "line": 47,
+              "line": 51,
               "doc": ""
             },
             {
               "name": "get_usage_summary",
-              "line": 50,
+              "line": 54,
               "doc": ""
             }
           ]
         },
         {
           "name": "_RetryCounter",
-          "line": 56,
+          "line": 60,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
-              "line": 57,
+              "line": 61,
               "doc": ""
             },
             {
               "name": "emit",
-              "line": 61,
+              "line": 65,
               "doc": ""
             }
           ]
@@ -1409,42 +1419,67 @@
       "functions": [
         {
           "name": "load_cases",
-          "line": 66,
+          "line": 70,
           "doc": ""
         },
         {
           "name": "keyword_coverage",
-          "line": 84,
+          "line": 88,
           "doc": "Share of the JD's keywords found verbatim (whole term, any case) in"
         },
         {
           "name": "run_case",
-          "line": 93,
+          "line": 97,
           "doc": ""
         },
         {
           "name": "_tailor_metrics",
-          "line": 166,
+          "line": 178,
           "doc": ""
         },
         {
+          "name": "attainable_coverage",
+          "line": 218,
+          "doc": "Of the JD keywords written verbatim somewhere in the resume, the share"
+        },
+        {
+          "name": "fabricated_numbers",
+          "line": 235,
+          "doc": "Numbers in the tailored resume that don't appear in the original."
+        },
+        {
+          "name": "stuffing",
+          "line": 245,
+          "doc": "Signs of keyword stuffing: tailoring pushed the rate above the target"
+        },
+        {
+          "name": "_docx_text",
+          "line": 255,
+          "doc": ""
+        },
+        {
+          "name": "check_expected",
+          "line": 262,
+          "doc": "Compare a run with the case's expected.json; one message per miss."
+        },
+        {
           "name": "run",
-          "line": 198,
+          "line": 319,
           "doc": ""
         },
         {
           "name": "_flatten",
-          "line": 214,
+          "line": 335,
           "doc": ""
         },
         {
           "name": "compare",
-          "line": 231,
+          "line": 352,
           "doc": "Human-readable differences per case between a report and a baseline."
         },
         {
           "name": "summary_lines",
-          "line": 259,
+          "line": 380,
           "doc": ""
         }
       ]
@@ -1456,7 +1491,7 @@
       "stages": [
         "1 Ingest"
       ],
-      "lines": 184,
+      "lines": 212,
       "doc": "",
       "classes": [
         {
@@ -1482,13 +1517,18 @@
               "doc": "-> (block_type, text without a bullet glyph, whole line bold)."
             },
             {
+              "name": "_skills_label_row",
+              "line": 75,
+              "doc": "'Label: values' for a two-cell row of a skills table, else None."
+            },
+            {
               "name": "_hyperlinks",
-              "line": 74,
+              "line": 93,
               "doc": "Targets of every external hyperlink in the body, in rId order"
             },
             {
               "name": "parse",
-              "line": 85,
+              "line": 104,
               "doc": ""
             }
           ]
@@ -1538,7 +1578,7 @@
       "stages": [
         "1 Ingest"
       ],
-      "lines": 339,
+      "lines": 348,
       "doc": "",
       "classes": [
         {
@@ -1574,37 +1614,37 @@
             },
             {
               "name": "_attach_right_columns",
-              "line": 119,
+              "line": 123,
               "doc": "A short, right-aligned run printed on the same row as a left-hand"
             },
             {
               "name": "_split_bullet",
-              "line": 147,
+              "line": 156,
               "doc": "Return the bullet text without its glyph, or None if not a bullet."
             },
             {
               "name": "_continues",
-              "line": 154,
+              "line": 163,
               "doc": "Is `line` a word-wrap continuation of the item ending with `prev`?"
             },
             {
               "name": "_assemble",
-              "line": 177,
+              "line": 186,
               "doc": "Join continuation lines onto their bullet/paragraph. Each returned"
             },
             {
               "name": "_body_size",
-              "line": 201,
+              "line": 210,
               "doc": ""
             },
             {
               "name": "_is_heading",
-              "line": 208,
+              "line": 217,
               "doc": ""
             },
             {
               "name": "parse",
-              "line": 224,
+              "line": 233,
               "doc": ""
             }
           ]
@@ -2869,7 +2909,7 @@
       "type": "file",
       "layer": "Root",
       "stages": [],
-      "lines": 41
+      "lines": 45
     },
     {
       "id": "scripts/autocommit.sh",
@@ -3227,6 +3267,37 @@
       ]
     },
     {
+      "id": "tests/integration/test_eval_cases.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 42,
+      "doc": "P4.2: every generated anonymized case must reproduce its expected.json",
+      "classes": [],
+      "functions": [
+        {
+          "name": "test_generated_cases_exist",
+          "line": 17,
+          "doc": ""
+        },
+        {
+          "name": "test_case_meets_expected",
+          "line": 24,
+          "doc": ""
+        },
+        {
+          "name": "test_fabricated_numbers_and_stuffing_detectors",
+          "line": 30,
+          "doc": ""
+        },
+        {
+          "name": "test_check_flag_passes_for_a_clean_case",
+          "line": 38,
+          "doc": "Offline parse / JD / keyword checks (no rendering) in the default suite."
+        }
+      ]
+    },
+    {
       "id": "tests/integration/test_parse_golden.py",
       "type": "python",
       "layer": "Tests",
@@ -3561,7 +3632,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 52,
+      "lines": 55,
       "doc": "Evaluation harness (P4.1).",
       "classes": [],
       "functions": [
@@ -3572,27 +3643,27 @@
         },
         {
           "name": "test_offline_run_metrics_for_replica",
-          "line": 14,
+          "line": 17,
           "doc": ""
         },
         {
           "name": "test_keyword_coverage_whole_terms",
-          "line": 26,
+          "line": 29,
           "doc": ""
         },
         {
           "name": "test_compare_marks_regressions",
-          "line": 31,
+          "line": 34,
           "doc": ""
         },
         {
           "name": "test_error_in_one_case_does_not_stop_the_run",
-          "line": 40,
+          "line": 43,
           "doc": ""
         },
         {
           "name": "test_saved_committed_report_never_contains_private_cases",
-          "line": 45,
+          "line": 48,
           "doc": ""
         }
       ]
@@ -3820,7 +3891,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 114,
+      "lines": 115,
       "doc": "JD analysis v2 (P1.1): title/company without labels, whole-line",
       "classes": [
         {
@@ -3869,22 +3940,22 @@
         },
         {
           "name": "_llm_result",
-          "line": 74,
+          "line": 75,
           "doc": ""
         },
         {
           "name": "test_llm_path_is_one_call_and_every_value_is_verbatim",
-          "line": 91,
+          "line": 92,
           "doc": ""
         },
         {
           "name": "test_llm_invented_title_and_years_are_rejected",
-          "line": 102,
+          "line": 103,
           "doc": ""
         },
         {
           "name": "test_llm_keywords_are_topped_up_from_requirement_lines",
-          "line": 111,
+          "line": 112,
           "doc": ""
         }
       ]
@@ -6798,7 +6869,22 @@
     },
     {
       "from": "app/eval/harness.py",
+      "to": "app/analysis/experience.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/eval/harness.py",
       "to": "app/analysis/jd_analyzer.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/eval/harness.py",
+      "to": "app/analysis/keyword_match.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/eval/harness.py",
+      "to": "app/domain/report.py",
       "type": "imports"
     },
     {
@@ -6828,8 +6914,18 @@
     },
     {
       "from": "app/eval/harness.py",
+      "to": "app/rendering/layout.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/eval/harness.py",
       "to": "app/services/tailor.py",
       "type": "imports"
+    },
+    {
+      "from": "app/eval/harness.py",
+      "to": "tests/integration/test_eval_cases.py",
+      "type": "tested_by"
     },
     {
       "from": "app/eval/harness.py",

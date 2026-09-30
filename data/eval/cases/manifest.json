@@ -1,0 +1,50 @@
+[
+  {
+    "name": "new-grad",
+    "resume": "data/eval/cases/new-grad/resume.docx",
+    "jd": "data/eval/cases/new-grad/jd.txt",
+    "expected": "data/eval/cases/new-grad/expected.json"
+  },
+  {
+    "name": "senior-12y",
+    "resume": "data/eval/cases/senior-12y/resume.docx",
+    "jd": "data/eval/cases/senior-12y/jd.txt",
+    "expected": "data/eval/cases/senior-12y/expected.json"
+  },
+  {
+    "name": "career-changer",
+    "resume": "data/eval/cases/career-changer/resume.docx",
+    "jd": "data/eval/cases/career-changer/jd.txt",
+    "expected": "data/eval/cases/career-changer/expected.json"
+  },
+  {
+    "name": "table-docx",
+    "resume": "data/eval/cases/table-docx/resume.docx",
+    "jd": "data/eval/cases/table-docx/jd.txt",
+    "expected": "data/eval/cases/table-docx/expected.json"
+  },
+  {
+    "name": "promotion-projects",
+    "resume": "data/eval/cases/promotion-projects/resume.docx",
+    "jd": "data/eval/cases/promotion-projects/jd.txt",
+    "expected": "data/eval/cases/promotion-projects/expected.json"
+  },
+  {
+    "name": "pdf-mid",
+    "resume": "data/eval/cases/pdf-mid/resume.pdf",
+    "jd": "data/eval/cases/pdf-mid/jd.txt",
+    "expected": "data/eval/cases/pdf-mid/expected.json"
+  },
+  {
+    "name": "boilerplate-jd",
+    "resume": "data/eval/cases/boilerplate-jd/resume.docx",
+    "jd": "data/eval/cases/boilerplate-jd/jd.txt",
+    "expected": "data/eval/cases/boilerplate-jd/expected.json"
+  },
+  {
+    "name": "product-manager",
+    "resume": "data/eval/cases/product-manager/resume.docx",
+    "jd": "data/eval/cases/product-manager/jd.txt",
+    "expected": "data/eval/cases/product-manager/expected.json"
+  }
+]

@@ -70,6 +70,25 @@ class DocxParser:
             return "bullet", text, all_bold
         return "paragraph", text, all_bold
 
+    _SKILLS_SECTION_RE = re.compile(r"skill|technolog|competenc|expertise|tools", re.IGNORECASE)
+
+    def _skills_label_row(self, row, current_section: str) -> Optional[str]:
+        """'Label: values' for a two-cell row of a skills table, else None."""
+        if not self._SKILLS_SECTION_RE.search(current_section or ""):
+            return None
+        cells, seen = [], set()
+        for cell in row.cells:
+            if id(cell._tc) not in seen:
+                seen.add(id(cell._tc))
+                cells.append(self._INVISIBLE_RE.sub("", cell.text).strip())
+        cells = [c for c in cells if c]
+        if len(cells) != 2:
+            return None
+        label, values = cells
+        if len(label.split()) > 4 or ":" in label or "\n" in label or not values:
+            return None
+        return f"{label}: {values}"
+
     @staticmethod
     def _hyperlinks(doc) -> List[str]:
         """Targets of every external hyperlink in the body, in rId order
@@ -149,6 +168,15 @@ class DocxParser:
             t_idx += 1
             table = item
             for r_idx, row in enumerate(table.rows):
+                label_row = self._skills_label_row(row, current_section)
+                if label_row:
+                    # "Languages | Python, SQL" in a skills grid reads as one
+                    # "Languages: Python, SQL" line, like the plain-text form.
+                    block_id = f"tbl_{t_idx}_r{r_idx}_c0_p0"
+                    location = DocumentLocation(section=current_section, table_index=t_idx, row=r_idx, column=0,
+                                                cell_paragraph_index=0, original_text=label_row)
+                    add_block(block_id, "paragraph", label_row, False, location)
+                    continue
                 seen_cells = set()
                 for c_idx, cell in enumerate(row.cells):
                     # A merged cell is returned once per grid column it spans.

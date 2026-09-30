@@ -1,0 +1,7 @@
+Data Analyst
+Contoso Retail is looking for a Data Analyst to join our insights team.
+Requirements
+- Strong SQL and Excel skills
+- Experience with a BI tool such as Tableau or Power BI
+- Communicate findings to non-technical stakeholders
+- Python for data cleaning is a plus

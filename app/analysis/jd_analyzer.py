@@ -97,7 +97,7 @@ class JDAnalyzer:
         a sentence (Python, Kubernetes), and multi-word canonical terms from
         the terminology registry ("machine learning"). Plain English words
         are dropped so the rewrite prompt isn't flooded with noise."""
-        from app.analysis.terminology import ALIAS_MAP
+        from app.analysis.terminology import ALIAS_MAP, TECH_TERMS
 
         counts: Dict[str, int] = {}
         display: Dict[str, str] = {}
@@ -120,6 +120,9 @@ class JDAnalyzer:
                     has_symbol = bool(re.search(r"[+#./0-9]", tok))
                     is_acronym = tok.isupper() and tok.isalpha()
                     is_capitalised = tok[0].isupper() and pos > 0
+                    if low in TECH_TERMS:  # known tool/language, wherever it stands
+                        add(tok)
+                        continue
                     if "-" in tok and not has_symbol and not re.search(r"[A-Z]", tok[1:]):
                         continue  # plain hyphenated English ("cross-functional")
                     if has_symbol or is_acronym or is_capitalised:
@@ -129,6 +132,14 @@ class JDAnalyzer:
         for canonical in ALIAS_MAP:
             if " " in canonical and re.search(rf"\b{re.escape(canonical)}\b", lowered_text):
                 add(canonical)
+        # Multi-word tech terms ("Power BI", "GitHub Actions"), in the JD's spelling.
+        for term in TECH_TERMS:
+            if " " in term:
+                m = re.search(rf"(?<![\w/]){re.escape(term)}(?![\w/])", text, re.IGNORECASE)
+                if m:
+                    for part in term.split():  # "A/B testing" replaces a bare "A/B"
+                        counts.pop(part, None)
+                    add(m.group(0))
 
         ranked = sorted(counts, key=lambda k: (-counts[k], list(counts).index(k)))
         return [display[k] for k in ranked[: self.MAX_KEYWORDS]]

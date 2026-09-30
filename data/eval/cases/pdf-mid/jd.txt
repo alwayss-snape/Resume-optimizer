@@ -1,0 +1,9 @@
+Site Reliability Engineer
+Northwind Cloud is looking for a Site Reliability Engineer to join our platform team.
+Requirements
+- Infrastructure as code with Terraform
+- Kubernetes in production
+- Monitoring with Prometheus and Grafana
+- CI/CD pipelines
+Nice to have
+- Go

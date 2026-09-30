@@ -1,0 +1,37 @@
+{
+  "name": "Riley Novak",
+  "email": "riley.novak@example.com",
+  "jobs": 2,
+  "companies": [
+    "Wingtip Toys",
+    "Tailspin Media"
+  ],
+  "roles": [
+    [
+      "Frontend Engineer"
+    ],
+    [
+      "Web Developer"
+    ]
+  ],
+  "bullets": 5,
+  "projects": 0,
+  "skills": [
+    "CSS",
+    "HTML",
+    "JavaScript",
+    "React",
+    "Storybook",
+    "TypeScript",
+    "Vue.js"
+  ],
+  "education": 1,
+  "target_pages": 2,
+  "education_first": false,
+  "jd_company": "Fabrikam Studios",
+  "must_find": [
+    "React",
+    "TypeScript",
+    "WCAG"
+  ]
+}

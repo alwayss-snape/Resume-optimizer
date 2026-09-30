@@ -28,6 +28,8 @@ def main(argv=None) -> int:
     r.add_argument("--compare", help="baseline JSON to compare against")
     r.add_argument("--save", help="write the report JSON here (e.g. to record a new baseline)")
     r.add_argument("--out-dir", help="where tailored outputs go (default: a temp dir)")
+    r.add_argument("--check", action="store_true",
+                   help="exit 1 if any case misses its expected.json (for CI / the stage gate)")
     args = parser.parse_args(argv)
 
     logging.basicConfig(level=logging.WARNING, format="%(levelname)s %(name)s: %(message)s")
@@ -40,6 +42,11 @@ def main(argv=None) -> int:
 
     report = run(cases, live=args.live, tailor=args.tailor, out_dir=args.out_dir)
     print("\n".join(summary_lines(report)))
+    misses = {name: m["expected"]["failed"] for name, m in report["cases"].items()
+              if m.get("expected") and m["expected"]["failed"]}
+    for name, failed in misses.items():
+        print(f"\n{name} misses its expected.json:")
+        print("\n".join(f"  - {f}" for f in failed))
     if args.compare:
         if os.path.exists(args.compare):
             with open(args.compare, encoding="utf-8") as f:
@@ -55,7 +62,9 @@ def main(argv=None) -> int:
         with open(args.save, "w", encoding="utf-8") as f:
             json.dump(report, f, indent=2, ensure_ascii=False)
         print(f"\nSaved {args.save}")
-    return 1 if any("error" in m for m in report["cases"].values()) else 0
+    if any("error" in m for m in report["cases"].values()):
+        return 1
+    return 1 if (args.check and misses) else 0
 
 
 if __name__ == "__main__":

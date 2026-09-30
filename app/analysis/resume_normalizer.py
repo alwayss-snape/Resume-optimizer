@@ -72,7 +72,7 @@ class ResumeNormalizer:
     SECTION_KEYWORDS = (
         "summary", "profile", "about", "objective",
         "experience", "work", "employment", "career", "history",
-        "project", "portfolio",
+        "project", "projects", "portfolio", "portfolios",
         "skill", "skills", "technology", "technologies", "technological",
         "competency", "competencies", "expertise", "tools",
         "education", "academic", "qualification", "qualifications", "university",
@@ -83,6 +83,37 @@ class ResumeNormalizer:
     SECTION_KEYWORDS_RE = re.compile(
         r"\b(?:" + "|".join(SECTION_KEYWORDS) + r")\b", re.IGNORECASE
     )
+
+    # Words that may appear in a section title next to a section keyword
+    # ("Technical Skills", "Awards and Achievements", "Areas of Expertise").
+    # A heading made of anything else ("Riverside Institute of Technology",
+    # a bold project name) is content, even if it contains a keyword.
+    SECTION_TITLE_WORDS = {
+        "and", "&", "of", "my", "key", "core", "technical", "professional", "relevant", "selected", "additional",
+        "other", "personal", "academic", "areas", "area", "work", "career", "research", "training", "courses",
+        "coursework", "publications", "volunteer", "volunteering", "languages", "leadership", "honors", "honours",
+        "highlights", "overview", "background", "information", "details", "notable", "recent", "side",
+        "extracurricular", "summary", "and/or", "/",
+    }
+
+    def _is_section_title(self, text: str) -> bool:
+        if not self.SECTION_KEYWORDS_RE.search(text):
+            return False
+        words = [w for w in re.split(r"[\s,:]+", text.lower().strip(" :")) if w]
+        known = {k.lower() for k in self.SECTION_KEYWORDS}
+        return len(words) <= 6 and all(w in known or w in self.SECTION_TITLE_WORDS for w in words)
+
+    # "Senior Data Scientist", "Software Engineering Intern": the title side
+    # of a "Title | Company" or "Company — Title" job line.
+    _ROLE_WORDS_RE = re.compile(
+        r"\b(?:engineer|engineering|developer|scientist|analyst|manager|intern|internship|teacher|designer|"
+        r"consultant|lead|director|administrator|architect|specialist|officer|associate|assistant|head|vp|"
+        r"president|founder|co-founder|coordinator|executive|researcher|fellow|trainee|technician|"
+        r"programmer|owner|principal|staff|sde|sre|devops|writer|editor|accountant|advisor|tutor)\b",
+        re.IGNORECASE)
+
+    def _looks_like_title(self, text: str) -> bool:
+        return bool(self._ROLE_WORDS_RE.search(text or ""))
 
     # Chars trimmed off a title/company fragment once the trailing date range
     # (and whatever separated it, e.g. "Title | Aug 2024 - Present") has been
@@ -130,8 +161,8 @@ class ResumeNormalizer:
     _HINT_KINDS = {"company": "company", "job_title": "dated", "subheading": "subheading", "bullet": "content"}
 
     _DEGREE_RE = re.compile(
-        r"\b(?:B\.?\s?(?:Tech|E|Sc|S|A|Com)|M\.?\s?(?:Tech|E|Sc|S|A|Com)|Bachelor|Master|Ph\.?\s?D|MBA|BBA|BCA|MCA"
-        r"|Diploma|Associate(?:'s)? (?:of|in|degree))\b", re.IGNORECASE)
+        r"\b(?:B\.?\s?(?:Tech|Ed|E|Sc|S|A|Com)|M\.?\s?(?:Tech|Ed|E|Sc|S|A|Com)|Bachelor|Master|Ph\.?\s?D|MBA|BBA|BCA|MCA"
+        r"|Diploma|Certificate|Associate(?:'s)? (?:of|in|degree))\b", re.IGNORECASE)
     _INSTITUTION_RE = re.compile(r"\b(?:University|Institute|College|School|Academy|IIT|NIT)\b", re.IGNORECASE)
 
     def _looks_like_degree(self, text: str) -> bool:
@@ -300,7 +331,7 @@ class ResumeNormalizer:
                 continue
 
             if block.block_type == "heading" and not block.hint:
-                if self.SECTION_KEYWORDS_RE.search(text):
+                if self._is_section_title(text):
                     current_section = text
                     continue
                 # Else: a heading-styled line that isn't a recognized
@@ -395,13 +426,17 @@ class ResumeNormalizer:
                         _, start, end = self._parse_title_and_dates(right_col)
                         right_col = None
                     body = self._strip_date_range(left)
-                    dash_parts = [p.strip() for p in re.split(r"\s+—\s+|\s+-\s+", body) if p.strip()]
+                    dash_parts = [p.strip() for p in re.split(r"\s+—\s+|\s+-\s+|\s+\|\s+", body) if p.strip()]
                     role = Role(title=title, start_date=start, end_date=end)
 
                     if len(dash_parts) >= 2 and (current_exp is None or current_exp_has_content or current_exp.title):
-                        # Combined single line: "Company — Title (dates)"
-                        current_exp = new_experience(dash_parts[0], right_col)
-                        self._add_role(current_exp, Role(title=dash_parts[1], start_date=start, end_date=end))
+                        # Combined single line: "Company — Title (dates)" or
+                        # "Title | Company | dates"; role words decide which is which.
+                        company_part, title_part = dash_parts[0], dash_parts[1]
+                        if self._looks_like_title(company_part) and not self._looks_like_title(title_part):
+                            company_part, title_part = title_part, company_part
+                        current_exp = new_experience(company_part, right_col)
+                        self._add_role(current_exp, Role(title=title_part, start_date=start, end_date=end))
                     elif current_exp is None:
                         current_exp = new_experience("", right_col)
                         self._add_role(current_exp, role)

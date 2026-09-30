@@ -1,0 +1,10 @@
+Junior Backend Engineer
+Wingtip Software is looking for a Junior Backend Engineer to join our platform team.
+Requirements
+- Python and a web framework such as FastAPI or Flask
+- Experience with SQL databases like PostgreSQL
+- Familiarity with Docker and Git
+- Write automated tests with pytest
+Nice to have
+- Kubernetes
+- AWS

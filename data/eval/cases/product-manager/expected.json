@@ -1,0 +1,36 @@
+{
+  "name": "Avery Quinn",
+  "email": "avery.quinn@example.com",
+  "jobs": 2,
+  "companies": [
+    "Fabrikam Software",
+    "Contoso SaaS"
+  ],
+  "roles": [
+    [
+      "Senior Product Manager"
+    ],
+    [
+      "Product Manager"
+    ]
+  ],
+  "bullets": 5,
+  "projects": 0,
+  "skills": [
+    "A/B testing",
+    "Discovery",
+    "Jira",
+    "Looker",
+    "OKRs",
+    "Roadmapping",
+    "SQL"
+  ],
+  "education": 1,
+  "target_pages": 2,
+  "education_first": false,
+  "jd_company": "Wingtip Cloud",
+  "must_find": [
+    "SQL",
+    "A/B testing"
+  ]
+}

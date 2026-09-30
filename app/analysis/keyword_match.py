@@ -100,7 +100,10 @@ class KeywordMatcher:
         where: List[str] = []
         for label, toks in sections:
             token_set = set(toks)
-            hit = any(_contains_seq(toks, alt) for alt in alternatives)
+            # "HIPAA-compliant" contains HIPAA: also look at hyphenated
+            # tokens split into their parts (dots and slashes stay: Node.js, A/B).
+            split = [p for t in toks for p in (t.split("-") if "-" in t else [t]) if p]
+            hit = any(_contains_seq(toks, alt) or _contains_seq(split, alt) for alt in alternatives)
             # A multi-word term also counts when all its words appear in one
             # sentence ("recommendation systems" vs "systems for recommendation").
             if not hit and len(needle) >= 2:

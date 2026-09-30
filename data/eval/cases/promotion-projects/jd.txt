@@ -1,0 +1,9 @@
+Machine Learning Engineer
+Globex AI is looking for a Machine Learning Engineer to join our forecasting team.
+Requirements
+- Python and SQL
+- Gradient boosting models such as LightGBM or XGBoost
+- Spark or Databricks for large-scale training
+- MLflow or similar for model tracking
+Nice to have
+- Kubernetes

@@ -53,3 +53,34 @@ def normalize_phrase(phrase: str) -> str:
 
     # fallback: collapse multiple spaces and punctuation
     return " ".join(p.split())
+
+
+# Common technical terms (lowercase) the offline JD analysis keeps wherever
+# they appear, even sentence-initial ("Python and a web framework ...") or
+# written in lowercase ("pytest", "dbt"). Names that are also ordinary words
+# ("Go", "R", "Swift", "Rust") are left out: for them only the capitalisation
+# rule applies, so "go-to-market" isn't read as the Go language.
+TECH_TERMS = frozenset({
+    # languages
+    "python", "java", "javascript", "typescript", "scala", "kotlin", "c++", "c#", "golang", "ruby", "php",
+    "sql", "nosql", "bash", "perl", "matlab", "sas", "haskell", "elixir", "clojure", "objective-c",
+    # web / frameworks
+    "react", "angular", "vue", "vue.js", "next.js", "node.js", "express", "django", "flask", "fastapi", "spring",
+    "rails", "graphql", "rest", "grpc", "html", "css", "tailwind", "redux", "storybook", "webpack",
+    # data / ml
+    "pandas", "numpy", "scikit-learn", "sklearn", "pytorch", "tensorflow", "keras", "xgboost", "lightgbm",
+    "catboost", "spark", "pyspark", "hadoop", "hive", "airflow", "dbt", "mlflow", "kubeflow", "databricks",
+    "snowflake", "bigquery", "redshift", "tableau", "looker", "power bi", "excel", "jupyter", "langchain",
+    "faiss", "llm", "llms", "nlp", "a/b testing", "etl", "elt",
+    # stores / streaming
+    "postgresql", "postgres", "mysql", "mongodb", "redis", "cassandra", "dynamodb", "elasticsearch",
+    "kafka", "flink", "rabbitmq", "kinesis", "pubsub",
+    # cloud / ops
+    "aws", "azure", "gcp", "kubernetes", "k8s", "docker", "terraform", "ansible", "helm", "jenkins",
+    "github actions", "gitlab ci", "ci/cd", "prometheus", "grafana", "datadog", "splunk", "linux", "git",
+    "serverless", "lambda", "ec2", "s3",
+    # testing / practice
+    "pytest", "jest", "cypress", "selenium", "junit", "tdd", "microservices", "wcag",
+    # product / compliance
+    "jira", "figma", "hipaa", "gdpr", "sox", "pci dss", "okrs",
+})

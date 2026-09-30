@@ -24,5 +24,7 @@
 
 - Core rule: the LLM edits content; deterministic code owns structure, formatting, validation and file generation.
   Rewrites must stay grounded in evidence from the original resume and must never invent facts.
-- Run tests with `.venv_py311/bin/python -m pytest -q` (~35 s; needs `sentence-transformers` installed, see pyproject).
+- Run tests with `.venv_py311/bin/python -m pytest -q` (~50-80 s; needs `sentence-transformers` installed, see pyproject).
+  The full offline eval of the anonymized case set is marked `eval` and skipped by default: run it with
+  `.venv_py311/bin/python -m pytest -q -m eval` (~1 min, uses LibreOffice) or `python -m app.eval run --tailor --no-private --check`.
 - Never commit secrets or personal output: SSH keys, `.env`, `Claude outputs/`, `data/runs/`, virtualenvs.

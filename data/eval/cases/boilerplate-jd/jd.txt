@@ -1,0 +1,21 @@
+Senior Data Engineer
+Tailspin Health is looking for a Senior Data Engineer to join our data platform team.
+About Us
+Tailspin Health is an equal opportunity employer. We celebrate diversity and are committed to creating an inclusive environment for all employees. All qualified applicants will receive consideration for employment without regard to race, color, religion, sex, sexual orientation, gender identity, national origin, disability or veteran status.
+Benefits
+Competitive salary, health insurance, 401(k) matching, flexible hours, remote-friendly culture, learning budget, wellness stipend, paid parental leave and 25 days of paid time off.
+Our Values
+We put patients first. We act with integrity. We win together.
+Requirements
+- Build batch pipelines with Airflow
+- Snowflake and dbt experience
+- Healthcare data and HIPAA knowledge
+- Strong SQL and Python
+Nice to have
+- Kafka
+About Us
+Tailspin Health is an equal opportunity employer. We celebrate diversity and are committed to creating an inclusive environment for all employees. All qualified applicants will receive consideration for employment without regard to race, color, religion, sex, sexual orientation, gender identity, national origin, disability or veteran status.
+Benefits
+Competitive salary, health insurance, 401(k) matching, flexible hours, remote-friendly culture, learning budget, wellness stipend, paid parental leave and 25 days of paid time off.
+Our Values
+We put patients first. We act with integrity. We win together.

@@ -66,7 +66,8 @@ def test_nice_to_have_heading_and_is_a_plus_are_preferred():
 def test_keywords_skip_heading_and_company_words():
     jd = JDAnalyzer(None).analyze(JD)
     lowered = {k.lower() for k in jd.keywords}
-    assert {"python", "pytorch", "xgboost", "spark", "snowflake", "a/b", "faiss", "kafka"} <= lowered
+    # "A/B testing" (a known multi-word term) replaces the bare "A/B" (P4.2).
+    assert {"python", "pytorch", "xgboost", "spark", "snowflake", "a/b testing", "faiss", "kafka"} <= lowered
     assert not lowered & {"what", "will", "contoso", "media", "about"}
     assert jd.keyword_counts["Python"] == 1
 
@@ -111,4 +112,4 @@ def test_llm_invented_title_and_years_are_rejected():
 def test_llm_keywords_are_topped_up_from_requirement_lines():
     llm = FakeLLM(_llm_result(hard_skills=["Python"]))
     jd = JDAnalyzer(llm).analyze(JD)
-    assert {"Python", "PyTorch", "XGBoost", "A/B", "FAISS", "Kafka", "ML"} <= set(jd.keywords)
+    assert {"Python", "PyTorch", "XGBoost", "A/B testing", "FAISS", "Kafka", "ML"} <= set(jd.keywords)

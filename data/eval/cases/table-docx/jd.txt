@@ -1,0 +1,9 @@
+Senior Frontend Engineer
+Fabrikam Studios is looking for a Senior Frontend Engineer to join our web team.
+Requirements
+- 5+ years building web apps with React and TypeScript
+- Strong grasp of web accessibility (WCAG)
+- Performance tuning and code splitting
+Nice to have
+- Next.js
+- GraphQL

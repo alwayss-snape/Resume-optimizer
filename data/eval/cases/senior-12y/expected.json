@@ -1,0 +1,50 @@
+{
+  "name": "Morgan Blake",
+  "email": "morgan.blake@example.com",
+  "jobs": 4,
+  "companies": [
+    "Fabrikam Payments",
+    "Northwind Traders",
+    "Globex Retail",
+    "Initech"
+  ],
+  "roles": [
+    [
+      "Principal Engineer"
+    ],
+    [
+      "Senior Software Engineer"
+    ],
+    [
+      "Software Engineer"
+    ],
+    [
+      "Junior Developer"
+    ]
+  ],
+  "bullets": 11,
+  "projects": 0,
+  "skills": [
+    "AWS",
+    "CI/CD",
+    "Contract testing",
+    "Go",
+    "Java",
+    "Kafka",
+    "Kubernetes",
+    "PostgreSQL",
+    "Python",
+    "SLOs",
+    "SQL"
+  ],
+  "education": 1,
+  "target_pages": 2,
+  "education_first": false,
+  "jd_company": "Umbrella Fintech",
+  "must_find": [
+    "Java",
+    "Kafka",
+    "Kubernetes",
+    "AWS"
+  ]
+}

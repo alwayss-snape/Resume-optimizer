@@ -8,7 +8,10 @@ from app.eval.harness import Case, compare, keyword_coverage, load_cases, run
 
 def test_committed_cases_load():
     names = [c.name for c in load_cases(include_private=False)]
-    assert names == ["replica-pdf", "sample-docx", "sample-pdf"]
+    assert names[:3] == ["replica-pdf", "sample-docx", "sample-pdf"]
+    # P4.2: the generated anonymized set, each with an expected.json
+    assert names[3:] == ["new-grad", "senior-12y", "career-changer", "table-docx", "promotion-projects",
+                         "pdf-mid", "boilerplate-jd", "product-manager"]
 
 
 def test_offline_run_metrics_for_replica():
@@ -20,7 +23,7 @@ def test_offline_run_metrics_for_replica():
     assert m["jd"]["requirements"] == 11 and m["jd"]["preferred"] == 3
     assert m["llm"]["calls"] == 0
     assert set(m["match"]) == {"score", "evidence_score", "statuses", "keywords_matched", "keywords_missing",
-                               "keyword_coverage"}
+                               "keyword_coverage", "attainable_coverage"}
 
 
 def test_keyword_coverage_whole_terms():

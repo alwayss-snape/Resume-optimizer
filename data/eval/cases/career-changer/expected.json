@@ -1,0 +1,32 @@
+{
+  "name": "Jamie Chen",
+  "email": "jamie.chen@example.com",
+  "jobs": 1,
+  "companies": [
+    "Bayside High School"
+  ],
+  "roles": [
+    [
+      "Mathematics Teacher"
+    ]
+  ],
+  "bullets": 4,
+  "projects": 1,
+  "skills": [
+    "Excel",
+    "Python",
+    "SQL",
+    "Tableau",
+    "pandas"
+  ],
+  "education": 2,
+  "target_pages": 1,
+  "education_first": false,
+  "jd_company": "Contoso Retail",
+  "must_find": [
+    "SQL",
+    "Excel",
+    "Tableau",
+    "Python"
+  ]
+}
