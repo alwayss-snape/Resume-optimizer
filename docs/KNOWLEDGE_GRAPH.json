@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "236d38467056fe83",
+  "source_hash": "140d93c0e93a6950",
   "stats": {
-    "files": 92,
-    "python_files": 70,
+    "files": 93,
+    "python_files": 71,
     "app_modules": 36,
-    "test_files": 27,
+    "test_files": 28,
     "classes": 65,
-    "functions": 341,
-    "lines_of_python": 9227
+    "functions": 359,
+    "lines_of_python": 9535
   },
   "axes": {
     "x": "location (path)",
@@ -353,7 +353,7 @@
       "stages": [
         "2 Normalize"
       ],
-      "lines": 521,
+      "lines": 601,
       "doc": "",
       "classes": [
         {
@@ -362,53 +362,68 @@
           "doc": "",
           "methods": [
             {
+              "name": "_header_urls",
+              "line": 40,
+              "doc": ""
+            },
+            {
+              "name": "_is_headline",
+              "line": 51,
+              "doc": "A short title line under the name, e.g. 'Senior Data Scientist |"
+            },
+            {
               "name": "_split_skill_line",
-              "line": 67,
+              "line": 100,
               "doc": "'Languages: Python, SQL<tab>Frameworks: Pandas, and XGBoost' ->"
             },
             {
               "name": "_skill_items",
-              "line": 88,
+              "line": 121,
               "doc": ""
             },
             {
               "name": "_is_dated_line",
-              "line": 98,
+              "line": 131,
               "doc": "A job title/company line carrying a date range or year."
             },
             {
               "name": "_experience_line_kind",
-              "line": 105,
+              "line": 138,
               "doc": "'dated' (title and/or company with dates), 'header_line' (a short"
             },
             {
               "name": "_add_role",
-              "line": 121,
+              "line": 157,
               "doc": "Record a role; the first one also fills the entry's title/dates."
             },
             {
+              "name": "_merge_links",
+              "line": 167,
+              "doc": "Profile links from the file's hyperlinks and from URLs written in"
+            },
+            {
               "name": "_extract_date_range",
-              "line": 130,
+              "line": 181,
               "doc": ""
             },
             {
               "name": "_strip_date_range",
-              "line": 134,
+              "line": 185,
               "doc": ""
             },
             {
               "name": "_parse_title_and_dates",
-              "line": 138,
+              "line": 189,
               "doc": "'Data Scientist II | August 2024 - Present' ->"
             },
             {
               "name": "_split_respecting_parens",
-              "line": 147,
+              "line": 198,
               "doc": "Split on sep_chars, but never inside ( ) or [ ] groups \u2014 so"
             },
             {
               "name": "normalize",
-              "line": 170,
+              "line": 221,
               "doc": ""
             }
           ]
@@ -791,59 +806,65 @@
       "stages": [
         "2 Normalize"
       ],
-      "lines": 81,
+      "lines": 88,
       "doc": "",
       "classes": [
         {
           "name": "Candidate",
-          "line": 4,
+          "line": 5,
           "doc": "",
-          "methods": []
+          "methods": [
+            {
+              "name": "display_links",
+              "line": 14,
+              "doc": "Links as shown on a resume: 'linkedin.com/in/x', no scheme/www."
+            }
+          ]
         },
         {
           "name": "ResumeBullet",
-          "line": 11,
+          "line": 18,
           "doc": "",
           "methods": []
         },
         {
           "name": "Role",
-          "line": 19,
+          "line": 26,
           "doc": "One title held at a company, e.g. 'Data Scientist II, Aug 2024 - Present'.",
           "methods": []
         },
         {
           "name": "Experience",
-          "line": 25,
+          "line": 32,
           "doc": "One company entry. `title` / `start_date` / `end_date` describe the",
           "methods": [
             {
               "name": "all_roles",
-              "line": 40,
+              "line": 47,
               "doc": ""
             },
             {
               "name": "bullet_groups",
-              "line": 47,
+              "line": 54,
               "doc": "Consecutive bullets grouped by sub-heading, in document order."
             }
           ]
         },
         {
           "name": "Project",
-          "line": 57,
-          "doc": "",
-          "methods": []
-        },
-        {
-          "name": "Education",
           "line": 64,
           "doc": "",
           "methods": []
         },
         {
+          "name": "Education",
+          "line": 71,
+          "doc": "",
+          "methods": []
+        },
+        {
           "name": "Resume",
-          "line": 72,
+          "line": 79,
           "doc": "",
           "methods": []
         }
@@ -931,29 +952,39 @@
       "stages": [
         "1 Ingest"
       ],
-      "lines": 139,
+      "lines": 179,
       "doc": "",
       "classes": [
         {
           "name": "RawBlock",
-          "line": 9,
+          "line": 11,
           "doc": "",
           "methods": []
         },
         {
           "name": "RawDocument",
-          "line": 25,
+          "line": 27,
           "doc": "",
           "methods": []
         },
         {
           "name": "DocxParser",
-          "line": 33,
+          "line": 35,
           "doc": "",
           "methods": [
             {
+              "name": "_classify",
+              "line": 44,
+              "doc": "-> (block_type, text without a bullet glyph, whole line bold)."
+            },
+            {
+              "name": "_hyperlinks",
+              "line": 69,
+              "doc": "Targets of every external hyperlink in the body, in rId order"
+            },
+            {
               "name": "parse",
-              "line": 39,
+              "line": 80,
               "doc": ""
             }
           ]
@@ -1388,7 +1419,7 @@
       "stages": [
         "9 Render"
       ],
-      "lines": 137,
+      "lines": 140,
       "doc": "",
       "classes": [
         {
@@ -1423,7 +1454,7 @@
             },
             {
               "name": "write_html",
-              "line": 133,
+              "line": 136,
               "doc": ""
             }
           ]
@@ -1468,7 +1499,7 @@
       "stages": [
         "9 Render"
       ],
-      "lines": 290,
+      "lines": 297,
       "doc": "",
       "classes": [
         {
@@ -1483,32 +1514,32 @@
             },
             {
               "name": "_set_document_defaults",
-              "line": 208,
+              "line": 215,
               "doc": "Tighter, more consistent margins/typography than python-docx's"
             },
             {
               "name": "_content_width",
-              "line": 232,
+              "line": 239,
               "doc": ""
             },
             {
               "name": "_add_section_heading",
-              "line": 236,
+              "line": 243,
               "doc": "A section label in the accent color with a rule underneath \u2014"
             },
             {
               "name": "_role_dates",
-              "line": 252,
+              "line": 259,
               "doc": ""
             },
             {
               "name": "_add_title_dates_line",
-              "line": 257,
+              "line": 264,
               "doc": "Title (bold) on the left, date range right-aligned on the same"
             },
             {
               "name": "_add_bottom_border",
-              "line": 277,
+              "line": 284,
               "doc": "Adds a single bottom border to a paragraph via raw OOXML \u2014 the"
             }
           ]
@@ -1567,7 +1598,7 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 614,
+      "lines": 617,
       "doc": "",
       "classes": [
         {
@@ -1587,32 +1618,32 @@
             },
             {
               "name": "parse_resume",
-              "line": 104,
+              "line": 107,
               "doc": "File -> (raw document, ResumeDocument, evidence). The deterministic"
             },
             {
               "name": "normalize_raw",
-              "line": 114,
+              "line": 117,
               "doc": ""
             },
             {
               "name": "analyze_only",
-              "line": 121,
+              "line": 124,
               "doc": ""
             },
             {
               "name": "generate_proposals",
-              "line": 144,
+              "line": 147,
               "doc": "Generate rewrite proposals without applying them, plus advisory"
             },
             {
               "name": "incorporate_user_addition",
-              "line": 199,
+              "line": 202,
               "doc": "Fold a user-supplied free-text addition (a project, an"
             },
             {
               "name": "tailor_resume",
-              "line": 273,
+              "line": 276,
               "doc": ""
             }
           ]
@@ -1621,7 +1652,7 @@
       "functions": [
         {
           "name": "_merge_usage",
-          "line": 605,
+          "line": 608,
           "doc": "Combine two LLMClient.get_usage_summary() dicts into one."
         }
       ]
@@ -2591,6 +2622,77 @@
       ]
     },
     {
+      "id": "tests/unit/test_parsing_fixes_p19.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 168,
+      "doc": "P1.9: links (DOCX hyperlinks, PDF link annotations, URLs in text),",
+      "classes": [],
+      "functions": [
+        {
+          "name": "_add_hyperlink",
+          "line": 20,
+          "doc": ""
+        },
+        {
+          "name": "_normalize",
+          "line": 32,
+          "doc": ""
+        },
+        {
+          "name": "test_docx_tables_are_read_in_document_order",
+          "line": 36,
+          "doc": ""
+        },
+        {
+          "name": "test_docx_merged_cells_read_once",
+          "line": 58,
+          "doc": ""
+        },
+        {
+          "name": "test_docx_hyperlinks_become_candidate_links",
+          "line": 68,
+          "doc": ""
+        },
+        {
+          "name": "test_docx_page_header_contact_details",
+          "line": 88,
+          "doc": ""
+        },
+        {
+          "name": "test_pdf_link_annotations_become_candidate_links",
+          "line": 101,
+          "doc": ""
+        },
+        {
+          "name": "_raw",
+          "line": 115,
+          "doc": ""
+        },
+        {
+          "name": "test_headline_and_text_urls_from_header",
+          "line": 135,
+          "doc": ""
+        },
+        {
+          "name": "test_header_lines_do_not_trigger_structure_extraction",
+          "line": 145,
+          "doc": ""
+        },
+        {
+          "name": "test_placeholder_contact_line_is_not_a_headline",
+          "line": 151,
+          "doc": ""
+        },
+        {
+          "name": "test_renderers_show_headline_and_short_links",
+          "line": 157,
+          "doc": ""
+        }
+      ]
+    },
+    {
       "id": "tests/unit/test_pdf_converter.py",
       "type": "python",
       "layer": "Tests",
@@ -3412,6 +3514,11 @@
     },
     {
       "from": "app/analysis/resume_normalizer.py",
+      "to": "tests/unit/test_parsing_fixes_p19.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/analysis/resume_normalizer.py",
       "to": "tests/unit/test_resume_model_v2.py",
       "type": "tested_by"
     },
@@ -3604,6 +3711,11 @@
       "from": "app/analysis/structure_extractor.py",
       "to": "app/llm/client.py",
       "type": "imports"
+    },
+    {
+      "from": "app/analysis/structure_extractor.py",
+      "to": "tests/unit/test_parsing_fixes_p19.py",
+      "type": "tested_by"
     },
     {
       "from": "app/analysis/structure_extractor.py",
@@ -3842,6 +3954,11 @@
     },
     {
       "from": "app/domain/resume.py",
+      "to": "tests/unit/test_parsing_fixes_p19.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/resume.py",
       "to": "tests/unit/test_resume_document.py",
       "type": "tested_by"
     },
@@ -3908,6 +4025,11 @@
     {
       "from": "app/domain/resume_document.py",
       "to": "tests/unit/test_html_renderer.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/resume_document.py",
+      "to": "tests/unit/test_parsing_fixes_p19.py",
       "type": "tested_by"
     },
     {
@@ -3987,6 +4109,11 @@
     },
     {
       "from": "app/ingestion/docx.py",
+      "to": "tests/unit/test_parsing_fixes_p19.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/ingestion/docx.py",
       "to": "tests/unit/test_pdf_parser.py",
       "type": "tested_by"
     },
@@ -4043,6 +4170,11 @@
     {
       "from": "app/ingestion/pdf.py",
       "to": "tests/integration/test_parse_golden.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/ingestion/pdf.py",
+      "to": "tests/unit/test_parsing_fixes_p19.py",
       "type": "tested_by"
     },
     {
@@ -4167,6 +4299,11 @@
     },
     {
       "from": "app/rendering/document_map.py",
+      "to": "tests/unit/test_parsing_fixes_p19.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/rendering/document_map.py",
       "to": "tests/unit/test_resume_model_v2.py",
       "type": "tested_by"
     },
@@ -4227,6 +4364,11 @@
     },
     {
       "from": "app/rendering/html_renderer.py",
+      "to": "tests/unit/test_parsing_fixes_p19.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/rendering/html_renderer.py",
       "to": "tests/unit/test_resume_model_v2.py",
       "type": "tested_by"
     },
@@ -4263,6 +4405,11 @@
     {
       "from": "app/rendering/template_renderer.py",
       "to": "tests/unit/test_docx_renderer.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/rendering/template_renderer.py",
+      "to": "tests/unit/test_parsing_fixes_p19.py",
       "type": "tested_by"
     },
     {

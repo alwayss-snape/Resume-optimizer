@@ -45,6 +45,14 @@ class TemplateRenderer:
             run.font.size = Pt(22)
             run.font.color.rgb = ACCENT_COLOR
 
+        headline = getattr(getattr(resume, "candidate", None), "headline", None)
+        if headline:
+            p = doc.add_paragraph()
+            p.paragraph_format.space_after = Pt(2)
+            run = p.add_run(headline)
+            run.font.size = Pt(12)
+            run.font.color.rgb = ACCENT_COLOR
+
         # Contact info
         contact_parts = []
         if getattr(resume, "candidate", None):
@@ -55,8 +63,7 @@ class TemplateRenderer:
                 contact_parts.append(cand.phone)
             if getattr(cand, "location", None):
                 contact_parts.append(cand.location)
-            links = getattr(cand, "links", []) or []
-            contact_parts.extend([l for l in links if l])
+            contact_parts.extend(cand.display_links())
         if contact_parts:
             p = doc.add_paragraph()
             p.paragraph_format.space_after = Pt(4)

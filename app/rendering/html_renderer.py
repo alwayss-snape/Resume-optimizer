@@ -52,8 +52,10 @@ class HtmlResumeRenderer:
         resume: Resume = document.resume
         presentation = document.presentation
         contact = " · ".join(html.escape(value) for value in (
-            resume.candidate.email, resume.candidate.phone, resume.candidate.location, *resume.candidate.links,
+            resume.candidate.email, resume.candidate.phone, resume.candidate.location, *resume.candidate.display_links(),
         ) if value)
+        headline = (f'<p class="headline">{html.escape(resume.candidate.headline)}</p>'
+                    if resume.candidate.headline else "")
         sections = []
 
         if resume.summary:
@@ -113,6 +115,7 @@ body {{ font-family: {html.escape(presentation.font_family)}, Arial, sans-serif;
 header {{ border-bottom: 2px solid {html.escape(presentation.accent_color)}; padding-bottom: 10px; margin-bottom: 14px; }}
 h1 {{ margin: 0; font-size: 25pt; font-weight: 700; letter-spacing: .2px; color: {html.escape(presentation.accent_color)}; }}
 .contact {{ margin: 5px 0 0; color: #4b5563; font-size: 10pt; }}
+.headline {{ margin: 2px 0 0; font-size: 12pt; color: {html.escape(presentation.accent_color)}; }}
 h2 {{ color: {html.escape(presentation.accent_color)}; font-size: 12pt; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; border-bottom: 1px solid #d1d5db; padding-bottom: 4px; margin: 18px 0 8px; }}
 h3 {{ font-size: 11pt; font-weight: 700; margin: 0; }}
 .entry-head {{ display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin: 10px 0 0; }}
@@ -126,7 +129,7 @@ li {{ margin: 2px 0; }}
 .group {{ font-weight: 700; margin: 6px 0 0; }}
 strong {{ font-weight: 700; }}
 </style></head><body>
-<header><h1>{html.escape(resume.candidate.name)}</h1><p class="contact">{contact}</p></header>
+<header><h1>{html.escape(resume.candidate.name)}</h1>{headline}<p class="contact">{contact}</p></header>
 {''.join(sections)}
 </body></html>"""
 

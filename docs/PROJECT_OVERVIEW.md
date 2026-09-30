@@ -43,7 +43,7 @@ Semantic matching uses a local embedding model (`all-MiniLM-L6-v2`).
 
 | Area | Status | Notes |
 |---|---|---|
-| DOCX parsing (incl. table layouts) | ✅ Works | Verified against the user's real resume (Sep 29 fixes) |
+| DOCX parsing (incl. table layouts) | ✅ Works | Paragraphs and tables in document order, hyperlinks, page-header contact (P1.9) |
 | PDF parsing | ✅ Works | Layout-aware (font size, bold, indent, right columns; P1.11). Several roles per company and project sub-sections inside a job (P1.12). The user's resume matches its golden file. Text PDFs only; `ocr.py` is a stub path. PDF input always uses the ATS template |
 | JD requirement extraction | ✅ Works | LLM-assisted with deterministic fallback |
 | Matching + score | ✅ Works | Deterministic + semantic; score breakdown in `ScoreComponents` |
@@ -83,7 +83,7 @@ Ordered by impact. None are fixed yet; they're recorded so they can be prioritiz
    closed file if reached. `app/services/validation_agent.py` isn't imported anywhere. 5 of 6 prompt files in
    `app/llm/prompts/` are unused (only `rewrite_bullet.txt` is loaded; see KNOWLEDGE_GRAPH §6).
 7. **User's source resume** has "LinkedIn | Email | Leetcode" as placeholder text with no hyperlinks. The user will
-   fix this in their own file, so no code action is needed.
+   fix this in their own file. Since P1.9, hyperlinks (DOCX and PDF) and written-out URLs are picked up as links.
 
 ## Open work: "Add as a new Job Role" (designed, approved, not coded)
 

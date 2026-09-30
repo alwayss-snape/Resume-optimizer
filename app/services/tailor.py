@@ -61,6 +61,8 @@ class TailorService:
 
     def generate_preview_md(self, resume: Resume) -> str:
         lines = [f"# {resume.candidate.name}\n"]
+        if resume.candidate.headline:
+            lines.append(f"**{resume.candidate.headline}**\n")
         contact = []
         if resume.candidate.email:
             contact.append(f"📧 {resume.candidate.email}")
@@ -68,6 +70,7 @@ class TailorService:
             contact.append(f"📞 {resume.candidate.phone}")
         if resume.candidate.location:
             contact.append(f"📍 {resume.candidate.location}")
+        contact.extend(f"🔗 {link}" for link in resume.candidate.display_links())
         if contact:
             lines.append(" | ".join(contact) + "\n")
 

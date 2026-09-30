@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**36 app modules · 27 test files · 65 classes · 341 functions/methods · 9,227 lines of Python** · source hash `236d38467056fe83`
+**36 app modules · 28 test files · 65 classes · 359 functions/methods · 9,535 lines of Python** · source hash `140d93c0e93a6950`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -114,6 +114,7 @@ tests/
     test_jd_analyzer_llm.py                      _FakeLLMClient
     test_llm_client.py                           SampleSchema
     test_matcher.py                              test_evidence_matcher_exact_and_alias(), test_one_generic_word_cannot_…
+    test_parsing_fixes_p19.py                    P1.9: links (DOCX hyperlinks, PDF link annotations, URLs in text),
     test_pdf_converter.py                        test_pdf_converter_find_binary_or_graceful_none(), test_output_qa_vali…
     test_pdf_parser.py                           test_pdf_parser_text_layer(), test_pdf_parser_file_not_found(), test_m…
     test_resume_document.py                      test_resume_document_has_versioned_json_snapshot(), test_resume_docume…
@@ -194,22 +195,25 @@ Spanning all stages: `app/cli.py`, `app/services/tailor.py`, `app/ui.py`
 
 ### `app/analysis/resume_normalizer.py`
 
-**Layer:** Analysis · **Stage:** 2 Normalize · **Lines:** 521
+**Layer:** Analysis · **Stage:** 2 Normalize · **Lines:** 601
 
 - class **`ResumeNormalizer`** ([app/analysis/resume_normalizer.py:8](../app/analysis/resume_normalizer.py#L8))
-  - `_split_skill_line()` :67 — 'Languages: Python, SQL<tab>Frameworks: Pandas, and XGBoost' ->
-  - `_skill_items()` :88
-  - `_is_dated_line()` :98 — A job title/company line carrying a date range or year.
-  - `_experience_line_kind()` :105 — 'dated' (title and/or company with dates), 'header_line' (a short
-  - `_add_role()` :121 — Record a role; the first one also fills the entry's title/dates.
-  - `_extract_date_range()` :130
-  - `_strip_date_range()` :134
-  - `_parse_title_and_dates()` :138 — 'Data Scientist II | August 2024 - Present' ->
-  - `_split_respecting_parens()` :147 — Split on sep_chars, but never inside ( ) or [ ] groups — so
-  - `normalize()` :170
+  - `_header_urls()` :40
+  - `_is_headline()` :51 — A short title line under the name, e.g. 'Senior Data Scientist |
+  - `_split_skill_line()` :100 — 'Languages: Python, SQL<tab>Frameworks: Pandas, and XGBoost' ->
+  - `_skill_items()` :121
+  - `_is_dated_line()` :131 — A job title/company line carrying a date range or year.
+  - `_experience_line_kind()` :138 — 'dated' (title and/or company with dates), 'header_line' (a short
+  - `_add_role()` :157 — Record a role; the first one also fills the entry's title/dates.
+  - `_merge_links()` :167 — Profile links from the file's hyperlinks and from URLs written in
+  - `_extract_date_range()` :181
+  - `_strip_date_range()` :185
+  - `_parse_title_and_dates()` :189 — 'Data Scientist II | August 2024 - Present' ->
+  - `_split_respecting_parens()` :198 — Split on sep_chars, but never inside ( ) or [ ] groups — so
+  - `normalize()` :221
 - **Imports:** `domain/evidence.py`, `domain/resume.py`, `domain/resume_document.py`, `ingestion/docx.py`
 - **Imported by:** `analysis/structure_extractor.py`, `services/tailor.py`
-- **Tested by:** `tests/integration/test_parse_golden.py`, `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_structure_extractor.py`, `tests/unit/test_tailor_resume_flow.py`
+- **Tested by:** `tests/integration/test_parse_golden.py`, `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_structure_extractor.py`, `tests/unit/test_tailor_resume_flow.py`
 
 ### `app/analysis/rewriter.py`
 
@@ -271,7 +275,7 @@ _LLM-assisted resume structure extraction with a verbatim guard (P1.13)._
   - `improve()` :152 — Return the better of the deterministic parse and an LLM-guided
 - **Imports:** `analysis/resume_normalizer.py`, `domain/evidence.py`, `domain/resume.py`, `domain/resume_document.py`, `ingestion/docx.py`, `llm/client.py`
 - **Imported by:** `services/tailor.py`
-- **Tested by:** `tests/unit/test_structure_extractor.py`
+- **Tested by:** `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_structure_extractor.py`
 
 ### `app/analysis/tailor_planner.py`
 
@@ -337,19 +341,20 @@ _LLM-assisted resume structure extraction with a verbatim guard (P1.13)._
 
 ### `app/domain/resume.py`
 
-**Layer:** Domain models · **Stage:** 2 Normalize · **Lines:** 81
+**Layer:** Domain models · **Stage:** 2 Normalize · **Lines:** 88
 
-- class **`Candidate`** ([app/domain/resume.py:4](../app/domain/resume.py#L4))
-- class **`ResumeBullet`** ([app/domain/resume.py:11](../app/domain/resume.py#L11))
-- class **`Role`** ([app/domain/resume.py:19](../app/domain/resume.py#L19)) — One title held at a company, e.g. 'Data Scientist II, Aug 2024 - Present'.
-- class **`Experience`** ([app/domain/resume.py:25](../app/domain/resume.py#L25)) — One company entry. `title` / `start_date` / `end_date` describe the
-  - `all_roles()` :40
-  - `bullet_groups()` :47 — Consecutive bullets grouped by sub-heading, in document order.
-- class **`Project`** ([app/domain/resume.py:57](../app/domain/resume.py#L57))
-- class **`Education`** ([app/domain/resume.py:64](../app/domain/resume.py#L64))
-- class **`Resume`** ([app/domain/resume.py:72](../app/domain/resume.py#L72))
+- class **`Candidate`** ([app/domain/resume.py:5](../app/domain/resume.py#L5))
+  - `display_links()` :14 — Links as shown on a resume: 'linkedin.com/in/x', no scheme/www.
+- class **`ResumeBullet`** ([app/domain/resume.py:18](../app/domain/resume.py#L18))
+- class **`Role`** ([app/domain/resume.py:26](../app/domain/resume.py#L26)) — One title held at a company, e.g. 'Data Scientist II, Aug 2024 - Present'.
+- class **`Experience`** ([app/domain/resume.py:32](../app/domain/resume.py#L32)) — One company entry. `title` / `start_date` / `end_date` describe the
+  - `all_roles()` :47
+  - `bullet_groups()` :54 — Consecutive bullets grouped by sub-heading, in document order.
+- class **`Project`** ([app/domain/resume.py:64](../app/domain/resume.py#L64))
+- class **`Education`** ([app/domain/resume.py:71](../app/domain/resume.py#L71))
+- class **`Resume`** ([app/domain/resume.py:79](../app/domain/resume.py#L79))
 - **Imported by:** `analysis/resume_normalizer.py`, `analysis/rewriter.py`, `analysis/structure_extractor.py`, `analysis/tailor_planner.py`, `domain/resume_document.py`, `rendering/html_renderer.py`, `rendering/template_renderer.py`, `services/tailor.py`, `validation/structural.py`
-- **Tested by:** `tests/unit/test_docx_renderer.py`, `tests/unit/test_html_renderer.py`, `tests/unit/test_resume_document.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_tailor_planner.py`, `tests/unit/test_tailor_service_addition.py`, `tests/unit/test_template_renderer_standalone.py`
+- **Tested by:** `tests/unit/test_docx_renderer.py`, `tests/unit/test_html_renderer.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_resume_document.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_tailor_planner.py`, `tests/unit/test_tailor_service_addition.py`, `tests/unit/test_template_renderer_standalone.py`
 
 ### `app/domain/resume_document.py`
 
@@ -363,7 +368,7 @@ _LLM-assisted resume structure extraction with a verbatim guard (P1.13)._
   - `snapshot()` :73 — Return a JSON-serializable, versioned document for storage or export.
 - **Imports:** `domain/resume.py`
 - **Imported by:** `analysis/resume_normalizer.py`, `analysis/structure_extractor.py`, `rendering/html_renderer.py`, `rendering/template_renderer.py`, `services/tailor.py`, `services/validation_agent.py`
-- **Tested by:** `tests/unit/test_docx_renderer.py`, `tests/unit/test_html_renderer.py`, `tests/unit/test_resume_document.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_template_renderer_standalone.py`
+- **Tested by:** `tests/unit/test_docx_renderer.py`, `tests/unit/test_html_renderer.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_resume_document.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_template_renderer_standalone.py`
 
 ### `app/domain/tailoring.py`
 
@@ -376,15 +381,17 @@ _LLM-assisted resume structure extraction with a verbatim guard (P1.13)._
 
 ### `app/ingestion/docx.py`
 
-**Layer:** Ingestion · **Stage:** 1 Ingest · **Lines:** 139
+**Layer:** Ingestion · **Stage:** 1 Ingest · **Lines:** 179
 
-- class **`RawBlock`** ([app/ingestion/docx.py:9](../app/ingestion/docx.py#L9))
-- class **`RawDocument`** ([app/ingestion/docx.py:25](../app/ingestion/docx.py#L25))
-- class **`DocxParser`** ([app/ingestion/docx.py:33](../app/ingestion/docx.py#L33))
-  - `parse()` :39
+- class **`RawBlock`** ([app/ingestion/docx.py:11](../app/ingestion/docx.py#L11))
+- class **`RawDocument`** ([app/ingestion/docx.py:27](../app/ingestion/docx.py#L27))
+- class **`DocxParser`** ([app/ingestion/docx.py:35](../app/ingestion/docx.py#L35))
+  - `_classify()` :44 — -> (block_type, text without a bullet glyph, whole line bold).
+  - `_hyperlinks()` :69 — Targets of every external hyperlink in the body, in rId order
+  - `parse()` :80
 - **Imports:** `rendering/document_map.py`
 - **Imported by:** `analysis/resume_normalizer.py`, `analysis/structure_extractor.py`, `ingestion/pdf.py`, `services/tailor.py`
-- **Tested by:** `tests/integration/test_parse_golden.py`, `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_docx_parser.py`, `tests/unit/test_docx_renderer.py`, `tests/unit/test_pdf_parser.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_structure_extractor.py`, `tests/unit/test_tailor_resume_flow.py`
+- **Tested by:** `tests/integration/test_parse_golden.py`, `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_docx_parser.py`, `tests/unit/test_docx_renderer.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_pdf_parser.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_structure_extractor.py`, `tests/unit/test_tailor_resume_flow.py`
 
 ### `app/ingestion/ocr.py`
 
@@ -417,7 +424,7 @@ _LLM-assisted resume structure extraction with a verbatim guard (P1.13)._
 - function **`_is_bold_span()`** ([app/ingestion/pdf.py:60](../app/ingestion/pdf.py#L60))
 - **Imports:** `ingestion/docx.py`, `ingestion/ocr.py`, `rendering/document_map.py`
 - **Imported by:** `services/tailor.py`
-- **Tested by:** `tests/integration/test_parse_golden.py`, `tests/unit/test_pdf_parser.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_structure_extractor.py`
+- **Tested by:** `tests/integration/test_parse_golden.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_pdf_parser.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_structure_extractor.py`
 
 ### `app/llm/client.py`
 
@@ -472,7 +479,7 @@ _LLM-assisted resume structure extraction with a verbatim guard (P1.13)._
   - `add_location()` :18
   - `get_location()` :21
 - **Imported by:** `ingestion/docx.py`, `ingestion/pdf.py`, `rendering/docx_patcher.py`
-- **Tested by:** `tests/unit/test_docx_parser.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_structure_extractor.py`
+- **Tested by:** `tests/unit/test_docx_parser.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_structure_extractor.py`
 
 ### `app/rendering/docx_patcher.py`
 
@@ -487,7 +494,7 @@ _LLM-assisted resume structure extraction with a verbatim guard (P1.13)._
 
 ### `app/rendering/html_renderer.py`
 
-**Layer:** Rendering · **Stage:** 9 Render · **Lines:** 137
+**Layer:** Rendering · **Stage:** 9 Render · **Lines:** 140
 
 - class **`HtmlResumeRenderer`** ([app/rendering/html_renderer.py:8](../app/rendering/html_renderer.py#L8)) — Render an ATS-safe, printable résumé from the canonical document.
   - `_items()` :11
@@ -495,10 +502,10 @@ _LLM-assisted resume structure extraction with a verbatim guard (P1.13)._
   - `_dates()` :23
   - `_experience_entry()` :26
   - `render()` :51
-  - `write_html()` :133
+  - `write_html()` :136
 - **Imports:** `domain/resume.py`, `domain/resume_document.py`
 - **Imported by:** `services/tailor.py`
-- **Tested by:** `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_html_renderer.py`, `tests/unit/test_resume_model_v2.py`
+- **Tested by:** `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_html_renderer.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_resume_model_v2.py`
 
 ### `app/rendering/pdf_converter.py`
 
@@ -512,19 +519,19 @@ _LLM-assisted resume structure extraction with a verbatim guard (P1.13)._
 
 ### `app/rendering/template_renderer.py`
 
-**Layer:** Rendering · **Stage:** 9 Render · **Lines:** 290
+**Layer:** Rendering · **Stage:** 9 Render · **Lines:** 297
 
 - class **`TemplateRenderer`** ([app/rendering/template_renderer.py:25](../app/rendering/template_renderer.py#L25)) — Standard single-column, ATS-safe DOCX renderer with support for ResumeDocument.
   - `render_ats_default()` :28
-  - `_set_document_defaults()` :208 — Tighter, more consistent margins/typography than python-docx's
-  - `_content_width()` :232
-  - `_add_section_heading()` :236 — A section label in the accent color with a rule underneath —
-  - `_role_dates()` :252
-  - `_add_title_dates_line()` :257 — Title (bold) on the left, date range right-aligned on the same
-  - `_add_bottom_border()` :277 — Adds a single bottom border to a paragraph via raw OOXML — the
+  - `_set_document_defaults()` :215 — Tighter, more consistent margins/typography than python-docx's
+  - `_content_width()` :239
+  - `_add_section_heading()` :243 — A section label in the accent color with a rule underneath —
+  - `_role_dates()` :259
+  - `_add_title_dates_line()` :264 — Title (bold) on the left, date range right-aligned on the same
+  - `_add_bottom_border()` :284 — Adds a single bottom border to a paragraph via raw OOXML — the
 - **Imports:** `domain/resume.py`, `domain/resume_document.py`
 - **Imported by:** `services/tailor.py`
-- **Tested by:** `tests/unit/test_docx_renderer.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_template_renderer_standalone.py`
+- **Tested by:** `tests/unit/test_docx_renderer.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_template_renderer_standalone.py`
 
 ### `app/services/run_manager.py`
 
@@ -539,18 +546,18 @@ _LLM-assisted resume structure extraction with a verbatim guard (P1.13)._
 
 ### `app/services/tailor.py`
 
-**Layer:** Services · **Stage:** all · **Lines:** 614
+**Layer:** Services · **Stage:** all · **Lines:** 617
 
 - class **`TailorService`** ([app/services/tailor.py:34](../app/services/tailor.py#L34))
   - `__init__()` :35
   - `generate_preview_md()` :62
-  - `parse_resume()` :104 — File -> (raw document, ResumeDocument, evidence). The deterministic
-  - `normalize_raw()` :114
-  - `analyze_only()` :121
-  - `generate_proposals()` :144 — Generate rewrite proposals without applying them, plus advisory
-  - `incorporate_user_addition()` :199 — Fold a user-supplied free-text addition (a project, an
-  - `tailor_resume()` :273
-- function **`_merge_usage()`** ([app/services/tailor.py:605](../app/services/tailor.py#L605)) — Combine two LLMClient.get_usage_summary() dicts into one.
+  - `parse_resume()` :107 — File -> (raw document, ResumeDocument, evidence). The deterministic
+  - `normalize_raw()` :117
+  - `analyze_only()` :124
+  - `generate_proposals()` :147 — Generate rewrite proposals without applying them, plus advisory
+  - `incorporate_user_addition()` :202 — Fold a user-supplied free-text addition (a project, an
+  - `tailor_resume()` :276
+- function **`_merge_usage()`** ([app/services/tailor.py:608](../app/services/tailor.py#L608)) — Combine two LLMClient.get_usage_summary() dicts into one.
 - **Imports:** `analysis/jd_analyzer.py`, `analysis/matcher.py`, `analysis/resume_normalizer.py`, `analysis/rewriter.py`, `analysis/scoring.py`, `analysis/semantic_matcher.py`, `analysis/structure_extractor.py`, `analysis/tailor_planner.py`, `domain/evidence.py`, `domain/job.py`, `domain/report.py`, `domain/resume.py`, `domain/resume_document.py`, `domain/tailoring.py`, `ingestion/docx.py`, `ingestion/pdf.py`, `llm/client.py`, `rendering/docx_patcher.py`, `rendering/html_renderer.py`, `rendering/pdf_converter.py`, `rendering/template_renderer.py`, `services/run_manager.py`, `validation/factual.py`, `validation/output.py`, `validation/safety.py`, `validation/structural.py`
 - **Imported by:** `cli.py`, `ui.py`
 - **Tested by:** `tests/integration/test_end_to_end.py`, `tests/unit/test_cli.py`, `tests/unit/test_tailor_resume_flow.py`, `tests/unit/test_tailor_service_addition.py`

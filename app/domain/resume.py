@@ -1,12 +1,19 @@
+import re
 from typing import Any, Dict, List, Optional, Tuple
 from pydantic import BaseModel, Field
 
 class Candidate(BaseModel):
     name: str = "Candidate"
+    # Short professional title under the name, e.g. "Senior Data Scientist".
+    headline: Optional[str] = None
     email: Optional[str] = None
     phone: Optional[str] = None
     location: Optional[str] = None
     links: List[str] = Field(default_factory=list)
+
+    def display_links(self) -> List[str]:
+        """Links as shown on a resume: 'linkedin.com/in/x', no scheme/www."""
+        return [re.sub(r"^(?:https?://)?(?:www\.)?", "", l).rstrip("/") for l in self.links if l]
 
 class ResumeBullet(BaseModel):
     id: str

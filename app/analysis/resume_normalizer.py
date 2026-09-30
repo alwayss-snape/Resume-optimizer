@@ -25,6 +25,39 @@ class ResumeNormalizer:
         re.IGNORECASE,
     )
     PHONE_RE = re.compile(r'(\+\d{1,3}[-.\s]?)?\d{3}[-.\s]?\d{3}[-.\s]?\d{4}\b')
+    # A URL written out in the text: "linkedin.com/in/x", "https://github.com/x".
+    URL_RE = re.compile(
+        r"(?:https?://)?(?:www\.)?(?:[a-z0-9-]+\.)+(?:com|in|io|dev|me|org|net|ai|co|app|page)(?:/[^\s|,;]*)?",
+        re.IGNORECASE,
+    )
+    # Words that make a header segment a contact item, not a headline.
+    CONTACT_WORDS_RE = re.compile(
+        r"\b(?:linkedin|github|gitlab|leetcode|kaggle|portfolio|website|email|e-mail|phone|mobile|tel)\b",
+        re.IGNORECASE,
+    )
+    LOCATION_RE = re.compile(r"^[A-Za-z][A-Za-z .'-]*,\s*[A-Za-z][A-Za-z .'-]*$")
+
+    def _header_urls(self, text: str) -> List[str]:
+        urls = []
+        for m in self.URL_RE.finditer(text):
+            url = m.group(0).rstrip(".)")
+            # Skip the domain part of an email address.
+            if m.start() > 0 and text[m.start() - 1] == "@":
+                continue
+            if "/" in url or url.lower().startswith(("http", "www.")):
+                urls.append(url)
+        return urls
+
+    def _is_headline(self, text: str) -> bool:
+        """A short title line under the name, e.g. 'Senior Data Scientist |
+        MLOps'. Contact lines, links and a bare location don't count."""
+        if len(text) > 90 or "@" in text or self.PHONE_RE.search(text) or self.URL_RE.search(text):
+            return False
+        if self.CONTACT_WORDS_RE.search(text) or self.LOCATION_RE.match(text.strip()):
+            return False
+        if text.rstrip().endswith("."):  # a sentence: summary text without a heading
+            return False
+        return any(c.isalpha() for c in text)
 
     # Only these mark a genuine new top-level résumé section. A heading-styled
     # line that doesn't match one of these (the candidate's name, a bold
@@ -115,6 +148,9 @@ class ResumeNormalizer:
         heading_like = block.block_type == "heading" or block.bold or has_sep or "\t" in text
         if heading_like and len(text) < 90 and not left.rstrip().endswith("."):
             return "header_line"
+        if len(text) <= 60 and not left.rstrip().endswith("."):
+            # A short plain line: a company only if a dated line follows.
+            return "maybe_company"
         return "content"
 
     @staticmethod
@@ -126,6 +162,21 @@ class ResumeNormalizer:
         if not exp.roles:
             exp.roles.append(Role(title=exp.title, start_date=exp.start_date, end_date=exp.end_date))
         exp.roles.append(role)
+
+    @staticmethod
+    def _merge_links(text_urls: List[str], file_links: List[str]) -> List[str]:
+        """Profile links from the file's hyperlinks and from URLs written in
+        the header. mailto:/tel: targets are contact details, not links."""
+        merged: List[str] = []
+        seen = set()
+        for url in list(file_links) + list(text_urls):
+            if not url or url.lower().startswith(("mailto:", "tel:")):
+                continue
+            key = re.sub(r"^(?:https?://)?(?:www\.)?", "", url.lower()).rstrip("/")
+            if key and key not in seen:
+                seen.add(key)
+                merged.append(url)
+        return merged
 
     def _extract_date_range(self, text: str) -> Optional[str]:
         m = self.DATE_RANGE_RE.search(text)
@@ -182,6 +233,8 @@ class ResumeNormalizer:
         candidate_email = None
         candidate_phone = None
         candidate_location = None
+        candidate_headline = None
+        candidate_links: List[str] = []
 
         current_section = "Header"
         current_exp: Optional[Experience] = None
@@ -243,8 +296,21 @@ class ResumeNormalizer:
                 phone_match = self.PHONE_RE.search(text)
                 if phone_match:
                     candidate_phone = phone_match.group(0)
+                is_name_line = False
                 if "@" not in text and not phone_match and len(text) < 40 and candidate_name == "Candidate":
                     candidate_name = text
+                    is_name_line = True
+                for url in self._header_urls(text):
+                    if url not in candidate_links:
+                        candidate_links.append(url)
+                if ("header" in section_lower and not is_name_line and candidate_headline is None
+                        and candidate_name != "Candidate" and text != candidate_name and self._is_headline(text)):
+                    candidate_headline = text
+                    evidence_list.append(Evidence(
+                        id=f"ev_{ev_counter:04d}", source_type="summary",
+                        source_id=block.id, source_location_id=block.id, text=text,
+                    ))
+                    ev_counter += 1
                 # A pipe/bullet-separated contact line (e.g. "LinkedIn | Email |
                 # Leetcode | +91-... | Bangalore, India") often carries a
                 # "City, Country/State" segment; pull it out as location
@@ -283,8 +349,11 @@ class ResumeNormalizer:
                 kind = self._HINT_KINDS.get(block.hint or "")
                 if kind is None:
                     kind = self._experience_line_kind(block, text)
-                    if kind == "header_line" and self._is_dated_line(blocks[idx + 1] if idx + 1 < len(blocks) else None):
+                    next_is_dated = self._is_dated_line(blocks[idx + 1] if idx + 1 < len(blocks) else None)
+                    if kind in ("header_line", "maybe_company") and next_is_dated:
                         kind = "company"
+                    elif kind == "maybe_company":
+                        kind = "content"
 
                 if kind == "dated":
                     title, start, end = self._parse_title_and_dates(left)
@@ -483,6 +552,11 @@ class ResumeNormalizer:
                     text=text,
                 ))
 
+            # Short header lines (name, contact, headline, links) were handled
+            # above; they aren't evidence of experience.
+            elif "header" in section_lower and len(text) <= 90:
+                pass
+
             # Catch-all general section if text contains substantial candidate experience
             else:
                 ev_id = f"ev_{ev_counter:04d}"
@@ -495,11 +569,17 @@ class ResumeNormalizer:
                     text=text,
                 ))
 
+        if candidate_email is None:
+            mailto = next((l for l in raw_doc.links if l.lower().startswith("mailto:")), None)
+            if mailto:
+                candidate_email = mailto.split(":", 1)[1].split("?", 1)[0] or None
         candidate = Candidate(
             name=candidate_name,
             email=candidate_email,
             phone=candidate_phone,
             location=candidate_location,
+            headline=candidate_headline,
+            links=self._merge_links(candidate_links, raw_doc.links),
         )
 
         resume = Resume(
