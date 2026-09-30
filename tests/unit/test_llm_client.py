@@ -103,7 +103,7 @@ def test_groq_missing_api_key_raises_connection_error():
     with pytest.raises(LLMConnectionError):
         client.generate([{"role": "user", "content": "Hi"}])
 
-@patch("httpx.post")
+@patch("httpx.Client.post")
 def test_groq_generate_text_success(mock_post):
     mock_response = MagicMock()
     mock_response.status_code = 200
@@ -125,7 +125,7 @@ def test_groq_generate_text_success(mock_post):
     called_url = mock_post.call_args.args[0]
     assert called_url == "https://api.groq.com/openai/v1/chat/completions"
 
-@patch("httpx.post")
+@patch("httpx.Client.post")
 def test_groq_generate_api_error_raises_llm_error(mock_post):
     mock_response = MagicMock()
     mock_response.status_code = 401
@@ -136,7 +136,7 @@ def test_groq_generate_api_error_raises_llm_error(mock_post):
     with pytest.raises(LLMError):
         client.generate([{"role": "user", "content": "Hi"}])
 
-@patch("httpx.get")
+@patch("httpx.Client.get")
 def test_groq_is_available_true(mock_get):
     mock_response = MagicMock()
     mock_response.status_code = 200
@@ -146,7 +146,7 @@ def test_groq_is_available_true(mock_get):
     client = LLMClient(provider="groq", model="openai/gpt-oss-120b", api_key="test-key")
     assert client.is_available() is True
 
-@patch("httpx.get")
+@patch("httpx.Client.get")
 def test_groq_is_available_false_for_unknown_model(mock_get):
     """Regression: the UI used to pass an Ollama tag ("qwen3:4b") to Groq, and
     the check only looked at HTTP 200, so every rewrite failed silently."""
@@ -159,7 +159,7 @@ def test_groq_is_available_false_for_unknown_model(mock_get):
     assert client.is_available() is False
     assert "qwen3:4b" in client.last_error
 
-@patch("httpx.get")
+@patch("httpx.Client.get")
 def test_availability_is_checked_once_and_cached(mock_get):
     mock_response = MagicMock()
     mock_response.status_code = 200
@@ -174,7 +174,7 @@ def test_availability_is_checked_once_and_cached(mock_get):
     assert mock_get.call_count == 2
 
 @patch("app.llm.client.time.sleep")
-@patch("httpx.post")
+@patch("httpx.Client.post")
 def test_groq_retries_after_429(mock_post, mock_sleep):
     limited = MagicMock(status_code=429, text="rate limited", headers={"retry-after": "2"})
     ok = MagicMock(status_code=200)
@@ -185,7 +185,7 @@ def test_groq_retries_after_429(mock_post, mock_sleep):
     assert client.generate([{"role": "user", "content": "Hi"}]).raw_text == "done"
     mock_sleep.assert_called_once_with(2.0)
 
-@patch("httpx.post")
+@patch("httpx.Client.post")
 def test_groq_gpt_oss_uses_strict_json_schema(mock_post):
     ok = MagicMock(status_code=200)
     ok.json.return_value = {"choices": [{"message": {"content": '{"name": "a", "age": 1}'}}], "usage": {}}
@@ -311,3 +311,12 @@ def test_usage_log_records_failed_call(mock_ollama):
     assert summary["failure_count"] == 1
     assert summary["total_tokens"] == 0
     assert summary["calls"][0]["success"] is False
+
+
+def test_groq_client_connects_over_ipv4():
+    """httpx has no happy-eyeballs; with black-holed IPv6 each Groq call
+    stalled ~150 s. The Groq HTTP client binds to IPv4 by default."""
+    with patch("httpx.HTTPTransport") as transport:
+        client = LLMClient(provider="groq", api_key="test-key")
+    transport.assert_called_once_with(local_address="0.0.0.0")
+    assert client._http is not None

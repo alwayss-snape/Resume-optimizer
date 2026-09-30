@@ -99,7 +99,12 @@ class LLMClient:
             self.host = host or settings.groq_base_url
             self.model = model or settings.groq_model
             self.api_key = api_key if api_key is not None else settings.groq_api_key
-            self.client = None  # Groq requests are stateless HTTP calls; no persistent client object.
+            self.client = None  # Groq requests are plain HTTP calls through self._http.
+            self._http = None
+            if httpx is not None:
+                # local_address="0.0.0.0" binds the socket to IPv4, see settings.groq_force_ipv4.
+                transport = httpx.HTTPTransport(local_address="0.0.0.0") if settings.groq_force_ipv4 else None
+                self._http = httpx.Client(transport=transport)
             if not self.api_key:
                 logger.warning("LLM_PROVIDER=groq but GROQ_API_KEY is not set (check your .env file).")
         else:
@@ -167,7 +172,7 @@ class LLMClient:
         if not self.api_key:
             return False, "GROQ_API_KEY is not set"
         try:
-            resp = httpx.get(f"{self.host}/models", headers={"Authorization": f"Bearer {self.api_key}"}, timeout=10)
+            resp = self._http.get(f"{self.host}/models", headers={"Authorization": f"Bearer {self.api_key}"}, timeout=10)
         except Exception as e:
             return False, f"cannot reach Groq ({e})"
         if resp.status_code != 200:
@@ -354,7 +359,7 @@ class LLMClient:
         start_time = time.time()
         for attempt in range(GROQ_MAX_ATTEMPTS):
             try:
-                resp = httpx.post(
+                resp = self._http.post(
                     f"{self.host}/chat/completions",
                     headers={
                         "Authorization": f"Bearer {self.api_key}",

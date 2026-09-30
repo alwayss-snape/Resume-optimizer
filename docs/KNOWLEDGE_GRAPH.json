@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "b4e28658ab5ecac7",
+  "source_hash": "236d38467056fe83",
   "stats": {
     "files": 92,
     "python_files": 70,
     "app_modules": 36,
     "test_files": 27,
     "classes": 65,
-    "functions": 340,
-    "lines_of_python": 9208
+    "functions": 341,
+    "lines_of_python": 9227
   },
   "axes": {
     "x": "location (path)",
@@ -103,6 +103,12 @@
       "default": "'https://api.groq.com/openai/v1'"
     },
     {
+      "name": "groq_force_ipv4",
+      "env": "GROQ_FORCE_IPV4",
+      "type": "bool",
+      "default": "True"
+    },
+    {
       "name": "anthropic_api_key",
       "env": "ANTHROPIC_API_KEY",
       "type": "str",
@@ -139,7 +145,7 @@
       "type": "file",
       "layer": "Root",
       "stages": [],
-      "lines": 21
+      "lines": 23
     },
     {
       "id": ".githooks/_python",
@@ -695,7 +701,7 @@
       "type": "python",
       "layer": "Config",
       "stages": [],
-      "lines": 41,
+      "lines": 46,
       "doc": "",
       "classes": [
         {
@@ -1090,7 +1096,7 @@
         "3 JD analysis",
         "7 Rewrite"
       ],
-      "lines": 607,
+      "lines": 612,
       "doc": "",
       "classes": [
         {
@@ -1105,87 +1111,87 @@
             },
             {
               "name": "is_available",
-              "line": 133,
+              "line": 138,
               "doc": "Whether the configured provider is reachable AND the configured"
             },
             {
               "name": "_check_available",
-              "line": 145,
+              "line": 150,
               "doc": ""
             },
             {
               "name": "_ollama_check",
-              "line": 152,
+              "line": 157,
               "doc": ""
             },
             {
               "name": "_groq_check",
-              "line": 164,
+              "line": 169,
               "doc": ""
             },
             {
               "name": "_anthropic_check",
-              "line": 185,
+              "line": 190,
               "doc": ""
             },
             {
               "name": "_record",
-              "line": 206,
+              "line": 211,
               "doc": ""
             },
             {
               "name": "generate",
-              "line": 224,
+              "line": 229,
               "doc": "Generate text from the LLM using the chat interface."
             },
             {
               "name": "get_usage_summary",
-              "line": 253,
+              "line": 258,
               "doc": "Aggregate every LLM call made on this client instance so far"
             },
             {
               "name": "_generate_ollama",
-              "line": 275,
+              "line": 280,
               "doc": ""
             },
             {
               "name": "_groq_supports_strict_schema",
-              "line": 320,
+              "line": 325,
               "doc": ""
             },
             {
               "name": "_generate_groq",
-              "line": 324,
+              "line": 329,
               "doc": ""
             },
             {
               "name": "_split_system",
-              "line": 402,
+              "line": 407,
               "doc": "The Messages API takes the system prompt as a top-level field,"
             },
             {
               "name": "_anthropic_request",
-              "line": 409,
+              "line": 414,
               "doc": ""
             },
             {
               "name": "_anthropic_response",
-              "line": 446,
+              "line": 451,
               "doc": ""
             },
             {
               "name": "_generate_anthropic",
-              "line": 463,
+              "line": 468,
               "doc": ""
             },
             {
               "name": "_generate_json_anthropic",
-              "line": 468,
+              "line": 473,
               "doc": "Structured outputs guarantee the response matches the schema, so"
             },
             {
               "name": "generate_json",
-              "line": 489,
+              "line": 494,
               "doc": "Generate structured JSON conforming to a Pydantic model."
             }
           ]
@@ -1194,12 +1200,12 @@
       "functions": [
         {
           "name": "_retry_after_seconds",
-          "line": 579,
+          "line": 584,
           "doc": "Seconds to wait before retrying a 429: the server's `retry-after`"
         },
         {
           "name": "strict_json_schema",
-          "line": 594,
+          "line": 599,
           "doc": "Adapt a Pydantic JSON schema for strict structured-output modes: every"
         }
       ]
@@ -2410,7 +2416,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 313,
+      "lines": 322,
       "doc": "",
       "classes": [
         {
@@ -2535,6 +2541,11 @@
           "name": "test_usage_log_records_failed_call",
           "line": 299,
           "doc": ""
+        },
+        {
+          "name": "test_groq_client_connects_over_ipv4",
+          "line": 316,
+          "doc": "httpx has no happy-eyeballs; with black-holed IPv6 each Groq call"
         }
       ]
     },

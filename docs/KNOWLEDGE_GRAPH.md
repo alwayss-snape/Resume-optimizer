@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**36 app modules · 27 test files · 65 classes · 340 functions/methods · 9,208 lines of Python** · source hash `b4e28658ab5ecac7`
+**36 app modules · 27 test files · 65 classes · 341 functions/methods · 9,227 lines of Python** · source hash `236d38467056fe83`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -304,7 +304,7 @@ _LLM-assisted resume structure extraction with a verbatim guard (P1.13)._
 
 ### `app/config/settings.py`
 
-**Layer:** Config · **Stage:** — · **Lines:** 41
+**Layer:** Config · **Stage:** — · **Lines:** 46
 
 - class **`Settings`** ([app/config/settings.py:4](../app/config/settings.py#L4))
 - **Imported by:** `analysis/semantic_matcher.py`, `llm/client.py`, `ui.py`
@@ -421,29 +421,29 @@ _LLM-assisted resume structure extraction with a verbatim guard (P1.13)._
 
 ### `app/llm/client.py`
 
-**Layer:** LLM · **Stage:** 3 JD analysis, 7 Rewrite · **Lines:** 607
+**Layer:** LLM · **Stage:** 3 JD analysis, 7 Rewrite · **Lines:** 612
 
 - class **`LLMClient`** ([app/llm/client.py:53](../app/llm/client.py#L53)) — Unified client for text generation across three interchangeable providers:
   - `__init__()` :69
-  - `is_available()` :133 — Whether the configured provider is reachable AND the configured
-  - `_check_available()` :145
-  - `_ollama_check()` :152
-  - `_groq_check()` :164
-  - `_anthropic_check()` :185
-  - `_record()` :206
-  - `generate()` :224 — Generate text from the LLM using the chat interface.
-  - `get_usage_summary()` :253 — Aggregate every LLM call made on this client instance so far
-  - `_generate_ollama()` :275
-  - `_groq_supports_strict_schema()` :320
-  - `_generate_groq()` :324
-  - `_split_system()` :402 — The Messages API takes the system prompt as a top-level field,
-  - `_anthropic_request()` :409
-  - `_anthropic_response()` :446
-  - `_generate_anthropic()` :463
-  - `_generate_json_anthropic()` :468 — Structured outputs guarantee the response matches the schema, so
-  - `generate_json()` :489 — Generate structured JSON conforming to a Pydantic model.
-- function **`_retry_after_seconds()`** ([app/llm/client.py:579](../app/llm/client.py#L579)) — Seconds to wait before retrying a 429: the server's `retry-after`
-- function **`strict_json_schema()`** ([app/llm/client.py:594](../app/llm/client.py#L594)) — Adapt a Pydantic JSON schema for strict structured-output modes: every
+  - `is_available()` :138 — Whether the configured provider is reachable AND the configured
+  - `_check_available()` :150
+  - `_ollama_check()` :157
+  - `_groq_check()` :169
+  - `_anthropic_check()` :190
+  - `_record()` :211
+  - `generate()` :229 — Generate text from the LLM using the chat interface.
+  - `get_usage_summary()` :258 — Aggregate every LLM call made on this client instance so far
+  - `_generate_ollama()` :280
+  - `_groq_supports_strict_schema()` :325
+  - `_generate_groq()` :329
+  - `_split_system()` :407 — The Messages API takes the system prompt as a top-level field,
+  - `_anthropic_request()` :414
+  - `_anthropic_response()` :451
+  - `_generate_anthropic()` :468
+  - `_generate_json_anthropic()` :473 — Structured outputs guarantee the response matches the schema, so
+  - `generate_json()` :494 — Generate structured JSON conforming to a Pydantic model.
+- function **`_retry_after_seconds()`** ([app/llm/client.py:584](../app/llm/client.py#L584)) — Seconds to wait before retrying a 429: the server's `retry-after`
+- function **`strict_json_schema()`** ([app/llm/client.py:599](../app/llm/client.py#L599)) — Adapt a Pydantic JSON schema for strict structured-output modes: every
 - **Imports:** `config/settings.py`, `llm/schemas.py`
 - **Imported by:** `analysis/jd_analyzer.py`, `analysis/matcher.py`, `analysis/rewriter.py`, `analysis/structure_extractor.py`, `analysis/tailor_planner.py`, `cli.py`, `services/tailor.py`, `ui.py`, `scripts/benchmark_model.py`
 - **Tested by:** `tests/unit/test_llm_client.py`, `tests/unit/test_rewriter.py`
@@ -746,6 +746,7 @@ From `app/config/settings.py`; each can be overridden by the env var of the same
 | `GROQ_API_KEY` | str | `''` |
 | `GROQ_MODEL` | str | `'openai/gpt-oss-120b'` |
 | `GROQ_BASE_URL` | str | `'https://api.groq.com/openai/v1'` |
+| `GROQ_FORCE_IPV4` | bool | `True` |
 | `ANTHROPIC_API_KEY` | str | `''` |
 | `ANTHROPIC_MODEL` | str | `'claude-opus-5-5'` |
 | `SEMANTIC_MATCH_ENABLED` | bool | `True` |

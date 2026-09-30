@@ -18,6 +18,11 @@ class Settings(BaseSettings):
     groq_api_key: str = ""
     groq_model: str = "openai/gpt-oss-120b"
     groq_base_url: str = "https://api.groq.com/openai/v1"
+    # Connect to Groq over IPv4 only. httpx has no "happy eyeballs": on a
+    # network where IPv6 is advertised but black-holed, it waits out every
+    # IPv6 address (~75 s each) before trying IPv4, so each call took ~150 s
+    # instead of <1 s. Groq's endpoint (Cloudflare) always has IPv4.
+    groq_force_ipv4: bool = True
 
     # Anthropic (Claude) — LLM_PROVIDER=anthropic. Best rewrite quality;
     # uses schema-guaranteed structured outputs. Pay-as-you-go API key from
