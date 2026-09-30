@@ -168,3 +168,82 @@ def test_normalize_llm_text_fixes_typographic_unicode():
     out = normalize_llm_text(raw)
     assert out == "Architected high-throughput services processing over 50M daily requests, cutting cost 2 x."
     assert all(ord(c) < 128 for c in out)
+
+
+# -- Rewrite v2: one call per role (P1.4) ---------------------------------
+
+def _role_setup():
+    from app.analysis.tailor_planner import TailoringPlanner
+    from app.domain.evidence import Evidence
+    from app.domain.job import JobDescription, Requirement
+    from app.domain.resume import Candidate, Experience, Resume, ResumeBullet
+    resume = Resume(candidate=Candidate(name="J"), experience=[Experience(
+        id="e1", company="Acme", title="Data Scientist", bullets=[
+            ResumeBullet(id="b1", text="Built LightGBM models in Python for fraud."),
+            ResumeBullet(id="b2", text="Built Spark pipelines for feature data."),
+            ResumeBullet(id="b3", text="Organised the team offsite."),
+        ])])
+    evidence = [Evidence(id=f"ev_{b.id}", source_type="experience", source_id=b.id, text=b.text)
+                for b in resume.experience[0].bullets]
+    reqs = [Requirement(id="r1", text="LightGBM and Python modeling"), Requirement(id="r2", text="Spark pipelines")]
+    job = JobDescription(requirements=reqs, keywords=["LightGBM", "Python", "Spark"], raw_text="x")
+    plan = TailoringPlanner().create_plan(resume, job, evidence, matches=[])
+    return resume, evidence, job, plan
+
+
+def _role_client(result=None, error=None):
+    from unittest.mock import MagicMock
+    client = MagicMock()
+    client.is_available.return_value = True
+    if error:
+        client.generate_json.side_effect = error
+    else:
+        client.generate_json.return_value = result
+    return client
+
+
+def test_role_rewrite_is_one_call_and_maps_results():
+    from app.analysis.rewriter import LLMRewriter
+    from app.llm.schemas import RoleBulletRewrite, RoleRewriteResult
+    resume, evidence, job, plan = _role_setup()
+    result = RoleRewriteResult(bullets=[
+        RoleBulletRewrite(bullet_id="b1", rewritten="Developed LightGBM fraud models in Python.",
+                          keywords_used=["LightGBM", "Python", "PyTorch"]),
+        RoleBulletRewrite(bullet_id="b1", rewritten="duplicate, ignored"),
+        RoleBulletRewrite(bullet_id="zzz", rewritten="unknown id, ignored"),
+    ])
+    client = _role_client(result)
+    proposals = {p.target_semantic_id: p for p in LLMRewriter(client).execute_plan(resume, plan, evidence, job)}
+    assert client.generate_json.call_count == 1
+    assert set(proposals) == {"b1", "b2"}  # b3 is not relevant, so not sent
+    assert proposals["b1"].status == "ok" and proposals["b1"].proposed_text.startswith("Developed")
+    assert "PyTorch" not in proposals["b1"].rationale  # only allowed keywords are reported
+    assert proposals["b2"].status == "llm_error" and "no rewrite" in proposals["b2"].error
+    assert proposals["b2"].proposed_text == "Built Spark pipelines for feature data."
+
+
+def test_role_rewrite_failure_is_visible_per_bullet():
+    from app.analysis.rewriter import LLMRewriter
+    resume, evidence, job, plan = _role_setup()
+    proposals = LLMRewriter(_role_client(error=RuntimeError("429 rate limited"))).execute_plan(
+        resume, plan, evidence, job)
+    assert {p.status for p in proposals} == {"llm_error"}
+    assert all("429" in p.error and p.proposed_text == p.original_text for p in proposals)
+
+
+def test_role_rewrite_unchanged_text_is_marked_unchanged():
+    from app.analysis.rewriter import LLMRewriter
+    from app.llm.schemas import RoleBulletRewrite, RoleRewriteResult
+    resume, evidence, job, plan = _role_setup()
+    result = RoleRewriteResult(bullets=[RoleBulletRewrite(bullet_id="b2", rewritten="Built Spark pipelines for feature data.")])
+    proposals = {p.target_semantic_id: p for p in LLMRewriter(_role_client(result)).execute_plan(resume, plan, evidence, job)}
+    assert proposals["b2"].status == "unchanged"
+
+
+def test_punctuation_only_change_is_unchanged():
+    from app.analysis.rewriter import LLMRewriter
+    from app.llm.schemas import RoleBulletRewrite, RoleRewriteResult
+    resume, evidence, job, plan = _role_setup()
+    result = RoleRewriteResult(bullets=[RoleBulletRewrite(bullet_id="b2", rewritten="built Spark pipelines for feature data. ")])
+    proposals = {p.target_semantic_id: p for p in LLMRewriter(_role_client(result)).execute_plan(resume, plan, evidence, job)}
+    assert proposals["b2"].status == "unchanged"

@@ -51,7 +51,7 @@ class TailorService:
         # Headline score = keyword match rate (P1.2). The requirement-level
         # AlignmentScorer result is kept as the secondary "evidence_score".
         self.keyword_matcher = KeywordMatcher()
-        self.planner = TailoringPlanner(self.llm_client)
+        self.planner = TailoringPlanner(self.llm_client, embedder=self._embed)
         self.rewriter = LLMRewriter(self.llm_client)
         self.validator = FactualValidator()
         self.struct_validator = StructuralValidator()
@@ -107,6 +107,30 @@ class TailorService:
                 lines.append(f"- **{edu.degree}** — {edu.institution}")
 
         return "\n".join(lines)
+
+    def _embed(self, texts):
+        """Sentence embeddings for the planner, loaded lazily; raises when the
+        model isn't available so the planner falls back to token overlap."""
+        encode = self.semantic_matcher._get_embedder()
+        if encode is None:
+            raise RuntimeError("embedding model unavailable")
+        return encode(texts)
+
+    @staticmethod
+    def _apply_bullet_order(resume: Resume, bullet_order: Dict[str, List[str]]) -> int:
+        """Reorder bullets as planned (most relevant first within each
+        sub-heading). Returns how many experience entries changed order."""
+        changed = 0
+        for exp in resume.experience:
+            order = bullet_order.get(exp.id)
+            if not order:
+                continue
+            rank = {bid: i for i, bid in enumerate(order)}
+            new = sorted(exp.bullets, key=lambda b: rank.get(b.id, len(rank)))
+            if [b.id for b in new] != [b.id for b in exp.bullets]:
+                exp.bullets = new
+                changed += 1
+        return changed
 
     def parse_resume(self, resume_path: str):
         """File -> (raw document, ResumeDocument, evidence). The deterministic
@@ -532,6 +556,13 @@ class TailorService:
             except Exception:
                 pass  # revision history is best-effort; never fail the run for it
             _append_progress(f"Applied {len(approved_proposals)} approved rewrites to canonical resume model")
+
+        # Most relevant bullets first within each sub-heading (P1.3). Only the
+        # template can move bullets; an in-place DOCX patch keeps the order.
+        if mode != "PRESERVE" or is_pdf:
+            reordered = self._apply_bullet_order(resume, plan.bullet_order)
+            if reordered:
+                _append_progress(f"Reordered bullets by JD relevance in {reordered} role(s)")
 
         # Fold in any free-text content the candidate typed in the UI (a
         # project, an achievement, a skill) as one more polished, evidence-

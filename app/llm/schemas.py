@@ -67,3 +67,16 @@ class JDAnalysisResult(BaseModel):
     soft_skills: List[str] = Field(default_factory=list)
     education: List[str] = Field(default_factory=list)
     certifications: List[str] = Field(default_factory=list)
+
+
+class RoleBulletRewrite(BaseModel):
+    """One rewritten bullet from a per-role rewrite call (P1.4)."""
+    bullet_id: str
+    rewritten: str
+    keywords_used: List[str] = Field(default_factory=list)
+    evidence_ids: List[str] = Field(default_factory=list)
+
+
+class RoleRewriteResult(BaseModel):
+    """All bullets of one role rewritten in a single call (P1.4)."""
+    bullets: List[RoleBulletRewrite] = Field(default_factory=list)

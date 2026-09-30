@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "34904e78f33854f7",
+  "source_hash": "70bf4b270caa2542",
   "stats": {
-    "files": 103,
+    "files": 104,
     "python_files": 80,
     "app_modules": 41,
     "test_files": 32,
-    "classes": 73,
-    "functions": 445,
-    "lines_of_python": 11071
+    "classes": 75,
+    "functions": 460,
+    "lines_of_python": 11325
   },
   "axes": {
     "x": "location (path)",
@@ -539,38 +539,43 @@
       "stages": [
         "7 Rewrite"
       ],
-      "lines": 238,
+      "lines": 295,
       "doc": "",
       "classes": [
         {
           "name": "LLMRewriter",
-          "line": 48,
+          "line": 55,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
-              "line": 49,
+              "line": 56,
               "doc": ""
             },
             {
               "name": "rewrite_bullet",
-              "line": 52,
+              "line": 59,
               "doc": "Rewrite (or, given a single free-text `original_text` with no"
             },
             {
               "name": "rewrite_bullet_with_status",
-              "line": 72,
+              "line": 79,
               "doc": "Like rewrite_bullet, plus what happened, so failures are visible"
             },
             {
               "name": "suggest_for_missing_requirement",
-              "line": 130,
+              "line": 137,
               "doc": "Advisory only. For a JD requirement the resume doesn't currently"
             },
             {
+              "name": "rewrite_role",
+              "line": 185,
+              "doc": "Rewrite several bullets of one role in ONE call (P1.4)."
+            },
+            {
               "name": "execute_plan",
-              "line": 178,
-              "doc": ""
+              "line": 240,
+              "doc": "One LLM call per role (P1.4): all of a job's bullets that the"
             }
           ]
         }
@@ -580,6 +585,11 @@
           "name": "normalize_llm_text",
           "line": 27,
           "doc": ""
+        },
+        {
+          "name": "_same_wording",
+          "line": 34,
+          "doc": "Equal apart from case, whitespace and closing punctuation, so adding a"
         }
       ]
     },
@@ -1567,6 +1577,13 @@
       "lines": 31
     },
     {
+      "id": "app/llm/prompts/rewrite_role.txt",
+      "type": "prompt",
+      "layer": "LLM",
+      "stages": [],
+      "lines": 19
+    },
+    {
       "id": "app/llm/prompts/tailoring_plan.txt",
       "type": "prompt",
       "layer": "LLM",
@@ -1588,7 +1605,7 @@
         "3 JD analysis",
         "7 Rewrite"
       ],
-      "lines": 69,
+      "lines": 82,
       "doc": "",
       "classes": [
         {
@@ -1643,6 +1660,18 @@
           "name": "JDAnalysisResult",
           "line": 55,
           "doc": "One structured JD analysis call (P1.1). Requirement lines are chosen",
+          "methods": []
+        },
+        {
+          "name": "RoleBulletRewrite",
+          "line": 72,
+          "doc": "One rewritten bullet from a per-role rewrite call (P1.4).",
+          "methods": []
+        },
+        {
+          "name": "RoleRewriteResult",
+          "line": 80,
+          "doc": "All bullets of one role rewritten in a single call (P1.4).",
           "methods": []
         }
       ],
@@ -2069,7 +2098,7 @@
       "stages": [
         "8 Validate"
       ],
-      "lines": 199,
+      "lines": 251,
       "doc": "",
       "classes": [
         {
@@ -2090,38 +2119,43 @@
           "doc": "Checks that a rewrite adds no facts beyond the resume's evidence.",
           "methods": [
             {
+              "name": "dropped_facts",
+              "line": 80,
+              "doc": "(dropped factual terms, dropped content words, retention share):"
+            },
+            {
               "name": "__init__",
-              "line": 62,
+              "line": 100,
               "doc": ""
             },
             {
               "name": "extract_numbers",
-              "line": 74,
+              "line": 112,
               "doc": ""
             },
             {
               "name": "_stem",
-              "line": 79,
+              "line": 117,
               "doc": "Crude stemmer so inflections compare equal:"
             },
             {
               "name": "_keys",
-              "line": 93,
+              "line": 131,
               "doc": "All forms a term can match by: stem plus canonical alias."
             },
             {
               "name": "_term_keys",
-              "line": 101,
+              "line": 139,
               "doc": ""
             },
             {
               "name": "_is_factual",
-              "line": 114,
+              "line": 152,
               "doc": ""
             },
             {
               "name": "validate_proposal",
-              "line": 128,
+              "line": 168,
               "doc": ""
             }
           ]
@@ -3489,7 +3523,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 170,
+      "lines": 249,
       "doc": "",
       "classes": [],
       "functions": [
@@ -3536,6 +3570,36 @@
         {
           "name": "test_normalize_llm_text_fixes_typographic_unicode",
           "line": 165,
+          "doc": ""
+        },
+        {
+          "name": "_role_setup",
+          "line": 175,
+          "doc": ""
+        },
+        {
+          "name": "_role_client",
+          "line": 194,
+          "doc": ""
+        },
+        {
+          "name": "test_role_rewrite_is_one_call_and_maps_results",
+          "line": 205,
+          "doc": ""
+        },
+        {
+          "name": "test_role_rewrite_failure_is_visible_per_bullet",
+          "line": 225,
+          "doc": ""
+        },
+        {
+          "name": "test_role_rewrite_unchanged_text_is_marked_unchanged",
+          "line": 234,
+          "doc": ""
+        },
+        {
+          "name": "test_punctuation_only_change_is_unchanged",
+          "line": 243,
           "doc": ""
         }
       ]
@@ -3736,7 +3800,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 231,
+      "lines": 233,
       "doc": "",
       "classes": [],
       "functions": [
@@ -3951,7 +4015,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 93,
+      "lines": 144,
       "doc": "",
       "classes": [],
       "functions": [
@@ -4003,6 +4067,36 @@
         {
           "name": "test_unevidenced_tool_or_scope_claim_is_rejected",
           "line": 90,
+          "doc": ""
+        },
+        {
+          "name": "_check_drop",
+          "line": 102,
+          "doc": ""
+        },
+        {
+          "name": "test_rewrite_that_drops_details_needs_confirmation",
+          "line": 112,
+          "doc": ""
+        },
+        {
+          "name": "test_faithful_rewrite_passes",
+          "line": 118,
+          "doc": ""
+        },
+        {
+          "name": "test_dropped_tool_is_flagged",
+          "line": 124,
+          "doc": ""
+        },
+        {
+          "name": "test_changed_numbers_still_reject_even_if_nothing_dropped",
+          "line": 130,
+          "doc": ""
+        },
+        {
+          "name": "test_article_a_is_not_a_fact_even_with_a_b_testing_in_the_jd",
+          "line": 135,
           "doc": ""
         }
       ]
@@ -4221,6 +4315,11 @@
     },
     {
       "from": "app/analysis/rewriter.py",
+      "to": "app/llm/prompts/rewrite_role.txt",
+      "type": "uses_prompt"
+    },
+    {
+      "from": "app/analysis/rewriter.py",
       "to": "app/llm/schemas.py",
       "type": "imports"
     },
@@ -4408,6 +4507,11 @@
       "from": "app/analysis/tailor_planner.py",
       "to": "app/llm/client.py",
       "type": "imports"
+    },
+    {
+      "from": "app/analysis/tailor_planner.py",
+      "to": "tests/unit/test_rewriter.py",
+      "type": "tested_by"
     },
     {
       "from": "app/analysis/tailor_planner.py",
@@ -5007,6 +5111,16 @@
     {
       "from": "app/llm/schemas.py",
       "to": "app/llm/schemas.py::MissingRequirementSuggestion",
+      "type": "contains"
+    },
+    {
+      "from": "app/llm/schemas.py",
+      "to": "app/llm/schemas.py::RoleBulletRewrite",
+      "type": "contains"
+    },
+    {
+      "from": "app/llm/schemas.py",
+      "to": "app/llm/schemas.py::RoleRewriteResult",
       "type": "contains"
     },
     {

@@ -1,4 +1,4 @@
-from typing import List, Literal, Optional
+from typing import Dict, List, Literal, Optional
 from pydantic import BaseModel, Field
 
 class TailoringAction(BaseModel):
@@ -13,7 +13,17 @@ class TailoringAction(BaseModel):
     target_section: str = "experience"
     evidence_ids: List[str] = Field(default_factory=list)
     rationale: str = ""
+    # Planner v2 (P1.3): how relevant this bullet is to the JD (0-1), the
+    # requirements it's closest to, the JD keywords a rewrite may use (terms
+    # the bullet or its sub-heading already contains), and whether it's
+    # among the first to drop when the resume must be shortened.
+    relevance: float = 0.0
+    requirement_ids: List[str] = Field(default_factory=list)
+    keywords: List[str] = Field(default_factory=list)
+    trim_candidate: bool = False
 
 class TailoringPlan(BaseModel):
     actions: List[TailoringAction] = Field(default_factory=list)
     unsupported_requirements: List[str] = Field(default_factory=list)
+    # experience id -> bullet ids, most relevant first within each sub-heading.
+    bullet_order: Dict[str, List[str]] = Field(default_factory=dict)

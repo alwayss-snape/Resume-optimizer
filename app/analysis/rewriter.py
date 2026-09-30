@@ -8,10 +8,10 @@ from pydantic import Field
 from app.analysis.change_proposal import ChangeProposal
 from app.domain.evidence import Evidence
 from app.domain.job import JobDescription
-from app.domain.resume import Resume
+from app.domain.resume import Experience, Resume
 from app.domain.tailoring import TailoringAction, TailoringPlan
 from app.llm.client import LLMClient
-from app.llm.schemas import BulletRewriteResult, MissingRequirementSuggestion
+from app.llm.schemas import BulletRewriteResult, MissingRequirementSuggestion, RoleRewriteResult
 
 
 # Typographic Unicode that some models (e.g. gpt-oss) emit: non-breaking /
@@ -29,6 +29,13 @@ def normalize_llm_text(text: str) -> str:
     text = _UNICODE_HYPHENS.sub("-", text)
     text = _SPLIT_UNIT.sub(r"\1\2", text)
     return re.sub(r"[ \t]{2,}", " ", text).strip()
+
+
+def _same_wording(a: str, b: str) -> bool:
+    """Equal apart from case, whitespace and closing punctuation, so adding a
+    final period doesn't count as a rewrite."""
+    norm = lambda t: re.sub(r"\s+", " ", (t or "").strip().rstrip(".;").lower())
+    return norm(a) == norm(b)
 
 
 # Outcome of one rewrite attempt (stored on ChangeProposal.status).
@@ -175,6 +182,61 @@ class LLMRewriter:
         except Exception:
             return None
 
+    def rewrite_role(
+        self,
+        exp: Experience,
+        items: List[Dict],
+    ) -> Tuple[Dict[str, Dict], Optional[str], str]:
+        """Rewrite several bullets of one role in ONE call (P1.4).
+
+        items: [{"bullet_id", "text", "group", "requirements", "keywords",
+        "evidence_ids"}]. Returns ({bullet_id: {"text", "keywords_used",
+        "status"}}, error, status for any bullet not returned). Bullets the
+        call couldn't rewrite keep their text and carry the error, so a
+        failure is visible instead of looking like "no change needed"."""
+        if not self.llm_client or not self.llm_client.is_available():
+            reason = getattr(self.llm_client, "last_error", None) if self.llm_client else "no LLM configured"
+            return {}, reason or "LLM unavailable", STATUS_LLM_UNAVAILABLE
+        prompt_path = os.path.join(os.path.dirname(__file__), "..", "llm", "prompts", "rewrite_role.txt")
+        with open(prompt_path, "r", encoding="utf-8") as f:
+            system_prompt = f.read()
+
+        titles = ", ".join(r.title for r in exp.all_roles() if r.title) or "(not given)"
+        lines = [f"Company: {exp.company or '(not given)'}", f"Titles: {titles}", "", "Bullets:"]
+        for item in items:
+            lines.append(f"- bullet_id: {item['bullet_id']}")
+            lines.append(f"  text: {item['text']}")
+            if item.get("group"):
+                lines.append(f"  sub-heading: {item['group']}")
+            lines.append("  closest JD requirements: " + ("; ".join(item["requirements"]) or "(none)"))
+            lines.append("  JD keywords it may use: " + (", ".join(item["keywords"]) or "(none)"))
+            lines.append("  evidence_ids: " + ", ".join(item["evidence_ids"]))
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": "\n".join(lines)},
+        ]
+        try:
+            result = self.llm_client.generate_json(
+                messages=messages, schema_model=RoleRewriteResult, temperature=0.1, effort="medium",
+            )
+        except Exception as e:
+            return {}, str(e), STATUS_LLM_ERROR
+
+        by_id = {item["bullet_id"]: item for item in items}
+        out: Dict[str, Dict] = {}
+        for bullet in result.bullets:
+            item = by_id.get(bullet.bullet_id)
+            if item is None or bullet.bullet_id in out:
+                continue  # unknown or duplicate id from the model
+            text = normalize_llm_text(bullet.rewritten or "").lstrip("•- ").strip()
+            allowed = {k.lower() for k in item["keywords"]}
+            used = [k for k in bullet.keywords_used if k.lower() in allowed and k.lower() in text.lower()]
+            if not text or _same_wording(text, item["text"]):
+                out[bullet.bullet_id] = {"text": item["text"], "keywords_used": [], "status": STATUS_UNCHANGED}
+            else:
+                out[bullet.bullet_id] = {"text": text, "keywords_used": used, "status": STATUS_OK}
+        return out, None, STATUS_LLM_ERROR
+
     def execute_plan(
         self,
         resume: Resume,
@@ -182,48 +244,52 @@ class LLMRewriter:
         evidence_list: List[Evidence],
         job_description: JobDescription,
     ) -> List[RewriteProposal]:
+        """One LLM call per role (P1.4): all of a job's bullets that the
+        planner marked REWRITE go together, so the model sees the whole role
+        (no repeated opening verbs, consistent style) and a run stays within
+        the free tier's rate limits."""
         proposals: List[RewriteProposal] = []
-        evidence_map = {ev.id: ev for ev in evidence_list}
+        req_by_id = {r.id: r.text for r in job_description.requirements}
+        actions = {a.source_id: a for a in plan.actions if a.action == "REWRITE"}
 
-        # Build bullet map
-        bullet_map = {}
         for exp in resume.experience:
-            for bullet in exp.bullets:
-                bullet_map[bullet.id] = bullet
-
-        for action in plan.actions:
-            if action.action == "REWRITE" and action.source_id in bullet_map:
-                bullet = bullet_map[action.source_id]
-                orig_text = bullet.text
-                action_ev = [evidence_map[ev_id] for ev_id in action.evidence_ids if ev_id in evidence_map]
-                jd_req_texts = [r.text for r in job_description.requirements]
-
-                new_text, llm_rationale, status, error = self.rewrite_bullet_with_status(
-                    orig_text,
-                    action_ev,
-                    jd_req_texts,
-                    target_keywords=job_description.keywords,
-                )
-
-                # Combine the planner's "why this bullet was picked" rationale
-                # with the LLM's own explanation of what it changed and why,
-                # so the review UI can show the candidate both which JD
-                # requirement/keywords this targets and what changed.
-                combined_rationale = action.rationale
-                if llm_rationale:
-                    combined_rationale = f"{action.rationale} — {llm_rationale}"
-
-                # Prefer the bullet's raw source_location_id for patching; fall back to semantic id
+            todo = [b for b in exp.bullets if b.id in actions]
+            if not todo:
+                continue
+            items = []
+            for b in todo:
+                action = actions[b.id]
+                items.append({
+                    "bullet_id": b.id, "text": b.text, "group": b.group,
+                    # Only this bullet's closest requirements and the JD
+                    # keywords it already contains (P1.3).
+                    "requirements": [req_by_id[i] for i in action.requirement_ids if i in req_by_id],
+                    "keywords": list(action.keywords),
+                    "evidence_ids": list(action.evidence_ids),
+                })
+            results, error, missing_status = self.rewrite_role(exp, items)
+            for b in todo:
+                action = actions[b.id]
+                res = results.get(b.id)
+                if res is None:
+                    res = {"text": b.text, "keywords_used": [], "status": missing_status}
+                    item_error = error or "the model returned no rewrite for this bullet"
+                else:
+                    item_error = None
+                rationale = action.rationale
+                if res["keywords_used"]:
+                    rationale += f" — worked in: {', '.join(res['keywords_used'])}"
                 proposals.append(RewriteProposal(
                     id=f"prop_{uuid4().hex[:8]}",
-                    target_semantic_id=bullet.id,
-                    target_source_location_id=bullet.source_location_id or bullet.id,
-                    original_text=orig_text,
-                    proposed_text=new_text,
+                    target_semantic_id=b.id,
+                    target_source_location_id=b.source_location_id or b.id,
+                    original_text=b.text,
+                    proposed_text=res["text"],
                     evidence_ids=action.evidence_ids,
-                    rationale=combined_rationale,
-                    status=status,
-                    error=error,
+                    rationale=rationale,
+                    status=res["status"],
+                    error=item_error,
+                    relevance=action.relevance,
+                    target_keywords=list(action.keywords),
                 ))
-
         return proposals

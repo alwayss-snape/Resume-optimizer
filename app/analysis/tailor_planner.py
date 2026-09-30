@@ -1,4 +1,7 @@
-from typing import List, Optional
+import math
+from typing import Callable, Dict, List, Optional, Sequence
+
+from app.analysis.keyword_match import KeywordMatcher, tokens
 from app.domain.evidence import Evidence
 from app.domain.job import JobDescription
 from app.domain.report import Match
@@ -6,9 +9,58 @@ from app.domain.resume import Resume
 from app.domain.tailoring import TailoringAction, TailoringPlan
 from app.llm.client import LLMClient
 
+Embedder = Callable[[Sequence[str]], List[Sequence[float]]]
+
+# Words that carry no signal when comparing a bullet with a requirement.
+_FILLER = {
+    "and", "the", "with", "for", "to", "of", "in", "on", "a", "an", "or", "by", "as", "at", "from", "into",
+    "using", "use", "such", "like", "e.g", "eg", "experience", "strong", "ability", "work", "working", "team",
+    "teams", "including", "across", "through", "their", "our", "your", "we", "you", "be", "is", "are",
+}
+MIN_RELEVANCE = 0.15      # below this a bullet is kept as-is (and is a trim candidate)
+MAX_REQUIREMENTS = 3      # requirements sent to the rewriter per bullet
+DETERMINISTIC_MATCH_BONUS = 0.2
+
+
+def _content(text: str) -> set:
+    return {t for t in tokens(text) if t not in _FILLER and len(t) > 1}
+
+
+def _cosine(a: Sequence[float], b: Sequence[float]) -> float:
+    dot = sum(x * y for x, y in zip(a, b))
+    na, nb = math.sqrt(sum(x * x for x in a)), math.sqrt(sum(y * y for y in b))
+    return dot / (na * nb) if na and nb else 0.0
+
+
 class TailoringPlanner:
-    def __init__(self, llm_client: Optional[LLMClient] = None):
+    """Planner v2 (P1.3): scores every experience bullet for relevance to the
+    JD, rewrites all relevant ones (not only those that matched a
+    requirement), gives each rewrite only its closest requirements and the
+    JD keywords it may use, orders bullets by relevance within each
+    sub-heading, and marks the least relevant as trim candidates."""
+
+    def __init__(self, llm_client: Optional[LLMClient] = None, embedder: Optional[Embedder] = None):
         self.llm_client = llm_client
+        self.embedder = embedder  # sentence embeddings when available; token overlap otherwise
+        self.keyword_matcher = KeywordMatcher()
+
+    def _similarities(self, bullets: List[str], requirements: List[str]) -> List[List[float]]:
+        """bullets x requirements similarity in 0..1."""
+        if not bullets or not requirements:
+            return [[0.0] * len(requirements) for _ in bullets]
+        if self.embedder is not None:
+            try:
+                vectors = self.embedder(list(bullets) + list(requirements))
+                b_vecs, r_vecs = vectors[:len(bullets)], vectors[len(bullets):]
+                return [[max(0.0, float(_cosine(b, r))) for r in r_vecs] for b in b_vecs]
+            except Exception:
+                pass  # fall back to token overlap
+        req_sets = [_content(r) for r in requirements]
+        sims = []
+        for b in bullets:
+            b_set = _content(b)
+            sims.append([len(b_set & r) / len(r) if r else 0.0 for r in req_sets])
+        return sims
 
     def create_plan(
         self,
@@ -17,71 +69,91 @@ class TailoringPlanner:
         evidence_list: List[Evidence],
         matches: List[Match],
     ) -> TailoringPlan:
-        actions: List[TailoringAction] = []
-        unsupported: List[str] = []
+        unsupported = [m.requirement_text for m in matches if m.status == "MISSING"]
+        requirements = job_description.requirements
+        keyword_rows = [r for r in self.keyword_matcher.match(job_description, resume).rows if r.kind != "title"]
 
-        match_by_id = {m.requirement_id: m for m in matches}
-        evidence_by_id = {ev.id: ev for ev in evidence_list}
-
-        # Track missing requirements
-        for match in matches:
-            if match.status == "MISSING":
-                unsupported.append(match.requirement_text)
-
-        # Plan actions for experience bullets
+        entries = []  # (exp, bullet, evidence ids, context text)
         for exp in resume.experience:
             for bullet in exp.bullets:
-                # Find evidence corresponding to bullet
-                bullet_ev = [ev for ev in evidence_list if ev.source_id == bullet.id]
-                bullet_ev_ids = [ev.id for ev in bullet_ev]
+                ev_ids = [ev.id for ev in evidence_list if ev.source_id == bullet.id]
+                entries.append((exp, bullet, ev_ids, f"{bullet.group or ''} {bullet.text}"))
 
-                # Check if bullet matches any JD requirement
-                matched_reqs = [
-                    m for m in matches
-                    if set(m.evidence_ids).intersection(bullet_ev_ids)
-                ]
+        sims = self._similarities([e[1].text for e in entries], [r.text for r in requirements])
 
-                if matched_reqs:
-                    # A SEMANTIC_PARTIAL match is a weaker, inferred (paraphrase)
-                    # signal compared to EXPLICIT/SUPPORTED/PARTIAL, which are
-                    # backed by exact or token-overlap evidence. When a bullet's
-                    # only match is semantic, it's still correct to select it
-                    # for REWRITE (tightening a genuinely relevant bullet toward
-                    # the JD's phrasing, grounded in the same real evidence) —
-                    # but the rationale must say so plainly, rather than present
-                    # it as an exact requirement match when it wasn't one.
-                    deterministic_matches = [m for m in matched_reqs if m.status != "SEMANTIC_PARTIAL"]
-                    primary_match = deterministic_matches[0] if deterministic_matches else matched_reqs[0]
-                    is_semantic_only = not deterministic_matches
+        # Keywords already in each bullet (or its sub-heading), weighted.
+        bullet_keywords: List[List[str]] = []
+        keyword_weight: List[float] = []
+        for _, _, _, context in entries:
+            section = [("bullet", tokens(context))]
+            found = []
+            weight = 0.0
+            for row in keyword_rows:
+                # Same lookup as the match rate (aliases, plurals, PySpark -> Spark).
+                if self.keyword_matcher._find(row.keyword, section):
+                    found.append(row.keyword)
+                    weight += row.weight
+            bullet_keywords.append(found)
+            keyword_weight.append(weight)
+        max_weight = max(keyword_weight, default=0.0) or 1.0
 
-                    if is_semantic_only:
-                        rationale = (
-                            f"Align bullet with JD requirement (inferred via semantic "
-                            f"similarity, not an exact match): {primary_match.requirement_text}"
-                        )
-                    else:
-                        rationale = f"Align bullet with JD requirement: {primary_match.requirement_text}"
+        actions: List[TailoringAction] = []
+        for idx, (exp, bullet, ev_ids, _) in enumerate(entries):
+            matched = [m for m in matches if set(m.evidence_ids) & set(ev_ids) and m.status != "MISSING"]
+            deterministic = [m for m in matched if m.status != "SEMANTIC_PARTIAL"]
+            ranked_reqs = sorted(range(len(requirements)), key=lambda j: -sims[idx][j])
+            top_reqs = [j for j in ranked_reqs[:MAX_REQUIREMENTS] if sims[idx][j] > 0]
+            best_sim = sims[idx][ranked_reqs[0]] if ranked_reqs else 0.0
 
-                    actions.append(TailoringAction(
-                        action="REWRITE",
-                        source_id=bullet.id,
-                        target_section="experience",
-                        evidence_ids=bullet_ev_ids,
-                        rationale=rationale,
-                    ))
+            relevance = 0.5 * (keyword_weight[idx] / max_weight) + 0.5 * best_sim
+            if deterministic:
+                relevance += DETERMINISTIC_MATCH_BONUS
+            relevance = round(float(min(1.0, relevance)), 3)
+
+            requirement_ids = [m.requirement_id for m in deterministic or matched]
+            requirement_ids += [requirements[j].id for j in top_reqs if requirements[j].id not in requirement_ids]
+            requirement_ids = requirement_ids[:MAX_REQUIREMENTS]
+
+            if matched:
+                # A SEMANTIC_PARTIAL match is an inferred (paraphrase) signal;
+                # the rationale says so rather than presenting it as exact.
+                primary = (deterministic or matched)[0]
+                if deterministic:
+                    rationale = f"Align bullet with JD requirement: {primary.requirement_text}"
                 else:
-                    actions.append(TailoringAction(
-                        action="KEEP",
-                        source_id=bullet.id,
-                        target_section="experience",
-                        evidence_ids=bullet_ev_ids,
-                        rationale="Maintain original bullet text as standard experience.",
-                    ))
+                    rationale = (f"Align bullet with JD requirement (inferred via semantic similarity, "
+                                 f"not an exact match): {primary.requirement_text}")
+            elif top_reqs:
+                rationale = f"Relevant to JD requirement: {requirements[top_reqs[0]].text}"
+            else:
+                rationale = "Relevant to the JD's keywords."
+            if bullet_keywords[idx]:
+                rationale += f" (JD keywords here: {', '.join(bullet_keywords[idx][:5])})"
 
-        return TailoringPlan(
-            actions=actions,
-            unsupported_requirements=unsupported,
-        )
+            rewrite = bool(matched) or relevance >= MIN_RELEVANCE
+            actions.append(TailoringAction(
+                action="REWRITE" if rewrite else "KEEP",
+                source_id=bullet.id,
+                target_section="experience",
+                evidence_ids=ev_ids,
+                rationale=rationale if rewrite else "Not relevant to this JD; kept as written.",
+                relevance=relevance,
+                requirement_ids=requirement_ids,
+                keywords=bullet_keywords[idx],
+                trim_candidate=relevance < MIN_RELEVANCE,
+            ))
+
+        # Most relevant first within each sub-heading; sub-headings keep
+        # their order so a project's bullets stay together.
+        relevance_by_id = {a.source_id: a.relevance for a in actions}
+        bullet_order: Dict[str, List[str]] = {}
+        for exp in resume.experience:
+            ordered: List[str] = []
+            for _, group_bullets in exp.bullet_groups():
+                ordered += [b.id for b in sorted(group_bullets, key=lambda b: -relevance_by_id.get(b.id, 0.0))]
+            bullet_order[exp.id] = ordered
+
+        return TailoringPlan(actions=actions, unsupported_requirements=unsupported, bullet_order=bullet_order)
 
     def rank_missing_requirements(
         self,

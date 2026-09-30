@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**41 app modules · 32 test files · 73 classes · 445 functions/methods · 11,071 lines of Python** · source hash `34904e78f33854f7`
+**41 app modules · 32 test files · 75 classes · 460 functions/methods · 11,325 lines of Python** · source hash `70bf4b270caa2542`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -70,6 +70,7 @@ app/
       jd_analysis.txt
       resume_normalization.txt
       rewrite_bullet.txt
+      rewrite_role.txt
       tailoring_plan.txt
       validate_claims.txt
   rendering/
@@ -256,19 +257,21 @@ _Keyword-level match rate, the headline score (P1.2)._
 
 ### `app/analysis/rewriter.py`
 
-**Layer:** Analysis · **Stage:** 7 Rewrite · **Lines:** 238
+**Layer:** Analysis · **Stage:** 7 Rewrite · **Lines:** 295
 
-- class **`LLMRewriter`** ([app/analysis/rewriter.py:48](../app/analysis/rewriter.py#L48))
-  - `__init__()` :49
-  - `rewrite_bullet()` :52 — Rewrite (or, given a single free-text `original_text` with no
-  - `rewrite_bullet_with_status()` :72 — Like rewrite_bullet, plus what happened, so failures are visible
-  - `suggest_for_missing_requirement()` :130 — Advisory only. For a JD requirement the resume doesn't currently
-  - `execute_plan()` :178
+- class **`LLMRewriter`** ([app/analysis/rewriter.py:55](../app/analysis/rewriter.py#L55))
+  - `__init__()` :56
+  - `rewrite_bullet()` :59 — Rewrite (or, given a single free-text `original_text` with no
+  - `rewrite_bullet_with_status()` :79 — Like rewrite_bullet, plus what happened, so failures are visible
+  - `suggest_for_missing_requirement()` :137 — Advisory only. For a JD requirement the resume doesn't currently
+  - `rewrite_role()` :185 — Rewrite several bullets of one role in ONE call (P1.4).
+  - `execute_plan()` :240 — One LLM call per role (P1.4): all of a job's bullets that the
 - function **`normalize_llm_text()`** ([app/analysis/rewriter.py:27](../app/analysis/rewriter.py#L27))
+- function **`_same_wording()`** ([app/analysis/rewriter.py:34](../app/analysis/rewriter.py#L34)) — Equal apart from case, whitespace and closing punctuation, so adding a
 - **Imports:** `analysis/change_proposal.py`, `domain/evidence.py`, `domain/job.py`, `domain/resume.py`, `domain/tailoring.py`, `llm/client.py`, `llm/schemas.py`
 - **Imported by:** `rendering/docx_patcher.py`, `services/tailor.py`, `services/validation_agent.py`, `validation/factual.py`
 - **Tested by:** `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_docx_renderer.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_tailor_planner.py`, `tests/unit/test_tailor_resume_flow.py`, `tests/unit/test_validation.py`
-- **Prompts:** `llm/prompts/rewrite_bullet.txt`
+- **Prompts:** `llm/prompts/rewrite_bullet.txt`, `llm/prompts/rewrite_role.txt`
 
 ### `app/analysis/scoring.py`
 
@@ -329,7 +332,7 @@ _LLM-assisted resume structure extraction with a verbatim guard (P1.13)._
 - function **`_cosine()`** ([app/analysis/tailor_planner.py:29](../app/analysis/tailor_planner.py#L29))
 - **Imports:** `analysis/keyword_match.py`, `domain/evidence.py`, `domain/job.py`, `domain/report.py`, `domain/resume.py`, `domain/tailoring.py`, `llm/client.py`
 - **Imported by:** `services/tailor.py`
-- **Tested by:** `tests/unit/test_tailor_planner.py`
+- **Tested by:** `tests/unit/test_rewriter.py`, `tests/unit/test_tailor_planner.py`
 
 ### `app/analysis/terminology.py`
 
@@ -559,7 +562,7 @@ _Run evaluation cases through the pipeline and collect metrics (P4.1)._
 
 ### `app/llm/schemas.py`
 
-**Layer:** LLM · **Stage:** 3 JD analysis, 7 Rewrite · **Lines:** 69
+**Layer:** LLM · **Stage:** 3 JD analysis, 7 Rewrite · **Lines:** 82
 
 - class **`LLMResponse`** ([app/llm/schemas.py:4](../app/llm/schemas.py#L4))
 - class **`LLMError`** ([app/llm/schemas.py:13](../app/llm/schemas.py#L13)) — Base exception for LLM errors.
@@ -570,6 +573,8 @@ _Run evaluation cases through the pipeline and collect metrics (P4.1)._
 - class **`MissingRequirementSuggestion`** ([app/llm/schemas.py:39](../app/llm/schemas.py#L39)) — Advisory-only suggestion for a JD requirement the resume doesn't
 - class **`JDRequirementLine`** ([app/llm/schemas.py:48](../app/llm/schemas.py#L48)) — One JD line the LLM judged to be a candidate requirement, by index.
 - class **`JDAnalysisResult`** ([app/llm/schemas.py:55](../app/llm/schemas.py#L55)) — One structured JD analysis call (P1.1). Requirement lines are chosen
+- class **`RoleBulletRewrite`** ([app/llm/schemas.py:72](../app/llm/schemas.py#L72)) — One rewritten bullet from a per-role rewrite call (P1.4).
+- class **`RoleRewriteResult`** ([app/llm/schemas.py:80](../app/llm/schemas.py#L80)) — All bullets of one role rewritten in a single call (P1.4).
 - **Imported by:** `analysis/jd_analyzer.py`, `analysis/rewriter.py`, `cli.py`, `llm/client.py`
 - **Tested by:** `tests/unit/test_cli.py`, `tests/unit/test_jd_analyzer_llm.py`, `tests/unit/test_jd_analyzer_v2.py`, `tests/unit/test_llm_client.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_tailor_resume_flow.py`
 
@@ -693,18 +698,19 @@ _Run evaluation cases through the pipeline and collect metrics (P4.1)._
 
 ### `app/validation/factual.py`
 
-**Layer:** Validation · **Stage:** 8 Validate · **Lines:** 199
+**Layer:** Validation · **Stage:** 8 Validate · **Lines:** 251
 
 - class **`ClaimCheck`** ([app/validation/factual.py:13](../app/validation/factual.py#L13))
 - class **`ValidationResult`** ([app/validation/factual.py:20](../app/validation/factual.py#L20))
 - class **`FactualValidator`** ([app/validation/factual.py:32](../app/validation/factual.py#L32)) — Checks that a rewrite adds no facts beyond the resume's evidence.
-  - `__init__()` :62
-  - `extract_numbers()` :74
-  - `_stem()` :79 — Crude stemmer so inflections compare equal:
-  - `_keys()` :93 — All forms a term can match by: stem plus canonical alias.
-  - `_term_keys()` :101
-  - `_is_factual()` :114
-  - `validate_proposal()` :128
+  - `dropped_facts()` :80 — (dropped factual terms, dropped content words, retention share):
+  - `__init__()` :100
+  - `extract_numbers()` :112
+  - `_stem()` :117 — Crude stemmer so inflections compare equal:
+  - `_keys()` :131 — All forms a term can match by: stem plus canonical alias.
+  - `_term_keys()` :139
+  - `_is_factual()` :152
+  - `validate_proposal()` :168
 - **Imports:** `analysis/rewriter.py`, `analysis/terminology.py`, `domain/evidence.py`
 - **Imported by:** `services/tailor.py`, `services/validation_agent.py`
 - **Tested by:** `tests/unit/test_validation.py`
@@ -894,6 +900,7 @@ From `app/config/settings.py`; each can be overridden by the env var of the same
 | `jd_analysis.txt` | `app/analysis/jd_analyzer.py` |
 | `resume_normalization.txt` | **unused** |
 | `rewrite_bullet.txt` | `app/analysis/rewriter.py` |
+| `rewrite_role.txt` | `app/analysis/rewriter.py` |
 | `tailoring_plan.txt` | **unused** |
 | `validate_claims.txt` | **unused** |
 
