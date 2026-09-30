@@ -35,7 +35,15 @@ class AlignmentScorer:
     and `calculate_components` which returns a breakdown useful for auditing.
     """
 
+    # Relative weight of each bucket in the headline score. Only buckets that
+    # contain at least one requirement take part, so a JD with no "preferred"
+    # items can still score 100 (previously a perfect match was capped at 60).
+    BUCKET_WEIGHTS: Dict[str, float] = {"required": 0.6, "preferred": 0.3, "keyword": 0.1}
+
     def calculate_components(self, matches: List[Match], requirements: List[Requirement]) -> ScoreComponents:
+        return self._compute(matches, requirements)[0]
+
+    def _compute(self, matches: List[Match], requirements: List[Requirement]):
         match_map = {match.requirement_id: match for match in matches}
         required_weighted = 0.0
         preferred_weighted = 0.0
@@ -101,7 +109,7 @@ class AlignmentScorer:
         # confidence is a simple function of evidence strength and coverage
         confidence = (evidence_strength * 0.7 + (required_coverage * 0.3))
 
-        return ScoreComponents(
+        components = ScoreComponents(
             required_coverage=round(required_coverage, 1),
             preferred_coverage=round(preferred_coverage, 1),
             keyword_coverage=round(keyword_coverage, 1),
@@ -109,10 +117,18 @@ class AlignmentScorer:
             confidence=round(confidence, 1),
             semantic_coverage=round(semantic_coverage, 1),
         )
+        present = {"required": required_total > 0, "preferred": preferred_total > 0, "keyword": keyword_total > 0}
+        return components, present
 
     def calculate_score(self, matches: List[Match], requirements: List[Requirement]) -> float:
-        comps = self.calculate_components(matches, requirements)
-        # Simple aggregate: weighted sum favoring required coverage.
-        # semantic_coverage is deliberately excluded — the headline score
-        # reflects only hard (deterministic) evidence. See ScoreComponents.
-        return round((comps["required_coverage"] * 0.6 + comps["preferred_coverage"] * 0.3 + comps["keyword_coverage"] * 0.1), 1)
+        comps, present = self._compute(matches, requirements)
+        # Weighted average favouring required coverage, renormalised over the
+        # buckets that actually contain requirements. semantic_coverage is
+        # deliberately excluded: the headline score reflects only hard
+        # (deterministic) evidence. See ScoreComponents.
+        active = {b: w for b, w in self.BUCKET_WEIGHTS.items() if present[b]}
+        if not active:
+            return 0.0
+        total = sum(active.values())
+        score = sum(comps[f"{b}_coverage"] * w for b, w in active.items()) / total
+        return round(score, 1)

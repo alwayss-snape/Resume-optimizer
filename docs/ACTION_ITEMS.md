@@ -12,12 +12,12 @@ JD-aligned rewrites, a Novoresume-style ATS layout that fits the right length, a
 
 | Phase | Items | ✅ | 🟡 | ⬜ |
 |---|---|---|---|---|
-| 0: Make the LLM path work | 10 | 0 | 0 | 10 |
+| 0: Make the LLM path work | 10 | 1 | 0 | 9 |
 | 1: Content quality | 10 | 0 | 0 | 10 |
 | 2: Template, ATS, page-fit | 6 | 0 | 0 | 6 |
 | 3: Gap questions + UX | 6 | 0 | 0 | 6 |
 | 4: Evaluation harness | 3 | 0 | 0 | 3 |
-| **Total** | **35** | **0** | **0** | **35** |
+| **Total** | **35** | **1** | **0** | **34** |
 
 ## Decisions (fixed by the user, 2026-09-30)
 
@@ -46,7 +46,7 @@ JD-aligned rewrites, a Novoresume-style ATS layout that fits the right length, a
 | P0.6 | Move the `ollama.py` stub into `tests/conftest.py` so it stops shadowing the real package | `/ollama.py`, `tests/conftest.py` | F2 | ⬜ | |
 | P0.7 | Skip planner + rewriter when proposals are pre-approved | `tailor.py:298-311` | F7 | ⬜ | |
 | P0.8 | Strict mode decides before rendering; `changes.md` matches the rendered output; remove duplicate and dead writes | `tailor.py:391-539` | F8, F33 | ⬜ | |
-| P0.9 | Quick fixes: keyword regex; `criticality` from priority + "perfect match = 100" test; numeric pattern covers 2M / 10x / 40K / $3.5M / 1,000+ / 5+ years | `jd_analyzer.py:47,239`, `scoring.py`, `factual.py:25` | F9, F10, F16 | ⬜ | All three confirmed by running code on 2026-09-30 |
+| P0.9 | Quick fixes: keyword regex; `criticality` from priority + "perfect match = 100" test; numeric pattern covers 2M / 10x / 40K / $3.5M / 1,000+ / 5+ years | `jd_analyzer.py:47,239`, `scoring.py`, `factual.py:25` | F9, F10, F16 | ✅ | Score renormalised over non-empty buckets (perfect match = 100); keyword stopgap keeps only technical terms (C++, Node.js, AWS…); numbers include unit suffixes. +9 tests |
 | P0.10 | `python -m app.cli check-llm`: one live structured call that prints provider, model, latency and tokens | `app/cli.py` | F1 | ⬜ | |
 
 ## Phase 1: Content quality

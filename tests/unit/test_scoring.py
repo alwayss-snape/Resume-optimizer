@@ -80,3 +80,28 @@ def test_default_criticality_requirement_counts_as_required_coverage():
     comps = AlignmentScorer().calculate_components(matches, [requirement])
     assert comps["required_coverage"] == 100.0
     assert comps["keyword_coverage"] == 0.0
+
+
+def test_perfect_match_scores_100_with_only_required_requirements():
+    """Regression: empty preferred/keyword buckets used to cap the score at 60."""
+    reqs = [_req("r1"), _req("r2", category="responsibility")]
+    matches = [_match("r1", "EXPLICIT", ["ev_1"]), _match("r2", "EXPLICIT", ["ev_2"])]
+    assert AlignmentScorer().calculate_score(matches, reqs) == 100.0
+
+
+def test_perfect_match_scores_100_with_required_and_preferred():
+    reqs = [_req("r1"), _req("p1", criticality="preferred")]
+    matches = [_match("r1", "EXPLICIT", ["ev_1"]), _match("p1", "EXPLICIT", ["ev_2"])]
+    assert AlignmentScorer().calculate_score(matches, reqs) == 100.0
+
+
+def test_missing_preferred_costs_less_than_missing_required():
+    reqs = [_req("r1"), _req("p1", criticality="preferred")]
+    miss_pref = [_match("r1", "EXPLICIT", ["ev_1"]), _match("p1", "MISSING")]
+    miss_req = [_match("r1", "MISSING"), _match("p1", "EXPLICIT", ["ev_2"])]
+    scorer = AlignmentScorer()
+    assert scorer.calculate_score(miss_pref, reqs) > scorer.calculate_score(miss_req, reqs)
+
+
+def test_no_requirements_scores_zero():
+    assert AlignmentScorer().calculate_score([], []) == 0.0

@@ -59,3 +59,27 @@ def test_heading_like_words_inside_real_requirements_are_not_filtered():
     combined_text = " ".join(r.text for r in jd.requirements)
     assert "Skills in Python" in combined_text
     assert "required for this role" in combined_text
+
+
+def test_keywords_are_technical_terms_not_prose():
+    with open("tests/fixtures/jds/sample.txt", "r", encoding="utf-8") as f:
+        jd = JDAnalyzer(llm_client=None).analyze(f.read())
+    for expected in ("Python", "FastAPI", "PostgreSQL", "AWS", "Kubernetes", "Terraform"):
+        assert expected in jd.keywords
+    for noise in ("Title", "Have", "experience", "the"):
+        assert noise not in jd.keywords
+
+
+def test_keywords_keep_symbol_terms():
+    kws = JDAnalyzer(llm_client=None).extract_keywords_from_text(
+        "We use C++, C#, Node.js and CI/CD. Machine learning is a plus."
+    )
+    for expected in ("C++", "C#", "Node.js", "CI/CD", "machine learning"):
+        assert expected in kws
+
+
+def test_preferred_requirements_get_preferred_criticality():
+    with open("tests/fixtures/jds/sample.txt", "r", encoding="utf-8") as f:
+        jd = JDAnalyzer(llm_client=None).analyze(f.read())
+    preferred = [r for r in jd.requirements if r.priority == "preferred"]
+    assert preferred and all(r.criticality == "preferred" for r in preferred)

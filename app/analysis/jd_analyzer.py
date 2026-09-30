@@ -1,5 +1,5 @@
 import re
-from typing import List, Optional, Set
+from typing import Dict, List, Optional, Set
 
 from app.domain.job import JobDescription, Requirement
 from app.llm.client import LLMClient
@@ -43,12 +43,66 @@ class JDAnalyzer:
         # REQUIREMENT_SIGNALS heuristic below.
         self.llm_client = llm_client
 
+    # A word, optionally followed by symbol suffixes (C++, C#) or dotted /
+    # slashed / hyphenated parts (Node.js, CI/CD, scikit-learn). A trailing
+    # sentence period is not captured because [./-] must be followed by an
+    # alphanumeric character.
+    KEYWORD_TOKEN_RE = re.compile(r"[A-Za-z][A-Za-z0-9]*(?:[+#]+|(?:[./-][A-Za-z0-9]+)+)?")
+    # Capitalised words that start clauses or are generic, never skills.
+    KEYWORD_NOISE = {
+        "we", "you", "our", "your", "the", "a", "an", "and", "or", "in", "on", "at", "to", "of", "for",
+        "with", "is", "are", "be", "as", "by", "this", "that", "it", "if", "all", "any", "strong",
+        "excellent", "good", "great", "ability", "experience", "knowledge", "familiarity", "understanding",
+        "proficiency", "bachelor", "bachelors", "master", "masters", "degree", "years", "year", "plus",
+        "bonus", "preferred", "required", "requirements", "responsibilities", "qualifications", "skills",
+        "about", "job", "role", "team", "company", "equal", "opportunity", "employer", "benefits",
+        "e.g", "i.e", "etc", "us", "eeo", "inc", "ltd", "llc", "senior", "junior", "lead", "engineer",
+        "developer", "manager", "analyst", "scientist", "intern",
+    }
+    MAX_KEYWORDS = 40
+
     def extract_keywords_from_text(self, text: str) -> List[str]:
-        words = re.findall(r"\\b[A-Za-z0-9+#.-]{2,}\\b", text)
-        return list(dict.fromkeys(
-            word.strip(".,()") for word in words
-            if word.strip(".,()").lower() not in self.STOP_WORDS
-        ))
+        """Stopgap keyword extraction: keep only technical-looking terms,
+        ranked by frequency. Kept terms are acronyms (AWS, SQL), tokens with
+        symbols (C++, C#, Node.js, CI/CD), capitalised words that don't open
+        a sentence (Python, Kubernetes), and multi-word canonical terms from
+        the terminology registry ("machine learning"). Plain English words
+        are dropped so the rewrite prompt isn't flooded with noise."""
+        from app.analysis.terminology import ALIAS_MAP
+
+        counts: Dict[str, int] = {}
+        display: Dict[str, str] = {}
+
+        def add(term: str) -> None:
+            key = term.lower()
+            counts[key] = counts.get(key, 0) + 1
+            display.setdefault(key, term)
+
+        for line in text.splitlines():
+            line = self.BULLET_LINE_RE.sub("", line.strip())
+            if self.HEADING_RE.match(line) or line.lower().startswith(("job title:", "role:", "company:")):
+                continue
+            for sentence in re.split(r"(?<=[.!?;:])\s+", line):
+                for pos, match in enumerate(self.KEYWORD_TOKEN_RE.finditer(sentence)):
+                    tok = match.group(0)
+                    low = tok.lower()
+                    if len(tok) < 2 or low in self.KEYWORD_NOISE:
+                        continue
+                    has_symbol = bool(re.search(r"[+#./0-9]", tok))
+                    is_acronym = tok.isupper() and tok.isalpha()
+                    is_capitalised = tok[0].isupper() and pos > 0
+                    if "-" in tok and not has_symbol and not re.search(r"[A-Z]", tok[1:]):
+                        continue  # plain hyphenated English ("cross-functional")
+                    if has_symbol or is_acronym or is_capitalised:
+                        add(tok)
+
+        lowered_text = text.lower()
+        for canonical in ALIAS_MAP:
+            if " " in canonical and re.search(rf"\b{re.escape(canonical)}\b", lowered_text):
+                add(canonical)
+
+        ranked = sorted(counts, key=lambda k: (-counts[k], list(counts).index(k)))
+        return [display[k] for k in ranked[: self.MAX_KEYWORDS]]
 
     def _category(self, line: str) -> str:
         lowered = line.lower()
@@ -236,9 +290,11 @@ class JDAnalyzer:
             # Segment long or compound lines into atomic requirements
             segments = self._segment_line(clean_line)
             for seg in segments:
+                # criticality drives the scoring bucket, so it must follow the
+                # detected priority, or every requirement lands in "required".
                 requirements.append(Requirement(
                     id=f"req_{len(requirements) + 1:03d}",
-                    text=seg, category=self._category(seg), priority=priority,
+                    text=seg, category=self._category(seg), priority=priority, criticality=priority,
                 ))
 
         return JobDescription(

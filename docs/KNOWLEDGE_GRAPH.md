@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**35 app modules · 23 test files · 61 classes · 219 functions/methods · 7,147 lines of Python** · source hash `83ea0f9541884dfe`
+**35 app modules · 23 test files · 61 classes · 229 functions/methods · 7,287 lines of Python** · source hash `ccd8b42a9893bb4f`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -154,18 +154,18 @@ Spanning all stages: `app/cli.py`, `app/services/tailor.py`, `app/ui.py`
 
 ### `app/analysis/jd_analyzer.py`
 
-**Layer:** Analysis · **Stage:** 3 JD analysis · **Lines:** 250
+**Layer:** Analysis · **Stage:** 3 JD analysis · **Lines:** 306
 
 - class **`JDAnalyzer`** ([app/analysis/jd_analyzer.py:8](../app/analysis/jd_analyzer.py#L8)) — Extract only text that is visibly present in the supplied job description.
   - `__init__()` :36
-  - `extract_keywords_from_text()` :46
-  - `_category()` :53
-  - `_is_requirement()` :64
-  - `_segment_line()` :73 — Conservatively split a requirement line into atomic requirement phrases.
-  - `_reflow_lines()` :93 — Undo hard line-wrapping from pasted JDs (job boards/PDFs often wrap
-  - `_llm_select_requirement_lines()` :128 — Ask the LLM which of the given candidate line indices are genuine
-  - `analyze()` :178
-- **Imports:** `domain/job.py`, `llm/client.py`, `llm/schemas.py`
+  - `extract_keywords_from_text()` :64 — Stopgap keyword extraction: keep only technical-looking terms,
+  - `_category()` :107
+  - `_is_requirement()` :118
+  - `_segment_line()` :127 — Conservatively split a requirement line into atomic requirement phrases.
+  - `_reflow_lines()` :147 — Undo hard line-wrapping from pasted JDs (job boards/PDFs often wrap
+  - `_llm_select_requirement_lines()` :182 — Ask the LLM which of the given candidate line indices are genuine
+  - `analyze()` :232
+- **Imports:** `analysis/terminology.py`, `domain/job.py`, `llm/client.py`, `llm/schemas.py`
 - **Imported by:** `services/tailor.py`
 - **Tested by:** `tests/unit/test_jd_analyzer.py`, `tests/unit/test_jd_analyzer_llm.py`
 
@@ -214,12 +214,13 @@ Spanning all stages: `app/cli.py`, `app/services/tailor.py`, `app/ui.py`
 
 ### `app/analysis/scoring.py`
 
-**Layer:** Analysis · **Stage:** 5 Score · **Lines:** 118
+**Layer:** Analysis · **Stage:** 5 Score · **Lines:** 134
 
 - class **`ScoreComponents`** ([app/analysis/scoring.py:7](../app/analysis/scoring.py#L7))
 - class **`AlignmentScorer`** ([app/analysis/scoring.py:31](../app/analysis/scoring.py#L31)) — A transparent weighted average of evidence-backed requirement coverage.
-  - `calculate_components()` :38
-  - `calculate_score()` :113
+  - `calculate_components()` :43
+  - `_compute()` :46
+  - `calculate_score()` :123
 - **Imports:** `domain/job.py`, `domain/report.py`
 - **Imported by:** `services/tailor.py`
 - **Tested by:** `tests/unit/test_matcher.py`, `tests/unit/test_scoring.py`
@@ -257,7 +258,7 @@ _Semantic (embedding-based) matching layer._
 
 - function **`flat_alias_to_canonical()`** ([app/analysis/terminology.py:32](../app/analysis/terminology.py#L32)) — Build a flat alias->canonical map (e.g. 'k8s' -> 'kubernetes') for
 - function **`normalize_phrase()`** ([app/analysis/terminology.py:42](../app/analysis/terminology.py#L42)) — Normalize a phrase to its canonical lowercased form and expand common acronyms.
-- **Imported by:** `analysis/matcher.py`
+- **Imported by:** `analysis/jd_analyzer.py`, `analysis/matcher.py`
 
 ### `app/cli.py`
 
@@ -508,15 +509,15 @@ _Semantic (embedding-based) matching layer._
 
 ### `app/validation/factual.py`
 
-**Layer:** Validation · **Stage:** 8 Validate · **Lines:** 96
+**Layer:** Validation · **Stage:** 8 Validate · **Lines:** 97
 
 - class **`ClaimCheck`** ([app/validation/factual.py:9](../app/validation/factual.py#L9))
 - class **`ValidationResult`** ([app/validation/factual.py:15](../app/validation/factual.py#L15))
 - class **`FactualValidator`** ([app/validation/factual.py:21](../app/validation/factual.py#L21))
   - `extract_numbers()` :37
-  - `_canonical_term()` :41
-  - `_factual_terms()` :48
-  - `validate_proposal()` :54
+  - `_canonical_term()` :42
+  - `_factual_terms()` :49
+  - `validate_proposal()` :55
 - **Imports:** `analysis/rewriter.py`, `domain/evidence.py`
 - **Imported by:** `services/tailor.py`, `services/validation_agent.py`
 - **Tested by:** `tests/unit/test_validation.py`
@@ -601,6 +602,7 @@ flowchart LR
     validation_safety[safety]
     validation_structural[structural]
   end
+  analysis_jd_analyzer --> analysis_terminology
   analysis_jd_analyzer --> llm_client
   analysis_jd_analyzer --> llm_schemas
   analysis_matcher --> analysis_terminology

@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "83ea0f9541884dfe",
+  "source_hash": "ccd8b42a9893bb4f",
   "stats": {
     "files": 84,
     "python_files": 64,
     "app_modules": 35,
     "test_files": 23,
     "classes": 61,
-    "functions": 219,
-    "lines_of_python": 7147
+    "functions": 229,
+    "lines_of_python": 7287
   },
   "axes": {
     "x": "location (path)",
@@ -225,7 +225,7 @@
       "stages": [
         "3 JD analysis"
       ],
-      "lines": 250,
+      "lines": 306,
       "doc": "",
       "classes": [
         {
@@ -240,37 +240,37 @@
             },
             {
               "name": "extract_keywords_from_text",
-              "line": 46,
-              "doc": ""
+              "line": 64,
+              "doc": "Stopgap keyword extraction: keep only technical-looking terms,"
             },
             {
               "name": "_category",
-              "line": 53,
+              "line": 107,
               "doc": ""
             },
             {
               "name": "_is_requirement",
-              "line": 64,
+              "line": 118,
               "doc": ""
             },
             {
               "name": "_segment_line",
-              "line": 73,
+              "line": 127,
               "doc": "Conservatively split a requirement line into atomic requirement phrases."
             },
             {
               "name": "_reflow_lines",
-              "line": 93,
+              "line": 147,
               "doc": "Undo hard line-wrapping from pasted JDs (job boards/PDFs often wrap"
             },
             {
               "name": "_llm_select_requirement_lines",
-              "line": 128,
+              "line": 182,
               "doc": "Ask the LLM which of the given candidate line indices are genuine"
             },
             {
               "name": "analyze",
-              "line": 178,
+              "line": 232,
               "doc": ""
             }
           ]
@@ -420,7 +420,7 @@
       "stages": [
         "5 Score"
       ],
-      "lines": 118,
+      "lines": 134,
       "doc": "",
       "classes": [
         {
@@ -436,12 +436,17 @@
           "methods": [
             {
               "name": "calculate_components",
-              "line": 38,
+              "line": 43,
+              "doc": ""
+            },
+            {
+              "name": "_compute",
+              "line": 46,
               "doc": ""
             },
             {
               "name": "calculate_score",
-              "line": 113,
+              "line": 123,
               "doc": ""
             }
           ]
@@ -1418,7 +1423,7 @@
       "stages": [
         "8 Validate"
       ],
-      "lines": 96,
+      "lines": 97,
       "doc": "",
       "classes": [
         {
@@ -1445,17 +1450,17 @@
             },
             {
               "name": "_canonical_term",
-              "line": 41,
+              "line": 42,
               "doc": ""
             },
             {
               "name": "_factual_terms",
-              "line": 48,
+              "line": 49,
               "doc": ""
             },
             {
               "name": "validate_proposal",
-              "line": 54,
+              "line": 55,
               "doc": ""
             }
           ]
@@ -1962,7 +1967,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 61,
+      "lines": 85,
       "doc": "",
       "classes": [],
       "functions": [
@@ -1980,6 +1985,21 @@
           "name": "test_heading_like_words_inside_real_requirements_are_not_filtered",
           "line": 51,
           "doc": "A genuine requirement sentence that happens to contain a heading-like"
+        },
+        {
+          "name": "test_keywords_are_technical_terms_not_prose",
+          "line": 64,
+          "doc": ""
+        },
+        {
+          "name": "test_keywords_keep_symbol_terms",
+          "line": 73,
+          "doc": ""
+        },
+        {
+          "name": "test_preferred_requirements_get_preferred_criticality",
+          "line": 81,
+          "doc": ""
         }
       ]
     },
@@ -2326,7 +2346,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 82,
+      "lines": 107,
       "doc": "",
       "classes": [],
       "functions": [
@@ -2364,6 +2384,26 @@
           "name": "test_default_criticality_requirement_counts_as_required_coverage",
           "line": 73,
           "doc": "Regression: Requirement.criticality defaults to 'required' (not"
+        },
+        {
+          "name": "test_perfect_match_scores_100_with_only_required_requirements",
+          "line": 85,
+          "doc": "Regression: empty preferred/keyword buckets used to cap the score at 60."
+        },
+        {
+          "name": "test_perfect_match_scores_100_with_required_and_preferred",
+          "line": 92,
+          "doc": ""
+        },
+        {
+          "name": "test_missing_preferred_costs_less_than_missing_required",
+          "line": 98,
+          "doc": ""
+        },
+        {
+          "name": "test_no_requirements_scores_zero",
+          "line": 106,
+          "doc": ""
         }
       ]
     },
@@ -2537,7 +2577,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 37,
+      "lines": 55,
       "doc": "",
       "classes": [],
       "functions": [
@@ -2555,6 +2595,16 @@
           "name": "test_safety_guard_prompt_injection",
           "line": 35,
           "doc": ""
+        },
+        {
+          "name": "test_numeric_pattern_captures_unit_suffixes",
+          "line": 40,
+          "doc": ""
+        },
+        {
+          "name": "test_factual_validator_rejects_changed_metric_with_suffix",
+          "line": 47,
+          "doc": ""
         }
       ]
     }
@@ -2569,6 +2619,11 @@
       "from": "app/analysis/jd_analyzer.py",
       "to": "app/analysis/jd_analyzer.py::JDAnalyzer",
       "type": "contains"
+    },
+    {
+      "from": "app/analysis/jd_analyzer.py",
+      "to": "app/analysis/terminology.py",
+      "type": "imports"
     },
     {
       "from": "app/analysis/jd_analyzer.py",

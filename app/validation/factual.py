@@ -19,10 +19,10 @@ class ValidationResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
 
 class FactualValidator:
-    # Match either plain numbers with optional decimals and percent sign (e.g. 20, 3.5, 12%)
-    # or currency amounts with leading $ (e.g. $5,000 or $3.5M). Use a grouped
-    # alternation so word-boundary handling is consistent.
-    NUMERIC_PATTERN = re.compile(r'(?:\b\d+(?:[.,]\d+)?%?\b|\$\d+(?:[.,]\d+)?\b)')
+    # A number with its unit suffix, so a metric can't change unnoticed:
+    # 20, 3.5, 12%, $5,000, $3.5M, 2M, 40K, 10x, 1,000+, 5+ (years).
+    # The lookbehind skips digits inside identifiers (B2B, S3, v2).
+    NUMERIC_PATTERN = re.compile(r"(?<![\w.])\$?\d+(?:[.,]\d+)*(?:[%+]|[kKmMbBxX](?![A-Za-z]))?")
     TOKEN_RE = re.compile(r"\b[A-Za-z][A-Za-z0-9+#.-]{1,}\b")
     # Grammar and action-verb changes are allowed; factual nouns/tools are not.
     NON_FACTUAL_WORDS = {
@@ -35,7 +35,8 @@ class FactualValidator:
     }
 
     def extract_numbers(self, text: str) -> set[str]:
-        return set(self.NUMERIC_PATTERN.findall(text))
+        # Upper-case so "10x" and "10X" (or "2m" and "2M") compare equal.
+        return {n.upper() for n in self.NUMERIC_PATTERN.findall(text)}
 
     @staticmethod
     def _canonical_term(token: str) -> str:
