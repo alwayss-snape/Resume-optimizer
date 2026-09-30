@@ -1,7 +1,7 @@
 import os
 from typing import List, Optional
 import docx
-import fitz  # PyMuPDF
+import pymupdf as fitz  # PyMuPDF
 
 class OutputQAValidator:
     def validate_docx(self, docx_path: str, expected_candidate_name: Optional[str] = None) -> List[str]:

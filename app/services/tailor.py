@@ -73,9 +73,15 @@ class TailorService:
         if resume.experience:
             lines.append("## Work Experience\n")
             for exp in resume.experience:
-                lines.append(f"### {exp.company} — *{exp.title}*\n")
-                for bullet in exp.bullets:
-                    lines.append(f"- {bullet.text}")
+                lines.append(f"### {exp.company or exp.title}\n")
+                for role in exp.all_roles():
+                    dates = " – ".join(v for v in (role.start_date, role.end_date) if v)
+                    lines.append(f"*{role.title}*" + (f" ({dates})" if dates else ""))
+                lines.append("")
+                for group, bullets in exp.bullet_groups():
+                    if group:
+                        lines.append(f"**{group}**")
+                    lines.extend(f"- {bullet.text}" for bullet in bullets)
                 lines.append("")
 
         if resume.skills:
@@ -175,7 +181,7 @@ class TailorService:
                 "errors": sorted({p.error for p in failed if p.error}),
             },
             "llm_usage": self.llm_client.get_usage_summary() if self.llm_client else None,
-            "experience_options": [{"id": e.id, "label": f"{e.company} — {e.title}"} for e in resume.experience],
+            "experience_options": [{"id": e.id, "label": " — ".join(v for v in (e.company, e.title) if v) or e.id} for e in resume.experience],
         }
 
     def incorporate_user_addition(

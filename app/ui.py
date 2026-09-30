@@ -63,7 +63,7 @@ def display_pdf_with_fallback(pdf_path: str, height: int = 900):
     except Exception:
         # Try PNG raster via PyMuPDF if available
         try:
-            import fitz
+            import pymupdf as fitz
             doc = fitz.open(pdf_path)
             pix = doc.load_page(0).get_pixmap(matrix=fitz.Matrix(2, 2))
             from io import BytesIO

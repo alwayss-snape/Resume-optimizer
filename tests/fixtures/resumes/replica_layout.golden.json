@@ -1,0 +1,111 @@
+{
+  "candidate": {
+    "name": "Jordan Avery",
+    "headline": null,
+    "email": "jordan.avery@example.com",
+    "phone": "+91-9000000000",
+    "location": "Pune, India",
+    "links": []
+  },
+  "summary": "Data Scientist with 4 years of experience building forecasting and ranking systems for retail and logistics clients. Uses Python, SQL, Spark and cloud MLOps to turn data into measurable business outcomes.",
+  "experience": [
+    {
+      "company": "Northwind Analytics - A Contoso Group Company",
+      "location": "Pune, India",
+      "roles": [
+        [
+          "Senior Data Scientist",
+          "March 2024",
+          "Present"
+        ],
+        [
+          "Data Scientist",
+          "July 2021",
+          "March 2024"
+        ]
+      ],
+      "groups": [
+        [
+          "Demand Forecasting Platform",
+          [
+            "Built a demand forecasting service on Google Cloud using Prophet and gradient boosted trees, covering 1,200 stores and replacing a spreadsheet process.",
+            "Automated weekly retraining and backtesting with Airflow, keeping forecast error under 8% across seasonal peaks"
+          ]
+        ],
+        [
+          "Route Optimization Analytics",
+          [
+            "Designed a routing analysis in Python that combined GPS pings, delivery windows and depot capacity",
+            "Reported late-delivery hotspots to regional managers across three distribution networks"
+          ]
+        ],
+        [
+          "Customer Churn Model",
+          [
+            "Trained an XGBoost churn model with engineered tenure and usage features, lifting retention campaign response by 15%",
+            "Deployed the model behind a FastAPI service with drift monitoring"
+          ]
+        ]
+      ]
+    },
+    {
+      "company": "Blue Harbor Bank",
+      "location": "Mumbai, India",
+      "roles": [
+        [
+          "Analytics Intern",
+          "January 2021",
+          "June 2021"
+        ]
+      ],
+      "groups": [
+        [
+          null,
+          [
+            "Cleaned loan application data in SQL and built Tableau reports for the credit risk team"
+          ]
+        ]
+      ]
+    }
+  ],
+  "projects": [],
+  "skills": {
+    "Languages": [
+      "Python",
+      "Scala",
+      "SQL",
+      "R"
+    ],
+    "Frameworks": [
+      "Pandas",
+      "NumPy",
+      "PyTorch",
+      "XGBoost"
+    ],
+    "Tools": [
+      "PostgreSQL",
+      "Tableau",
+      "Airflow",
+      "GCP",
+      "Excel"
+    ]
+  },
+  "education": [
+    {
+      "institution": "Riverside Institute of Technology",
+      "degree": "B.Tech in Electronics Engineering(CGPA : 8.5/10)",
+      "location": "Chennai, India",
+      "dates": "2016-2020"
+    }
+  ],
+  "certifications": [
+    "Google Cloud Professional Data Engineer",
+    "Statistics for Data Science"
+  ],
+  "achievements": [],
+  "interests": [
+    "Chess",
+    "Cycling",
+    "Photography"
+  ]
+}

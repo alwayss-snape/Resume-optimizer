@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from typing import List, Optional
 
 try:
-    import fitz  # PyMuPDF
+    import pymupdf as fitz  # PyMuPDF (the "fitz" alias prints a deprecation warning)
     _FITZ_IMPORT_ERROR = None
 except Exception as e:  # pragma: no cover - runtime dependency may be missing in some environments
     fitz = None

@@ -19,6 +19,35 @@ class HtmlResumeRenderer:
         joined = " · ".join(html.escape(p) for p in parts if p)
         return f'<p class="meta">{joined}</p>' if joined else ""
 
+    @staticmethod
+    def _dates(role) -> str:
+        return " – ".join(v for v in (role.start_date, role.end_date) if v) if role else ""
+
+    def _experience_entry(self, item) -> str:
+        roles = item.all_roles()
+        first = roles[0] if roles else None
+        # No title found in the file: the company takes the heading rather
+        # than printing a placeholder.
+        heading = (first.title if first and first.title else "") or item.company
+        parts = [
+            "<article class='entry'><div class='entry-head'>"
+            f"<h3>{html.escape(heading)}</h3>"
+            f"<span class='dates'>{html.escape(self._dates(first))}</span></div>",
+            self._meta_line(item.company if heading != item.company else "", item.location),
+        ]
+        for role in roles[1:]:
+            parts.append(
+                "<div class='entry-head role'>"
+                f"<span>{html.escape(role.title)}</span>"
+                f"<span class='dates'>{html.escape(self._dates(role))}</span></div>"
+            )
+        for group, bullets in item.bullet_groups():
+            if group:
+                parts.append(f"<p class='group'>{html.escape(group)}</p>")
+            parts.append(f"<ul>{self._items(bullet.text for bullet in bullets)}</ul>")
+        parts.append("</article>")
+        return "".join(parts)
+
     def render(self, document: ResumeDocument) -> str:
         resume: Resume = document.resume
         presentation = document.presentation
@@ -32,16 +61,7 @@ class HtmlResumeRenderer:
 
         for section_name in presentation.section_order:
             if section_name == "experience" and resume.experience:
-                entries = "".join(
-                    "<article class='entry'>"
-                    "<div class='entry-head'>"
-                    f"<h3>{html.escape(item.title)}</h3>"
-                    f"<span class='dates'>{html.escape(' – '.join(v for v in (item.start_date, item.end_date) if v))}</span>"
-                    "</div>"
-                    f"{self._meta_line(item.company, item.location)}"
-                    f"<ul>{self._items(bullet.text for bullet in item.bullets)}</ul></article>"
-                    for item in resume.experience
-                )
+                entries = "".join(self._experience_entry(item) for item in resume.experience)
                 sections.append(f"<section><h2>Experience</h2>{entries}</section>")
             elif section_name == "projects" and resume.projects:
                 entries = "".join(
@@ -102,6 +122,8 @@ p {{ margin: 4px 0; }}
 ul {{ margin: 4px 0 8px; padding-left: 18px; }}
 li {{ margin: 2px 0; }}
 .entry {{ break-inside: avoid; margin-bottom: 4px; }}
+.entry-head.role {{ margin: 2px 0 0; }}
+.group {{ font-weight: 700; margin: 6px 0 0; }}
 strong {{ font-weight: 700; }}
 </style></head><body>
 <header><h1>{html.escape(resume.candidate.name)}</h1><p class="contact">{contact}</p></header>

@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**35 app modules · 24 test files · 60 classes · 302 functions/methods · 8,615 lines of Python** · source hash `4e24ad37de85754a`
+**35 app modules · 26 test files · 61 classes · 322 functions/methods · 8,901 lines of Python** · source hash `671cecd7067dd694`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -48,7 +48,7 @@ app/
     evidence.py                                  Evidence
     job.py                                       Requirement, JobDescription
     report.py                                    Match, TailoringReport
-    resume.py                                    Candidate, ResumeBullet, Experience, Project, Education, Resume
+    resume.py                                    Candidate, ResumeBullet, Role, Experience, Project, Education, Resume
     resume_document.py                           ResumePresentation, ResumeSource, ResumeRevision, ResumeDocument
     tailoring.py                                 TailoringAction, TailoringPlan
   ingestion/
@@ -95,11 +95,13 @@ tests/
       sample.txt
     resumes/
       make_replica_layout_pdf.py                 Generate replica_layout.pdf: an anonymized resume with the same PDF la…
+      replica_layout.golden.json
       replica_layout.pdf
       sample.docx
       sample.pdf
   integration/
     test_end_to_end.py                           test_integration_docx_pipeline(), test_integration_pdf_pipeline(), tes…
+    test_parse_golden.py                         Parse a resume and compare it, field by field, with a hand-checked gol…
     test_preserve_rewrite_end_to_end.py          test_approved_rewrite_appears_in_all_outputs()
   unit/
     test_cli.py                                  test_tailor_service_analyze_only(), test_tailor_service_end_to_end_doc…
@@ -114,6 +116,7 @@ tests/
     test_pdf_converter.py                        test_pdf_converter_find_binary_or_graceful_none(), test_output_qa_vali…
     test_pdf_parser.py                           test_pdf_parser_text_layer(), test_pdf_parser_file_not_found(), test_m…
     test_resume_document.py                      test_resume_document_has_versioned_json_snapshot(), test_resume_docume…
+    test_resume_model_v2.py                      Resume model v2 (P1.12): several roles at one company, project
     test_resume_normalizer.py                    test_resume_normalizer(), _normalize_replica(), test_replica_header_su…
     test_rewriter.py                             test_rewriter_deterministic_fallback(), test_rewrite_bullet_parses_str…
     test_scoring.py                              _req(), _match(), test_semantic_partial_excluded_from_headline_score()…
@@ -189,19 +192,22 @@ Spanning all stages: `app/cli.py`, `app/services/tailor.py`, `app/ui.py`
 
 ### `app/analysis/resume_normalizer.py`
 
-**Layer:** Analysis · **Stage:** 2 Normalize · **Lines:** 492
+**Layer:** Analysis · **Stage:** 2 Normalize · **Lines:** 511
 
 - class **`ResumeNormalizer`** ([app/analysis/resume_normalizer.py:8](../app/analysis/resume_normalizer.py#L8))
-  - `_split_skill_line()` :60 — 'Languages: Python, SQL<tab>Frameworks: Pandas, and XGBoost' ->
-  - `_skill_items()` :81
-  - `_extract_date_range()` :88
-  - `_strip_date_range()` :92
-  - `_parse_title_and_dates()` :96 — 'Data Scientist II | August 2024 - Present' ->
-  - `_split_respecting_parens()` :105 — Split on sep_chars, but never inside ( ) or [ ] groups — so
-  - `normalize()` :128
+  - `_split_skill_line()` :66 — 'Languages: Python, SQL<tab>Frameworks: Pandas, and XGBoost' ->
+  - `_skill_items()` :87
+  - `_is_dated_line()` :94 — A job title/company line carrying a date range or year.
+  - `_experience_line_kind()` :101 — 'dated' (title and/or company with dates), 'header_line' (a short
+  - `_add_role()` :117 — Record a role; the first one also fills the entry's title/dates.
+  - `_extract_date_range()` :126
+  - `_strip_date_range()` :130
+  - `_parse_title_and_dates()` :134 — 'Data Scientist II | August 2024 - Present' ->
+  - `_split_respecting_parens()` :143 — Split on sep_chars, but never inside ( ) or [ ] groups — so
+  - `normalize()` :166
 - **Imports:** `domain/evidence.py`, `domain/resume.py`, `domain/resume_document.py`, `ingestion/docx.py`
 - **Imported by:** `services/tailor.py`
-- **Tested by:** `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_tailor_resume_flow.py`
+- **Tested by:** `tests/integration/test_parse_golden.py`, `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_tailor_resume_flow.py`
 
 ### `app/analysis/rewriter.py`
 
@@ -311,16 +317,19 @@ _Semantic (embedding-based) matching layer._
 
 ### `app/domain/resume.py`
 
-**Layer:** Domain models · **Stage:** 2 Normalize · **Lines:** 49
+**Layer:** Domain models · **Stage:** 2 Normalize · **Lines:** 81
 
 - class **`Candidate`** ([app/domain/resume.py:4](../app/domain/resume.py#L4))
 - class **`ResumeBullet`** ([app/domain/resume.py:11](../app/domain/resume.py#L11))
-- class **`Experience`** ([app/domain/resume.py:16](../app/domain/resume.py#L16))
-- class **`Project`** ([app/domain/resume.py:25](../app/domain/resume.py#L25))
-- class **`Education`** ([app/domain/resume.py:32](../app/domain/resume.py#L32))
-- class **`Resume`** ([app/domain/resume.py:40](../app/domain/resume.py#L40))
+- class **`Role`** ([app/domain/resume.py:19](../app/domain/resume.py#L19)) — One title held at a company, e.g. 'Data Scientist II, Aug 2024 - Present'.
+- class **`Experience`** ([app/domain/resume.py:25](../app/domain/resume.py#L25)) — One company entry. `title` / `start_date` / `end_date` describe the
+  - `all_roles()` :40
+  - `bullet_groups()` :47 — Consecutive bullets grouped by sub-heading, in document order.
+- class **`Project`** ([app/domain/resume.py:57](../app/domain/resume.py#L57))
+- class **`Education`** ([app/domain/resume.py:64](../app/domain/resume.py#L64))
+- class **`Resume`** ([app/domain/resume.py:72](../app/domain/resume.py#L72))
 - **Imported by:** `analysis/resume_normalizer.py`, `analysis/rewriter.py`, `analysis/tailor_planner.py`, `domain/resume_document.py`, `rendering/html_renderer.py`, `rendering/template_renderer.py`, `services/tailor.py`, `validation/structural.py`
-- **Tested by:** `tests/unit/test_docx_renderer.py`, `tests/unit/test_html_renderer.py`, `tests/unit/test_resume_document.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_tailor_planner.py`, `tests/unit/test_tailor_service_addition.py`, `tests/unit/test_template_renderer_standalone.py`
+- **Tested by:** `tests/unit/test_docx_renderer.py`, `tests/unit/test_html_renderer.py`, `tests/unit/test_resume_document.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_tailor_planner.py`, `tests/unit/test_tailor_service_addition.py`, `tests/unit/test_template_renderer_standalone.py`
 
 ### `app/domain/resume_document.py`
 
@@ -334,7 +343,7 @@ _Semantic (embedding-based) matching layer._
   - `snapshot()` :73 — Return a JSON-serializable, versioned document for storage or export.
 - **Imports:** `domain/resume.py`
 - **Imported by:** `analysis/resume_normalizer.py`, `rendering/html_renderer.py`, `rendering/template_renderer.py`, `services/tailor.py`, `services/validation_agent.py`
-- **Tested by:** `tests/unit/test_docx_renderer.py`, `tests/unit/test_html_renderer.py`, `tests/unit/test_resume_document.py`, `tests/unit/test_template_renderer_standalone.py`
+- **Tested by:** `tests/unit/test_docx_renderer.py`, `tests/unit/test_html_renderer.py`, `tests/unit/test_resume_document.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_template_renderer_standalone.py`
 
 ### `app/domain/tailoring.py`
 
@@ -355,7 +364,7 @@ _Semantic (embedding-based) matching layer._
   - `parse()` :35
 - **Imports:** `rendering/document_map.py`
 - **Imported by:** `analysis/resume_normalizer.py`, `ingestion/pdf.py`, `services/tailor.py`
-- **Tested by:** `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_docx_parser.py`, `tests/unit/test_docx_renderer.py`, `tests/unit/test_pdf_parser.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_tailor_resume_flow.py`
+- **Tested by:** `tests/integration/test_parse_golden.py`, `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_docx_parser.py`, `tests/unit/test_docx_renderer.py`, `tests/unit/test_pdf_parser.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_tailor_resume_flow.py`
 
 ### `app/ingestion/ocr.py`
 
@@ -388,7 +397,7 @@ _Semantic (embedding-based) matching layer._
 - function **`_is_bold_span()`** ([app/ingestion/pdf.py:60](../app/ingestion/pdf.py#L60))
 - **Imports:** `ingestion/docx.py`, `ingestion/ocr.py`, `rendering/document_map.py`
 - **Imported by:** `services/tailor.py`
-- **Tested by:** `tests/unit/test_pdf_parser.py`, `tests/unit/test_resume_normalizer.py`
+- **Tested by:** `tests/integration/test_parse_golden.py`, `tests/unit/test_pdf_parser.py`, `tests/unit/test_resume_normalizer.py`
 
 ### `app/llm/client.py`
 
@@ -443,7 +452,7 @@ _Semantic (embedding-based) matching layer._
   - `add_location()` :18
   - `get_location()` :21
 - **Imported by:** `ingestion/docx.py`, `ingestion/pdf.py`, `rendering/docx_patcher.py`
-- **Tested by:** `tests/unit/test_docx_parser.py`
+- **Tested by:** `tests/unit/test_docx_parser.py`, `tests/unit/test_resume_model_v2.py`
 
 ### `app/rendering/docx_patcher.py`
 
@@ -458,16 +467,18 @@ _Semantic (embedding-based) matching layer._
 
 ### `app/rendering/html_renderer.py`
 
-**Layer:** Rendering · **Stage:** 9 Render · **Lines:** 115
+**Layer:** Rendering · **Stage:** 9 Render · **Lines:** 137
 
 - class **`HtmlResumeRenderer`** ([app/rendering/html_renderer.py:8](../app/rendering/html_renderer.py#L8)) — Render an ATS-safe, printable résumé from the canonical document.
   - `_items()` :11
   - `_meta_line()` :14 — A de-emphasized 'Company · Location' style line under a bolded
-  - `render()` :22
-  - `write_html()` :111
+  - `_dates()` :23
+  - `_experience_entry()` :26
+  - `render()` :51
+  - `write_html()` :133
 - **Imports:** `domain/resume.py`, `domain/resume_document.py`
 - **Imported by:** `services/tailor.py`
-- **Tested by:** `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_html_renderer.py`
+- **Tested by:** `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_html_renderer.py`, `tests/unit/test_resume_model_v2.py`
 
 ### `app/rendering/pdf_converter.py`
 
@@ -481,18 +492,19 @@ _Semantic (embedding-based) matching layer._
 
 ### `app/rendering/template_renderer.py`
 
-**Layer:** Rendering · **Stage:** 9 Render · **Lines:** 269
+**Layer:** Rendering · **Stage:** 9 Render · **Lines:** 290
 
 - class **`TemplateRenderer`** ([app/rendering/template_renderer.py:25](../app/rendering/template_renderer.py#L25)) — Standard single-column, ATS-safe DOCX renderer with support for ResumeDocument.
   - `render_ats_default()` :28
-  - `_set_document_defaults()` :194 — Tighter, more consistent margins/typography than python-docx's
-  - `_content_width()` :218
-  - `_add_section_heading()` :222 — A section label in the accent color with a rule underneath —
-  - `_add_title_dates_line()` :237 — Title (bold) on the left, date range right-aligned on the same
-  - `_add_bottom_border()` :256 — Adds a single bottom border to a paragraph via raw OOXML — the
+  - `_set_document_defaults()` :208 — Tighter, more consistent margins/typography than python-docx's
+  - `_content_width()` :232
+  - `_add_section_heading()` :236 — A section label in the accent color with a rule underneath —
+  - `_role_dates()` :252
+  - `_add_title_dates_line()` :257 — Title (bold) on the left, date range right-aligned on the same
+  - `_add_bottom_border()` :277 — Adds a single bottom border to a paragraph via raw OOXML — the
 - **Imports:** `domain/resume.py`, `domain/resume_document.py`
 - **Imported by:** `services/tailor.py`
-- **Tested by:** `tests/unit/test_docx_renderer.py`, `tests/unit/test_template_renderer_standalone.py`
+- **Tested by:** `tests/unit/test_docx_renderer.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_template_renderer_standalone.py`
 
 ### `app/services/run_manager.py`
 
@@ -507,16 +519,16 @@ _Semantic (embedding-based) matching layer._
 
 ### `app/services/tailor.py`
 
-**Layer:** Services · **Stage:** all · **Lines:** 596
+**Layer:** Services · **Stage:** all · **Lines:** 602
 
 - class **`TailorService`** ([app/services/tailor.py:33](../app/services/tailor.py#L33))
   - `__init__()` :34
   - `generate_preview_md()` :58
-  - `analyze_only()` :94
-  - `generate_proposals()` :122 — Generate rewrite proposals without applying them, plus advisory
-  - `incorporate_user_addition()` :181 — Fold a user-supplied free-text addition (a project, an
-  - `tailor_resume()` :255
-- function **`_merge_usage()`** ([app/services/tailor.py:587](../app/services/tailor.py#L587)) — Combine two LLMClient.get_usage_summary() dicts into one.
+  - `analyze_only()` :100
+  - `generate_proposals()` :128 — Generate rewrite proposals without applying them, plus advisory
+  - `incorporate_user_addition()` :187 — Fold a user-supplied free-text addition (a project, an
+  - `tailor_resume()` :261
+- function **`_merge_usage()`** ([app/services/tailor.py:593](../app/services/tailor.py#L593)) — Combine two LLMClient.get_usage_summary() dicts into one.
 - **Imports:** `analysis/jd_analyzer.py`, `analysis/matcher.py`, `analysis/resume_normalizer.py`, `analysis/rewriter.py`, `analysis/scoring.py`, `analysis/semantic_matcher.py`, `analysis/tailor_planner.py`, `domain/evidence.py`, `domain/job.py`, `domain/report.py`, `domain/resume.py`, `domain/resume_document.py`, `domain/tailoring.py`, `ingestion/docx.py`, `ingestion/pdf.py`, `llm/client.py`, `rendering/docx_patcher.py`, `rendering/html_renderer.py`, `rendering/pdf_converter.py`, `rendering/template_renderer.py`, `services/run_manager.py`, `validation/factual.py`, `validation/output.py`, `validation/safety.py`, `validation/structural.py`
 - **Imported by:** `cli.py`, `ui.py`
 - **Tested by:** `tests/integration/test_end_to_end.py`, `tests/unit/test_cli.py`, `tests/unit/test_tailor_resume_flow.py`, `tests/unit/test_tailor_service_addition.py`

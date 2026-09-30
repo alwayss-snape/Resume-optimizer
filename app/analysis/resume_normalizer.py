@@ -1,15 +1,21 @@
 import re
 from typing import List, Optional, Tuple
 from app.domain.evidence import Evidence
-from app.domain.resume import Candidate, Education, Experience, Project, Resume, ResumeBullet
+from app.domain.resume import Candidate, Education, Experience, Project, Resume, ResumeBullet, Role
 from app.domain.resume_document import ResumeDocument
 from app.ingestion.docx import RawDocument
 
 class ResumeNormalizer:
+    # Whole month names/abbreviations only: "Mar[a-z]*" used to match
+    # "Market", "Decision", "Junior" and turn project headings into job lines.
+    _MONTH = (r"(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|June?|July?|Aug(?:ust)?"
+              r"|Sep(?:t(?:ember)?)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)")
     DATE_PATTERN = re.compile(
-        r"\b(?:19|20)\d{2}\b|\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\b|\b(?:Present|Current)\b",
+        r"\b(?:19|20)\d{2}\b|\b" + _MONTH + r"\b\.?|\b(?:Present|Current)\b",
         re.IGNORECASE,
     )
+    # A job line's dates always carry a year or "Present".
+    YEAR_OR_PRESENT = re.compile(r"\b(?:19|20)\d{2}\b|\b(?:Present|Current|Now)\b", re.IGNORECASE)
     # Trailing "<start> - <end>" / "(<start> - <end>)" date-range pattern, e.g.
     # "August 2024 - Present" or "(2014 – 2018)".
     DATE_RANGE_RE = re.compile(
@@ -85,6 +91,38 @@ class ResumeNormalizer:
         items = self._split_respecting_parens(values, ",;|*•\n")
         return [re.sub(r"^(?:and|&)\s+", "", item, flags=re.IGNORECASE) for item in items]
 
+    def _is_dated_line(self, block) -> bool:
+        """A job title/company line carrying a date range or year."""
+        if block is None or block.block_type in ("bullet", "name"):
+            return False
+        text = block.text.strip()
+        return bool(text) and len(text) < 100 and bool(self.YEAR_OR_PRESENT.search(text))
+
+    def _experience_line_kind(self, block, text: str) -> str:
+        """'dated' (title and/or company with dates), 'header_line' (a short
+        heading-like line without dates: a company, or a sub-heading inside a
+        job) or 'content' (a bullet or body text)."""
+        if block.block_type == "bullet":
+            return "content"
+        if self._is_dated_line(block):
+            return "dated"
+        left = text.split("\t", 1)[0]
+        has_sep = "—" in left or " - " in left or " | " in left
+        heading_like = block.block_type == "heading" or block.bold or has_sep or "\t" in text
+        if heading_like and len(text) < 90 and not left.rstrip().endswith("."):
+            return "header_line"
+        return "content"
+
+    @staticmethod
+    def _add_role(exp: Experience, role: Role) -> None:
+        """Record a role; the first one also fills the entry's title/dates."""
+        if not exp.title and not exp.roles:
+            exp.title, exp.start_date, exp.end_date = role.title, role.start_date, role.end_date
+            return
+        if not exp.roles:
+            exp.roles.append(Role(title=exp.title, start_date=exp.start_date, end_date=exp.end_date))
+        exp.roles.append(role)
+
     def _extract_date_range(self, text: str) -> Optional[str]:
         m = self.DATE_RANGE_RE.search(text)
         return f"{m.group(1).strip()} – {m.group(2).strip()}" if m else None
@@ -145,10 +183,12 @@ class ResumeNormalizer:
         current_exp: Optional[Experience] = None
         current_proj: Optional[Project] = None
         current_edu: Optional[Education] = None
-        # True once current_exp has a real bullet (not a synthetic "Previously:"
-        # note) — distinguishes "still reading this job's header lines" from
-        # "a new header line here means a new job/company has started".
+        # True once current_exp has a bullet: distinguishes "still reading
+        # this job's header lines" from "a new header line here means a new
+        # job/company has started".
         current_exp_has_content = False
+        # Sub-heading (e.g. a project name) the next experience bullets sit under.
+        current_group: Optional[str] = None
 
         exp_counter = 0
         bullet_counter = 0
@@ -156,7 +196,16 @@ class ResumeNormalizer:
         edu_counter = 0
         ev_counter = 0
 
-        for block in raw_doc.blocks:
+        def new_experience(company: str, location: Optional[str]) -> Experience:
+            nonlocal exp_counter, current_exp_has_content
+            exp_counter += 1
+            exp = Experience(id=f"exp_{exp_counter:03d}", company=company, title="", location=location)
+            experiences.append(exp)
+            current_exp_has_content = False
+            return exp
+
+        blocks = raw_doc.blocks
+        for idx, block in enumerate(blocks):
             text = block.text.strip()
             if not text:
                 continue
@@ -219,109 +268,79 @@ class ResumeNormalizer:
 
             # Experience section
             elif any(k in section_lower for k in ("experience", "work", "employment", "career", "history")):
-                has_date = bool(self.DATE_PATTERN.search(text))
-                has_sep = ("—" in text or " - " in text or " | " in text or "\t" in text)
-                is_job_header = (
-                    block.block_type != "bullet"
-                    and (has_date or has_sep)
-                    and len(text) < 90
-                )
+                if "\t" in text:
+                    left, right_col = [p.strip() for p in text.split("\t", 1)]
+                else:
+                    left, right_col = text, None
+                kind = self._experience_line_kind(block, text)
+                if kind == "header_line" and self._is_dated_line(blocks[idx + 1] if idx + 1 < len(blocks) else None):
+                    kind = "company"
 
-                if is_job_header:
-                    if "\t" in text:
-                        left, right_col = [p.strip() for p in text.split("\t", 1)]
+                if kind == "dated":
+                    title, start, end = self._parse_title_and_dates(left)
+                    body = self._strip_date_range(left)
+                    dash_parts = [p.strip() for p in re.split(r"\s+—\s+|\s+-\s+", body) if p.strip()]
+                    role = Role(title=title, start_date=start, end_date=end)
+
+                    if len(dash_parts) >= 2 and (current_exp is None or current_exp_has_content or current_exp.title):
+                        # Combined single line: "Company — Title (dates)"
+                        current_exp = new_experience(dash_parts[0], right_col)
+                        self._add_role(current_exp, Role(title=dash_parts[1], start_date=start, end_date=end))
+                    elif current_exp is None:
+                        current_exp = new_experience("", right_col)
+                        self._add_role(current_exp, role)
+                    elif current_exp_has_content:
+                        # A new title after bullets, with no company line in
+                        # between: another role at the same company, listed
+                        # with its own bullets.
+                        current_exp = new_experience(current_exp.company, current_exp.location)
+                        self._add_role(current_exp, role)
                     else:
-                        left, right_col = text, None
+                        # First role for a company header, or a second role
+                        # (promotion) listed before any bullets.
+                        self._add_role(current_exp, role)
+                        if right_col and not current_exp.location:
+                            current_exp.location = right_col
+                    current_group = None
 
-                    if has_date:
-                        title, start, end = self._parse_title_and_dates(left)
-                        body = self._strip_date_range(left)
-                        dash_parts = [p.strip() for p in re.split(r"\s+—\s+|\s+-\s+", body) if p.strip()]
-                        is_new_entry = (
-                            current_exp is None
-                            or current_exp_has_content
-                            or len(dash_parts) >= 2
-                        )
+                elif kind == "company" or (kind == "header_line" and current_exp is None):
+                    # "Northwind Analytics - A Contoso Company<tab>Pune, India"
+                    current_exp = new_experience(left, right_col)
+                    current_group = None
 
-                        if is_new_entry and len(dash_parts) >= 2:
-                            # Combined single line: "Company — Title (dates)"
-                            exp_counter += 1
-                            current_exp = Experience(
-                                id=f"exp_{exp_counter:03d}", company=dash_parts[0], title=dash_parts[1],
-                                start_date=start, end_date=end, location=right_col,
-                            )
-                            experiences.append(current_exp)
-                            current_exp_has_content = False
-                        elif is_new_entry:
-                            # Bare "Title, dates" line, but the previous entry
-                            # already has real content -> this starts a new
-                            # role whose company we can't isolate from this
-                            # line alone.
-                            exp_counter += 1
-                            current_exp = Experience(
-                                id=f"exp_{exp_counter:03d}", company="Professional Experience", title=title,
-                                start_date=start, end_date=end, location=right_col,
-                            )
-                            experiences.append(current_exp)
-                            current_exp_has_content = False
-                        elif not current_exp.start_date:
-                            # First title/date info for this (already-started,
-                            # still content-free) entry.
-                            current_exp.title = title
-                            current_exp.start_date = start
-                            current_exp.end_date = end
-                            if right_col and not current_exp.location:
-                                current_exp.location = right_col
-                        else:
-                            # A second bare title/date line under the same
-                            # company header, before any bullets -> a
-                            # promotion. The schema holds one title per
-                            # Experience, so record the earlier role as a note
-                            # rather than silently dropping it or scrambling
-                            # it into a fake separate company.
-                            bullet_counter += 1
-                            bullet_id = f"{current_exp.id}_prev{bullet_counter:02d}"
-                            date_part = f" ({start} – {end})" if (start or end) else ""
-                            note_text = f"Previously: {title}{date_part}"
-                            current_exp.bullets.append(ResumeBullet(id=bullet_id, text=note_text, source_location_id=block.id))
-                    else:
-                        # A company (+ optional location) header line, e.g.
-                        # "Epsilon - A Publicis Groupe Company" or, tab-separated,
-                        # "Epsilon - A Publicis Groupe Company\tBengaluru, India".
-                        exp_counter += 1
-                        current_exp = Experience(
-                            id=f"exp_{exp_counter:03d}", company=left,
-                            title="Professional Role", location=right_col, bullets=[],
-                        )
-                        experiences.append(current_exp)
-                        current_exp_has_content = False
+                elif kind == "header_line" and not current_exp.company and not current_exp_has_content:
+                    # "Title, dates" came first; this line names the company.
+                    current_exp.company = left
+                    if right_col and not current_exp.location:
+                        current_exp.location = right_col
+
+                elif kind == "header_line":
+                    # A sub-heading inside the job, e.g. a project name.
+                    current_group = re.sub(r"\s+", " ", text).strip()
+
                 else:
                     if current_exp is None:
-                        exp_counter += 1
-                        current_exp = Experience(
-                            id=f"exp_{exp_counter:03d}",
-                            company="Professional Experience",
-                            title="Role",
-                            bullets=[],
-                        )
-                        experiences.append(current_exp)
+                        current_exp = new_experience("", None)
 
                     text = re.sub(r"\s+", " ", text)
                     bullet_counter += 1
                     bullet_id = f"{current_exp.id}_b{bullet_counter:02d}"
-                    bullet = ResumeBullet(id=bullet_id, text=text, source_location_id=block.id)
+                    bullet = ResumeBullet(id=bullet_id, text=text, source_location_id=block.id, group=current_group)
                     current_exp.bullets.append(bullet)
                     current_exp_has_content = True
 
                     ev_id = f"ev_{ev_counter:04d}"
                     ev_counter += 1
+                    context = current_exp.company or current_exp.title or "Experience"
+                    if current_group:
+                        context = f"{context} — {current_group}"
                     evidence_list.append(Evidence(
                         id=ev_id,
                         source_type="experience",
                         # Link evidence to the canonical bullet id and also retain raw block id
                         source_id=bullet_id,
                         source_location_id=block.id,
-                        text=f"{current_exp.company}: {text}",
+                        text=f"{context}: {text}",
                     ))
 
             # Projects section

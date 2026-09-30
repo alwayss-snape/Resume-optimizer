@@ -13,7 +13,7 @@ Run from the repo root (macOS, needs the system Arial fonts):
 """
 import os
 
-import fitz  # PyMuPDF
+import pymupdf as fitz  # PyMuPDF
 
 FONT_DIR = "/System/Library/Fonts/Supplemental"
 OUT = os.path.join(os.path.dirname(__file__), "replica_layout.pdf")

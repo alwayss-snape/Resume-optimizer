@@ -44,7 +44,7 @@ Semantic matching uses a local embedding model (`all-MiniLM-L6-v2`).
 | Area | Status | Notes |
 |---|---|---|
 | DOCX parsing (incl. table layouts) | ✅ Works | Verified against the user's real resume (Sep 29 fixes) |
-| PDF parsing | ✅ Works | Layout-aware (font size, bold, indent, right columns; P1.11). Text PDFs only; `ocr.py` is a stub path. PDF input always uses the ATS template |
+| PDF parsing | ✅ Works | Layout-aware (font size, bold, indent, right columns; P1.11). Several roles per company and project sub-sections inside a job (P1.12). The user's resume matches its golden file. Text PDFs only; `ocr.py` is a stub path. PDF input always uses the ATS template |
 | JD requirement extraction | ✅ Works | LLM-assisted with deterministic fallback |
 | Matching + score | ✅ Works | Deterministic + semantic; score breakdown in `ScoreComponents` |
 | Rewrite experience bullets | ⚠️ Partial | Only experience bullets. Summary and skills are never rewritten. See issues 2–3 re: LLM actually firing |
