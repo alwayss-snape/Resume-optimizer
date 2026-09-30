@@ -71,6 +71,11 @@ class DocxParser:
         return "paragraph", text, all_bold
 
     _SKILLS_SECTION_RE = re.compile(r"skill|technolog|competenc|expertise|tools", re.IGNORECASE)
+    _SKILL_CATEGORIES = {
+        "languages", "programming languages", "frameworks", "libraries", "tools", "platforms", "cloud",
+        "databases", "data", "ml", "machine learning", "devops", "testing", "technologies", "technical skills",
+        "soft skills", "skills", "software", "web", "frontend", "backend", "mobile", "other", "certifications",
+    }
 
     def _skills_label_row(self, row, current_section: str) -> Optional[str]:
         """'Label: values' for a two-cell row of a skills table, else None."""
@@ -80,14 +85,19 @@ class DocxParser:
         for cell in row.cells:
             if id(cell._tc) not in seen:
                 seen.add(id(cell._tc))
-                cells.append(self._INVISIBLE_RE.sub("", cell.text).strip())
-        cells = [c for c in cells if c]
+                text = self._INVISIBLE_RE.sub("", cell.text).strip()
+                if text:
+                    runs = [r for p in cell.paragraphs for r in p.runs if r.text.strip()]
+                    cells.append((text, bool(runs) and all(r.bold for r in runs)))
         if len(cells) != 2:
             return None
-        label, values = cells
-        if len(label.split()) > 4 or ":" in label or "\n" in label or not values:
+        (label, label_bold), (values, _) = cells
+        # A label cell (bold, "Label:", or a known category) next to a list;
+        # two skills side by side ("Python | SQL, Excel") stay separate.
+        is_label = label_bold or label.endswith(":") or label.lower().rstrip(":") in self._SKILL_CATEGORIES
+        if not is_label or len(label.split()) > 4 or "," in label or "\n" in label:
             return None
-        return f"{label}: {values}"
+        return f"{label.rstrip(':')}: {values}"
 
     @staticmethod
     def _hyperlinks(doc) -> List[str]:

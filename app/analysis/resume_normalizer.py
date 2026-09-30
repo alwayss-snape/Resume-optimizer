@@ -84,24 +84,19 @@ class ResumeNormalizer:
         r"\b(?:" + "|".join(SECTION_KEYWORDS) + r")\b", re.IGNORECASE
     )
 
-    # Words that may appear in a section title next to a section keyword
-    # ("Technical Skills", "Awards and Achievements", "Areas of Expertise").
-    # A heading made of anything else ("Riverside Institute of Technology",
-    # a bold project name) is content, even if it contains a keyword.
-    SECTION_TITLE_WORDS = {
-        "and", "&", "of", "my", "key", "core", "technical", "professional", "relevant", "selected", "additional",
-        "other", "personal", "academic", "areas", "area", "work", "career", "research", "training", "courses",
-        "coursework", "publications", "volunteer", "volunteering", "languages", "leadership", "honors", "honours",
-        "highlights", "overview", "background", "information", "details", "notable", "recent", "side",
-        "extracurricular", "summary", "and/or", "/",
-    }
+    # A heading with a section keyword is a section title ("Internship
+    # Experience", "Licenses & Certifications", "Programming Skills")
+    # unless it reads as content: a school name ("Riverside Institute of
+    # Technology") or a long line.
+    _CONTENT_HEADING_RE = re.compile(
+        r"\b(?:university|institute|college|school|academy|inc|ltd|llc|corp|corporation|gmbh|pvt)\b\.?",
+        re.IGNORECASE)
 
     def _is_section_title(self, text: str) -> bool:
         if not self.SECTION_KEYWORDS_RE.search(text):
             return False
-        words = [w for w in re.split(r"[\s,:]+", text.lower().strip(" :")) if w]
-        known = {k.lower() for k in self.SECTION_KEYWORDS}
-        return len(words) <= 6 and all(w in known or w in self.SECTION_TITLE_WORDS for w in words)
+        words = [w for w in re.split(r"[\s,:/()&]+", text) if w]
+        return len(words) <= 6 and not self._CONTENT_HEADING_RE.search(text)
 
     # "Senior Data Scientist", "Software Engineering Intern": the title side
     # of a "Title | Company" or "Company — Title" job line.
@@ -114,6 +109,14 @@ class ResumeNormalizer:
 
     def _looks_like_title(self, text: str) -> bool:
         return bool(self._ROLE_WORDS_RE.search(text or ""))
+
+    def _title_score(self, text: str) -> int:
+        """2 when a role word ends the phrase ("Data Analyst"), 1 when it's
+        only inside it ("Lead Bank", "Principal Financial Group"), else 0."""
+        words = re.findall(r"[A-Za-z-]+", text or "")
+        if words and self._ROLE_WORDS_RE.fullmatch(words[-1]):
+            return 2
+        return 1 if self._looks_like_title(text) else 0
 
     # Chars trimmed off a title/company fragment once the trailing date range
     # (and whatever separated it, e.g. "Title | Aug 2024 - Present") has been
@@ -432,9 +435,15 @@ class ResumeNormalizer:
                     if len(dash_parts) >= 2 and (current_exp is None or current_exp_has_content or current_exp.title):
                         # Combined single line: "Company — Title (dates)" or
                         # "Title | Company | dates"; role words decide which is which.
-                        company_part, title_part = dash_parts[0], dash_parts[1]
-                        if self._looks_like_title(company_part) and not self._looks_like_title(title_part):
-                            company_part, title_part = title_part, company_part
+                        # The most title-like part is the title; the company is
+                        # the last remaining part ("Title - Team | Company").
+                        scores = [self._title_score(p) for p in dash_parts]
+                        if len(set(scores)) == 1:
+                            title_part, rest = dash_parts[1], [dash_parts[0]] + dash_parts[2:]  # "Company — Title"
+                        else:
+                            title_part = dash_parts[scores.index(max(scores))]
+                            rest = [p for p in dash_parts if p is not title_part]
+                        company_part = rest[-1] if len(dash_parts) > 2 and "|" in body else rest[0]
                         current_exp = new_experience(company_part, right_col)
                         self._add_role(current_exp, Role(title=title_part, start_date=start, end_date=end))
                     elif current_exp is None:

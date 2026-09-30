@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**49 app modules · 46 test files · 86 classes · 720 functions/methods · 15,681 lines of Python** · source hash `4581d2c0b51b300f`
+**49 app modules · 47 test files · 86 classes · 734 functions/methods · 15,872 lines of Python** · source hash `f6703c92a77fe329`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -141,6 +141,7 @@ tests/
     test_matcher.py                              test_evidence_matcher_exact_and_alias(), test_one_generic_word_cannot_…
     test_new_role.py                             P3.3: add a job that isn't on the resume yet.
     test_page_fit.py                             P2.4: the page-fit loop trims in a fixed order, keeps minimums, reports
+    test_parser_regressions_p42.py               Regression tests from the independent review of P4.2: inputs outside t…
     test_parsing_fixes_p19.py                    P1.9: links (DOCX hyperlinks, PDF link annotations, URLs in text),
     test_pdf_converter.py                        test_pdf_converter_find_binary_or_graceful_none(), test_output_qa_vali…
     test_pdf_parser.py                           test_pdf_parser_text_layer(), test_pdf_parser_file_not_found(), test_m…
@@ -247,27 +248,27 @@ _Suggest-and-confirm gaps (P3.1): ask, never assume._
   - `analyze()` :325
 - **Imports:** `analysis/terminology.py`, `domain/job.py`, `llm/client.py`, `llm/schemas.py`
 - **Imported by:** `eval/harness.py`, `services/tailor.py`
-- **Tested by:** `tests/unit/test_jd_analyzer.py`, `tests/unit/test_jd_analyzer_llm.py`, `tests/unit/test_jd_analyzer_v2.py`
+- **Tested by:** `tests/unit/test_jd_analyzer.py`, `tests/unit/test_jd_analyzer_llm.py`, `tests/unit/test_jd_analyzer_v2.py`, `tests/unit/test_parser_regressions_p42.py`
 - **Prompts:** `llm/prompts/jd_analysis.txt`
 
 ### `app/analysis/keyword_match.py`
 
-**Layer:** Analysis · **Stage:** 5 Score · **Lines:** 165
+**Layer:** Analysis · **Stage:** 5 Score · **Lines:** 172
 
 _Keyword-level match rate, the headline score (P1.2)._
 
-- class **`KeywordMatcher`** ([app/analysis/keyword_match.py:94](../app/analysis/keyword_match.py#L94))
-  - `_find()` :95
-  - `_title_credit()` :118
-  - `match()` :128
-- function **`_stem()`** ([app/analysis/keyword_match.py:37](../app/analysis/keyword_match.py#L37))
-- function **`_alias()`** ([app/analysis/keyword_match.py:45](../app/analysis/keyword_match.py#L45))
-- function **`tokens()`** ([app/analysis/keyword_match.py:52](../app/analysis/keyword_match.py#L52)) — Lowercased, alias-canonical, plural-insensitive tokens.
-- function **`_contains_seq()`** ([app/analysis/keyword_match.py:57](../app/analysis/keyword_match.py#L57))
-- function **`resume_sections()`** ([app/analysis/keyword_match.py:62](../app/analysis/keyword_match.py#L62)) — (label, text) for every part of the resume a recruiter or ATS reads.
+- class **`KeywordMatcher`** ([app/analysis/keyword_match.py:101](../app/analysis/keyword_match.py#L101))
+  - `_find()` :102
+  - `_title_credit()` :125
+  - `match()` :135
+- function **`_stem()`** ([app/analysis/keyword_match.py:44](../app/analysis/keyword_match.py#L44))
+- function **`_alias()`** ([app/analysis/keyword_match.py:52](../app/analysis/keyword_match.py#L52))
+- function **`tokens()`** ([app/analysis/keyword_match.py:59](../app/analysis/keyword_match.py#L59)) — Lowercased, alias-canonical, plural-insensitive tokens.
+- function **`_contains_seq()`** ([app/analysis/keyword_match.py:64](../app/analysis/keyword_match.py#L64))
+- function **`resume_sections()`** ([app/analysis/keyword_match.py:69](../app/analysis/keyword_match.py#L69)) — (label, text) for every part of the resume a recruiter or ATS reads.
 - **Imports:** `analysis/terminology.py`, `domain/job.py`, `domain/report.py`, `domain/resume.py`
 - **Imported by:** `analysis/gap_questions.py`, `analysis/skills_tailor.py`, `analysis/tailor_planner.py`, `eval/harness.py`, `services/tailor.py`
-- **Tested by:** `tests/unit/test_gap_questions.py`, `tests/unit/test_keyword_match.py`, `tests/unit/test_review_view.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`
+- **Tested by:** `tests/unit/test_gap_questions.py`, `tests/unit/test_keyword_match.py`, `tests/unit/test_parser_regressions_p42.py`, `tests/unit/test_review_view.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`
 
 ### `app/analysis/matcher.py`
 
@@ -286,29 +287,30 @@ _Keyword-level match rate, the headline score (P1.2)._
 
 ### `app/analysis/resume_normalizer.py`
 
-**Layer:** Analysis · **Stage:** 2 Normalize · **Lines:** 690
+**Layer:** Analysis · **Stage:** 2 Normalize · **Lines:** 699
 
 - class **`ResumeNormalizer`** ([app/analysis/resume_normalizer.py:8](../app/analysis/resume_normalizer.py#L8))
   - `_header_urls()` :40
   - `_is_headline()` :51 — A short title line under the name, e.g. 'Senior Data Scientist |
-  - `_is_section_title()` :99
-  - `_looks_like_title()` :115
-  - `_split_skill_line()` :132 — 'Languages: Python, SQL<tab>Frameworks: Pandas, and XGBoost' ->
-  - `_skill_items()` :153
-  - `_looks_like_degree()` :168 — 'B.Tech in Computer Science' yes; 'State University' no.
-  - `_split_middle_dot()` :173 — 'Acme Corp · Pune, India' -> ('Acme Corp', 'Pune, India'), the
-  - `_is_dated_line()` :182 — A job title/company line carrying a date range or year.
-  - `_experience_line_kind()` :189 — 'dated' (title and/or company with dates), 'header_line' (a short
-  - `_add_role()` :208 — Record a role; the first one also fills the entry's title/dates.
-  - `_merge_links()` :218 — Profile links from the file's hyperlinks and from URLs written in
-  - `_extract_date_range()` :232
-  - `_strip_date_range()` :236
-  - `_parse_title_and_dates()` :240 — 'Data Scientist II | August 2024 - Present' ->
-  - `_split_respecting_parens()` :249 — Split on sep_chars, but never inside ( ) or [ ] groups — so
-  - `normalize()` :272
+  - `_is_section_title()` :95
+  - `_looks_like_title()` :110
+  - `_title_score()` :113 — 2 when a role word ends the phrase ("Data Analyst"), 1 when it's
+  - `_split_skill_line()` :135 — 'Languages: Python, SQL<tab>Frameworks: Pandas, and XGBoost' ->
+  - `_skill_items()` :156
+  - `_looks_like_degree()` :171 — 'B.Tech in Computer Science' yes; 'State University' no.
+  - `_split_middle_dot()` :176 — 'Acme Corp · Pune, India' -> ('Acme Corp', 'Pune, India'), the
+  - `_is_dated_line()` :185 — A job title/company line carrying a date range or year.
+  - `_experience_line_kind()` :192 — 'dated' (title and/or company with dates), 'header_line' (a short
+  - `_add_role()` :211 — Record a role; the first one also fills the entry's title/dates.
+  - `_merge_links()` :221 — Profile links from the file's hyperlinks and from URLs written in
+  - `_extract_date_range()` :235
+  - `_strip_date_range()` :239
+  - `_parse_title_and_dates()` :243 — 'Data Scientist II | August 2024 - Present' ->
+  - `_split_respecting_parens()` :252 — Split on sep_chars, but never inside ( ) or [ ] groups — so
+  - `normalize()` :275
 - **Imports:** `domain/evidence.py`, `domain/resume.py`, `domain/resume_document.py`, `ingestion/docx.py`
 - **Imported by:** `analysis/structure_extractor.py`, `eval/golden.py`, `services/tailor.py`, `validation/output.py`
-- **Tested by:** `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_ats_round_trip.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_structure_extractor.py`, `tests/unit/test_tailor_resume_flow.py`
+- **Tested by:** `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_ats_round_trip.py`, `tests/unit/test_parser_regressions_p42.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_structure_extractor.py`, `tests/unit/test_tailor_resume_flow.py`
 
 ### `app/analysis/rewriter.py`
 
@@ -423,7 +425,7 @@ _Tailored professional summary (P1.5)._
 
 ### `app/analysis/terminology.py`
 
-**Layer:** Analysis · **Stage:** 4 Match · **Lines:** 86
+**Layer:** Analysis · **Stage:** 4 Match · **Lines:** 87
 
 - function **`flat_alias_to_canonical()`** ([app/analysis/terminology.py:32](../app/analysis/terminology.py#L32)) — Build a flat alias->canonical map (e.g. 'k8s' -> 'kubernetes') for
 - function **`normalize_phrase()`** ([app/analysis/terminology.py:42](../app/analysis/terminology.py#L42)) — Normalize a phrase to its canonical lowercased form and expand common acronyms.
@@ -465,7 +467,7 @@ _Tailored professional summary (P1.5)._
 - class **`Requirement`** ([app/domain/job.py:4](../app/domain/job.py#L4))
 - class **`JobDescription`** ([app/domain/job.py:28](../app/domain/job.py#L28))
 - **Imported by:** `analysis/gap_questions.py`, `analysis/jd_analyzer.py`, `analysis/keyword_match.py`, `analysis/matcher.py`, `analysis/rewriter.py`, `analysis/scoring.py`, `analysis/semantic_matcher.py`, `analysis/summary_writer.py`, `analysis/tailor_planner.py`, `cli.py`, `services/tailor.py`
-- **Tested by:** `tests/unit/test_gap_questions.py`, `tests/unit/test_jd_analyzer.py`, `tests/unit/test_keyword_match.py`, `tests/unit/test_matcher.py`, `tests/unit/test_new_role.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_review_view.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_scoring.py`, `tests/unit/test_semantic_matcher.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_tailor_planner.py`, `tests/unit/test_tailor_service_addition.py`
+- **Tested by:** `tests/unit/test_gap_questions.py`, `tests/unit/test_jd_analyzer.py`, `tests/unit/test_keyword_match.py`, `tests/unit/test_matcher.py`, `tests/unit/test_new_role.py`, `tests/unit/test_parser_regressions_p42.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_review_view.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_scoring.py`, `tests/unit/test_semantic_matcher.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_tailor_planner.py`, `tests/unit/test_tailor_service_addition.py`
 
 ### `app/domain/report.py`
 
@@ -495,7 +497,7 @@ _Tailored professional summary (P1.5)._
 - class **`Education`** ([app/domain/resume.py:71](../app/domain/resume.py#L71))
 - class **`Resume`** ([app/domain/resume.py:79](../app/domain/resume.py#L79))
 - **Imported by:** `analysis/experience.py`, `analysis/keyword_match.py`, `analysis/resume_normalizer.py`, `analysis/rewriter.py`, `analysis/skills_tailor.py`, `analysis/structure_extractor.py`, `analysis/summary_writer.py`, `analysis/tailor_planner.py`, `domain/resume_document.py`, `eval/golden.py`, `rendering/html_renderer.py`, `rendering/layout.py`, `rendering/page_fit.py`, `services/tailor.py`, `validation/content_lint.py`, `validation/structural.py`
-- **Tested by:** `tests/unit/test_ats_round_trip.py`, `tests/unit/test_content_lint.py`, `tests/unit/test_docx_renderer.py`, `tests/unit/test_experience.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_html_renderer.py`, `tests/unit/test_keyword_match.py`, `tests/unit/test_new_role.py`, `tests/unit/test_page_fit.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_resume_document.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_review_view.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_tailor_planner.py`, `tests/unit/test_tailor_service_addition.py`, `tests/unit/test_template_layout.py`, `tests/unit/test_template_renderer_standalone.py`
+- **Tested by:** `tests/unit/test_ats_round_trip.py`, `tests/unit/test_content_lint.py`, `tests/unit/test_docx_renderer.py`, `tests/unit/test_experience.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_html_renderer.py`, `tests/unit/test_keyword_match.py`, `tests/unit/test_new_role.py`, `tests/unit/test_page_fit.py`, `tests/unit/test_parser_regressions_p42.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_resume_document.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_review_view.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_tailor_planner.py`, `tests/unit/test_tailor_service_addition.py`, `tests/unit/test_template_layout.py`, `tests/unit/test_template_renderer_standalone.py`
 
 ### `app/domain/resume_document.py`
 
@@ -553,7 +555,7 @@ _Canonical projection of a parsed resume, compared against hand-checked_
 
 ### `app/eval/harness.py`
 
-**Layer:** Root · **Stage:** all · **Lines:** 400
+**Layer:** Root · **Stage:** all · **Lines:** 409
 
 _Run evaluation cases through the pipeline and collect metrics (P4.1)._
 
@@ -569,32 +571,33 @@ _Run evaluation cases through the pipeline and collect metrics (P4.1)._
 - function **`run_case()`** ([app/eval/harness.py:97](../app/eval/harness.py#L97))
 - function **`_tailor_metrics()`** ([app/eval/harness.py:178](../app/eval/harness.py#L178))
 - function **`attainable_coverage()`** ([app/eval/harness.py:218](../app/eval/harness.py#L218)) — Of the JD keywords written verbatim somewhere in the resume, the share
-- function **`fabricated_numbers()`** ([app/eval/harness.py:235](../app/eval/harness.py#L235)) — Numbers in the tailored resume that don't appear in the original.
-- function **`stuffing()`** ([app/eval/harness.py:245](../app/eval/harness.py#L245)) — Signs of keyword stuffing: tailoring pushed the rate above the target
-- function **`_docx_text()`** ([app/eval/harness.py:255](../app/eval/harness.py#L255))
-- function **`check_expected()`** ([app/eval/harness.py:262](../app/eval/harness.py#L262)) — Compare a run with the case's expected.json; one message per miss.
-- function **`run()`** ([app/eval/harness.py:319](../app/eval/harness.py#L319))
-- function **`_flatten()`** ([app/eval/harness.py:335](../app/eval/harness.py#L335))
-- function **`compare()`** ([app/eval/harness.py:352](../app/eval/harness.py#L352)) — Human-readable differences per case between a report and a baseline.
-- function **`summary_lines()`** ([app/eval/harness.py:380](../app/eval/harness.py#L380))
+- function **`_norm_number()`** ([app/eval/harness.py:237](../app/eval/harness.py#L237))
+- function **`fabricated_numbers()`** ([app/eval/harness.py:242](../app/eval/harness.py#L242)) — Numbers (with their units) in the tailored resume that the original
+- function **`stuffing()`** ([app/eval/harness.py:252](../app/eval/harness.py#L252)) — Signs of keyword stuffing: tailoring pushed the rate above the target
+- function **`_docx_text()`** ([app/eval/harness.py:262](../app/eval/harness.py#L262))
+- function **`check_expected()`** ([app/eval/harness.py:271](../app/eval/harness.py#L271)) — Compare a run with the case's expected.json; one message per miss.
+- function **`run()`** ([app/eval/harness.py:328](../app/eval/harness.py#L328))
+- function **`_flatten()`** ([app/eval/harness.py:344](../app/eval/harness.py#L344))
+- function **`compare()`** ([app/eval/harness.py:361](../app/eval/harness.py#L361)) — Human-readable differences per case between a report and a baseline.
+- function **`summary_lines()`** ([app/eval/harness.py:389](../app/eval/harness.py#L389))
 - **Imports:** `analysis/experience.py`, `analysis/jd_analyzer.py`, `analysis/keyword_match.py`, `domain/report.py`, `eval/golden.py`, `llm/client.py`, `rendering/layout.py`, `services/tailor.py`
 - **Imported by:** `eval/__main__.py`
 - **Tested by:** `tests/integration/test_eval_cases.py`, `tests/unit/test_cli_parity.py`, `tests/unit/test_eval_harness.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_profile_store.py`
 
 ### `app/ingestion/docx.py`
 
-**Layer:** Ingestion · **Stage:** 1 Ingest · **Lines:** 212
+**Layer:** Ingestion · **Stage:** 1 Ingest · **Lines:** 222
 
 - class **`RawBlock`** ([app/ingestion/docx.py:11](../app/ingestion/docx.py#L11))
 - class **`RawDocument`** ([app/ingestion/docx.py:27](../app/ingestion/docx.py#L27))
 - class **`DocxParser`** ([app/ingestion/docx.py:35](../app/ingestion/docx.py#L35))
   - `_classify()` :46 — -> (block_type, text without a bullet glyph, whole line bold).
-  - `_skills_label_row()` :75 — 'Label: values' for a two-cell row of a skills table, else None.
-  - `_hyperlinks()` :93 — Targets of every external hyperlink in the body, in rId order
-  - `parse()` :104
+  - `_skills_label_row()` :80 — 'Label: values' for a two-cell row of a skills table, else None.
+  - `_hyperlinks()` :103 — Targets of every external hyperlink in the body, in rId order
+  - `parse()` :114
 - **Imports:** `rendering/document_map.py`
 - **Imported by:** `analysis/resume_normalizer.py`, `analysis/structure_extractor.py`, `eval/golden.py`, `ingestion/pdf.py`, `services/tailor.py`, `validation/output.py`
-- **Tested by:** `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_ats_round_trip.py`, `tests/unit/test_docx_parser.py`, `tests/unit/test_docx_renderer.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_pdf_parser.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_structure_extractor.py`, `tests/unit/test_tailor_resume_flow.py`
+- **Tested by:** `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_ats_round_trip.py`, `tests/unit/test_docx_parser.py`, `tests/unit/test_docx_renderer.py`, `tests/unit/test_parser_regressions_p42.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_pdf_parser.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_structure_extractor.py`, `tests/unit/test_tailor_resume_flow.py`
 
 ### `app/ingestion/ocr.py`
 
@@ -608,7 +611,7 @@ _Run evaluation cases through the pipeline and collect metrics (P4.1)._
 
 ### `app/ingestion/pdf.py`
 
-**Layer:** Ingestion · **Stage:** 1 Ingest · **Lines:** 348
+**Layer:** Ingestion · **Stage:** 1 Ingest · **Lines:** 356
 
 - class **`_Line`** ([app/ingestion/pdf.py:41](../app/ingestion/pdf.py#L41)) — One visual text line with the layout facts the parser needs.
 - class **`PdfParser`** ([app/ingestion/pdf.py:64](../app/ingestion/pdf.py#L64))
@@ -617,17 +620,17 @@ _Run evaluation cases through the pipeline and collect metrics (P4.1)._
   - `_merge_wrapped_lines()` :80 — Text-only fallback for joining word-wrapped lines: a line is joined
   - `_page_lines()` :101
   - `_attach_right_columns()` :123 — A short, right-aligned run printed on the same row as a left-hand
-  - `_split_bullet()` :156 — Return the bullet text without its glyph, or None if not a bullet.
-  - `_continues()` :163 — Is `line` a word-wrap continuation of the item ending with `prev`?
-  - `_assemble()` :186 — Join continuation lines onto their bullet/paragraph. Each returned
-  - `_body_size()` :210
-  - `_is_heading()` :217
-  - `parse()` :233
+  - `_split_bullet()` :164 — Return the bullet text without its glyph, or None if not a bullet.
+  - `_continues()` :171 — Is `line` a word-wrap continuation of the item ending with `prev`?
+  - `_assemble()` :194 — Join continuation lines onto their bullet/paragraph. Each returned
+  - `_body_size()` :218
+  - `_is_heading()` :225
+  - `parse()` :241
 - function **`_clean()`** ([app/ingestion/pdf.py:54](../app/ingestion/pdf.py#L54))
 - function **`_is_bold_span()`** ([app/ingestion/pdf.py:60](../app/ingestion/pdf.py#L60))
 - **Imports:** `ingestion/docx.py`, `ingestion/ocr.py`, `rendering/document_map.py`
 - **Imported by:** `eval/golden.py`, `services/tailor.py`, `validation/output.py`
-- **Tested by:** `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_pdf_parser.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_structure_extractor.py`
+- **Tested by:** `tests/unit/test_parser_regressions_p42.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_pdf_parser.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_structure_extractor.py`
 
 ### `app/llm/client.py`
 

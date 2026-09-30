@@ -131,6 +131,11 @@ class PdfParser:
         right_edge = max(l.x1 for l in lines)
         out: List[_Line] = []
         used = set()
+
+        def meta_column(x0: float) -> bool:
+            at_x = [l for l in lines if abs(l.x0 - x0) < 3]
+            return bool(at_x) and all(self._DATE_OR_PLACE_RE.search(l.text.strip()) for l in at_x)
+
         for i, line in enumerate(lines):
             if i in used:
                 continue
@@ -142,9 +147,12 @@ class PdfParser:
                 # A tab-stop column mid-page ("Title    Jan 2020 - Present")
                 # counts too when the run is plainly a date range or a place.
                 right_aligned = other.x1 >= right_edge - 60
-                date_or_place = bool(self._DATE_OR_PLACE_RE.search(other.text.strip()))
+                # A mid-page tab stop ("Title    Jan 2020 - Present") counts only
+                # when everything printed at that x is a date or a place: in a
+                # two-column page that x also holds ordinary text.
+                tab_column = not right_aligned and meta_column(other.x0)
                 min_gap = 20 if right_aligned else 6  # a tab stop can sit close to a bold name
-                if (same_row and other.x0 > line.x1 + min_gap and (right_aligned or date_or_place)
+                if (same_row and other.x0 > line.x1 + min_gap and (right_aligned or tab_column)
                         and len(other.text.strip()) <= 40):
                     line.text = f"{line.text.rstrip()}\t{other.text.strip()}"
                     line.x1 = other.x1

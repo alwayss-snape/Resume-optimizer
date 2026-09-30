@@ -34,6 +34,13 @@ _TITLE_NOISE = {"i", "ii", "iii", "iv", "l1", "l2", "l3", "l4", "l5", "sr", "jr"
                 "staff", "principal", "the", "a", "an", "of", "and", "or", "for", "in", "at", "to", "with"}
 
 
+# "HIPAA-compliant", "AWS-certified", "cloud-native": a term plus one of these
+# suffixes. Other hyphenated words ("go-to-market", "R-squared", "C-suite")
+# are never split, so short keywords can't match inside them.
+_TERM_SUFFIXES = {"compliant", "certified", "based", "driven", "native", "enabled", "powered", "ready",
+                  "focused", "first", "backed", "centric", "savvy"}
+
+
 def _stem(token: str) -> str:
     if len(token) > 3 and token.endswith("ies"):
         return token[:-3] + "y"
@@ -102,7 +109,7 @@ class KeywordMatcher:
             token_set = set(toks)
             # "HIPAA-compliant" contains HIPAA: also look at hyphenated
             # tokens split into their parts (dots and slashes stay: Node.js, A/B).
-            split = [p for t in toks for p in (t.split("-") if "-" in t else [t]) if p]
+            split = [p for t in toks for p in (t.split("-") if t.rsplit("-", 1)[-1] in _TERM_SUFFIXES else [t]) if p]
             hit = any(_contains_seq(toks, alt) or _contains_seq(split, alt) for alt in alternatives)
             # A multi-word term also counts when all its words appear in one
             # sentence ("recommendation systems" vs "systems for recommendation").

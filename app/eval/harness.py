@@ -229,14 +229,21 @@ def attainable_coverage(keywords: List[str], resume_text: str, keyword_report) -
     return {"pct": pct, "attainable": len(attainable), "missed": missed}
 
 
-_NUMBER_RE = re.compile(r"\d[\d,.]*")
+# A number with its unit, if any: "35%", "2M", "10x", "4+" ("12 teams"
+# doesn't excuse "12%").
+_NUMBER_RE = re.compile(r"\d[\d,.]*(?: ?(?:%|[kKmMbB](?![A-Za-z.])|x(?![A-Za-z])|\+))?")
+
+
+def _norm_number(n: str) -> str:
+    n = n.replace(" ", "").replace(",", "").rstrip(".")
+    return re.sub(r"(\d)\.0+(?=\D|$)", r"\1", n).upper()
 
 
 def fabricated_numbers(output_text: str, source_text: str) -> List[str]:
-    """Numbers in the tailored resume that don't appear in the original."""
-    norm = lambda n: n.rstrip(".,").replace(",", "")
-    source = {norm(n) for n in _NUMBER_RE.findall(source_text or "")}
-    return sorted({norm(n) for n in _NUMBER_RE.findall(output_text or "")} - source - {""})
+    """Numbers (with their units) in the tailored resume that the original
+    doesn't have."""
+    source = {_norm_number(n) for n in _NUMBER_RE.findall(source_text or "")}
+    return sorted({_norm_number(n) for n in _NUMBER_RE.findall(output_text or "")} - source - {""})
 
 
 STUFFING_MAX_REPEATS = 5
@@ -256,7 +263,9 @@ def _docx_text(path: Optional[str]) -> str:
     if not path or not os.path.exists(path):
         return ""
     import docx
-    return "\n".join(p.text for p in docx.Document(path).paragraphs)
+    d = docx.Document(path)
+    cells = [c.text for t in d.tables for row in t.rows for c in row.cells]
+    return "\n".join([p.text for p in d.paragraphs] + cells)
 
 
 def check_expected(expected: Dict, resume, job, keyword_report, metrics: Dict) -> List[str]:

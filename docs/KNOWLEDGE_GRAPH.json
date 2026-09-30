@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "4581d2c0b51b300f",
+  "source_hash": "f6703c92a77fe329",
   "stats": {
-    "files": 125,
-    "python_files": 103,
+    "files": 126,
+    "python_files": 104,
     "app_modules": 49,
-    "test_files": 46,
+    "test_files": 47,
     "classes": 86,
-    "functions": 720,
-    "lines_of_python": 15681
+    "functions": 734,
+    "lines_of_python": 15872
   },
   "axes": {
     "x": "location (path)",
@@ -424,27 +424,27 @@
       "stages": [
         "5 Score"
       ],
-      "lines": 165,
+      "lines": 172,
       "doc": "Keyword-level match rate, the headline score (P1.2).",
       "classes": [
         {
           "name": "KeywordMatcher",
-          "line": 94,
+          "line": 101,
           "doc": "",
           "methods": [
             {
               "name": "_find",
-              "line": 95,
+              "line": 102,
               "doc": ""
             },
             {
               "name": "_title_credit",
-              "line": 118,
+              "line": 125,
               "doc": ""
             },
             {
               "name": "match",
-              "line": 128,
+              "line": 135,
               "doc": ""
             }
           ]
@@ -453,27 +453,27 @@
       "functions": [
         {
           "name": "_stem",
-          "line": 37,
+          "line": 44,
           "doc": ""
         },
         {
           "name": "_alias",
-          "line": 45,
+          "line": 52,
           "doc": ""
         },
         {
           "name": "tokens",
-          "line": 52,
+          "line": 59,
           "doc": "Lowercased, alias-canonical, plural-insensitive tokens."
         },
         {
           "name": "_contains_seq",
-          "line": 57,
+          "line": 64,
           "doc": ""
         },
         {
           "name": "resume_sections",
-          "line": 62,
+          "line": 69,
           "doc": "(label, text) for every part of the resume a recruiter or ATS reads."
         }
       ]
@@ -535,7 +535,7 @@
       "stages": [
         "2 Normalize"
       ],
-      "lines": 690,
+      "lines": 699,
       "doc": "",
       "classes": [
         {
@@ -555,77 +555,82 @@
             },
             {
               "name": "_is_section_title",
-              "line": 99,
+              "line": 95,
               "doc": ""
             },
             {
               "name": "_looks_like_title",
-              "line": 115,
+              "line": 110,
               "doc": ""
             },
             {
+              "name": "_title_score",
+              "line": 113,
+              "doc": "2 when a role word ends the phrase (\"Data Analyst\"), 1 when it's"
+            },
+            {
               "name": "_split_skill_line",
-              "line": 132,
+              "line": 135,
               "doc": "'Languages: Python, SQL<tab>Frameworks: Pandas, and XGBoost' ->"
             },
             {
               "name": "_skill_items",
-              "line": 153,
+              "line": 156,
               "doc": ""
             },
             {
               "name": "_looks_like_degree",
-              "line": 168,
+              "line": 171,
               "doc": "'B.Tech in Computer Science' yes; 'State University' no."
             },
             {
               "name": "_split_middle_dot",
-              "line": 173,
+              "line": 176,
               "doc": "'Acme Corp \u00b7 Pune, India' -> ('Acme Corp', 'Pune, India'), the"
             },
             {
               "name": "_is_dated_line",
-              "line": 182,
+              "line": 185,
               "doc": "A job title/company line carrying a date range or year."
             },
             {
               "name": "_experience_line_kind",
-              "line": 189,
+              "line": 192,
               "doc": "'dated' (title and/or company with dates), 'header_line' (a short"
             },
             {
               "name": "_add_role",
-              "line": 208,
+              "line": 211,
               "doc": "Record a role; the first one also fills the entry's title/dates."
             },
             {
               "name": "_merge_links",
-              "line": 218,
+              "line": 221,
               "doc": "Profile links from the file's hyperlinks and from URLs written in"
             },
             {
               "name": "_extract_date_range",
-              "line": 232,
+              "line": 235,
               "doc": ""
             },
             {
               "name": "_strip_date_range",
-              "line": 236,
+              "line": 239,
               "doc": ""
             },
             {
               "name": "_parse_title_and_dates",
-              "line": 240,
+              "line": 243,
               "doc": "'Data Scientist II | August 2024 - Present' ->"
             },
             {
               "name": "_split_respecting_parens",
-              "line": 249,
+              "line": 252,
               "doc": "Split on sep_chars, but never inside ( ) or [ ] groups \u2014 so"
             },
             {
               "name": "normalize",
-              "line": 272,
+              "line": 275,
               "doc": ""
             }
           ]
@@ -977,7 +982,7 @@
       "stages": [
         "4 Match"
       ],
-      "lines": 86,
+      "lines": 87,
       "doc": "",
       "classes": [],
       "functions": [
@@ -1372,7 +1377,7 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 400,
+      "lines": 409,
       "doc": "Run evaluation cases through the pipeline and collect metrics (P4.1).",
       "classes": [
         {
@@ -1443,43 +1448,48 @@
           "doc": "Of the JD keywords written verbatim somewhere in the resume, the share"
         },
         {
+          "name": "_norm_number",
+          "line": 237,
+          "doc": ""
+        },
+        {
           "name": "fabricated_numbers",
-          "line": 235,
-          "doc": "Numbers in the tailored resume that don't appear in the original."
+          "line": 242,
+          "doc": "Numbers (with their units) in the tailored resume that the original"
         },
         {
           "name": "stuffing",
-          "line": 245,
+          "line": 252,
           "doc": "Signs of keyword stuffing: tailoring pushed the rate above the target"
         },
         {
           "name": "_docx_text",
-          "line": 255,
+          "line": 262,
           "doc": ""
         },
         {
           "name": "check_expected",
-          "line": 262,
+          "line": 271,
           "doc": "Compare a run with the case's expected.json; one message per miss."
         },
         {
           "name": "run",
-          "line": 319,
+          "line": 328,
           "doc": ""
         },
         {
           "name": "_flatten",
-          "line": 335,
+          "line": 344,
           "doc": ""
         },
         {
           "name": "compare",
-          "line": 352,
+          "line": 361,
           "doc": "Human-readable differences per case between a report and a baseline."
         },
         {
           "name": "summary_lines",
-          "line": 380,
+          "line": 389,
           "doc": ""
         }
       ]
@@ -1491,7 +1501,7 @@
       "stages": [
         "1 Ingest"
       ],
-      "lines": 212,
+      "lines": 222,
       "doc": "",
       "classes": [
         {
@@ -1518,17 +1528,17 @@
             },
             {
               "name": "_skills_label_row",
-              "line": 75,
+              "line": 80,
               "doc": "'Label: values' for a two-cell row of a skills table, else None."
             },
             {
               "name": "_hyperlinks",
-              "line": 93,
+              "line": 103,
               "doc": "Targets of every external hyperlink in the body, in rId order"
             },
             {
               "name": "parse",
-              "line": 104,
+              "line": 114,
               "doc": ""
             }
           ]
@@ -1578,7 +1588,7 @@
       "stages": [
         "1 Ingest"
       ],
-      "lines": 348,
+      "lines": 356,
       "doc": "",
       "classes": [
         {
@@ -1619,32 +1629,32 @@
             },
             {
               "name": "_split_bullet",
-              "line": 156,
+              "line": 164,
               "doc": "Return the bullet text without its glyph, or None if not a bullet."
             },
             {
               "name": "_continues",
-              "line": 163,
+              "line": 171,
               "doc": "Is `line` a word-wrap continuation of the item ending with `prev`?"
             },
             {
               "name": "_assemble",
-              "line": 186,
+              "line": 194,
               "doc": "Join continuation lines onto their bullet/paragraph. Each returned"
             },
             {
               "name": "_body_size",
-              "line": 210,
+              "line": 218,
               "doc": ""
             },
             {
               "name": "_is_heading",
-              "line": 217,
+              "line": 225,
               "doc": ""
             },
             {
               "name": "parse",
-              "line": 233,
+              "line": 241,
               "doc": ""
             }
           ]
@@ -3271,7 +3281,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 42,
+      "lines": 44,
       "doc": "P4.2: every generated anonymized case must reproduce its expected.json",
       "classes": [],
       "functions": [
@@ -3292,7 +3302,7 @@
         },
         {
           "name": "test_check_flag_passes_for_a_clean_case",
-          "line": 38,
+          "line": 40,
           "doc": "Offline parse / JD / keyword checks (no rendering) in the default suite."
         }
       ]
@@ -4381,6 +4391,77 @@
         {
           "name": "test_no_pdf_converter_renders_once",
           "line": 127,
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "tests/unit/test_parser_regressions_p42.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 145,
+      "doc": "Regression tests from the independent review of P4.2: inputs outside the",
+      "classes": [],
+      "functions": [
+        {
+          "name": "_bold",
+          "line": 16,
+          "doc": ""
+        },
+        {
+          "name": "_parse",
+          "line": 20,
+          "doc": ""
+        },
+        {
+          "name": "test_experience_style_headings_still_switch_section",
+          "line": 29,
+          "doc": ""
+        },
+        {
+          "name": "test_other_headings_still_switch_section",
+          "line": 48,
+          "doc": ""
+        },
+        {
+          "name": "test_school_name_heading_does_not_switch_section",
+          "line": 60,
+          "doc": ""
+        },
+        {
+          "name": "test_side_by_side_skills_table_is_not_merged",
+          "line": 72,
+          "doc": ""
+        },
+        {
+          "name": "test_labelled_skills_table_is_merged",
+          "line": 84,
+          "doc": ""
+        },
+        {
+          "name": "test_two_column_pdf_rows_are_not_stitched",
+          "line": 93,
+          "doc": ""
+        },
+        {
+          "name": "test_short_keywords_do_not_match_inside_hyphenated_words",
+          "line": 112,
+          "doc": ""
+        },
+        {
+          "name": "test_term_with_a_known_suffix_still_matches",
+          "line": 119,
+          "doc": ""
+        },
+        {
+          "name": "test_plain_english_words_are_not_tech_keywords",
+          "line": 126,
+          "doc": ""
+        },
+        {
+          "name": "test_title_and_company_split",
+          "line": 138,
           "doc": ""
         }
       ]
@@ -5858,6 +5939,11 @@
       "type": "tested_by"
     },
     {
+      "from": "app/analysis/jd_analyzer.py",
+      "to": "tests/unit/test_parser_regressions_p42.py",
+      "type": "tested_by"
+    },
+    {
       "from": "app/analysis/keyword_match.py",
       "to": "app/analysis/keyword_match.py::KeywordMatcher",
       "type": "contains"
@@ -5890,6 +5976,11 @@
     {
       "from": "app/analysis/keyword_match.py",
       "to": "tests/unit/test_keyword_match.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/analysis/keyword_match.py",
+      "to": "tests/unit/test_parser_regressions_p42.py",
       "type": "tested_by"
     },
     {
@@ -5975,6 +6066,11 @@
     {
       "from": "app/analysis/resume_normalizer.py",
       "to": "tests/unit/test_ats_round_trip.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/analysis/resume_normalizer.py",
+      "to": "tests/unit/test_parser_regressions_p42.py",
       "type": "tested_by"
     },
     {
@@ -6479,6 +6575,11 @@
     },
     {
       "from": "app/domain/job.py",
+      "to": "tests/unit/test_parser_regressions_p42.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/job.py",
       "to": "tests/unit/test_project_rewrites.py",
       "type": "tested_by"
     },
@@ -6655,6 +6756,11 @@
     {
       "from": "app/domain/resume.py",
       "to": "tests/unit/test_page_fit.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/resume.py",
+      "to": "tests/unit/test_parser_regressions_p42.py",
       "type": "tested_by"
     },
     {
@@ -6989,6 +7095,11 @@
     },
     {
       "from": "app/ingestion/docx.py",
+      "to": "tests/unit/test_parser_regressions_p42.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/ingestion/docx.py",
       "to": "tests/unit/test_parsing_fixes_p19.py",
       "type": "tested_by"
     },
@@ -7046,6 +7157,11 @@
       "from": "app/ingestion/pdf.py",
       "to": "app/rendering/document_map.py",
       "type": "imports"
+    },
+    {
+      "from": "app/ingestion/pdf.py",
+      "to": "tests/unit/test_parser_regressions_p42.py",
+      "type": "tested_by"
     },
     {
       "from": "app/ingestion/pdf.py",
