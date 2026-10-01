@@ -78,3 +78,21 @@ class SummaryResult(BaseModel):
     summary: str
     skills_used: List[str] = Field(default_factory=list)
     result_used: Optional[str] = None
+
+
+class JudgeRubric(BaseModel):
+    """LLM-as-judge rubric for one tailored resume (P4.3)."""
+    relevance: int = Field(ge=1, le=5)
+    clarity: int = Field(ge=1, le=5)
+    faithfulness: int = Field(ge=1, le=5)
+    ats_readability: int = Field(ge=1, le=5)
+    overall: int = Field(ge=1, le=5)
+    unsupported_claims: List[str] = Field(default_factory=list)
+    strengths: List[str] = Field(default_factory=list)
+    weaknesses: List[str] = Field(default_factory=list)
+
+
+class JudgePairwise(BaseModel):
+    """Which of two resume versions is better for the JD (P4.3)."""
+    winner: str = Field(description='"A", "B" or "tie"')
+    reason: str = ""

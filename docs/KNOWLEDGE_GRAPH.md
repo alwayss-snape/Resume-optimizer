@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**49 app modules · 47 test files · 86 classes · 744 functions/methods · 16,015 lines of Python** · source hash `b4d91a8386740e0c`
+**50 app modules · 48 test files · 89 classes · 763 functions/methods · 16,311 lines of Python** · source hash `2a917c9936a33891`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -62,6 +62,7 @@ app/
     __main__.py                                  python -m app.eval run [--live] [--tailor] [--case NAME] [--compare BA…
     golden.py                                    Canonical projection of a parsed resume, compared against hand-checked
     harness.py                                   Run evaluation cases through the pipeline and collect metrics (P4.1).
+    judge.py                                     LLM-as-judge for the evaluation harness (P4.3).
   ingestion/
     docx.py                                      RawBlock, RawDocument, DocxParser
     ocr.py                                       OCREngine
@@ -72,6 +73,7 @@ app/
     prompts/
       final_review.txt
       jd_analysis.txt
+      judge_pairwise.txt
       rewrite_bullet.txt
       rewrite_role.txt
       summary.txt
@@ -136,6 +138,7 @@ tests/
     test_jd_analyzer.py                          test_jd_analyzer_heuristic(), test_heading_variants_are_not_extracted_…
     test_jd_analyzer_llm.py                      _FakeLLMClient
     test_jd_analyzer_v2.py                       JD analysis v2 (P1.1): title/company without labels, whole-line
+    test_judge.py                                P4.3: LLM-as-judge (rubric + position-swapped pairwise), with a fake
     test_keyword_match.py                        Keyword-level match rate as the headline score (P1.2).
     test_llm_client.py                           SampleSchema
     test_matcher.py                              test_evidence_matcher_exact_and_alias(), test_one_generic_word_cannot_…
@@ -447,10 +450,10 @@ _Tailored professional summary (P1.5)._
 
 ### `app/config/settings.py`
 
-**Layer:** Config · **Stage:** — · **Lines:** 53
+**Layer:** Config · **Stage:** — · **Lines:** 58
 
 - class **`Settings`** ([app/config/settings.py:4](../app/config/settings.py#L4))
-- **Imported by:** `analysis/semantic_matcher.py`, `llm/client.py`, `services/profile_store.py`, `ui.py`
+- **Imported by:** `analysis/semantic_matcher.py`, `eval/judge.py`, `llm/client.py`, `services/profile_store.py`, `ui.py`
 - **Tested by:** `tests/unit/test_profile_store.py`
 
 ### `app/domain/evidence.py`
@@ -533,13 +536,13 @@ _Evaluation harness (P4.1): run resume + JD cases through the pipeline and_
 
 ### `app/eval/__main__.py`
 
-**Layer:** Root · **Stage:** — · **Lines:** 71
+**Layer:** Root · **Stage:** — · **Lines:** 89
 
 _python -m app.eval run [--live] [--tailor] [--case NAME] [--compare BASELINE] [--save PATH]_
 
 - function **`main()`** ([app/eval/__main__.py:20](../app/eval/__main__.py#L20))
-- **Imports:** `eval/harness.py`
-- **Tested by:** `tests/unit/test_eval_harness.py`
+- **Imports:** `eval/harness.py`, `eval/judge.py`
+- **Tested by:** `tests/unit/test_eval_harness.py`, `tests/unit/test_judge.py`
 
 ### `app/eval/golden.py`
 
@@ -556,7 +559,7 @@ _Canonical projection of a parsed resume, compared against hand-checked_
 
 ### `app/eval/harness.py`
 
-**Layer:** Root · **Stage:** all · **Lines:** 413
+**Layer:** Root · **Stage:** all · **Lines:** 458
 
 _Run evaluation cases through the pipeline and collect metrics (P4.1)._
 
@@ -570,20 +573,43 @@ _Run evaluation cases through the pipeline and collect metrics (P4.1)._
 - function **`load_cases()`** ([app/eval/harness.py:70](../app/eval/harness.py#L70))
 - function **`keyword_coverage()`** ([app/eval/harness.py:88](../app/eval/harness.py#L88)) — Share of the JD's keywords found verbatim (whole term, any case) in
 - function **`run_case()`** ([app/eval/harness.py:97](../app/eval/harness.py#L97))
-- function **`_tailor_metrics()`** ([app/eval/harness.py:182](../app/eval/harness.py#L182))
-- function **`attainable_coverage()`** ([app/eval/harness.py:222](../app/eval/harness.py#L222)) — Of the JD keywords written verbatim somewhere in the resume, the share
-- function **`_norm_number()`** ([app/eval/harness.py:241](../app/eval/harness.py#L241))
-- function **`fabricated_numbers()`** ([app/eval/harness.py:246](../app/eval/harness.py#L246)) — Numbers (with their units) in the tailored resume that the original
-- function **`stuffing()`** ([app/eval/harness.py:256](../app/eval/harness.py#L256)) — Signs of keyword stuffing: tailoring pushed the rate above the target
-- function **`_docx_text()`** ([app/eval/harness.py:266](../app/eval/harness.py#L266))
-- function **`check_expected()`** ([app/eval/harness.py:275](../app/eval/harness.py#L275)) — Compare a run with the case's expected.json; one message per miss.
-- function **`run()`** ([app/eval/harness.py:332](../app/eval/harness.py#L332))
-- function **`_flatten()`** ([app/eval/harness.py:348](../app/eval/harness.py#L348))
-- function **`compare()`** ([app/eval/harness.py:365](../app/eval/harness.py#L365)) — Human-readable differences per case between a report and a baseline.
-- function **`summary_lines()`** ([app/eval/harness.py:393](../app/eval/harness.py#L393))
-- **Imports:** `analysis/experience.py`, `analysis/jd_analyzer.py`, `analysis/keyword_match.py`, `domain/report.py`, `eval/golden.py`, `llm/client.py`, `rendering/layout.py`, `services/tailor.py`
+- function **`_tailor_metrics()`** ([app/eval/harness.py:185](../app/eval/harness.py#L185))
+- function **`attainable_coverage()`** ([app/eval/harness.py:225](../app/eval/harness.py#L225)) — Of the JD keywords written verbatim somewhere in the resume, the share
+- function **`_norm_number()`** ([app/eval/harness.py:244](../app/eval/harness.py#L244))
+- function **`fabricated_numbers()`** ([app/eval/harness.py:249](../app/eval/harness.py#L249)) — Numbers (with their units) in the tailored resume that the original
+- function **`stuffing()`** ([app/eval/harness.py:259](../app/eval/harness.py#L259)) — Signs of keyword stuffing: tailoring pushed the rate above the target
+- function **`_docx_text()`** ([app/eval/harness.py:269](../app/eval/harness.py#L269))
+- function **`check_expected()`** ([app/eval/harness.py:278](../app/eval/harness.py#L278)) — Compare a run with the case's expected.json; one message per miss.
+- function **`_judge()`** ([app/eval/harness.py:335](../app/eval/harness.py#L335)) — Judge one tailored resume (P4.3) and record what the judge cost.
+- function **`replay_case()`** ([app/eval/harness.py:346](../app/eval/harness.py#L346)) — Judge the tailored output a previous run saved in replay_dir/<case>/
+- function **`run()`** ([app/eval/harness.py:362](../app/eval/harness.py#L362))
+- function **`_flatten()`** ([app/eval/harness.py:382](../app/eval/harness.py#L382))
+- function **`compare()`** ([app/eval/harness.py:399](../app/eval/harness.py#L399)) — Human-readable differences per case between a report and a baseline.
+- function **`_judge_summary()`** ([app/eval/harness.py:427](../app/eval/harness.py#L427))
+- function **`summary_lines()`** ([app/eval/harness.py:433](../app/eval/harness.py#L433))
+- **Imports:** `analysis/experience.py`, `analysis/jd_analyzer.py`, `analysis/keyword_match.py`, `domain/report.py`, `eval/golden.py`, `eval/judge.py`, `llm/client.py`, `rendering/layout.py`, `services/tailor.py`
 - **Imported by:** `eval/__main__.py`
-- **Tested by:** `tests/integration/test_eval_cases.py`, `tests/unit/test_cli_parity.py`, `tests/unit/test_eval_harness.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_profile_store.py`
+- **Tested by:** `tests/integration/test_eval_cases.py`, `tests/unit/test_cli_parity.py`, `tests/unit/test_eval_harness.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_judge.py`, `tests/unit/test_profile_store.py`
+
+### `app/eval/judge.py`
+
+**Layer:** Root · **Stage:** 7 Rewrite, 8 Validate · **Lines:** 103
+
+_LLM-as-judge for the evaluation harness (P4.3)._
+
+- class **`ResumeJudge`** ([app/eval/judge.py:36](../app/eval/judge.py#L36))
+  - `__init__()` :37
+  - `_ask()` :40
+  - `rubric()` :45
+  - `prefer()` :50
+  - `judge()` :56 — Rubric + position-swapped pairwise for one case. A failed call is
+- function **`_prompt()`** ([app/eval/judge.py:26](../app/eval/judge.py#L26))
+- function **`judge_client()`** ([app/eval/judge.py:31](../app/eval/judge.py#L31))
+- function **`report_markdown()`** ([app/eval/judge.py:81](../app/eval/judge.py#L81)) — A dated, human-readable judge report for a run.
+- **Imports:** `config/settings.py`, `llm/client.py`, `llm/schemas.py`
+- **Imported by:** `eval/__main__.py`, `eval/harness.py`
+- **Tested by:** `tests/unit/test_judge.py`
+- **Prompts:** `llm/prompts/final_review.txt`, `llm/prompts/judge_pairwise.txt`
 
 ### `app/ingestion/docx.py`
 
@@ -636,7 +662,7 @@ _Run evaluation cases through the pipeline and collect metrics (P4.1)._
 
 ### `app/llm/client.py`
 
-**Layer:** LLM · **Stage:** 3 JD analysis, 7 Rewrite · **Lines:** 648
+**Layer:** LLM · **Stage:** 3 JD analysis, 7 Rewrite · **Lines:** 650
 
 - class **`LLMClient`** ([app/llm/client.py:58](../app/llm/client.py#L58)) — Unified client for text generation across three interchangeable providers:
   - `__init__()` :74
@@ -657,16 +683,16 @@ _Run evaluation cases through the pipeline and collect metrics (P4.1)._
   - `_generate_anthropic()` :480
   - `_generate_json_anthropic()` :485 — Structured outputs guarantee the response matches the schema, so
   - `generate_json()` :506 — Generate structured JSON conforming to a Pydantic model.
-- function **`_requested_wait()`** ([app/llm/client.py:604](../app/llm/client.py#L604)) — How long Groq asks us to wait: the retry-after header, else the
-- function **`_retry_after_seconds()`** ([app/llm/client.py:620](../app/llm/client.py#L620)) — Seconds to wait before retrying a 429: the server's `retry-after`
-- function **`strict_json_schema()`** ([app/llm/client.py:635](../app/llm/client.py#L635)) — Adapt a Pydantic JSON schema for strict structured-output modes: every
+- function **`_requested_wait()`** ([app/llm/client.py:606](../app/llm/client.py#L606)) — How long Groq asks us to wait: the retry-after header, else the
+- function **`_retry_after_seconds()`** ([app/llm/client.py:622](../app/llm/client.py#L622)) — Seconds to wait before retrying a 429: the server's `retry-after`
+- function **`strict_json_schema()`** ([app/llm/client.py:637](../app/llm/client.py#L637)) — Adapt a Pydantic JSON schema for strict structured-output modes: every
 - **Imports:** `config/settings.py`, `llm/schemas.py`, `validation/safety.py`
-- **Imported by:** `analysis/jd_analyzer.py`, `analysis/matcher.py`, `analysis/rewriter.py`, `analysis/structure_extractor.py`, `analysis/summary_writer.py`, `analysis/tailor_planner.py`, `cli.py`, `eval/harness.py`, `services/tailor.py`, `ui.py`, `scripts/benchmark_model.py`
-- **Tested by:** `tests/unit/test_llm_client.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_validation.py`
+- **Imported by:** `analysis/jd_analyzer.py`, `analysis/matcher.py`, `analysis/rewriter.py`, `analysis/structure_extractor.py`, `analysis/summary_writer.py`, `analysis/tailor_planner.py`, `cli.py`, `eval/harness.py`, `eval/judge.py`, `services/tailor.py`, `ui.py`, `scripts/benchmark_model.py`
+- **Tested by:** `tests/unit/test_judge.py`, `tests/unit/test_llm_client.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_validation.py`
 
 ### `app/llm/schemas.py`
 
-**Layer:** LLM · **Stage:** 3 JD analysis, 7 Rewrite · **Lines:** 80
+**Layer:** LLM · **Stage:** 3 JD analysis, 7 Rewrite · **Lines:** 98
 
 - class **`LLMResponse`** ([app/llm/schemas.py:4](../app/llm/schemas.py#L4))
 - class **`LLMError`** ([app/llm/schemas.py:13](../app/llm/schemas.py#L13)) — Base exception for LLM errors.
@@ -679,8 +705,10 @@ _Run evaluation cases through the pipeline and collect metrics (P4.1)._
 - class **`RoleBulletRewrite`** ([app/llm/schemas.py:63](../app/llm/schemas.py#L63)) — One rewritten bullet from a per-role rewrite call (P1.4).
 - class **`RoleRewriteResult`** ([app/llm/schemas.py:71](../app/llm/schemas.py#L71)) — All bullets of one role rewritten in a single call (P1.4).
 - class **`SummaryResult`** ([app/llm/schemas.py:76](../app/llm/schemas.py#L76)) — A tailored professional summary (P1.5).
-- **Imported by:** `analysis/jd_analyzer.py`, `analysis/rewriter.py`, `analysis/summary_writer.py`, `cli.py`, `llm/client.py`
-- **Tested by:** `tests/unit/test_cli.py`, `tests/unit/test_jd_analyzer_llm.py`, `tests/unit/test_jd_analyzer_v2.py`, `tests/unit/test_llm_client.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_tailor_resume_flow.py`
+- class **`JudgeRubric`** ([app/llm/schemas.py:83](../app/llm/schemas.py#L83)) — LLM-as-judge rubric for one tailored resume (P4.3).
+- class **`JudgePairwise`** ([app/llm/schemas.py:95](../app/llm/schemas.py#L95)) — Which of two resume versions is better for the JD (P4.3).
+- **Imported by:** `analysis/jd_analyzer.py`, `analysis/rewriter.py`, `analysis/summary_writer.py`, `cli.py`, `eval/judge.py`, `llm/client.py`
+- **Tested by:** `tests/unit/test_cli.py`, `tests/unit/test_jd_analyzer_llm.py`, `tests/unit/test_jd_analyzer_v2.py`, `tests/unit/test_judge.py`, `tests/unit/test_llm_client.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_tailor_resume_flow.py`
 
 ### `app/rendering/document_map.py`
 
@@ -935,7 +963,7 @@ _Content checks on the finished resume (P2.6). Deterministic, no LLM._
 
 ### `app/validation/output.py`
 
-**Layer:** Validation · **Stage:** 8 Validate · **Lines:** 137
+**Layer:** Validation · **Stage:** 8 Validate · **Lines:** 138
 
 - class **`OutputQAValidator`** ([app/validation/output.py:7](../app/validation/output.py#L7))
   - `validate_docx()` :8
@@ -1020,6 +1048,7 @@ flowchart LR
     eval___main__[__main__]
     eval_golden[golden]
     eval_harness[harness]
+    eval_judge[judge]
   end
   subgraph Services[Services]
     services_profile_store[profile_store]
@@ -1062,6 +1091,7 @@ flowchart LR
   cli --> llm_schemas
   cli --> services_tailor
   eval___main__ --> eval_harness
+  eval___main__ --> eval_judge
   eval_golden --> analysis_resume_normalizer
   eval_golden --> ingestion_docx
   eval_golden --> ingestion_pdf
@@ -1069,9 +1099,13 @@ flowchart LR
   eval_harness --> analysis_jd_analyzer
   eval_harness --> analysis_keyword_match
   eval_harness --> eval_golden
+  eval_harness --> eval_judge
   eval_harness --> llm_client
   eval_harness --> rendering_layout
   eval_harness --> services_tailor
+  eval_judge --> config_settings
+  eval_judge --> llm_client
+  eval_judge --> llm_schemas
   ingestion_docx --> rendering_document_map
   ingestion_pdf --> ingestion_docx
   ingestion_pdf --> ingestion_ocr
@@ -1150,6 +1184,8 @@ From `app/config/settings.py`; each can be overridden by the env var of the same
 | `GROQ_FORCE_IPV4` | bool | `True` |
 | `ANTHROPIC_API_KEY` | str | `''` |
 | `ANTHROPIC_MODEL` | str | `'claude-opus-5-5'` |
+| `JUDGE_PROVIDER` | str | `'groq'` |
+| `JUDGE_MODEL` | str | `'qwen/qwen3.8-27b'` |
 | `PROFILE_PATH` | str | `os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), 'data', 'profile', 'facts.json')` |
 | `SEMANTIC_MATCH_ENABLED` | bool | `True` |
 | `SEMANTIC_MATCH_MODEL` | str | `'all-MiniLM-L6-v2'` |
@@ -1159,8 +1195,9 @@ From `app/config/settings.py`; each can be overridden by the env var of the same
 
 | Prompt file | Loaded by |
 |---|---|
-| `final_review.txt` | **unused** |
+| `final_review.txt` | `app/eval/judge.py` |
 | `jd_analysis.txt` | `app/analysis/jd_analyzer.py` |
+| `judge_pairwise.txt` | `app/eval/judge.py` |
 | `rewrite_bullet.txt` | `app/analysis/rewriter.py` |
 | `rewrite_role.txt` | `app/analysis/rewriter.py` |
 | `summary.txt` | `app/analysis/summary_writer.py` |

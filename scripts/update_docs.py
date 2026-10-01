@@ -119,6 +119,7 @@ STAGE_MAP: Dict[str, List[str]] = {
     "app/eval/__main__.py": [],
     "app/eval/harness.py": STAGES,  # runs the whole pipeline per case
     "app/eval/golden.py": ["2 Normalize"],
+    "app/eval/judge.py": ["7 Rewrite", "8 Validate"],
 }
 
 

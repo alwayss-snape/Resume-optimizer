@@ -28,6 +28,12 @@ def main(argv=None) -> int:
     r.add_argument("--compare", help="baseline JSON to compare against")
     r.add_argument("--save", help="write the report JSON here (e.g. to record a new baseline)")
     r.add_argument("--out-dir", help="where tailored outputs go (default: a temp dir)")
+    r.add_argument("--judge", action="store_true",
+                   help="with --live --tailor: an LLM from another family scores each tailored resume (P4.3)")
+    r.add_argument("--replay", metavar="DIR",
+                   help="judge the outputs a previous run saved in DIR (its --out-dir) without regenerating")
+    r.add_argument("--report", help="where the judge's markdown report goes (default: dated, under "
+                                     "data/eval/private/reports/)")
     r.add_argument("--check", action="store_true",
                    help="exit 1 if any case misses its expected.json (for CI / the stage gate)")
     args = parser.parse_args(argv)
@@ -40,8 +46,20 @@ def main(argv=None) -> int:
         print("No cases to run.")
         return 1
 
-    report = run(cases, live=args.live, tailor=args.tailor, out_dir=args.out_dir)
+    if args.judge and not (args.live and args.tailor):
+        print("--judge needs --live --tailor (or use --replay DIR to judge saved outputs).")
+        return 1
+    report = run(cases, live=args.live, tailor=args.tailor, out_dir=args.out_dir, judge=args.judge,
+                 replay=args.replay)
     print("\n".join(summary_lines(report)))
+    if args.judge or args.replay:
+        from app.eval.judge import report_markdown
+        path = args.report or os.path.join(
+            "data/eval/private/reports", f"judge_{report['generated_at'][:19].replace(':', '-')}.md")
+        os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(report_markdown(report))
+        print(f"\nJudge report: {path}")
     misses = {name: m["expected"]["failed"] for name, m in report["cases"].items()
               if m.get("expected") and m["expected"]["failed"]}
     for name, failed in misses.items():

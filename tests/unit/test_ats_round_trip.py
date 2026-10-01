@@ -119,3 +119,20 @@ def test_normalizer_reads_title_first_layout():
     edu = resume.education[0]
     assert (edu.degree, edu.institution, edu.location, edu.dates) == (
         "B.Tech in Computer Science", "State University", "Chennai, India", "2016 – 2020")
+
+
+def test_degree_dates_are_not_also_the_location(tmp_path):
+    """Live judge finding: institution line, then 'Degree<tab>dates' put the
+    dates into location too, so the output printed them twice."""
+    from app.analysis.resume_normalizer import ResumeNormalizer
+    from app.ingestion.docx import DocxParser
+    d = docx.Document()
+    d.add_paragraph().add_run("Avery Lee").bold = True
+    d.add_paragraph().add_run("EDUCATION").bold = True
+    d.add_paragraph().add_run("Lakeside State University").bold = True
+    d.add_paragraph("B.S. in Computer Science\t2021 - 2025")
+    path = str(tmp_path / "e.docx")
+    d.save(path)
+    edu = ResumeNormalizer().normalize(DocxParser().parse(path))[0].resume.education[0]
+    assert (edu.institution, edu.degree, edu.dates, edu.location) == (
+        "Lakeside State University", "B.S. in Computer Science", "2021 - 2025", None)

@@ -569,6 +569,8 @@ class LLMClient:
                     effort=effort,
                 )
             raw_text = response.raw_text.strip()
+            # Reasoning models (Qwen3) may put their thinking before the answer.
+            raw_text = re.sub(r"<think>.*?</think>", "", raw_text, flags=re.DOTALL).strip()
 
             # Clean markdown JSON wrapping if present
             if raw_text.startswith("```json"):

@@ -57,8 +57,8 @@ Semantic matching uses a local embedding model (`all-MiniLM-L6-v2`).
 | Strict Factual Mode | ⚠️ Cosmetic | See issue 4 |
 | DOCX / PDF / HTML output | ✅ Works | Re-parsed after rendering to prove it reads back intact (ATS round-trip, P2.5). ATS template (P2.1): A4, Arial, standard headings, section order by experience, "Jan 2022 – Present" dates; files named `First_Last_Resume_<Company>`. Auto page-fit to 1 page (< 8 years) or 2, trimming the least relevant content and reporting it (P2.3–P2.4). PDF and page-fit need LibreOffice installed |
 | CLI | ✅ Works | `analyze`, `propose` (editable review file) and `tailor --proposals` with the UI's features: edits, gap answers, additions, a new job, strict mode; live progress (P3.6) |
-| Tests | ✅ 361 passing | `pytest -q` (~50-80 s); the full offline eval of 8 anonymized cases runs with `pytest -m eval` |
-| Evaluation set | ✅ Works | 11 anonymized resume + JD cases with expected facts; `python -m app.eval run --tailor --check` (P4.1, P4.2) |
+| Tests | ✅ 371 passing | `pytest -q` (~50-80 s); the full offline eval of 8 anonymized cases runs with `pytest -m eval` |
+| Evaluation set | ✅ Works | 11 anonymized resume + JD cases with expected facts; `python -m app.eval run --tailor --check` (P4.1, P4.2); LLM-as-judge from another model family, rubric + position-swapped pairwise, `--judge` / `--replay` (P4.3) |
 | Multiple JDs / history / cover letter | ❌ Not built | — |
 
 ## Open issues
@@ -73,7 +73,7 @@ and unused prompts (P0.8, P1.10) are all fixed. What remains:
 2. **Groq free-tier daily limit (200K tokens/day)** is shared by all development runs; a full real-resume run costs
    ~13K. Live gate runs can be blocked for hours. Local Ollama (`qwen3:4b`) is too heavy for the 8 GB development
    machine; its config fixes are parked in `git stash` ("ollama backup").
-3. **Live measurement pending** for the P1.4 unchanged-bullet retry and Stage D content (see ACTION_ITEMS.md).
+3. **Summary years:** the summary states years computed from role dates ("4+ years"), which can differ from a figure written in the resume ("3.6 years"); the judge flags that as a mismatch. Decide whether to keep the computed figure.
 4. **User's source resume** has "LinkedIn | Email | Leetcode" placeholder text with no hyperlinks (to fix in their
    own file).
 

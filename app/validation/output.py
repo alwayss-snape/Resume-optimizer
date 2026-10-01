@@ -129,9 +129,10 @@ class OutputQAValidator:
         if lost_skills:
             problems.append(f"skill(s) not read back: {', '.join(lost_skills[:5])}")
 
-        have_edu = {(norm(e.degree), norm(e.institution), format_date_text(e.dates)) for e in got.education}
+        have_edu = {(norm(e.degree), norm(e.institution), format_date_text(e.dates), norm(e.location))
+                    for e in got.education}
         for e in expected.education:
-            if (norm(e.degree), norm(e.institution), format_date_text(e.dates)) not in have_edu:
+            if (norm(e.degree), norm(e.institution), format_date_text(e.dates), norm(e.location)) not in have_edu:
                 problems.append(f"education entry \"{e.degree or e.institution}\" not read back")
 
         return [f"{prefix} {p}" for p in problems]

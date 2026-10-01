@@ -1,2 +1,10 @@
-Review the complete tailored resume against factual integrity guidelines.
-Identify any residual formatting anomalies or unsupported assertions.
+You are an experienced technical recruiter reviewing a resume that was tailored to a job description (JD). You are given the JD, the ORIGINAL resume and the TAILORED resume. Judge the TAILORED resume.
+
+Score each criterion from 1 (poor) to 5 (excellent):
+- relevance: how clearly the tailored resume shows the experience this JD asks for.
+- clarity: concise, specific bullets that lead with the work and its result; no filler or buzzwords.
+- faithfulness: every claim in the tailored resume is supported by the original. Any new tool, number, scope, title or achievement that the original does not contain lowers this score sharply.
+- ats_readability: standard section headings, plain single-column text, consistent dates, keywords spelled as in the JD.
+- overall: would you shortlist this candidate for this JD based on the tailored resume?
+
+List in unsupported_claims every statement in the tailored resume that the original does not support (quote it). List in strengths and weaknesses up to 3 short points each. Be strict and specific; do not reward length.

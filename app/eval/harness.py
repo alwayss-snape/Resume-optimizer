@@ -94,7 +94,8 @@ def keyword_coverage(keywords: List[str], resume_text: str) -> Dict:
     return {"pct": pct, "found": len(found), "total": len(keywords), "missing": missing}
 
 
-def run_case(case: Case, *, live: bool = False, tailor: bool = False, out_dir: Optional[str] = None) -> Dict:
+def run_case(case: Case, *, live: bool = False, tailor: bool = False, out_dir: Optional[str] = None,
+             judge: bool = False) -> Dict:
     from app.llm.client import LLMClient
     from app.services.tailor import TailorService
 
@@ -160,6 +161,8 @@ def run_case(case: Case, *, live: bool = False, tailor: bool = False, out_dir: O
             source = f"{raw_doc.raw_text}\n{years_phrase(years_of_experience(resume)) or ''}"
             metrics["tailor"], tailored = _tailor_metrics(service, case, jd_text, parsed, generated, out_dir,
                                                           source_text=source, job=job)
+            if judge:
+                metrics["tailor"]["judge"] = _judge(jd_text, raw_doc.raw_text, _docx_text(tailored.get("docx")))
 
         if case.expected and os.path.exists(case.expected):
             with open(case.expected, encoding="utf-8") as f:
@@ -329,17 +332,48 @@ def check_expected(expected: Dict, resume, job, keyword_report, metrics: Dict) -
     return failed
 
 
-def run(cases: List[Case], *, live: bool = False, tailor: bool = False, out_dir: Optional[str] = None) -> Dict:
+def _judge(jd_text: str, original: str, tailored: str) -> Dict:
+    """Judge one tailored resume (P4.3) and record what the judge cost."""
+    from app.eval.judge import ResumeJudge, judge_client
+
+    client = judge_client()
+    result = ResumeJudge(client).judge(jd_text, original, tailored)
+    usage = client.get_usage_summary()
+    result["judge_calls"], result["judge_tokens"] = usage.get("call_count", 0), usage.get("total_tokens", 0)
+    return result
+
+
+def replay_case(case: Case, replay_dir: str) -> Dict:
+    """Judge the tailored output a previous run saved in replay_dir/<case>/
+    without generating anything again (P4.3 --replay)."""
+    from app.services.tailor import TailorService
+
+    folder = os.path.join(replay_dir, case.name)
+    docs = sorted(f for f in os.listdir(folder) if f.endswith(".docx")) if os.path.isdir(folder) else []
+    if not docs:
+        return {"private": case.private, "error": f"no tailored .docx in {folder}"}
+    with open(case.jd, encoding="utf-8") as f:
+        jd_text = f.read()
+    raw_doc = TailorService(llm_client=OfflineLLM()).parse_resume(case.resume)[0]
+    return {"private": case.private,
+            "judge": _judge(jd_text, raw_doc.raw_text, _docx_text(os.path.join(folder, docs[0])))}
+
+
+def run(cases: List[Case], *, live: bool = False, tailor: bool = False, out_dir: Optional[str] = None,
+        judge: bool = False, replay: Optional[str] = None) -> Dict:
     report = {
         "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-        "mode": "live" if live else "offline",
+        "mode": f"replay of {replay}" if replay else ("live" if live else "offline"),
         "tailor": tailor,
         "cases": {},
     }
     for case in cases:
         logger.info("Evaluating %s", case.name)
         try:
-            report["cases"][case.name] = run_case(case, live=live, tailor=tailor, out_dir=out_dir)
+            if replay:
+                report["cases"][case.name] = replay_case(case, replay)
+                continue
+            report["cases"][case.name] = run_case(case, live=live, tailor=tailor, out_dir=out_dir, judge=judge)
         except Exception as e:  # one broken case shouldn't hide the others
             report["cases"][case.name] = {"private": case.private, "error": f"{type(e).__name__}: {e}"}
     return report
@@ -390,11 +424,20 @@ def compare(report: Dict, baseline: Dict) -> List[str]:
     return lines
 
 
+def _judge_summary(j: Dict) -> str:
+    overall = (j.get("rubric") or {}).get("overall", "error")
+    verdict = (j.get("pairwise") or {}).get("verdict", "error")
+    return f"judge overall={overall}/5, pairwise={verdict}, {j.get('judge_tokens', 0)} tok"
+
+
 def summary_lines(report: Dict) -> List[str]:
     lines = [f"Evaluation ({report['mode']}{', tailor' if report.get('tailor') else ''}) at {report['generated_at']}"]
     for name, m in report["cases"].items():
         if "error" in m:
             lines.append(f"- {name}: ERROR {m['error']}")
+            continue
+        if "judge" in m and "match" not in m:  # replay: judge only
+            lines.append(f"- {name}: {_judge_summary(m['judge'])}")
             continue
         kc = m["match"]["keyword_coverage"]
         parts = [
@@ -406,6 +449,8 @@ def summary_lines(report: Dict) -> List[str]:
         if "tailor" in m:
             t = m["tailor"]
             parts += [f"rewrites={t['changed']}/{t['proposals']}", f"pages={t['pages']}"]
+        if (m.get("tailor") or {}).get("judge"):
+            parts.append(_judge_summary(m["tailor"]["judge"]))
         if "expected" in m:
             parts.append("expected=ok" if m["expected"]["ok"] else f"expected=FAILED({len(m['expected']['failed'])})")
         parts.append(f"llm={m['llm']['calls']} calls/{m['llm']['tokens']} tok/{m['llm']['retries_429']}×429")

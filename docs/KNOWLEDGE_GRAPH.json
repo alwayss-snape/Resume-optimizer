@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "b4d91a8386740e0c",
+  "source_hash": "2a917c9936a33891",
   "stats": {
-    "files": 126,
-    "python_files": 104,
-    "app_modules": 49,
-    "test_files": 47,
-    "classes": 86,
-    "functions": 744,
-    "lines_of_python": 16015
+    "files": 129,
+    "python_files": 106,
+    "app_modules": 50,
+    "test_files": 48,
+    "classes": 89,
+    "functions": 763,
+    "lines_of_python": 16311
   },
   "axes": {
     "x": "location (path)",
@@ -119,6 +119,18 @@
       "env": "ANTHROPIC_MODEL",
       "type": "str",
       "default": "'claude-opus-5-5'"
+    },
+    {
+      "name": "judge_provider",
+      "env": "JUDGE_PROVIDER",
+      "type": "str",
+      "default": "'groq'"
+    },
+    {
+      "name": "judge_model",
+      "env": "JUDGE_MODEL",
+      "type": "str",
+      "default": "'qwen/qwen3.8-27b'"
     },
     {
       "name": "profile_path",
@@ -1060,7 +1072,7 @@
       "type": "python",
       "layer": "Config",
       "stages": [],
-      "lines": 53,
+      "lines": 58,
       "doc": "",
       "classes": [
         {
@@ -1327,7 +1339,7 @@
       "type": "python",
       "layer": "Root",
       "stages": [],
-      "lines": 71,
+      "lines": 89,
       "doc": "python -m app.eval run [--live] [--tailor] [--case NAME] [--compare BASELINE] [--save PATH]",
       "classes": [],
       "functions": [
@@ -1382,7 +1394,7 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 413,
+      "lines": 458,
       "doc": "Run evaluation cases through the pipeline and collect metrics (P4.1).",
       "classes": [
         {
@@ -1444,58 +1456,135 @@
         },
         {
           "name": "_tailor_metrics",
-          "line": 182,
+          "line": 185,
           "doc": ""
         },
         {
           "name": "attainable_coverage",
-          "line": 222,
+          "line": 225,
           "doc": "Of the JD keywords written verbatim somewhere in the resume, the share"
         },
         {
           "name": "_norm_number",
-          "line": 241,
+          "line": 244,
           "doc": ""
         },
         {
           "name": "fabricated_numbers",
-          "line": 246,
+          "line": 249,
           "doc": "Numbers (with their units) in the tailored resume that the original"
         },
         {
           "name": "stuffing",
-          "line": 256,
+          "line": 259,
           "doc": "Signs of keyword stuffing: tailoring pushed the rate above the target"
         },
         {
           "name": "_docx_text",
-          "line": 266,
+          "line": 269,
           "doc": ""
         },
         {
           "name": "check_expected",
-          "line": 275,
+          "line": 278,
           "doc": "Compare a run with the case's expected.json; one message per miss."
         },
         {
+          "name": "_judge",
+          "line": 335,
+          "doc": "Judge one tailored resume (P4.3) and record what the judge cost."
+        },
+        {
+          "name": "replay_case",
+          "line": 346,
+          "doc": "Judge the tailored output a previous run saved in replay_dir/<case>/"
+        },
+        {
           "name": "run",
-          "line": 332,
+          "line": 362,
           "doc": ""
         },
         {
           "name": "_flatten",
-          "line": 348,
+          "line": 382,
           "doc": ""
         },
         {
           "name": "compare",
-          "line": 365,
+          "line": 399,
           "doc": "Human-readable differences per case between a report and a baseline."
         },
         {
-          "name": "summary_lines",
-          "line": 393,
+          "name": "_judge_summary",
+          "line": 427,
           "doc": ""
+        },
+        {
+          "name": "summary_lines",
+          "line": 433,
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "app/eval/judge.py",
+      "type": "python",
+      "layer": "Root",
+      "stages": [
+        "7 Rewrite",
+        "8 Validate"
+      ],
+      "lines": 103,
+      "doc": "LLM-as-judge for the evaluation harness (P4.3).",
+      "classes": [
+        {
+          "name": "ResumeJudge",
+          "line": 36,
+          "doc": "",
+          "methods": [
+            {
+              "name": "__init__",
+              "line": 37,
+              "doc": ""
+            },
+            {
+              "name": "_ask",
+              "line": 40,
+              "doc": ""
+            },
+            {
+              "name": "rubric",
+              "line": 45,
+              "doc": ""
+            },
+            {
+              "name": "prefer",
+              "line": 50,
+              "doc": ""
+            },
+            {
+              "name": "judge",
+              "line": 56,
+              "doc": "Rubric + position-swapped pairwise for one case. A failed call is"
+            }
+          ]
+        }
+      ],
+      "functions": [
+        {
+          "name": "_prompt",
+          "line": 26,
+          "doc": ""
+        },
+        {
+          "name": "judge_client",
+          "line": 31,
+          "doc": ""
+        },
+        {
+          "name": "report_markdown",
+          "line": 81,
+          "doc": "A dated, human-readable judge report for a run."
         }
       ]
     },
@@ -1691,7 +1780,7 @@
         "3 JD analysis",
         "7 Rewrite"
       ],
-      "lines": 648,
+      "lines": 650,
       "doc": "",
       "classes": [
         {
@@ -1795,17 +1884,17 @@
       "functions": [
         {
           "name": "_requested_wait",
-          "line": 604,
+          "line": 606,
           "doc": "How long Groq asks us to wait: the retry-after header, else the"
         },
         {
           "name": "_retry_after_seconds",
-          "line": 620,
+          "line": 622,
           "doc": "Seconds to wait before retrying a 429: the server's `retry-after`"
         },
         {
           "name": "strict_json_schema",
-          "line": 635,
+          "line": 637,
           "doc": "Adapt a Pydantic JSON schema for strict structured-output modes: every"
         }
       ]
@@ -1815,7 +1904,7 @@
       "type": "prompt",
       "layer": "LLM",
       "stages": [],
-      "lines": 2
+      "lines": 10
     },
     {
       "id": "app/llm/prompts/jd_analysis.txt",
@@ -1823,6 +1912,13 @@
       "layer": "LLM",
       "stages": [],
       "lines": 18
+    },
+    {
+      "id": "app/llm/prompts/judge_pairwise.txt",
+      "type": "prompt",
+      "layer": "LLM",
+      "stages": [],
+      "lines": 3
     },
     {
       "id": "app/llm/prompts/rewrite_bullet.txt",
@@ -1853,7 +1949,7 @@
         "3 JD analysis",
         "7 Rewrite"
       ],
-      "lines": 80,
+      "lines": 98,
       "doc": "",
       "classes": [
         {
@@ -1920,6 +2016,18 @@
           "name": "SummaryResult",
           "line": 76,
           "doc": "A tailored professional summary (P1.5).",
+          "methods": []
+        },
+        {
+          "name": "JudgeRubric",
+          "line": 83,
+          "doc": "LLM-as-judge rubric for one tailored resume (P4.3).",
+          "methods": []
+        },
+        {
+          "name": "JudgePairwise",
+          "line": 95,
+          "doc": "Which of two resume versions is better for the JD (P4.3).",
           "methods": []
         }
       ],
@@ -2831,7 +2939,7 @@
       "stages": [
         "8 Validate"
       ],
-      "lines": 137,
+      "lines": 138,
       "doc": "",
       "classes": [
         {
@@ -3056,118 +3164,118 @@
       "type": "python",
       "layer": "Tooling",
       "stages": [],
-      "lines": 731,
+      "lines": 732,
       "doc": "Regenerate the repo's living docs: the knowledge graph and the change log.",
       "classes": [],
       "functions": [
         {
           "name": "git",
-          "line": 129,
+          "line": 130,
           "doc": ""
         },
         {
           "name": "layer_of",
-          "line": 136,
+          "line": 137,
           "doc": ""
         },
         {
           "name": "module_name",
-          "line": 143,
+          "line": 144,
           "doc": ""
         },
         {
           "name": "first_line",
-          "line": 150,
+          "line": 151,
           "doc": ""
         },
         {
           "name": "list_files",
-          "line": 159,
+          "line": 160,
           "doc": "Tracked + new (not ignored) files, restricted to the project map."
         },
         {
           "name": "parse_python",
-          "line": 177,
+          "line": 178,
           "doc": ""
         },
         {
           "name": "symbols_of",
-          "line": 205,
+          "line": 206,
           "doc": ""
         },
         {
           "name": "settings_fields",
-          "line": 218,
+          "line": 219,
           "doc": ""
         },
         {
           "name": "build_graph",
-          "line": 237,
+          "line": 238,
           "doc": ""
         },
         {
           "name": "render_graph_md",
-          "line": 311,
+          "line": 312,
           "doc": ""
         },
         {
           "name": "write_graph",
-          "line": 509,
+          "line": 510,
           "doc": ""
         },
         {
           "name": "commit_info",
-          "line": 552,
+          "line": 553,
           "doc": ""
         },
         {
           "name": "changed_files",
-          "line": 563,
+          "line": 564,
           "doc": ""
         },
         {
           "name": "is_major",
-          "line": 576,
+          "line": 577,
           "doc": ""
         },
         {
           "name": "blob",
-          "line": 585,
+          "line": 586,
           "doc": ""
         },
         {
           "name": "structure_delta",
-          "line": 590,
+          "line": 591,
           "doc": ""
         },
         {
           "name": "render_entry",
-          "line": 613,
+          "line": 614,
           "doc": ""
         },
         {
           "name": "_split_entries",
-          "line": 656,
+          "line": 657,
           "doc": ""
         },
         {
           "name": "_join",
-          "line": 668,
+          "line": 669,
           "doc": ""
         },
         {
           "name": "log_entry",
-          "line": 672,
+          "line": 673,
           "doc": ""
         },
         {
           "name": "backfill",
-          "line": 690,
+          "line": 691,
           "doc": ""
         },
         {
           "name": "main",
-          "line": 707,
+          "line": 708,
           "doc": ""
         }
       ]
@@ -3354,7 +3462,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 121,
+      "lines": 138,
       "doc": "P2.5: the rendered template must read back exactly as rendered, and the",
       "classes": [],
       "functions": [
@@ -3397,6 +3505,11 @@
           "name": "test_normalizer_reads_title_first_layout",
           "line": 92,
           "doc": "Title<tab>dates, then 'Company \u00b7 Location'; a second job's company line"
+        },
+        {
+          "name": "test_degree_dates_are_not_also_the_location",
+          "line": 124,
+          "doc": "Live judge finding: institution line, then 'Degree<tab>dates' put the"
         }
       ]
     },
@@ -3976,6 +4089,52 @@
         {
           "name": "test_llm_keywords_are_topped_up_from_requirement_lines",
           "line": 112,
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "tests/unit/test_judge.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 86,
+      "doc": "P4.3: LLM-as-judge (rubric + position-swapped pairwise), with a fake",
+      "classes": [],
+      "functions": [
+        {
+          "name": "_client",
+          "line": 14,
+          "doc": ""
+        },
+        {
+          "name": "test_tailored_wins_only_when_it_wins_both_orders",
+          "line": 29,
+          "doc": ""
+        },
+        {
+          "name": "test_position_bias_cancels_out",
+          "line": 36,
+          "doc": ""
+        },
+        {
+          "name": "test_a_failed_judge_call_is_reported_not_raised",
+          "line": 42,
+          "doc": ""
+        },
+        {
+          "name": "test_replay_judges_saved_output_without_generating",
+          "line": 49,
+          "doc": ""
+        },
+        {
+          "name": "test_judge_flag_requires_live_tailor",
+          "line": 71,
+          "doc": ""
+        },
+        {
+          "name": "test_think_blocks_are_stripped_from_json",
+          "line": 77,
           "doc": ""
         }
       ]
@@ -7000,7 +7159,17 @@
     },
     {
       "from": "app/eval/__main__.py",
+      "to": "app/eval/judge.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/eval/__main__.py",
       "to": "tests/unit/test_eval_harness.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/eval/__main__.py",
+      "to": "tests/unit/test_judge.py",
       "type": "tested_by"
     },
     {
@@ -7070,6 +7239,11 @@
     },
     {
       "from": "app/eval/harness.py",
+      "to": "app/eval/judge.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/eval/harness.py",
       "to": "app/llm/client.py",
       "type": "imports"
     },
@@ -7105,7 +7279,47 @@
     },
     {
       "from": "app/eval/harness.py",
+      "to": "tests/unit/test_judge.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/eval/harness.py",
       "to": "tests/unit/test_profile_store.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/eval/judge.py",
+      "to": "app/config/settings.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/eval/judge.py",
+      "to": "app/eval/judge.py::ResumeJudge",
+      "type": "contains"
+    },
+    {
+      "from": "app/eval/judge.py",
+      "to": "app/llm/client.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/eval/judge.py",
+      "to": "app/llm/prompts/final_review.txt",
+      "type": "uses_prompt"
+    },
+    {
+      "from": "app/eval/judge.py",
+      "to": "app/llm/prompts/judge_pairwise.txt",
+      "type": "uses_prompt"
+    },
+    {
+      "from": "app/eval/judge.py",
+      "to": "app/llm/schemas.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/eval/judge.py",
+      "to": "tests/unit/test_judge.py",
       "type": "tested_by"
     },
     {
@@ -7260,6 +7474,11 @@
     },
     {
       "from": "app/llm/client.py",
+      "to": "tests/unit/test_judge.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/llm/client.py",
       "to": "tests/unit/test_llm_client.py",
       "type": "tested_by"
     },
@@ -7286,6 +7505,16 @@
     {
       "from": "app/llm/schemas.py",
       "to": "app/llm/schemas.py::JDRequirementLine",
+      "type": "contains"
+    },
+    {
+      "from": "app/llm/schemas.py",
+      "to": "app/llm/schemas.py::JudgePairwise",
+      "type": "contains"
+    },
+    {
+      "from": "app/llm/schemas.py",
+      "to": "app/llm/schemas.py::JudgeRubric",
       "type": "contains"
     },
     {
@@ -7341,6 +7570,11 @@
     {
       "from": "app/llm/schemas.py",
       "to": "tests/unit/test_jd_analyzer_v2.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/llm/schemas.py",
+      "to": "tests/unit/test_judge.py",
       "type": "tested_by"
     },
     {

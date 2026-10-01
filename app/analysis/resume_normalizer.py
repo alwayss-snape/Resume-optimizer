@@ -617,8 +617,8 @@ class ResumeNormalizer:
                     current_edu.degree = body
                     if dates:
                         current_edu.dates = dates
-                    if right_col and not current_edu.location:
-                        current_edu.location = right_col
+                    if right_col and not current_edu.location and right_col != dates:
+                        current_edu.location = right_col  # a place, never the date column
                 else:
                     current_edu.degree = f"{current_edu.degree}; {body}".strip("; ")
 

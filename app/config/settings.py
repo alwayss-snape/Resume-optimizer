@@ -31,6 +31,11 @@ class Settings(BaseSettings):
     anthropic_api_key: str = ""
     anthropic_model: str = "claude-opus-5-5"
 
+    # LLM-as-judge for evaluation (P4.3): a different model family from the
+    # generator, so it doesn't grade its own writing. Groq free tier.
+    judge_provider: str = "groq"
+    judge_model: str = "qwen/qwen3.8-27b"
+
     # Facts the user confirmed in gap questions, reused across JDs (P3.2).
     # Personal data: gitignored, never sent anywhere.
     # Absolute under the repo, so it's always the gitignored folder no matter
