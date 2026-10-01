@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "6b66bb1c803b8580",
+  "source_hash": "5eb511a18c634bfd",
   "stats": {
     "files": 129,
     "python_files": 106,
     "app_modules": 50,
     "test_files": 48,
     "classes": 89,
-    "functions": 768,
-    "lines_of_python": 16371
+    "functions": 769,
+    "lines_of_python": 16356
   },
   "axes": {
     "x": "location (path)",
@@ -2762,43 +2762,43 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 824,
+      "lines": 786,
       "doc": "",
       "classes": [],
       "functions": [
         {
-          "name": "get_local_pdf_preview_url",
-          "line": 28,
-          "doc": "Serve a PDF from a temporary HTTP endpoint so Chrome can render it in an iframe."
+          "name": "pdf_page_images",
+          "line": 25,
+          "doc": "Each PDF page as PNG bytes. Shown as images, the preview works in any"
         },
         {
-          "name": "display_pdf_with_fallback",
-          "line": 45,
-          "doc": "Try to use Streamlit's native PDF display if available, otherwise fall back"
+          "name": "show_pdf_preview",
+          "line": 35,
+          "doc": ""
         },
         {
           "name": "_cleanup_session_state",
-          "line": 82,
+          "line": 46,
           "doc": "Remove temp files from a previous run and reset to a clean 'idle' state."
         },
         {
           "name": "_show_content_checks",
-          "line": 148,
+          "line": 112,
           "doc": "P2.6: advice on the finished resume; nothing is changed automatically."
         },
         {
           "name": "model_options",
-          "line": 159,
+          "line": 123,
           "doc": "Models offered in the sidebar for the configured provider. The"
         },
         {
           "name": "_show_keyword_match",
-          "line": 301,
+          "line": 265,
           "doc": "Match rate against the target band, then the matched / missing table"
         },
         {
           "name": "_draft_proposals",
-          "line": 333,
+          "line": 297,
           "doc": ""
         }
       ]
@@ -5918,7 +5918,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 41,
+      "lines": 64,
       "doc": "",
       "classes": [],
       "functions": [
@@ -5936,6 +5936,11 @@
           "name": "test_results_show_content_checks",
           "line": 25,
           "doc": "P2.6: the results screen lists the content checks."
+        },
+        {
+          "name": "test_results_preview_shows_pdf_pages_as_images",
+          "line": 44,
+          "doc": "Chrome blocks a PDF embedded in the page, so the preview renders each"
         }
       ]
     },

@@ -3,9 +3,6 @@ import shutil
 import sys
 import tempfile
 from datetime import date
-import threading
-from functools import partial
-from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 
 # Ensure project root directory is in sys.path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -25,58 +22,25 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-def get_local_pdf_preview_url(pdf_path: str):
-    """Serve a PDF from a temporary HTTP endpoint so Chrome can render it in an iframe."""
-    pdf_dir = os.path.dirname(os.path.abspath(pdf_path))
-    pdf_name = os.path.basename(pdf_path)
+def pdf_page_images(pdf_path: str, zoom: float = 2.0) -> list:
+    """Each PDF page as PNG bytes. Shown as images, the preview works in any
+    browser: Chrome blocks a PDF embedded in the page, and st.pdf needs an
+    optional extra."""
+    import pymupdf
 
-    class QuietHandler(SimpleHTTPRequestHandler):
-        def log_message(self, format, *args):
-            return
-
-    handler = partial(QuietHandler, directory=pdf_dir)
-    httpd = ThreadingHTTPServer(("127.0.0.1", 0), handler)
-    thread = threading.Thread(target=httpd.serve_forever, daemon=True)
-    thread.start()
-    port = httpd.server_address[1]
-    return httpd, f"http://127.0.0.1:{port}/{pdf_name}"
+    with pymupdf.open(pdf_path) as doc:
+        return [page.get_pixmap(matrix=pymupdf.Matrix(zoom, zoom)).tobytes("png") for page in doc]
 
 
-def display_pdf_with_fallback(pdf_path: str, height: int = 900):
-    """Try to use Streamlit's native PDF display if available, otherwise fall back
-    to the local HTTP server preview. If PyMuPDF is installed, also offer a PNG
-    raster fallback for environments where embedding is restricted.
-    """
-    # Prefer native `st.pdf` if available
+def show_pdf_preview(pdf_path: str) -> None:
     try:
-        st_pdf = getattr(st, "pdf", None)
-        if callable(st_pdf):
-            with open(pdf_path, "rb") as f:
-                st_pdf(f.read())
-            return None
-    except Exception:
-        pass
-
-    # Fallback: serve via local HTTP endpoint
-    try:
-        httpd, url = get_local_pdf_preview_url(pdf_path)
-        st.caption("Preview is served from a local HTTP endpoint so Chrome can render the PDF normally.")
-        st.components.v1.iframe(url, height=height, scrolling=True)
-        return httpd
-    except Exception:
-        # Try PNG raster via PyMuPDF if available
-        try:
-            import pymupdf as fitz
-            doc = fitz.open(pdf_path)
-            pix = doc.load_page(0).get_pixmap(matrix=fitz.Matrix(2, 2))
-            from io import BytesIO
-            buf = BytesIO()
-            pix.save(buf, output="png")
-            st.image(buf.getvalue(), use_column_width=True)
-            return None
-        except Exception:
-            st.info("Could not render PDF preview in this environment.")
-            return None
+        pages = pdf_page_images(pdf_path)
+    except Exception as e:
+        st.info(f"Couldn't render a preview ({e}); download the PDF to view it.")
+        return
+    st.caption(f"{len(pages)} page(s), A4. This is the exact PDF you can download.")
+    for number, png in enumerate(pages, start=1):
+        st.image(png, caption=f"Page {number}" if len(pages) > 1 else None, width=850)
 
 
 def _cleanup_session_state():
@@ -777,7 +741,7 @@ if st.session_state.stage == "results" and st.session_state.get("results") is no
     with preview_tab:
         st.markdown("### Tailored Resume Document Preview")
         if results.get("pdf") and os.path.exists(results["pdf"]):
-            preview_server = display_pdf_with_fallback(results["pdf"], height=900)
+            show_pdf_preview(results["pdf"])
             with open(results["pdf"], "rb") as f:
                 st.download_button(
                     label="📥 Open / Download Tailored PDF",
@@ -787,8 +751,6 @@ if st.session_state.stage == "results" and st.session_state.get("results") is no
                     use_container_width=True,
                     key="preview_download_pdf",
                 )
-            if preview_server:
-                st.session_state["preview_server"] = preview_server
         elif results.get("html") and os.path.exists(results["html"]):
             with open(results["html"], "r", encoding="utf-8") as f:
                 st.components.v1.html(f.read(), height=900, scrolling=True)

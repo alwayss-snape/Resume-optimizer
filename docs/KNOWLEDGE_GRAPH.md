@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**50 app modules · 48 test files · 89 classes · 768 functions/methods · 16,371 lines of Python** · source hash `6b66bb1c803b8580`
+**50 app modules · 48 test files · 89 classes · 769 functions/methods · 16,356 lines of Python** · source hash `5eb511a18c634bfd`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -31,7 +31,7 @@ pyproject.toml
   pre-commit
 app/
   cli.py                                         check_llm(), write_proposals(), _without_mirrors(), read_proposals(), …
-  ui.py                                          get_local_pdf_preview_url(), display_pdf_with_fallback(), _cleanup_ses…
+  ui.py                                          pdf_page_images(), show_pdf_preview(), _cleanup_session_state(), _show…
   analysis/
     change_proposal.py                           ChangeProposal
     experience.py                                Years of experience from role date ranges (P1.5), and the page target
@@ -912,15 +912,15 @@ _Local profile of facts the user has confirmed (P3.2)._
 
 ### `app/ui.py`
 
-**Layer:** Entry points · **Stage:** all · **Lines:** 824
+**Layer:** Entry points · **Stage:** all · **Lines:** 786
 
-- function **`get_local_pdf_preview_url()`** ([app/ui.py:28](../app/ui.py#L28)) — Serve a PDF from a temporary HTTP endpoint so Chrome can render it in an iframe.
-- function **`display_pdf_with_fallback()`** ([app/ui.py:45](../app/ui.py#L45)) — Try to use Streamlit's native PDF display if available, otherwise fall back
-- function **`_cleanup_session_state()`** ([app/ui.py:82](../app/ui.py#L82)) — Remove temp files from a previous run and reset to a clean 'idle' state.
-- function **`_show_content_checks()`** ([app/ui.py:148](../app/ui.py#L148)) — P2.6: advice on the finished resume; nothing is changed automatically.
-- function **`model_options()`** ([app/ui.py:159](../app/ui.py#L159)) — Models offered in the sidebar for the configured provider. The
-- function **`_show_keyword_match()`** ([app/ui.py:301](../app/ui.py#L301)) — Match rate against the target band, then the matched / missing table
-- function **`_draft_proposals()`** ([app/ui.py:333](../app/ui.py#L333))
+- function **`pdf_page_images()`** ([app/ui.py:25](../app/ui.py#L25)) — Each PDF page as PNG bytes. Shown as images, the preview works in any
+- function **`show_pdf_preview()`** ([app/ui.py:35](../app/ui.py#L35))
+- function **`_cleanup_session_state()`** ([app/ui.py:46](../app/ui.py#L46)) — Remove temp files from a previous run and reset to a clean 'idle' state.
+- function **`_show_content_checks()`** ([app/ui.py:112](../app/ui.py#L112)) — P2.6: advice on the finished resume; nothing is changed automatically.
+- function **`model_options()`** ([app/ui.py:123](../app/ui.py#L123)) — Models offered in the sidebar for the configured provider. The
+- function **`_show_keyword_match()`** ([app/ui.py:265](../app/ui.py#L265)) — Match rate against the target band, then the matched / missing table
+- function **`_draft_proposals()`** ([app/ui.py:297](../app/ui.py#L297))
 - **Imports:** `config/settings.py`, `llm/client.py`, `rendering/review_view.py`, `services/profile_store.py`, `services/tailor.py`
 - **Tested by:** `tests/unit/test_ui.py`
 
