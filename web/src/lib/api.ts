@@ -2,10 +2,13 @@
 // Vite proxies /api in development and FastAPI serves this app in
 // production, so the session cookie just works.
 
+import type { AnalysisReport, Details, MatchPreview, ParseResult, ProposalsResult, TailorResult } from "./types";
+
 export interface AppConfig {
   provider: string;
   provider_label: string;
   models: string[];
+  max_upload_mb: number;
 }
 
 export class ApiError extends Error {
@@ -47,3 +50,120 @@ export async function request<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export const getConfig = () => request<AppConfig>("/api/config");
+
+function uploadForm(file: File, jdText: string, model: string | null): FormData {
+  const form = new FormData();
+  form.append("file", file);
+  form.append("jd_text", jdText);
+  if (model) form.append("model", model);
+  return form;
+}
+
+const json = (body: unknown): RequestInit => ({
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify(body),
+});
+
+export const analyze = (file: File, jdText: string, model: string | null) =>
+  request<AnalysisReport>("/api/analyze", { method: "POST", body: uploadForm(file, jdText, model) });
+
+export const parseResume = (file: File, jdText: string, model: string | null) =>
+  request<ParseResult>("/api/parse", { method: "POST", body: uploadForm(file, jdText, model) });
+
+export const resetSession = () => request<{ ok: boolean }>("/api/reset", { method: "POST" });
+
+/** Split an SSE body into (event, data) pairs; `rest` is an unfinished block. */
+export function parseSse(buffer: string): { events: { event: string; data: unknown }[]; rest: string } {
+  const blocks = buffer.replace(/\r\n/g, "\n").split("\n\n");
+  const rest = blocks.pop() ?? "";
+  const events = blocks
+    .map((block) => {
+      let event = "message";
+      const data: string[] = [];
+      for (const line of block.split("\n")) {
+        if (line.startsWith("event:")) event = line.slice(6).trim();
+        else if (line.startsWith("data:")) data.push(line.slice(5).trimStart());
+      }
+      try {
+        return { event, data: data.length ? JSON.parse(data.join("\n")) : null };
+      } catch {
+        return null;
+      }
+    })
+    .filter((e): e is { event: string; data: unknown } => e !== null);
+  return { events, rest };
+}
+
+/** POST a JSON body to a streaming step: calls onProgress for each progress
+ *  message and resolves with the final result (rejects on an error event). */
+export async function streamStep<T>(path: string, body: unknown, onProgress: (message: string) => void,
+  signal?: AbortSignal): Promise<T> {
+  let response: Response;
+  try {
+    response = await fetch(path, { credentials: "same-origin", ...json(body), signal });
+  } catch (e) {
+    if ((e as Error)?.name === "AbortError") throw e;
+    throw new ApiError(0, "Can't reach the server. Check your connection and try again.");
+  }
+  if (!response.ok || !response.body) {
+    let detail: unknown = null;
+    try {
+      detail = await response.json();
+    } catch {
+      /* not JSON */
+    }
+    throw new ApiError(response.status, errorMessage(response.status, detail));
+  }
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+  for (;;) {
+    const { done, value } = await reader.read();
+    buffer += decoder.decode(value, { stream: !done });
+    const { events, rest } = parseSse(done ? buffer + "\n\n" : buffer);
+    buffer = rest;
+    for (const { event, data } of events) {
+      const payload = data as { message?: string } | null;
+      if (event === "progress" && payload?.message) onProgress(payload.message);
+      if (event === "error") throw new ApiError(500, payload?.message || "Something went wrong. Please try again.");
+      if (event === "result") return data as T;
+    }
+    if (done) throw new ApiError(500, "The connection closed before the step finished. Please try again.");
+  }
+}
+
+export const draftProposals = (corrections: Details | null, onProgress: (m: string) => void, signal?: AbortSignal) =>
+  streamStep<ProposalsResult>("/api/proposals", { corrections }, onProgress, signal);
+
+export interface Selection {
+  id: string;
+  text?: string | null;
+}
+
+export const matchPreview = (selection: Selection[], signal?: AbortSignal) =>
+  request<MatchPreview>("/api/match-preview", { ...json({ selection }), signal });
+
+export interface TailorRequest {
+  selection: Selection[];
+  gap_answers: Record<string, { ticked: string[]; answer: string; target: string }>;
+  addition: { text: string; target: string };
+  new_role: null | {
+    company: string;
+    title: string;
+    location: string;
+    current: boolean;
+    start: string | null; // YYYY-MM-DD
+    end: string | null;
+    description: string;
+  };
+  keep_layout: boolean;
+  strict_factual: boolean;
+  remember_answers: boolean;
+}
+
+export const tailorResume = (body: TailorRequest, onProgress: (m: string) => void, signal?: AbortSignal) =>
+  streamStep<TailorResult>("/api/tailor", body, onProgress, signal);
+
+export const fileUrl = (kind: "docx" | "pdf" | "changes") => `/api/files/${kind}`;
+export const previewUrl = (page: number, version: string | number) => `/api/preview/${page}?v=${version}`;

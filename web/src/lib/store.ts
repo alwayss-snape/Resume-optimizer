@@ -1,5 +1,7 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
+import type { ReviewState } from "./review";
+import type { AnalysisReport, Details, ProposalsResult, TailorResult } from "./types";
 
 export const STEPS = [
   { id: "upload", label: "Upload" },
@@ -9,6 +11,31 @@ export const STEPS = [
 ] as const;
 
 export type StepId = (typeof STEPS)[number]["id"];
+// "report" is the "just check my match" page, outside the four steps.
+export type View = StepId | "report";
+export type Intent = "tailor" | "check";
+export type Template = "ats" | "keep";
+
+/** This visit's run. Kept in memory only: the server holds the real state,
+ *  and a resume never goes into browser storage. */
+export interface Run {
+  intent: Intent;
+  file: File | null;
+  jdText: string;
+  template: Template;
+  details: Details | null;
+  parseIssues: string[];
+  report: AnalysisReport | null;
+  drafted: ProposalsResult | null;
+  review: ReviewState | null; // decisions on the drafted proposals, kept across Back
+  results: TailorResult | null;
+  resultsVersion: number; // changes per tailoring run, so previews reload
+}
+
+export const EMPTY_RUN: Run = {
+  intent: "tailor", file: null, jdText: "", template: "ats", details: null, parseIssues: [],
+  report: null, drafted: null, review: null, results: null, resultsVersion: 0,
+};
 export type Theme = "dark" | "light" | "system";
 
 export interface Settings {
@@ -19,18 +46,21 @@ export interface Settings {
 }
 
 interface AppState {
-  step: StepId;
+  step: View;
   // Furthest step reached in this run; the stepper lets you go back to any
   // step up to it, never forward past it.
   reached: number;
   settings: Settings;
+  run: Run;
+  running: boolean; // a long step is in flight (see lib/inflight.ts)
   goTo: (step: StepId) => void;
-  advance: (step: StepId) => void;
+  advance: (step: View) => void;
+  updateRun: (patch: Partial<Run>) => void;
   restart: () => void;
   updateSettings: (patch: Partial<Settings>) => void;
 }
 
-export const stepIndex = (step: StepId) => STEPS.findIndex((s) => s.id === step);
+export const stepIndex = (step: View) => STEPS.findIndex((s) => s.id === step);
 
 const THEMES: Theme[] = ["dark", "light", "system"];
 
@@ -92,11 +122,14 @@ export const useApp = create<AppState>()(
       step: "upload",
       reached: 0,
       settings: DEFAULT_SETTINGS,
+      run: EMPTY_RUN,
+      running: false,
       goTo: (step) => {
-        if (stepIndex(step) <= get().reached) set({ step });
+        if (stepIndex(step) <= get().reached && !get().running) set({ step });
       },
       advance: (step) => set((s) => ({ step, reached: Math.max(s.reached, stepIndex(step)) })),
-      restart: () => set({ step: "upload", reached: 0 }),
+      updateRun: (patch) => set((s) => ({ run: { ...s.run, ...patch } })),
+      restart: () => set({ step: "upload", reached: 0, run: EMPTY_RUN }),
       updateSettings: (patch) => set((s) => ({ settings: { ...s.settings, ...patch } })),
     }),
     // Only preferences persist; the run itself lives on the server.

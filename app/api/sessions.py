@@ -31,6 +31,8 @@ class Session:
     # Gap answers this visitor confirmed (P3.2), kept for their next JD in
     # this session only; the on-disk profile is shared, so never used here.
     profile: MemoryProfileStore = field(default_factory=MemoryProfileStore)
+    # "Start over" arrived while a step was running: reset when it ends.
+    reset_pending: bool = False
 
     def reset(self, keep: Optional[Dict[str, Any]] = None) -> None:
         """Delete the session's temp files and forget everything."""

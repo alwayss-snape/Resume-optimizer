@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "c45047a1b151c30b",
+  "source_hash": "d767a04da19a9c8b",
   "stats": {
     "files": 135,
     "python_files": 112,
     "app_modules": 55,
     "test_files": 49,
     "classes": 100,
-    "functions": 850,
-    "lines_of_python": 17386
+    "functions": 853,
+    "lines_of_python": 17443
   },
   "axes": {
     "x": "location (path)",
@@ -1146,7 +1146,7 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 465,
+      "lines": 474,
       "doc": "HTTP endpoints, one per step of the review flow (P5.1).",
       "classes": [
         {
@@ -1252,93 +1252,93 @@
         },
         {
           "name": "_service",
-          "line": 187,
+          "line": 190,
           "doc": "A TailorService for one step. With a session, saved gap answers come"
         },
         {
           "name": "_details",
-          "line": 199,
+          "line": 202,
           "doc": "What the \"check details\" step shows and edits (P3.5)."
         },
         {
           "name": "_sections",
-          "line": 215,
+          "line": 218,
           "doc": "Bullet id -> the job or project it belongs to, for grouping cards."
         },
         {
           "name": "_proposal_out",
-          "line": 227,
+          "line": 230,
           "doc": ""
         },
         {
           "name": "_match_out",
-          "line": 239,
+          "line": 242,
           "doc": ""
         },
         {
           "name": "_selected",
-          "line": 245,
+          "line": 248,
           "doc": ""
         },
         {
           "name": "health",
-          "line": 255,
+          "line": 258,
           "doc": ""
         },
         {
           "name": "config",
-          "line": 260,
+          "line": 263,
           "doc": ""
         },
         {
           "name": "_model",
-          "line": 266,
+          "line": 270,
           "doc": ""
         },
         {
           "name": "analyze",
-          "line": 273,
+          "line": 277,
           "doc": "\"Just check my match\": score only, nothing kept."
         },
         {
           "name": "parse",
-          "line": 287,
+          "line": 291,
           "doc": "Step 1: read the resume and start a fresh session for this run."
         },
         {
           "name": "proposals",
-          "line": 320,
+          "line": 324,
           "doc": "Step 2: apply the user's fixes, then draft rewrites and gap"
         },
         {
           "name": "match_preview",
-          "line": 362,
+          "line": 368,
           "doc": "The match rate if the selected (and edited) proposals were applied."
         },
         {
           "name": "tailor",
-          "line": 372,
+          "line": 378,
           "doc": "Step 3: apply the review and generate the files. Streams progress."
         },
         {
           "name": "_result_path",
-          "line": 431,
+          "line": 437,
           "doc": ""
         },
         {
           "name": "download",
-          "line": 439,
+          "line": 445,
           "doc": ""
         },
         {
           "name": "preview",
-          "line": 447,
+          "line": 453,
           "doc": "One page of the tailored PDF as a PNG (Chrome blocks embedded PDFs)."
         },
         {
           "name": "reset",
-          "line": 456,
-          "doc": "Start over: delete this visitor's files and state."
+          "line": 462,
+          "doc": "Start over: delete this visitor's files and state. If a step is still"
         }
       ]
     },
@@ -1349,7 +1349,7 @@
       "stages": [
         "10 Report"
       ],
-      "lines": 94,
+      "lines": 96,
       "doc": "Per-visitor state for the web API (P5.1).",
       "classes": [
         {
@@ -1359,44 +1359,44 @@
           "methods": [
             {
               "name": "reset",
-              "line": 35,
+              "line": 37,
               "doc": "Delete the session's temp files and forget everything."
             }
           ]
         },
         {
           "name": "SessionStore",
-          "line": 54,
+          "line": 56,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
-              "line": 55,
+              "line": 57,
               "doc": ""
             },
             {
               "name": "get",
-              "line": 60,
+              "line": 62,
               "doc": ""
             },
             {
               "name": "create",
-              "line": 68,
+              "line": 70,
               "doc": ""
             },
             {
               "name": "drop",
-              "line": 74,
+              "line": 76,
               "doc": "Forget a session now, deleting its temp files."
             },
             {
               "name": "sweep",
-              "line": 80,
+              "line": 82,
               "doc": "Drop sessions idle longer than the TTL; returns how many. A"
             },
             {
               "name": "__len__",
-              "line": 93,
+              "line": 95,
               "doc": ""
             }
           ]
@@ -1405,7 +1405,7 @@
       "functions": [
         {
           "name": "remove_path",
-          "line": 42,
+          "line": 44,
           "doc": ""
         }
       ]
@@ -3040,7 +3040,7 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 1086,
+      "lines": 1088,
       "doc": "",
       "classes": [
         {
@@ -3150,22 +3150,22 @@
             },
             {
               "name": "analyze_only",
-              "line": 451,
+              "line": 453,
               "doc": ""
             },
             {
               "name": "generate_proposals",
-              "line": 477,
+              "line": 479,
               "doc": "Generate rewrite proposals without applying them, plus questions"
             },
             {
               "name": "incorporate_user_addition",
-              "line": 546,
+              "line": 548,
               "doc": "Fold a user-supplied free-text addition (a project, an"
             },
             {
               "name": "tailor_resume",
-              "line": 625,
+              "line": 627,
               "doc": ""
             }
           ]
@@ -3179,7 +3179,7 @@
         },
         {
           "name": "_merge_usage",
-          "line": 1077,
+          "line": 1079,
           "doc": "Combine two LLMClient.get_usage_summary() dicts into one."
         }
       ]
@@ -3895,7 +3895,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 282,
+      "lines": 310,
       "doc": "Web API (P5.1): the full flow through HTTP, plus the shared form helpers.",
       "classes": [],
       "functions": [
@@ -3931,113 +3931,123 @@
         },
         {
           "name": "test_full_flow_parse_draft_preview_tailor_download",
-          "line": 74,
+          "line": 75,
           "doc": ""
         },
         {
           "name": "test_pdf_upload_parses",
-          "line": 110,
+          "line": 111,
           "doc": ""
         },
         {
           "name": "test_steps_need_a_session",
-          "line": 114,
+          "line": 115,
           "doc": ""
         },
         {
           "name": "test_tailor_before_drafting_is_refused",
-          "line": 119,
+          "line": 120,
           "doc": ""
         },
         {
           "name": "test_bad_uploads_are_refused",
-          "line": 129,
+          "line": 130,
           "doc": ""
         },
         {
           "name": "test_oversized_upload_and_empty_jd_are_refused",
-          "line": 134,
+          "line": 135,
           "doc": ""
         },
         {
           "name": "test_unknown_model_is_refused",
-          "line": 141,
+          "line": 142,
           "doc": ""
         },
         {
           "name": "test_invalid_new_role_is_refused_before_any_work",
-          "line": 146,
+          "line": 147,
           "doc": ""
         },
         {
           "name": "test_rate_limit",
-          "line": 154,
+          "line": 155,
           "doc": ""
         },
         {
           "name": "test_preview_renders_pdf_pages",
-          "line": 161,
+          "line": 162,
           "doc": ""
         },
         {
           "name": "test_reset_deletes_temp_files",
-          "line": 175,
+          "line": 176,
           "doc": ""
         },
         {
           "name": "test_expired_sessions_are_swept_with_their_files",
-          "line": 185,
+          "line": 186,
           "doc": ""
         },
         {
           "name": "_question",
-          "line": 201,
+          "line": 202,
           "doc": ""
         },
         {
           "name": "test_gap_answers_count_only_confirmed_input",
-          "line": 205,
+          "line": 206,
           "doc": ""
         },
         {
           "name": "test_resolve_target_rejects_unknown_ids",
-          "line": 214,
+          "line": 215,
           "doc": ""
         },
         {
           "name": "test_new_role_validation",
-          "line": 220,
+          "line": 221,
           "doc": ""
         },
         {
           "name": "test_preapproved_carries_edits",
-          "line": 230,
+          "line": 231,
           "doc": ""
         },
         {
           "name": "test_failing_service_does_not_lock_the_session",
-          "line": 239,
+          "line": 240,
           "doc": "Review fix: a step that fails before its worker starts must release"
         },
         {
           "name": "test_worker_errors_are_generic_and_release_the_lock",
-          "line": 251,
+          "line": 252,
           "doc": ""
         },
         {
           "name": "test_saved_answers_stay_with_their_visitor",
-          "line": 260,
+          "line": 261,
           "doc": "Review fix: confirmed gap answers are per session, never shared."
         },
         {
           "name": "test_failed_first_parse_leaves_no_session",
-          "line": 272,
+          "line": 273,
           "doc": ""
         },
         {
           "name": "test_cookie_is_refreshed_on_activity",
-          "line": 279,
+          "line": 280,
           "doc": ""
+        },
+        {
+          "name": "test_reset_during_a_running_step_happens_when_it_ends",
+          "line": 286,
+          "doc": "P5.3 review: Start over while drafting must still clear the session."
+        },
+        {
+          "name": "test_drafting_again_keeps_earlier_corrections",
+          "line": 303,
+          "doc": "P5.3 review: going back and drafting again must not forget fixes."
         }
       ]
     },
@@ -4107,7 +4117,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 102,
+      "lines": 118,
       "doc": "P3.5: \"Check parsed resume\" step: corrections applied by the service,",
       "classes": [],
       "functions": [
@@ -4135,6 +4145,11 @@
           "name": "test_ui_check_parse_stage_end_to_end",
           "line": 72,
           "doc": ""
+        },
+        {
+          "name": "test_a_dated_role_without_a_title_is_kept",
+          "line": 105,
+          "doc": "P5.3 review: a role read with dates but no title must survive an"
         }
       ]
     },
@@ -7688,6 +7703,11 @@
     },
     {
       "from": "app/domain/resume.py",
+      "to": "tests/unit/test_check_parsed_resume.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/resume.py",
       "to": "tests/unit/test_content_lint.py",
       "type": "tested_by"
     },
@@ -7824,6 +7844,11 @@
     {
       "from": "app/domain/resume_document.py",
       "to": "tests/unit/test_ats_round_trip.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/resume_document.py",
+      "to": "tests/unit/test_check_parsed_resume.py",
       "type": "tested_by"
     },
     {

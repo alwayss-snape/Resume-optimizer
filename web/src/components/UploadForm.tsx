@@ -1,9 +1,9 @@
 import { type DragEvent, useEffect, useId, useRef, useState } from "react";
+import type { Intent, Template } from "../lib/store";
 import { Button } from "./Button";
 import { Icon } from "./Icon";
 
-export type Intent = "tailor" | "check";
-export type Template = "ats" | "keep";
+export type { Intent, Template };
 
 export interface UploadValues {
   file: File;
@@ -11,7 +11,7 @@ export interface UploadValues {
   template: Template;
 }
 
-export const MAX_UPLOAD_MB = 5;
+export const MAX_UPLOAD_MB = 5; // until /api/config says otherwise
 const ACCEPTED = [".docx", ".pdf"];
 
 const extension = (name: string) => name.slice(name.lastIndexOf(".")).toLowerCase();
@@ -19,9 +19,9 @@ const formatSize = (bytes: number) =>
   bytes < 1024 * 1024 ? `${Math.max(1, Math.round(bytes / 1024))} KB` : `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 
 /** Why a file can't be used, or null. Mirrors the server's checks. */
-export function fileProblem(file: File): string | null {
+export function fileProblem(file: File, maxMb = MAX_UPLOAD_MB): string | null {
   if (!ACCEPTED.includes(extension(file.name))) return "Please choose a .docx or .pdf file.";
-  if (file.size > MAX_UPLOAD_MB * 1024 * 1024) return `The file is larger than ${MAX_UPLOAD_MB} MB.`;
+  if (file.size > maxMb * 1024 * 1024) return `The file is larger than ${maxMb} MB.`;
   return null;
 }
 
@@ -55,14 +55,18 @@ function TemplateCard({ value, current, onSelect, title, badge, text, disabled, 
 
 /** Resume + job description + output format. Validates locally; the
  *  parent decides what submitting does. */
-export function UploadForm({ intent, onSubmit, busy = false }: {
+export function UploadForm({ intent, onSubmit, busy = false, initial, maxUploadMb = MAX_UPLOAD_MB, serverError, serverErrorKey }: {
   intent: Intent;
   onSubmit: (values: UploadValues) => void;
   busy?: boolean;
+  initial?: { file: File | null; jdText: string; template: Template };
+  maxUploadMb?: number;
+  serverError?: string | null;
+  serverErrorKey?: number; // changes per failure, so a repeated message is announced again
 }) {
-  const [file, setFile] = useState<File | null>(null);
-  const [jdText, setJdText] = useState("");
-  const [template, setTemplate] = useState<Template>("ats");
+  const [file, setFile] = useState<File | null>(initial?.file ?? null);
+  const [jdText, setJdText] = useState(initial?.jdText ?? "");
+  const [template, setTemplate] = useState<Template>(initial?.template ?? "ats");
   const [dragging, setDragging] = useState(false);
   // field: which input the message is about, so it can be marked invalid
   // and focused; n: re-mounts the alert so a repeated message is announced.
@@ -95,7 +99,7 @@ export function UploadForm({ intent, onSubmit, busy = false }: {
   const choose = (files: FileList | null | undefined) => {
     const picked = files?.[0];
     if (!picked) return;
-    const problem = files.length > 1 ? "Please add one file: your resume." : fileProblem(picked);
+    const problem = files.length > 1 ? "Please add one file: your resume." : fileProblem(picked, maxUploadMb);
     if (problem) return fail(problem, "file");
     setError(null);
     setFile(picked);
@@ -126,7 +130,7 @@ export function UploadForm({ intent, onSubmit, busy = false }: {
         <section className="flex flex-col gap-4 border border-line bg-panel p-6 md:p-7">
           <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
             <h2 className="font-display text-[26px] font-semibold">Your resume</h2>
-            <span className="text-xs text-muted">DOCX or PDF, up to {MAX_UPLOAD_MB} MB</span>
+            <span className="text-xs text-muted">DOCX or PDF, up to {maxUploadMb} MB</span>
           </div>
           <label htmlFor={fileId}
             onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
@@ -203,12 +207,14 @@ export function UploadForm({ intent, onSubmit, busy = false }: {
       )}
 
       <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center">
-        <Button type="submit" variant="primary" size="lg" disabled={busy}>
-          {intent === "tailor" ? "Read my resume" : "Check my match"}
-          <Icon name="arrow-right" />
+        <Button type="submit" variant="primary" size="lg" disabled={busy} aria-busy={busy}>
+          {busy ? (intent === "tailor" ? "Reading your resume…" : "Checking your match…")
+            : intent === "tailor" ? "Read my resume" : "Check my match"}
+          {!busy && <Icon name="arrow-right" />}
         </Button>
         <div>
-          {error && <p key={error.n} id={errorId} role="alert" className="text-sm text-danger">{error.text}</p>}
+          {error ? <p key={error.n} id={errorId} role="alert" className="text-sm text-danger">{error.text}</p>
+            : serverError && <p key={serverErrorKey} role="alert" className="text-sm text-danger">{serverError}</p>}
         </div>
       </div>
     </form>

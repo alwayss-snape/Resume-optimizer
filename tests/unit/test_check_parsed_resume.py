@@ -100,3 +100,19 @@ def test_ui_check_parse_stage_end_to_end(tmp_path):
     assert at.session_state["parse_corrected"] is True
     sent = gen.call_args.kwargs["parsed"]
     assert sent[1].resume.candidate.headline == "Senior Data Scientist"
+
+
+def test_a_dated_role_without_a_title_is_kept():
+    """P5.3 review: a role read with dates but no title must survive an
+    untouched submit of the details form."""
+    from app.domain.resume import Candidate, Experience, Resume
+    from app.domain.resume_document import ResumeDocument
+    service = _service()
+    resume = Resume(candidate=Candidate(name="Avery Lee"), experience=[Experience(id="exp_1", company="Acme", title="", start_date="Jan 2020", end_date="Dec 2021")])
+    parsed = (None, ResumeDocument(resume=resume), [])
+    fixed, changed = service.apply_parse_corrections(parsed, {"experience": [
+        {"id": "exp_1", "company": "Acme", "location": "",
+         "roles": [{"title": "", "start_date": "Jan 2020", "end_date": "Dec 2021"}]}]})
+    exp = fixed[1].resume.experience[0]
+    assert (exp.start_date, exp.end_date) == ("Jan 2020", "Dec 2021")
+    assert not changed

@@ -10,3 +10,7 @@ afterEach(() => {
     // storage can be unavailable; nothing to clear
   }
 });
+
+// jsdom has no scrolling.
+window.scrollTo = () => undefined;
+Element.prototype.scrollIntoView = () => undefined;

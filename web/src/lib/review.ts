@@ -1,0 +1,115 @@
+// What the review screen keeps (P5.4) and how it becomes API requests.
+// Plain functions so the rules are tested apart from the UI.
+import type { Selection, TailorRequest } from "./api";
+import type { Proposal, ProposalsResult } from "./types";
+
+export type Decision = "accept" | "reject";
+
+export interface GapInput {
+  ticked: string[];
+  answer: string;
+  target: string; // "auto" | "new_project" | an experience id
+}
+
+export interface NewJob {
+  company: string;
+  title: string;
+  location: string;
+  current: boolean;
+  start: string; // "YYYY-MM" from <input type="month">, or ""
+  end: string;
+  description: string;
+}
+
+export interface ReviewState {
+  decisions: Record<string, Decision>;
+  edits: Record<string, string>; // proposal id -> the user's text
+  gaps: Record<string, GapInput>;
+  addition: { text: string; target: string };
+  newJob: NewJob;
+}
+
+export const EMPTY_JOB: NewJob = { company: "", title: "", location: "", current: false, start: "", end: "", description: "" };
+
+/** Every proposal starts accepted (as in Streamlit); saved answers pre-tick
+ *  their keywords and pre-fill the answer. */
+export function initialReview(drafted: ProposalsResult): ReviewState {
+  return {
+    decisions: Object.fromEntries(drafted.proposals.map((p) => [p.id, "accept" as Decision])),
+    edits: {},
+    gaps: Object.fromEntries(drafted.gap_questions.map((q) => [q.id, { ticked: [...q.saved_keywords], answer: q.saved_answer, target: "auto" }])),
+    addition: { text: "", target: "auto" },
+    newJob: EMPTY_JOB,
+  };
+}
+
+export const textOf = (p: Proposal, review: ReviewState) => review.edits[p.id] ?? p.proposed;
+export const isEdited = (p: Proposal, review: ReviewState) =>
+  review.edits[p.id] !== undefined && review.edits[p.id].trim() !== p.proposed.trim();
+
+/** The accepted proposals, with edited text where the user changed it. */
+export function selection(proposals: Proposal[], review: ReviewState): Selection[] {
+  return proposals
+    .filter((p) => review.decisions[p.id] !== "reject")
+    .map((p) => (isEdited(p, review) ? { id: p.id, text: review.edits[p.id] } : { id: p.id }));
+}
+
+/** Will this proposal actually be used? A fact-check failure is dropped
+ *  unless the user rewrote it themselves. */
+export function willApply(p: Proposal, review: ReviewState): boolean {
+  if (review.decisions[p.id] === "reject") return false;
+  return p.state !== "dropped" || isEdited(p, review);
+}
+
+const anyJobField = (j: NewJob) =>
+  [j.company, j.title, j.location, j.description, j.start, j.end].some((v) => v.trim()) || j.current;
+
+/** Problems with the "add a job" form, as the server would report them;
+ *  null when it's empty or complete. */
+export function newJobProblem(j: NewJob): string | null {
+  if (!anyJobField(j)) return null;
+  const missing = [
+    ["company", j.company.trim()], ["job title", j.title.trim()], ["start date", j.start],
+    ['end date (or tick "I currently work here")', j.end || j.current], ["what you did there", j.description.trim()],
+  ].filter(([, ok]) => !ok).map(([label]) => label);
+  if (missing.length) return `To add the job, fill in: ${missing.join(", ")}. Or clear the job fields.`;
+  if (!j.current && j.end < j.start) return "The new job's end date is before its start date.";
+  return null;
+}
+
+export function tailorRequest(proposals: Proposal[], review: ReviewState, options: {
+  keepLayout: boolean;
+  strictFactual: boolean;
+  rememberAnswers: boolean;
+}): TailorRequest {
+  const j = review.newJob;
+  return {
+    selection: selection(proposals, review),
+    gap_answers: review.gaps,
+    addition: review.addition,
+    new_role: anyJobField(j)
+      ? { company: j.company, title: j.title, location: j.location, current: j.current,
+          start: j.start ? `${j.start}-01` : null, end: j.end && !j.current ? `${j.end}-01` : null,
+          description: j.description }
+      : null,
+    keep_layout: options.keepLayout,
+    strict_factual: options.strictFactual,
+    remember_answers: options.rememberAnswers,
+  };
+}
+
+/** Cards in reading order: summary, skills, then bullets by job/project. */
+export function groupProposals(proposals: Proposal[]): { key: string; label: string; items: Proposal[] }[] {
+  const groups: { key: string; label: string; items: Proposal[] }[] = [];
+  const find = (key: string, label: string) => {
+    let g = groups.find((x) => x.key === key);
+    if (!g) groups.push((g = { key, label, items: [] }));
+    return g;
+  };
+  for (const p of proposals.filter((x) => x.kind === "summary")) find("summary", "Professional summary").items.push(p);
+  for (const p of proposals.filter((x) => x.kind === "skills")) find("skills", "Skills").items.push(p);
+  for (const p of proposals.filter((x) => x.kind === "bullet")) {
+    find(p.section?.id ?? "other", p.section?.label ?? "Other bullets").items.push(p);
+  }
+  return groups;
+}

@@ -69,6 +69,7 @@ def test_config_lists_models_for_the_configured_provider(client):
     body = client.get("/api/config").json()
     assert body["provider"] == "ollama"
     assert body["models"] == forms.model_options("ollama")
+    assert body["max_upload_mb"] == 5
 
 
 def test_full_flow_parse_draft_preview_tailor_download(client):
@@ -280,3 +281,30 @@ def test_cookie_is_refreshed_on_activity(client):
     _parse(client)
     r = client.get("/api/files/docx")  # 404, but the session is alive
     assert SESSION_COOKIE in r.headers.get("set-cookie", "")
+
+
+def test_reset_during_a_running_step_happens_when_it_ends(client):
+    """P5.3 review: Start over while drafting must still clear the session."""
+    import os
+    _parse(client)
+    session = client.app.state.sessions.get(client.cookies.get(SESSION_COOKIE))
+    path = session.data["resume_path"]
+    session.busy.acquire()  # a step is running
+    assert client.post("/api/reset").json() == {"ok": True, "pending": True}
+    assert os.path.exists(path)
+    session.busy.release()
+    # The next streaming step's end performs the pending reset.
+    session.reset_pending = True
+    session.data["parsed"] = "not a parse"
+    _events(client.post("/api/proposals", json={}))
+    assert session.data == {} and not os.path.exists(path)
+
+
+def test_drafting_again_keeps_earlier_corrections(client):
+    """P5.3 review: going back and drafting again must not forget fixes."""
+    details = _parse(client)["details"]
+    _draft(client, {"candidate": {**details["candidate"], "headline": "Data Engineer"}, "experience": []})
+    session = client.app.state.sessions.get(client.cookies.get(SESSION_COOKIE))
+    assert session.data["parse_corrected"] is True
+    _draft(client, {"candidate": {**details["candidate"], "headline": "Data Engineer"}, "experience": []})
+    assert session.data["parse_corrected"] is True

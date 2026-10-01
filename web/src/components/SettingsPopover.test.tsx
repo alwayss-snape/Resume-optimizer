@@ -4,7 +4,7 @@ import { beforeEach, expect, test } from "vitest";
 import { DEFAULT_SETTINGS, useApp } from "../lib/store";
 import { SettingsPopover } from "./SettingsPopover";
 
-const config = { provider: "groq", provider_label: "Groq (cloud)", models: ["openai/gpt-oss-120b", "openai/gpt-oss-20b"] };
+const config = { provider: "groq", provider_label: "Groq (cloud)", models: ["openai/gpt-oss-120b", "openai/gpt-oss-20b"], max_upload_mb: 5 };
 
 beforeEach(() => useApp.setState({ settings: DEFAULT_SETTINGS }));
 

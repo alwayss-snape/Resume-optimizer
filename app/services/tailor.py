@@ -430,7 +430,9 @@ class TailorService:
                 roles = [Role(title=(r.get("title") or "").strip(),
                               start_date=(r.get("start_date") or "").strip() or None,
                               end_date=(r.get("end_date") or "").strip() or None)
-                         for r in fix["roles"] if (r.get("title") or "").strip()]
+                         # A role read with dates but no title is kept.
+                         for r in fix["roles"] if any((r.get(k) or "").strip()
+                                                      for k in ("title", "start_date", "end_date"))]
                 if [r.model_dump() for r in roles] != [r.model_dump() for r in exp.all_roles()]:
                     first = roles[0] if roles else Role(title="")
                     exp.title, exp.start_date, exp.end_date = first.title, first.start_date, first.end_date

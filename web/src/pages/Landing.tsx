@@ -1,7 +1,9 @@
 import { motion } from "motion/react";
 import { useRef, useState } from "react";
+import { useFocusHeading } from "../lib/useFocusHeading";
 import { Button } from "../components/Button";
-import { type Intent, UploadForm, type UploadValues } from "../components/UploadForm";
+import { UploadForm, type UploadValues } from "../components/UploadForm";
+import type { Intent, Run } from "../lib/store";
 
 const HOW_IT_WORKS = [
   { title: "Upload and paste", text: "We read your resume and the job, and show your keyword match before anything changes." },
@@ -15,14 +17,23 @@ const rise = {
 };
 
 /** First screen: hero, the upload form, and how it works. */
-export function Landing({ onStart, busy }: { onStart: (intent: Intent, values: UploadValues) => void; busy?: boolean }) {
-  const [intent, setIntent] = useState<Intent>("tailor");
+export function Landing({ onStart, busy, run, maxUploadMb, error, errorKey }: {
+  onStart: (intent: Intent, values: UploadValues) => void;
+  busy?: boolean;
+  run: Run;
+  maxUploadMb?: number;
+  error?: string | null;
+  errorKey?: number;
+}) {
+  const [intent, setIntent] = useState<Intent>(run.intent);
+  // Coming back to this page (a run exists): put focus on its heading.
+  const heading = useFocusHeading(Boolean(run.file));
   const start = useRef<HTMLElement>(null);
 
   const begin = (next: Intent) => {
     setIntent(next);
     const still = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-    start.current?.scrollIntoView({ behavior: still ? "auto" : "smooth", block: "start" });
+    start.current?.scrollIntoView?.({ behavior: still ? "auto" : "smooth", block: "start" });
     start.current?.querySelector<HTMLElement>("input, textarea")?.focus({ preventScroll: true });
   };
 
@@ -35,8 +46,8 @@ export function Landing({ onStart, busy }: { onStart: (intent: Intent, values: U
           RESUME TAILORING
           <span aria-hidden="true" className="h-px w-10 bg-gold" />
         </motion.p>
-        <motion.h1 variants={rise} initial="hidden" animate="shown" custom={1}
-          className="max-w-[900px] font-display text-[44px] font-medium leading-[1.02] tracking-[-0.01em] sm:text-6xl md:text-[76px]">
+        <motion.h1 ref={heading} tabIndex={-1} variants={rise} initial="hidden" animate="shown" custom={1}
+          className="max-w-[900px] outline-none font-display text-[44px] font-medium leading-[1.02] tracking-[-0.01em] sm:text-6xl md:text-[76px]">
           Your experience, presented for the role.
         </motion.h1>
         <motion.p variants={rise} initial="hidden" animate="shown" custom={2}
@@ -55,7 +66,8 @@ export function Landing({ onStart, busy }: { onStart: (intent: Intent, values: U
         <h2 id="start-title" className="sr-only">
           {intent === "tailor" ? "Tailor your resume" : "Check your match"}
         </h2>
-        <UploadForm intent={intent} busy={busy} onSubmit={(values) => onStart(intent, values)} />
+        <UploadForm intent={intent} busy={busy} onSubmit={(values) => onStart(intent, values)} initial={run}
+          maxUploadMb={maxUploadMb} serverError={error} serverErrorKey={errorKey} />
       </section>
 
       <section aria-labelledby="how-title" className="mx-auto flex max-w-[1240px] flex-col gap-9 px-4 pb-20 pt-24 md:px-8">

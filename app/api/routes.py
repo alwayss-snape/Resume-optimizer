@@ -167,6 +167,9 @@ def _stream(session: Session, work: Callable[[Callable[[str], None]], Dict]) -> 
             logger.exception("Streaming step failed")
             events.put(("error", {"message": "Something went wrong on our side. Please try again."}))
         finally:
+            if session.reset_pending:
+                session.reset_pending = False
+                session.reset()
             session.busy.release()
             events.put(None)
 
@@ -257,10 +260,11 @@ def health() -> Dict:
 
 
 @router.get("/config")
-def config() -> Dict:
+def config(request: Request) -> Dict:
     provider = forms.current_provider()
     return {"provider": provider, "provider_label": forms.PROVIDER_LABELS.get(provider, provider),
-            "models": forms.model_options(provider)}
+            "models": forms.model_options(provider),
+            "max_upload_mb": request.app.state.max_upload_bytes / (1024 * 1024)}
 
 
 def _model(model: Optional[str]) -> Optional[str]:
@@ -328,6 +332,8 @@ def proposals(request: Request, body: ProposalsIn, session: Session = Depends(cu
         parsed, changed = session.data["parsed"], False
         if body.corrections:
             parsed, changed = service.apply_parse_corrections(parsed, body.corrections)
+        # Drafting again after going back: fixes applied the first time count too.
+        changed = changed or bool(session.data.get("parse_corrected"))
         generated = service.generate_proposals(session.data["resume_path"], session.data["jd_text"],
                                                parsed=parsed, progress=progress)
         session.data.update(
@@ -454,10 +460,13 @@ def preview(page: int, session: Session = Depends(current_session)) -> Response:
 
 @router.post("/reset")
 def reset(request: Request) -> Dict:
-    """Start over: delete this visitor's files and state."""
+    """Start over: delete this visitor's files and state. If a step is still
+    running, that happens as soon as it ends."""
     session = request.app.state.sessions.get(request.cookies.get(SESSION_COOKIE))
     if session is not None:
-        _claim(session)
+        if not session.busy.acquire(blocking=False):
+            session.reset_pending = True
+            return {"ok": True, "pending": True}
         try:
             session.reset()
         finally:

@@ -4,13 +4,21 @@ import { Icon } from "./Icon";
 /** Where you are in the flow. Steps already reached are links back; later
  *  ones are plain text. Collapses to "Step 2 of 4" on narrow screens. */
 export function Stepper() {
-  const { step, reached, goTo } = useApp();
+  const { step, reached, goTo, running } = useApp();
   const current = stepIndex(step);
+
+  if (step === "report") {
+    return (
+      <nav aria-label="Progress">
+        <p className="text-[13px] text-muted">Match report</p>
+      </nav>
+    );
+  }
 
   return (
     <nav aria-label="Progress">
       <div className="flex items-center gap-3 text-[13px] text-muted md:hidden">
-        {current > 0 && (
+        {current > 0 && !running && (
           <button type="button" onClick={() => goTo(STEPS[current - 1].id)}
             aria-label={`Back to ${STEPS[current - 1].label}`}
             className="flex min-h-11 items-center gap-1 text-muted hover:text-ink">
@@ -26,7 +34,7 @@ export function Stepper() {
         {STEPS.map((s, i) => {
           const done = i < current;
           const isCurrent = i === current;
-          const canVisit = i <= reached && !isCurrent;
+          const canVisit = i <= reached && !isCurrent && !running;
           const marker = (
             <span
               className={`flex size-[22px] items-center justify-center rounded-full text-[11px] ${
