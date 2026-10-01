@@ -1,7 +1,7 @@
 # Action Items — Best Tailored Resume per JD
 
 _Living tracker. Update an item's **Status** in the same commit that changes it; add a short note (commit subject or
-what's left). Last updated: 2026-10-01 (P0–P4 done; Phase 5, the new web UI, started)._
+what's left). Last updated: 2026-10-01 (P0–P4 done; Phase 5 web UI built, P5.7 shelved; Phase 6 UI redesign started)._
 
 **Goal:** every resume + JD run produces the best possible tailored resume: an accurate match score, strong
 JD-aligned rewrites, a Novoresume-style ATS layout that fits the right length, and nothing fabricated.
@@ -18,7 +18,8 @@ JD-aligned rewrites, a Novoresume-style ATS layout that fits the right length, a
 | 3: Gap questions + UX | 6 | 6 | 0 | 0 |
 | 4: Evaluation harness | 3 | 3 | 0 | 0 |
 | 5: Web UI for public hosting | 7 | 6 | 0 | 1 |
-| **Total** | **46** | **45** | **0** | **1** |
+| 6: UI redesign | 6 | 1 | 0 | 5 |
+| **Total** | **52** | **46** | **0** | **6** |
 
 ## Decisions (fixed by the user, 2026-09-30)
 
@@ -48,6 +49,7 @@ FOX JD and compare with the baseline. The phase tables below stay the catalogue;
 | **D. Output** | A Novoresume-style A4 resume at the right length | P2.1 → P2.2 → P2.3 → P2.4 → P2.5 → P2.6 | This resume (3.6 years) renders as 1 A4 page with roles and projects laid out correctly; ATS round-trip passes |
 | **E. Extras & polish** | Convenience and full evaluation | P3.2, P3.3, P3.4, P3.6, P1.10, P4.2, P4.3 | Full eval set green |
 | **F. Web UI** (added 2026-10-01) | Replace Streamlit with a fluid web app that can be hosted publicly | P5.1 → P5.2 → P5.3 → P5.4 → P5.5 → P5.6, then P5.7 | Same inputs and accepted proposals give identical output through Streamlit and the new UI; then Streamlit is removed. P5.7 has its own check-in |
+| **G. UI redesign** (added 2026-10-01) | A brighter, accessible new look with 3D and fluid moments | P6.1 → P6.2 → P6.3 → P6.4 → P6.5 → P6.6 | Owner picks the direction (P6.2); every screen rebuilt in it, AA in light and dark, all tests green; private real-resume run through the new UI, then a check-in |
 
 **Privacy:** the user's resume and its golden file live in `data/eval/private/` (gitignored). Committed tests use an
 anonymized replica of the layout.
@@ -169,6 +171,25 @@ logos). Flow: Upload → Check details → Review → Results. Approved mockups:
 | P5.5 | Results: before → after score, stat tiles, downloads, page preview, change log, content checks | `web/` | — | ✅ | `pages/Results.tsx`: headline (or "ready, with warnings"), before → after keyword match with bars and verdict, PDF / DOCX downloads (fetched first, so an expired session shows a message instead of saving an error page), stat tiles (keywords found, bullets rewritten, pages, content suggestions), tabs: page-image preview (cache-busted per run), change log (`MiniMarkdown`: headings, nested lists, the keyword table; React-escaped), content checks, notes, file checks; Back to review to change choices and regenerate. `tailor_resume` now returns `applied` (bullets really rewritten, how many in the user's own words, summary/skills, rejected, strict-mode withholding) so the summary states what is in the files. Independent review fixes: "bullets rewritten" was computed in the browser and could be wrong under strict mode or after changing choices (now the server's count, and own-wording bullets aren't called fact-checked); a failed regenerate left the old results reachable with dead downloads (cleared when generating starts); the change log's table and nested warnings rendered as raw text; content notes were filed under "File checks" (own Notes tab; exact de-duplication); strict-mode withholding is stated up front; phone sizing of the score; rounding hiding a real change; preview message when the PDF exists but couldn't be drawn. 59 front-end tests. Checked in Chrome with a real PDF |
 | P5.6 | Parity check on the real resume (both UIs, same choices → same output), then remove Streamlit and update README / BUILD / PROJECT_OVERVIEW | `app/ui.py`, docs | — | ✅ | Parity run (2026-10-01, private resume × FOX JD, one Groq drafting run of 12 proposals and 5 questions): the same proposals and choices applied through `/api/tailor` and through the Streamlit page's argument building gave identical DOCX text (30 paragraphs), the same match rate and a PDF each, both for "accept all" (31.6%) and for "reject one, edit one, tick a question" (35.5%). Then removed `app/ui.py`, the `streamlit` dependency, its AppTest tests (covered now by the web flow tests and `test_api.py`; the HTML/emoji helpers `diff_html` and `status_badge` went with it, their diff tests rewritten for `diff_spans`), and Streamlit from README, BUILD, PROJECT_OVERVIEW and the docs generator. The "forget saved answers" button went too: web visitors' answers live only in their session |
 | P5.7 | Public-hosting hardening: Dockerfile (Python + LibreOffice + built web app), HTTPS-only secure cookie, no resume kept beyond the session (today `RunManager` copies inputs to `data/runs/`), saved gap answers per visitor instead of the shared file store, privacy note, LLM cost decision (paid key with per-visitor caps vs bring-your-own-key; the Groq free tier allows ~15 full runs a day) | `app/api/`, `services/`, deploy | — | ⬜ | Carried over from the P5.1 review: progress messages contain server paths (scrub them); `data/runs/` copies of every upload; raw LLM error text in proposal notes; rate limiter keys on the proxy's IP behind a reverse proxy (`--proxy-headers`), never forgets idle IPs, and doesn't cover `/match-preview` or `/preview` (cache rendered pages); body size limit at the proxy, length caps on JD and free-text fields, .docx zip-bomb limits; global cap on concurrent runs (each SSE run holds a threadpool slot; ~40 stall the server) and a separate LibreOffice profile per conversion; dedicated temp dir wiped at startup; sessions are in-memory, so one worker process (or Redis); hide `/api/docs`; stop work when the visitor disconnects |
+
+## Phase 6: UI redesign
+
+Decided 2026-10-01: the owner finds the Succession look too dark with a poor colour combination. A **new visual world**
+replaces it (behaviour, copy and flow unchanged), chosen through Impeccable's direction round (`.claude/skills/impeccable`,
+product context in `PRODUCT.md`). Owner choices: a **3D resume page** on the landing hero that tilts with the cursor and
+re-writes its bullets as keywords light up, a **living fluid background** behind it, **depth in the work screens**
+(cards lift, accepted changes stack into a resume preview), theme **follows the system** (light and dark both
+redesigned), WCAG 2.2 AA. 3D via React Three Fiber, loaded only on the landing; supporting parts adapted from the
+Magic UI registry (MCP in `.mcp.json`).
+
+| ID | Action | Files | Resolves | Status | Notes |
+|---|---|---|---|---|---|
+| P6.1 | Baseline: screenshots of every screen (1440 / 390 px, light + dark), Impeccable critique + audit + detector, ranked findings | `web/` | — | ✅ | 2026-10-01: 24 screenshots (6 screens × 1440/390 × dark/light) from one Groq run on the replica PDF fixture; no console errors; static detector clean. Nielsen score 28/40. Ranked findings: (1) everything is low-luminance: dark default, muted text and gold on near-black, and gold doing every job (primary action, step state, labels, borders, focus), so nothing stands out; the light theme is sepia, not bright; (2) Review is very long (4,600 px desktop, 7,300 px phone) with every card and gap question open and, on phones, Generate only at the very bottom; (3) the score story undercuts the product: Results can show "39% → 39%" with identical bars right after "5 bullets rewritten", with no reason or next step; (4) diffs are hard to read in dark (struck words, faint highlight, keyword bold barely distinct), and that comparison is the core task; (5) the drafting wait is an empty page with one line of status; (6) type: Cormorant display + tiny wide-tracked caps labels (11–13 px) reads as a stock editorial look and strains small text; (7) the landing hero is text only and doesn't show the mechanism; hero CTAs repeat the form's submit; (8) Report marks required keywords with red dashed tags (red reads as error; found vs missing told apart only by border style); (9) gap-question copy is generated awkwardly ("I have used Collaborate", "I have used ML"). Strengths kept: clear 4-step flow, honest copy, accept/reject/edit with reasons, exact-PDF preview, AA and keyboard groundwork. Backend issue seen (not design): the report lists "Proficient in Python … PyTorch and XGBoost" as not shown while all three keywords are found |
+| P6.2 | Direction round: candidate worlds on Impeccable's decision page (code-led), owner picks one, direction contract in the landing surface brief | `.impeccable/` | — | ⬜ | |
+| P6.3 | New tokens (both themes, role names instead of `gold`), font pairing, theme default `system`, restyled shell (Header, Stepper, Button, Field, SettingsPopover) | `web/src/styles.css`, `web/index.html`, `web/src/lib/useTheme.ts`, `web/src/components/` | — | ⬜ | |
+| P6.4 | Landing: 3D resume scene + fluid shader field (lazy-loaded, reduced-motion still frame, no-WebGL fallback, pauses offscreen), rest of the landing in the new world | `web/src/pages/Landing.tsx`, `web/src/components/hero/` | — | ⬜ | |
+| P6.5 | Operate screens (Details, Report, Review, Results, progress) in the new world, with depth: card lift, accepted changes stacking into a preview, count-up scores, keyword highlighter | `web/src/pages/`, `web/src/components/` | — | ⬜ | |
+| P6.6 | Finish: screenshot round, detector, finish reviewer, `DESIGN.md` via the documenter, private real-resume run, check-in | `DESIGN.md`, docs | — | ⬜ | |
 
 ---
 
