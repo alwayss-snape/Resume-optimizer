@@ -1,0 +1,133 @@
+{
+  "title": "Choose Tailor's new look",
+  "question": "Four complete directions for the new Tailor. Every one is bright by default, has a matching dark mode, keeps the 3D resume and fluid background on the landing, and carries into Review and Results. Pick one, steer it, or re-roll.",
+  "options": [
+    {
+      "id": "assigned",
+      "label": "Precision Instrument",
+      "kicker": "THE ROLL",
+      "lineage": "calibrated lab meters and measuring stages",
+      "thesis": "Tailor as an honest measuring instrument: your resume is the sample, the match rate is a calibrated reading.",
+      "palette": ["#F3F4F1", "#FFFFFF", "#15171A", "#5B6168", "#E2511F", "#1E8A5A", "#1A1C20"],
+      "materials": ["enamelled faceplate", "engraved tick scales", "anodised graphite (dark mode)"],
+      "viewport": "Left: headline and the two actions. Right: the 3D resume lies on a lit measuring stage; a scan line sweeps it, a bullet rewrites, matched keywords tick on and the needle climbs into the green target band. Behind: a slow flowing iso-line field like a calibration pattern.",
+      "risk": "Can feel clinical for a stressed job seeker; the metaphor is strongest for the score and needs care on the rewriting screens.",
+      "raised": [
+        { "from": "challenger-multiplane", "raise": "Depth as layers moving at different speeds: field, faceplate and resume sample parallax as three planes, which carries the depth on Review and Results." },
+        { "from": "challenger-azulejo", "raise": "Total palette commitment: two inks (graphite on white enamel) and one signal colour, nothing else." },
+        { "from": "challenger-detector", "raise": "Evidence strength drawn as line weight: exact matches heavy, similar-wording matches light, on the report and Review." },
+        { "from": "challenger-telop", "raise": "Scale follows importance: required keywords and the score set larger, everything else steps down." },
+        { "from": "challenger-mezzotint", "raise": "One light source: the tailored resume is the brightest object on every screen." }
+      ],
+      "wireframe": { "cols": 12, "rows": 10, "regions": [
+        { "label": "wordmark + steps", "x": 0, "y": 0, "w": 12, "h": 1 },
+        { "label": "headline + 2 actions", "x": 0, "y": 2, "w": 5, "h": 4 },
+        { "label": "3D resume on measuring stage", "x": 6, "y": 1, "w": 6, "h": 6, "accent": true },
+        { "label": "needle meter + target band", "x": 7, "y": 7, "w": 4, "h": 2 },
+        { "label": "upload + job (below fold)", "x": 0, "y": 8, "w": 6, "h": 2 }
+      ] }
+    },
+    {
+      "id": "model-pick",
+      "label": "Editor's Proof",
+      "kicker": "IMPECCABLE’S PICK",
+      "lineage": "copy editors' proof sheets and margin marks",
+      "thesis": "Every change shown the way an editor marks a proof: struck, inserted, explained in the margin, and yours to keep or reverse.",
+      "palette": ["#F6F6F3", "#FFFFFF", "#1B1B1F", "#2F62D8", "#C93A2F", "#F2D43D", "#16171B"],
+      "materials": ["bright bond paper", "blue editing pencil", "red proof marks", "ink bleeding in water (fluid field)"],
+      "viewport": "A printed proof of a sample resume on the desk in 3D, tilting with the cursor; proof marks draw themselves: a caret inserts a keyword, a stroke removes a filler word, a margin note says why. Blue ink diffuses slowly behind it.",
+      "risk": "Familiar: editorial looks are where many runs in this category land, and red marks can read as criticism of the user's writing."
+    },
+    {
+      "id": "challenger-zine",
+      "label": "Highlighter Explainer",
+      "verdict": "competitive",
+      "lineage": "hand-drawn technical zines",
+      "thesis": "Tailor explains itself like a friend with highlighters: swipes mark matched keywords, arrows run from your words to the rewrite.",
+      "palette": ["#FFFFFF", "#141414", "#FFD84A", "#FF6FA8", "#1FB5A8", "#1A1A1A"],
+      "materials": ["marker ink", "highlighter swipes", "doodled arrows"],
+      "viewport": "Marker headline with a highlighter swipe; the 3D resume with yellow swipes landing on keywords and a drawn arrow to the improved bullet; numbered steps sketched below.",
+      "case": "Fuses cleanly: highlighters are how people already match a job ad to a resume; wins on clarity, loses on audience identification (too playful for senior candidates and for the calm, no-hype voice).",
+      "risk": "Can read as a toy; mascots and doodles undercut trust at a stressful moment.",
+      "hero": "https://impeccable.style/worlds/cards/hand-drawn-zine-explainer-hero.webp"
+    },
+    {
+      "id": "challenger-azulejo",
+      "label": "Azulejo Hall",
+      "verdict": "declined",
+      "lineage": "tin-glazed tile station halls",
+      "thesis": "Cobalt on milk-white tiles, panels framed by borders.",
+      "palette": ["#F7F6F1", "#1D3FA6", "#C99A2E"],
+      "materials": ["glazed tile", "cobalt wash"],
+      "viewport": "A tiled hall with the resume painted across the grid.",
+      "case": "Fuses poorly: job seekers do not identify with heritage tilework, and ornament competes with the text being compared.",
+      "kept": "Total two-ink palette commitment.",
+      "risk": "Ornamental; slow to scan.",
+      "hero": "https://impeccable.style/worlds/cards/architecture-places-azulejo-station-hall-hero.webp"
+    },
+    {
+      "id": "challenger-multiplane",
+      "label": "Multiplane Dawn",
+      "verdict": "declined",
+      "lineage": "multiplane cel animation",
+      "thesis": "Painted planes sliding at different speeds.",
+      "palette": ["#2F4A35", "#9FB2BF", "#3B2A1E", "#E6A845"],
+      "materials": ["gouache planes", "mist"],
+      "viewport": "The resume on the nearest plane, forest behind.",
+      "case": "Fuses poorly: a storybook forest says nothing about resumes or job applications.",
+      "kept": "Depth as planes moving at different speeds.",
+      "risk": "Decorative; heavy painted assets."
+    },
+    {
+      "id": "challenger-detector",
+      "label": "Event Display",
+      "verdict": "declined",
+      "lineage": "particle-detector event displays",
+      "thesis": "Tracks curling through detector rings.",
+      "palette": ["#08090C", "#5D7895", "#F4D03F", "#36D1DC", "#E0483E"],
+      "materials": ["vacuum black", "signal tracks"],
+      "viewport": "Keywords as tracks through rings.",
+      "case": "Fuses poorly, and it is dark-first, which the owner ruled out.",
+      "kept": "Confidence written as line weight.",
+      "risk": "Dark and abstract."
+    },
+    {
+      "id": "challenger-mezzotint",
+      "label": "Mezzotint Night",
+      "verdict": "declined",
+      "lineage": "mezzotint printmaking",
+      "thesis": "Images burnished out of velvet black.",
+      "palette": ["#0B0A09", "#D9D6CF", "#6B4E37"],
+      "materials": ["rocked plate", "burnished light"],
+      "viewport": "The resume emerging from black.",
+      "case": "Fuses poorly: black-first, the opposite of the brief.",
+      "kept": "One light source: the result is the brightest thing.",
+      "risk": "Dark."
+    },
+    {
+      "id": "challenger-telop",
+      "label": "Telop Captions",
+      "verdict": "declined",
+      "lineage": "variety-show caption fields",
+      "thesis": "Outlined captions sized to emotion.",
+      "palette": ["#FFE14D", "#E5322D", "#1F6FEB", "#FFFFFF"],
+      "materials": ["outlined type", "drop shadows"],
+      "viewport": "Keywords pop as captions over the resume.",
+      "case": "Fuses poorly: loud and comic against a calm, trustworthy voice.",
+      "kept": "Scale mapped to importance.",
+      "risk": "Noisy."
+    }
+  ],
+  "reroll": { "registers": ["safer", "bolder"] },
+  "buildPath": { "value": "code", "toggle": false },
+  "canon": true,
+  "canonCard": {
+    "label": "The category standard",
+    "thesis": "A clean modern resume tool, executed impeccably: white, one blue accent, rounded cards, soft shadows.",
+    "palette": ["#FFFFFF", "#0F172A", "#2563EB", "#F1F5F9"],
+    "materials": ["clean grid", "soft shadows"],
+    "viewport": "Headline and actions on the left, the 3D resume floating on the right over a soft blue gradient field.",
+    "risk": "Looks like every other resume tool by design."
+  },
+  "steer": true
+}

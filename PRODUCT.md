@@ -47,8 +47,10 @@ closely, so long reading and side-by-side text comparison are central.
 
 - Name: **Tailor**, with the descriptor "Resume Studio".
 - Voice: plain, calm, specific wording; no hype; state limits honestly (for example "Nothing is invented").
-- The current "Succession" look (near-black, cream, muted gold) was the approved starting point, but on 2026-10-01 the
-  owner judged it too dark with a poor colour combination; it is open for revision.
+- Visual world (chosen by the owner 2026-10-01, replacing the dark "Succession" look): **Editor's Proof**, changes
+  shown the way an editor marks a proof. Bright by default with a matching dark mode that follows the system. The
+  direction contract lives in `.impeccable/surfaces/web-src-pages-landing-tsx.md`; `DESIGN.md` is written when the
+  build is finished.
 
 ## Evidence on Hand
 

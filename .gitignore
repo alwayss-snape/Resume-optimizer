@@ -40,3 +40,6 @@ data/profile/
 # Claude Code: per-machine settings and Impeccable's engine binary (re-downloaded by its launcher)
 .claude/settings.local.json
 .claude/skills/impeccable/scripts/bin/
+
+# Impeccable decision-page session logs
+.impeccable/questions/
