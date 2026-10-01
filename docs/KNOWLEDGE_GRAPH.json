@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "source_hash": "3f9fd589eaaff552",
+  "source_hash": "c45047a1b151c30b",
   "stats": {
     "files": 135,
     "python_files": 112,
@@ -217,7 +217,7 @@
       "type": "file",
       "layer": "Root",
       "stages": [],
-      "lines": 87
+      "lines": 100
     },
     {
       "id": "CLAUDE.md",

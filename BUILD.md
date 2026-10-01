@@ -85,3 +85,16 @@ uvicorn app.api.main:app --reload --port 8000
 
 Interactive API docs at http://localhost:8000/api/docs. Settings: `API_SESSION_TTL_MINUTES` (60),
 `API_MAX_UPLOAD_MB` (5), `API_RATE_LIMIT_PER_HOUR` (30). Once `web/` is built, its `dist/` is served at `/`.
+
+### Web UI (P5.2+; React, in `web/`)
+
+Needs Node 20+ (developed on Node 22: `brew install node@22`, then put `/opt/homebrew/opt/node@22/bin` first on
+`PATH`).
+
+```bash
+cd web
+npm install
+npm run dev        # http://localhost:5173, proxies /api to the API on :8000 (start uvicorn too)
+npm test           # Vitest component tests
+npm run build      # type-check + production build into web/dist, which FastAPI then serves at /
+```

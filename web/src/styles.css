@@ -1,0 +1,86 @@
+@import "tailwindcss";
+
+/* Design tokens (P5.2). Dark is the house look; light is cream paper with
+   ink. Every colour pair used for text meets WCAG AA (4.5:1). */
+:root,
+[data-theme="dark"] {
+  --bg: #0e0e0c;
+  --panel: #171714;
+  --panel-2: #1f1e1a;
+  --line: #2a2823;
+  --line-strong: #4a463c;
+  --field: #6e685c; /* input borders: 3:1 on panels (WCAG 1.4.11) */
+  --ink: #ede6d6;
+  --muted: #a39c8c;
+  --gold: #b89b5e;
+  --gold-hover: #d4ba82;
+  --on-gold: #0e0e0c;
+  --gold-soft: rgb(184 155 94 / 0.16);
+  --danger: #c2766f;
+  --success: #8fa88a;
+  --success-line: #4f5e4c;
+  --paper: #f4efe4;
+  color-scheme: dark;
+}
+
+[data-theme="light"] {
+  --bg: #f4efe4;
+  --panel: #fbf8f1;
+  --panel-2: #efe8da;
+  --line: #ddd4c2;
+  --line-strong: #b9ad95;
+  --field: #8c826e;
+  --ink: #1a1a17;
+  --muted: #5e584c;
+  --gold: #7a5f28;
+  --gold-hover: #5f4a1e;
+  --on-gold: #fbf8f1;
+  --gold-soft: rgb(122 95 40 / 0.12);
+  --danger: #9a3b34;
+  --success: #4f6b4a;
+  --success-line: #9db497;
+  --paper: #ffffff;
+  color-scheme: light;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-panel: var(--panel);
+  --color-panel-2: var(--panel-2);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-field: var(--field);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-gold: var(--gold);
+  --color-gold-hover: var(--gold-hover);
+  --color-on-gold: var(--on-gold);
+  --color-gold-soft: var(--gold-soft);
+  --color-danger: var(--danger);
+  --color-success: var(--success);
+  --color-success-line: var(--success-line);
+  --color-paper: var(--paper);
+  --font-display: "Cormorant Garamond", "Iowan Old Style", Georgia, serif;
+  --font-sans: "Instrument Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+html {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+}
+
+:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+}
+
+::selection {
+  background: var(--gold-soft);
+}
