@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "2a917c9936a33891",
+  "source_hash": "6b66bb1c803b8580",
   "stats": {
     "files": 129,
     "python_files": 106,
     "app_modules": 50,
     "test_files": 48,
     "classes": 89,
-    "functions": 763,
-    "lines_of_python": 16311
+    "functions": 768,
+    "lines_of_python": 16371
   },
   "axes": {
     "x": "location (path)",
@@ -547,7 +547,7 @@
       "stages": [
         "2 Normalize"
       ],
-      "lines": 719,
+      "lines": 720,
       "doc": "",
       "classes": [
         {
@@ -1394,7 +1394,7 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 458,
+      "lines": 462,
       "doc": "Run evaluation cases through the pipeline and collect metrics (P4.1).",
       "classes": [
         {
@@ -1501,27 +1501,27 @@
         },
         {
           "name": "run",
-          "line": 362,
+          "line": 366,
           "doc": ""
         },
         {
           "name": "_flatten",
-          "line": 382,
+          "line": 386,
           "doc": ""
         },
         {
           "name": "compare",
-          "line": 399,
+          "line": 403,
           "doc": "Human-readable differences per case between a report and a baseline."
         },
         {
           "name": "_judge_summary",
-          "line": 427,
+          "line": 431,
           "doc": ""
         },
         {
           "name": "summary_lines",
-          "line": 433,
+          "line": 437,
           "doc": ""
         }
       ]
@@ -1534,37 +1534,37 @@
         "7 Rewrite",
         "8 Validate"
       ],
-      "lines": 103,
+      "lines": 109,
       "doc": "LLM-as-judge for the evaluation harness (P4.3).",
       "classes": [
         {
           "name": "ResumeJudge",
-          "line": 36,
+          "line": 37,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
-              "line": 37,
+              "line": 38,
               "doc": ""
             },
             {
               "name": "_ask",
-              "line": 40,
+              "line": 41,
               "doc": ""
             },
             {
               "name": "rubric",
-              "line": 45,
+              "line": 46,
               "doc": ""
             },
             {
               "name": "prefer",
-              "line": 50,
+              "line": 51,
               "doc": ""
             },
             {
               "name": "judge",
-              "line": 56,
+              "line": 58,
               "doc": "Rubric + position-swapped pairwise for one case. A failed call is"
             }
           ]
@@ -1573,17 +1573,22 @@
       "functions": [
         {
           "name": "_prompt",
-          "line": 26,
+          "line": 27,
           "doc": ""
         },
         {
           "name": "judge_client",
-          "line": 31,
+          "line": 32,
+          "doc": ""
+        },
+        {
+          "name": "_one_line",
+          "line": 83,
           "doc": ""
         },
         {
           "name": "report_markdown",
-          "line": 81,
+          "line": 87,
           "doc": "A dated, human-readable judge report for a run."
         }
       ]
@@ -3462,7 +3467,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 138,
+      "lines": 153,
       "doc": "P2.5: the rendered template must read back exactly as rendered, and the",
       "classes": [],
       "functions": [
@@ -3510,6 +3515,11 @@
           "name": "test_degree_dates_are_not_also_the_location",
           "line": 124,
           "doc": "Live judge finding: institution line, then 'Degree<tab>dates' put the"
+        },
+        {
+          "name": "test_institution_dates_are_not_the_location",
+          "line": 141,
+          "doc": ""
         }
       ]
     },
@@ -4098,7 +4108,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 86,
+      "lines": 120,
       "doc": "P4.3: LLM-as-judge (rubric + position-swapped pairwise), with a fake",
       "classes": [],
       "functions": [
@@ -4135,6 +4145,21 @@
         {
           "name": "test_think_blocks_are_stripped_from_json",
           "line": 77,
+          "doc": ""
+        },
+        {
+          "name": "test_pairwise_answer_normalisation",
+          "line": 89,
+          "doc": ""
+        },
+        {
+          "name": "test_report_bullets_stay_on_one_line",
+          "line": 97,
+          "doc": ""
+        },
+        {
+          "name": "test_replay_judges_the_newest_file",
+          "line": 106,
           "doc": ""
         }
       ]

@@ -136,3 +136,18 @@ def test_degree_dates_are_not_also_the_location(tmp_path):
     edu = ResumeNormalizer().normalize(DocxParser().parse(path))[0].resume.education[0]
     assert (edu.institution, edu.degree, edu.dates, edu.location) == (
         "Lakeside State University", "B.S. in Computer Science", "2021 - 2025", None)
+
+
+def test_institution_dates_are_not_the_location(tmp_path):
+    from app.analysis.resume_normalizer import ResumeNormalizer
+    from app.ingestion.docx import DocxParser
+    d = docx.Document()
+    d.add_paragraph().add_run("Avery Lee").bold = True
+    d.add_paragraph().add_run("EDUCATION").bold = True
+    d.add_paragraph("Lakeside State University\t2021 - 2025")
+    d.add_paragraph("B.S. in Computer Science\tChennai, India")
+    path = str(tmp_path / "e2.docx")
+    d.save(path)
+    edu = ResumeNormalizer().normalize(DocxParser().parse(path))[0].resume.education[0]
+    assert (edu.institution, edu.degree, edu.dates, edu.location) == (
+        "Lakeside State University", "B.S. in Computer Science", "2021 - 2025", "Chennai, India")

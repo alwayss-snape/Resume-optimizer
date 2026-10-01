@@ -602,7 +602,8 @@ class ResumeNormalizer:
                         current_edu = Education(id=edu_id, institution="", degree=body, dates=dates,
                                                 location=right_col if right_col and right_col != dates else None)
                     elif has_date:
-                        current_edu = Education(id=edu_id, institution=body, degree="", location=right_col, dates=dates)
+                        current_edu = Education(id=edu_id, institution=body, degree="", dates=dates,
+                                                location=right_col if right_col and right_col != dates else None)
                     else:
                         # No date on this line yet — treat as the institution
                         # (+ location) line; a following line may complete it

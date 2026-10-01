@@ -84,3 +84,37 @@ def test_think_blocks_are_stripped_from_json():
         result = LLMClient(provider="ollama", model="m").generate_json([{"role": "user", "content": "q"}],
                                                                        JudgePairwise)
     assert result.winner == "A"
+
+
+def test_pairwise_answer_normalisation():
+    for answer, expected in (("A", "A"), ("a", "A"), ("A.", "A"), ("Resume A", "A"), ("version b", "B"),
+                             ("tie", "TIE"), ("Both", "TIE"), ("", "TIE")):
+        client = MagicMock(provider="groq", model="m")
+        client.generate_json.return_value = JudgePairwise(winner=answer)
+        assert ResumeJudge(client).prefer("JD", "a", "b") == expected, answer
+
+
+def test_report_bullets_stay_on_one_line():
+    report = {"generated_at": "t", "mode": "live", "cases": {"x": {"judge": {
+        "judge_model": "m", "rubric": {k: 3 for k in ("relevance", "clarity", "faithfulness", "ats_readability",
+                                                       "overall")},
+        "unsupported_claims": ["line one\nline two"], "pairwise_error": "boom\nmore"}}}}
+    md = report_markdown(report)
+    assert "- line one line two" in md and "**pairwise_error:** boom more" in md
+
+
+def test_replay_judges_the_newest_file(tmp_path, monkeypatch):
+    import os, time
+    import app.eval.harness as harness
+    folder = tmp_path / "sample-docx"
+    folder.mkdir()
+    shutil.copy("tests/fixtures/resumes/sample.docx", folder / "A_old.docx")
+    time.sleep(0.01)
+    shutil.copy("tests/fixtures/resumes/sample.docx", folder / "Z_new.docx")
+    os.utime(folder / "A_old.docx", (1, 1))
+    picked = {}
+    monkeypatch.setattr(harness, "_docx_text", lambda path: picked.setdefault("path", path) or "text")
+    monkeypatch.setattr(harness, "_judge", lambda jd, o, t: {"judge_model": "fake"})
+    case = Case(name="sample-docx", resume="tests/fixtures/resumes/sample.docx", jd="tests/fixtures/jds/sample.txt")
+    replay_case(case, str(tmp_path))
+    assert picked["path"].endswith("Z_new.docx")

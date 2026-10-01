@@ -349,14 +349,18 @@ def replay_case(case: Case, replay_dir: str) -> Dict:
     from app.services.tailor import TailorService
 
     folder = os.path.join(replay_dir, case.name)
-    docs = sorted(f for f in os.listdir(folder) if f.endswith(".docx")) if os.path.isdir(folder) else []
+    docs = [os.path.join(folder, f) for f in os.listdir(folder)
+            if f.endswith(".docx") and not f.startswith("~$")] if os.path.isdir(folder) else []
     if not docs:
         return {"private": case.private, "error": f"no tailored .docx in {folder}"}
+    if len(docs) > 1:
+        logger.warning("%s: %d tailored files in %s; judging the newest", case.name, len(docs), folder)
+    docs = [max(docs, key=os.path.getmtime)]  # a reused --out-dir can hold an older run's file
     with open(case.jd, encoding="utf-8") as f:
         jd_text = f.read()
     raw_doc = TailorService(llm_client=OfflineLLM()).parse_resume(case.resume)[0]
     return {"private": case.private,
-            "judge": _judge(jd_text, raw_doc.raw_text, _docx_text(os.path.join(folder, docs[0])))}
+            "judge": _judge(jd_text, raw_doc.raw_text, _docx_text(docs[0]))}
 
 
 def run(cases: List[Case], *, live: bool = False, tailor: bool = False, out_dir: Optional[str] = None,

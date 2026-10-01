@@ -14,6 +14,7 @@ Three judge calls per case. Used by `python -m app.eval run --live --tailor
 --judge` and, without regenerating anything, `--replay DIR`.
 """
 import os
+import re
 from typing import Dict, Optional
 
 from app.config.settings import settings
@@ -50,8 +51,9 @@ class ResumeJudge:
     def prefer(self, jd: str, a: str, b: str) -> str:
         result = self._ask(_prompt("judge_pairwise.txt"),
                            f"JOB DESCRIPTION:\n{jd}\n\nRESUME A:\n{a}\n\nRESUME B:\n{b}", JudgePairwise)
-        winner = (result.winner or "").strip().upper()
-        return winner if winner in ("A", "B") else "TIE"
+        # "A", "a", "A.", "Resume A", "Version B" -> A / B; anything else is a tie.
+        m = re.fullmatch(r"\s*(?:resume|version)?\s*([AB])\W*", result.winner or "", re.IGNORECASE)
+        return m.group(1).upper() if m else "TIE"
 
     def judge(self, jd: str, original: str, tailored: str) -> Dict:
         """Rubric + position-swapped pairwise for one case. A failed call is
@@ -78,6 +80,10 @@ class ResumeJudge:
         return out
 
 
+def _one_line(text) -> str:
+    return " ".join(str(text).split())
+
+
 def report_markdown(report: Dict) -> str:
     """A dated, human-readable judge report for a run."""
     lines = [f"# Judge report: {report['generated_at']}", "", f"Mode: {report['mode']}", ""]
@@ -92,12 +98,12 @@ def report_markdown(report: Dict) -> str:
             for title, key in (("Unsupported claims", "unsupported_claims"), ("Strengths", "strengths"),
                                ("Weaknesses", "weaknesses")):
                 if j.get(key):
-                    lines += [f"**{title}:**"] + [f"- {x}" for x in j[key]] + [""]
+                    lines += [f"**{title}:**"] + [f"- {_one_line(x)}" for x in j[key]] + [""]
         if "pairwise" in j:
             p = j["pairwise"]
             lines += [f"**Pairwise (positions swapped):** {p['verdict']} "
                       f"(tailored won {p['tailored_wins']} of 2, original {p['original_wins']} of 2)", ""]
         for key in ("rubric_error", "pairwise_error"):
             if j.get(key):
-                lines += [f"**{key}:** {j[key]}", ""]
+                lines += [f"**{key}:** {_one_line(j[key])}", ""]
     return "\n".join(lines)

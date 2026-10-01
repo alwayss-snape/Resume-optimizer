@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**50 app modules · 48 test files · 89 classes · 763 functions/methods · 16,311 lines of Python** · source hash `2a917c9936a33891`
+**50 app modules · 48 test files · 89 classes · 768 functions/methods · 16,371 lines of Python** · source hash `6b66bb1c803b8580`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -290,7 +290,7 @@ _Keyword-level match rate, the headline score (P1.2)._
 
 ### `app/analysis/resume_normalizer.py`
 
-**Layer:** Analysis · **Stage:** 2 Normalize · **Lines:** 719
+**Layer:** Analysis · **Stage:** 2 Normalize · **Lines:** 720
 
 - class **`ResumeNormalizer`** ([app/analysis/resume_normalizer.py:8](../app/analysis/resume_normalizer.py#L8))
   - `_header_urls()` :40
@@ -559,7 +559,7 @@ _Canonical projection of a parsed resume, compared against hand-checked_
 
 ### `app/eval/harness.py`
 
-**Layer:** Root · **Stage:** all · **Lines:** 458
+**Layer:** Root · **Stage:** all · **Lines:** 462
 
 _Run evaluation cases through the pipeline and collect metrics (P4.1)._
 
@@ -582,30 +582,31 @@ _Run evaluation cases through the pipeline and collect metrics (P4.1)._
 - function **`check_expected()`** ([app/eval/harness.py:278](../app/eval/harness.py#L278)) — Compare a run with the case's expected.json; one message per miss.
 - function **`_judge()`** ([app/eval/harness.py:335](../app/eval/harness.py#L335)) — Judge one tailored resume (P4.3) and record what the judge cost.
 - function **`replay_case()`** ([app/eval/harness.py:346](../app/eval/harness.py#L346)) — Judge the tailored output a previous run saved in replay_dir/<case>/
-- function **`run()`** ([app/eval/harness.py:362](../app/eval/harness.py#L362))
-- function **`_flatten()`** ([app/eval/harness.py:382](../app/eval/harness.py#L382))
-- function **`compare()`** ([app/eval/harness.py:399](../app/eval/harness.py#L399)) — Human-readable differences per case between a report and a baseline.
-- function **`_judge_summary()`** ([app/eval/harness.py:427](../app/eval/harness.py#L427))
-- function **`summary_lines()`** ([app/eval/harness.py:433](../app/eval/harness.py#L433))
+- function **`run()`** ([app/eval/harness.py:366](../app/eval/harness.py#L366))
+- function **`_flatten()`** ([app/eval/harness.py:386](../app/eval/harness.py#L386))
+- function **`compare()`** ([app/eval/harness.py:403](../app/eval/harness.py#L403)) — Human-readable differences per case between a report and a baseline.
+- function **`_judge_summary()`** ([app/eval/harness.py:431](../app/eval/harness.py#L431))
+- function **`summary_lines()`** ([app/eval/harness.py:437](../app/eval/harness.py#L437))
 - **Imports:** `analysis/experience.py`, `analysis/jd_analyzer.py`, `analysis/keyword_match.py`, `domain/report.py`, `eval/golden.py`, `eval/judge.py`, `llm/client.py`, `rendering/layout.py`, `services/tailor.py`
 - **Imported by:** `eval/__main__.py`
 - **Tested by:** `tests/integration/test_eval_cases.py`, `tests/unit/test_cli_parity.py`, `tests/unit/test_eval_harness.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_judge.py`, `tests/unit/test_profile_store.py`
 
 ### `app/eval/judge.py`
 
-**Layer:** Root · **Stage:** 7 Rewrite, 8 Validate · **Lines:** 103
+**Layer:** Root · **Stage:** 7 Rewrite, 8 Validate · **Lines:** 109
 
 _LLM-as-judge for the evaluation harness (P4.3)._
 
-- class **`ResumeJudge`** ([app/eval/judge.py:36](../app/eval/judge.py#L36))
-  - `__init__()` :37
-  - `_ask()` :40
-  - `rubric()` :45
-  - `prefer()` :50
-  - `judge()` :56 — Rubric + position-swapped pairwise for one case. A failed call is
-- function **`_prompt()`** ([app/eval/judge.py:26](../app/eval/judge.py#L26))
-- function **`judge_client()`** ([app/eval/judge.py:31](../app/eval/judge.py#L31))
-- function **`report_markdown()`** ([app/eval/judge.py:81](../app/eval/judge.py#L81)) — A dated, human-readable judge report for a run.
+- class **`ResumeJudge`** ([app/eval/judge.py:37](../app/eval/judge.py#L37))
+  - `__init__()` :38
+  - `_ask()` :41
+  - `rubric()` :46
+  - `prefer()` :51
+  - `judge()` :58 — Rubric + position-swapped pairwise for one case. A failed call is
+- function **`_prompt()`** ([app/eval/judge.py:27](../app/eval/judge.py#L27))
+- function **`judge_client()`** ([app/eval/judge.py:32](../app/eval/judge.py#L32))
+- function **`_one_line()`** ([app/eval/judge.py:83](../app/eval/judge.py#L83))
+- function **`report_markdown()`** ([app/eval/judge.py:87](../app/eval/judge.py#L87)) — A dated, human-readable judge report for a run.
 - **Imports:** `config/settings.py`, `llm/client.py`, `llm/schemas.py`
 - **Imported by:** `eval/__main__.py`, `eval/harness.py`
 - **Tested by:** `tests/unit/test_judge.py`
