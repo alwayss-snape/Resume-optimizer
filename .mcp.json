@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "magicuidesign-mcp": {
+      "command": "/opt/homebrew/opt/node@22/bin/npx",
+      "args": ["-y", "@magicuidesign/mcp@latest"],
+      "env": {
+        "PATH": "/opt/homebrew/opt/node@22/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+      }
+    }
+  }
+}

@@ -36,3 +36,7 @@ Claude outputs/
 data/eval/private/
 # Confirmed facts reused across JDs (P3.2): personal data
 data/profile/
+
+# Claude Code: per-machine settings and Impeccable's engine binary (re-downloaded by its launcher)
+.claude/settings.local.json
+.claude/skills/impeccable/scripts/bin/
