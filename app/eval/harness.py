@@ -154,8 +154,12 @@ def run_case(case: Case, *, live: bool = False, tailor: bool = False, out_dir: O
 
         tailored = None
         if tailor:
+            from app.analysis.experience import years_of_experience, years_phrase
+            # The summary's "4+ years" is computed from the role dates (P1.5),
+            # so it counts as coming from the resume.
+            source = f"{raw_doc.raw_text}\n{years_phrase(years_of_experience(resume)) or ''}"
             metrics["tailor"], tailored = _tailor_metrics(service, case, jd_text, parsed, generated, out_dir,
-                                                          source_text=raw_doc.raw_text, job=job)
+                                                          source_text=source, job=job)
 
         if case.expected and os.path.exists(case.expected):
             with open(case.expected, encoding="utf-8") as f:

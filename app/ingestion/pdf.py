@@ -61,6 +61,15 @@ def _is_bold_span(span: dict) -> bool:
     return bool(span.get("flags", 0) & 16) or "bold" in span.get("font", "").lower()
 
 
+def _join_wrapped(prev: str, nxt: str) -> str:
+    """Join a wrapped line to the one before it. A line that breaks after
+    the hyphen of a compound ("end-to-" / "end analytics") rejoins without a
+    space, so "end-to-end" reads back intact."""
+    if prev.endswith("-") and len(prev) > 1 and prev[-2].isalnum() and nxt[:1].isalnum():
+        return f"{prev}{nxt}"
+    return f"{prev} {nxt}"
+
+
 class PdfParser:
     # "●" (U+25CF) is what Google Docs / Word export for a default bullet; the
     # private-use U+F0B7 is Word's Symbol-font bullet.
@@ -91,7 +100,7 @@ class PdfParser:
             is_bullet_start = line.startswith(self.BULLET_PREFIXES)
             starts_lowercase = bool(line) and line[0].islower()
             if merged_lines and starts_lowercase and not is_bullet_start:
-                merged_lines[-1] = f"{merged_lines[-1]} {line}".strip()
+                merged_lines[-1] = _join_wrapped(merged_lines[-1], line).strip()
             else:
                 merged_lines.append(line)
         return merged_lines
@@ -214,7 +223,7 @@ class PdfParser:
             line.text = text
             if items and self._continues(items[-1], line, right_edge):
                 prev = items[-1]
-                prev.text = f"{prev.text} {text}"
+                prev.text = _join_wrapped(prev.text, text)
                 prev.x1, prev.y1 = line.x1, line.y1
                 continue
             items.append(line)

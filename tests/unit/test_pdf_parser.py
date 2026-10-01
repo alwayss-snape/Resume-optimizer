@@ -132,3 +132,10 @@ def test_replica_summary_wrapped_lines_joined_but_labelled_lines_kept_apart():
     assert any(t.startswith("Data Scientist with 4 years") and t.endswith("measurable business outcomes.") for t in texts)
     assert "Tools: PostgreSQL, Tableau, Airflow, GCP, Excel" in texts
     assert "Interests: Chess • Cycling • Photography" in texts
+
+
+def test_line_wrapped_after_a_compound_hyphen_rejoins_without_space():
+    from app.ingestion.pdf import _join_wrapped
+    assert _join_wrapped("into an end-to-", "end analytics framework") == "into an end-to-end analytics framework"
+    assert _join_wrapped("Built dashboards -", "and reports") == "Built dashboards - and reports"
+    assert _join_wrapped("Built the", "pipeline") == "Built the pipeline"

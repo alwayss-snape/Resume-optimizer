@@ -552,6 +552,13 @@ class LLMClient:
                                                    schema_name=schema_model.__name__)
                 except Exception as e:
                     self._record(False, error=str(e))
+                    # Groq sometimes rejects its own strict-mode output
+                    # ("json_validate_failed", often with an empty generation);
+                    # that's transient, so it's retried like invalid JSON.
+                    if "json_validate_failed" in str(e) and attempt < max_retries:
+                        logger.warning(f"Groq strict JSON validation failed on attempt {attempt + 1}; retrying")
+                        last_error = e
+                        continue
                     raise
                 self._record(True, model=response.model_name, response=response)
             else:

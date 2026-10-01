@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "8ec1c1b9b46fe742",
+  "source_hash": "b4d91a8386740e0c",
   "stats": {
     "files": 126,
     "python_files": 104,
     "app_modules": 49,
     "test_files": 47,
     "classes": 86,
-    "functions": 740,
-    "lines_of_python": 15958
+    "functions": 744,
+    "lines_of_python": 16015
   },
   "axes": {
     "x": "location (path)",
@@ -1382,7 +1382,7 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 409,
+      "lines": 413,
       "doc": "Run evaluation cases through the pipeline and collect metrics (P4.1).",
       "classes": [
         {
@@ -1444,57 +1444,57 @@
         },
         {
           "name": "_tailor_metrics",
-          "line": 178,
+          "line": 182,
           "doc": ""
         },
         {
           "name": "attainable_coverage",
-          "line": 218,
+          "line": 222,
           "doc": "Of the JD keywords written verbatim somewhere in the resume, the share"
         },
         {
           "name": "_norm_number",
-          "line": 237,
+          "line": 241,
           "doc": ""
         },
         {
           "name": "fabricated_numbers",
-          "line": 242,
+          "line": 246,
           "doc": "Numbers (with their units) in the tailored resume that the original"
         },
         {
           "name": "stuffing",
-          "line": 252,
+          "line": 256,
           "doc": "Signs of keyword stuffing: tailoring pushed the rate above the target"
         },
         {
           "name": "_docx_text",
-          "line": 262,
+          "line": 266,
           "doc": ""
         },
         {
           "name": "check_expected",
-          "line": 271,
+          "line": 275,
           "doc": "Compare a run with the case's expected.json; one message per miss."
         },
         {
           "name": "run",
-          "line": 328,
+          "line": 332,
           "doc": ""
         },
         {
           "name": "_flatten",
-          "line": 344,
+          "line": 348,
           "doc": ""
         },
         {
           "name": "compare",
-          "line": 361,
+          "line": 365,
           "doc": "Human-readable differences per case between a report and a baseline."
         },
         {
           "name": "summary_lines",
-          "line": 389,
+          "line": 393,
           "doc": ""
         }
       ]
@@ -1593,7 +1593,7 @@
       "stages": [
         "1 Ingest"
       ],
-      "lines": 362,
+      "lines": 371,
       "doc": "",
       "classes": [
         {
@@ -1604,62 +1604,62 @@
         },
         {
           "name": "PdfParser",
-          "line": 64,
+          "line": 73,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
-              "line": 69,
+              "line": 78,
               "doc": ""
             },
             {
               "name": "_ensure_fitz",
-              "line": 72,
+              "line": 81,
               "doc": ""
             },
             {
               "name": "_merge_wrapped_lines",
-              "line": 80,
+              "line": 89,
               "doc": "Text-only fallback for joining word-wrapped lines: a line is joined"
             },
             {
               "name": "_page_lines",
-              "line": 101,
+              "line": 110,
               "doc": ""
             },
             {
               "name": "_attach_right_columns",
-              "line": 123,
+              "line": 132,
               "doc": "A short, right-aligned run printed on the same row as a left-hand"
             },
             {
               "name": "_split_bullet",
-              "line": 170,
+              "line": 179,
               "doc": "Return the bullet text without its glyph, or None if not a bullet."
             },
             {
               "name": "_continues",
-              "line": 177,
+              "line": 186,
               "doc": "Is `line` a word-wrap continuation of the item ending with `prev`?"
             },
             {
               "name": "_assemble",
-              "line": 200,
+              "line": 209,
               "doc": "Join continuation lines onto their bullet/paragraph. Each returned"
             },
             {
               "name": "_body_size",
-              "line": 224,
+              "line": 233,
               "doc": ""
             },
             {
               "name": "_is_heading",
-              "line": 231,
+              "line": 240,
               "doc": ""
             },
             {
               "name": "parse",
-              "line": 247,
+              "line": 256,
               "doc": ""
             }
           ]
@@ -1675,6 +1675,11 @@
           "name": "_is_bold_span",
           "line": 60,
           "doc": ""
+        },
+        {
+          "name": "_join_wrapped",
+          "line": 64,
+          "doc": "Join a wrapped line to the one before it. A line that breaks after"
         }
       ]
     },
@@ -1686,7 +1691,7 @@
         "3 JD analysis",
         "7 Rewrite"
       ],
-      "lines": 641,
+      "lines": 648,
       "doc": "",
       "classes": [
         {
@@ -1790,17 +1795,17 @@
       "functions": [
         {
           "name": "_requested_wait",
-          "line": 597,
+          "line": 604,
           "doc": "How long Groq asks us to wait: the retry-after header, else the"
         },
         {
           "name": "_retry_after_seconds",
-          "line": 613,
+          "line": 620,
           "doc": "Seconds to wait before retrying a 429: the server's `retry-after`"
         },
         {
           "name": "strict_json_schema",
-          "line": 628,
+          "line": 635,
           "doc": "Adapt a Pydantic JSON schema for strict structured-output modes: every"
         }
       ]
@@ -2440,7 +2445,7 @@
       "stages": [
         "10 Report"
       ],
-      "lines": 37,
+      "lines": 40,
       "doc": "",
       "classes": [
         {
@@ -4051,7 +4056,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 335,
+      "lines": 352,
       "doc": "",
       "classes": [
         {
@@ -4186,6 +4191,11 @@
           "name": "test_groq_daily_limit_fails_fast_with_a_clear_message",
           "line": 325,
           "doc": "A 429 asking for a wait longer than we'd sleep (the daily token"
+        },
+        {
+          "name": "test_groq_strict_json_validate_failed_is_retried",
+          "line": 338,
+          "doc": "Groq's transient 'json_validate_failed' (empty generation) gets the"
         }
       ]
     },
@@ -4593,7 +4603,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 134,
+      "lines": 141,
       "doc": "",
       "classes": [],
       "functions": [
@@ -4665,6 +4675,11 @@
         {
           "name": "test_replica_summary_wrapped_lines_joined_but_labelled_lines_kept_apart",
           "line": 130,
+          "doc": ""
+        },
+        {
+          "name": "test_line_wrapped_after_a_compound_hyphen_rejoins_without_space",
+          "line": 137,
           "doc": ""
         }
       ]
@@ -5745,7 +5760,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 186,
+      "lines": 196,
       "doc": "",
       "classes": [],
       "functions": [
@@ -5848,6 +5863,11 @@
           "name": "test_jd_sanitize_strips_invisible_characters",
           "line": 185,
           "doc": ""
+        },
+        {
+          "name": "test_run_files_store_lists_of_models_as_json",
+          "line": 189,
+          "doc": ""
         }
       ]
     }
@@ -5871,6 +5891,11 @@
     {
       "from": "app/analysis/change_proposal.py",
       "to": "tests/unit/test_summary_writer.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/analysis/change_proposal.py",
+      "to": "tests/unit/test_validation.py",
       "type": "tested_by"
     },
     {
@@ -7651,6 +7676,11 @@
     {
       "from": "app/services/run_manager.py",
       "to": "tests/unit/test_tailor_resume_flow.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/services/run_manager.py",
+      "to": "tests/unit/test_validation.py",
       "type": "tested_by"
     },
     {

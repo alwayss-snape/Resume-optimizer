@@ -333,3 +333,20 @@ def test_groq_daily_limit_fails_fast_with_a_clear_message():
         with pytest.raises(LLMError, match="daily token limit reached; try again in about 16 min"):
             client.generate("hi")
     assert post.call_count == 1 and not sleep.called
+
+
+def test_groq_strict_json_validate_failed_is_retried():
+    """Groq's transient 'json_validate_failed' (empty generation) gets the
+    normal JSON retries instead of failing the whole role rewrite."""
+    bad = MagicMock(status_code=400, headers={},
+                    text='{"error":{"code":"json_validate_failed","failed_generation":""}}')
+    good = MagicMock(status_code=200, headers={})
+    good.json.return_value = {"choices": [{"message": {"content": '{"value": "ok"}'}}], "usage": {}}
+
+    class Out(BaseModel):
+        value: str
+
+    with patch("httpx.Client.post", side_effect=[bad, good]) as post:
+        client = LLMClient(provider="groq", api_key="k", model="openai/gpt-oss-120b")
+        assert client.generate_json([{"role": "user", "content": "x"}], Out).value == "ok"
+    assert post.call_count == 2

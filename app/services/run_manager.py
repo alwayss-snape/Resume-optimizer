@@ -33,5 +33,8 @@ class RunManager:
             if hasattr(data, "model_dump_json"):
                 f.write(data.model_dump_json(indent=2))
             else:
-                json.dump(data, f, indent=2, default=str)
+                # Lists of models (e.g. rewrites.json) are written as JSON,
+                # not as their Python repr.
+                default = lambda o: o.model_dump(mode="json") if hasattr(o, "model_dump") else str(o)
+                json.dump(data, f, indent=2, default=default)
         return path

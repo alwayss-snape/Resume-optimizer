@@ -184,3 +184,13 @@ def test_guard_keeps_joiners_and_line_breaks():
 
 def test_jd_sanitize_strips_invisible_characters():
     assert SafetyGuard().sanitize("Py​thon and Kaf﻿ka") == "Python and Kafka"
+
+
+def test_run_files_store_lists_of_models_as_json(tmp_path):
+    import json
+    from app.analysis.change_proposal import ChangeProposal
+    from app.services.run_manager import RunManager
+    path = RunManager(base_runs_dir=str(tmp_path)).save_json(
+        str(tmp_path), "rewrites.json", [ChangeProposal(original_text="a", proposed_text="b")])
+    data = json.load(open(path))
+    assert data[0]["proposed_text"] == "b"

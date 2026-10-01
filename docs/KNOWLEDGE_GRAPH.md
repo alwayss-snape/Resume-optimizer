@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**49 app modules · 47 test files · 86 classes · 740 functions/methods · 15,958 lines of Python** · source hash `8ec1c1b9b46fe742`
+**49 app modules · 47 test files · 86 classes · 744 functions/methods · 16,015 lines of Python** · source hash `b4d91a8386740e0c`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -194,7 +194,7 @@ Spanning all stages: `app/cli.py`, `app/eval/harness.py`, `app/services/tailor.p
   - `source_id()` :70
   - `rewritten_text()` :79
 - **Imported by:** `analysis/rewriter.py`, `analysis/skills_tailor.py`, `analysis/summary_writer.py`
-- **Tested by:** `tests/unit/test_review_view.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`
+- **Tested by:** `tests/unit/test_review_view.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_validation.py`
 
 ### `app/analysis/experience.py`
 
@@ -556,7 +556,7 @@ _Canonical projection of a parsed resume, compared against hand-checked_
 
 ### `app/eval/harness.py`
 
-**Layer:** Root · **Stage:** all · **Lines:** 409
+**Layer:** Root · **Stage:** all · **Lines:** 413
 
 _Run evaluation cases through the pipeline and collect metrics (P4.1)._
 
@@ -570,17 +570,17 @@ _Run evaluation cases through the pipeline and collect metrics (P4.1)._
 - function **`load_cases()`** ([app/eval/harness.py:70](../app/eval/harness.py#L70))
 - function **`keyword_coverage()`** ([app/eval/harness.py:88](../app/eval/harness.py#L88)) — Share of the JD's keywords found verbatim (whole term, any case) in
 - function **`run_case()`** ([app/eval/harness.py:97](../app/eval/harness.py#L97))
-- function **`_tailor_metrics()`** ([app/eval/harness.py:178](../app/eval/harness.py#L178))
-- function **`attainable_coverage()`** ([app/eval/harness.py:218](../app/eval/harness.py#L218)) — Of the JD keywords written verbatim somewhere in the resume, the share
-- function **`_norm_number()`** ([app/eval/harness.py:237](../app/eval/harness.py#L237))
-- function **`fabricated_numbers()`** ([app/eval/harness.py:242](../app/eval/harness.py#L242)) — Numbers (with their units) in the tailored resume that the original
-- function **`stuffing()`** ([app/eval/harness.py:252](../app/eval/harness.py#L252)) — Signs of keyword stuffing: tailoring pushed the rate above the target
-- function **`_docx_text()`** ([app/eval/harness.py:262](../app/eval/harness.py#L262))
-- function **`check_expected()`** ([app/eval/harness.py:271](../app/eval/harness.py#L271)) — Compare a run with the case's expected.json; one message per miss.
-- function **`run()`** ([app/eval/harness.py:328](../app/eval/harness.py#L328))
-- function **`_flatten()`** ([app/eval/harness.py:344](../app/eval/harness.py#L344))
-- function **`compare()`** ([app/eval/harness.py:361](../app/eval/harness.py#L361)) — Human-readable differences per case between a report and a baseline.
-- function **`summary_lines()`** ([app/eval/harness.py:389](../app/eval/harness.py#L389))
+- function **`_tailor_metrics()`** ([app/eval/harness.py:182](../app/eval/harness.py#L182))
+- function **`attainable_coverage()`** ([app/eval/harness.py:222](../app/eval/harness.py#L222)) — Of the JD keywords written verbatim somewhere in the resume, the share
+- function **`_norm_number()`** ([app/eval/harness.py:241](../app/eval/harness.py#L241))
+- function **`fabricated_numbers()`** ([app/eval/harness.py:246](../app/eval/harness.py#L246)) — Numbers (with their units) in the tailored resume that the original
+- function **`stuffing()`** ([app/eval/harness.py:256](../app/eval/harness.py#L256)) — Signs of keyword stuffing: tailoring pushed the rate above the target
+- function **`_docx_text()`** ([app/eval/harness.py:266](../app/eval/harness.py#L266))
+- function **`check_expected()`** ([app/eval/harness.py:275](../app/eval/harness.py#L275)) — Compare a run with the case's expected.json; one message per miss.
+- function **`run()`** ([app/eval/harness.py:332](../app/eval/harness.py#L332))
+- function **`_flatten()`** ([app/eval/harness.py:348](../app/eval/harness.py#L348))
+- function **`compare()`** ([app/eval/harness.py:365](../app/eval/harness.py#L365)) — Human-readable differences per case between a report and a baseline.
+- function **`summary_lines()`** ([app/eval/harness.py:393](../app/eval/harness.py#L393))
 - **Imports:** `analysis/experience.py`, `analysis/jd_analyzer.py`, `analysis/keyword_match.py`, `domain/report.py`, `eval/golden.py`, `llm/client.py`, `rendering/layout.py`, `services/tailor.py`
 - **Imported by:** `eval/__main__.py`
 - **Tested by:** `tests/integration/test_eval_cases.py`, `tests/unit/test_cli_parity.py`, `tests/unit/test_eval_harness.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_profile_store.py`
@@ -612,30 +612,31 @@ _Run evaluation cases through the pipeline and collect metrics (P4.1)._
 
 ### `app/ingestion/pdf.py`
 
-**Layer:** Ingestion · **Stage:** 1 Ingest · **Lines:** 362
+**Layer:** Ingestion · **Stage:** 1 Ingest · **Lines:** 371
 
 - class **`_Line`** ([app/ingestion/pdf.py:41](../app/ingestion/pdf.py#L41)) — One visual text line with the layout facts the parser needs.
-- class **`PdfParser`** ([app/ingestion/pdf.py:64](../app/ingestion/pdf.py#L64))
-  - `__init__()` :69
-  - `_ensure_fitz()` :72
-  - `_merge_wrapped_lines()` :80 — Text-only fallback for joining word-wrapped lines: a line is joined
-  - `_page_lines()` :101
-  - `_attach_right_columns()` :123 — A short, right-aligned run printed on the same row as a left-hand
-  - `_split_bullet()` :170 — Return the bullet text without its glyph, or None if not a bullet.
-  - `_continues()` :177 — Is `line` a word-wrap continuation of the item ending with `prev`?
-  - `_assemble()` :200 — Join continuation lines onto their bullet/paragraph. Each returned
-  - `_body_size()` :224
-  - `_is_heading()` :231
-  - `parse()` :247
+- class **`PdfParser`** ([app/ingestion/pdf.py:73](../app/ingestion/pdf.py#L73))
+  - `__init__()` :78
+  - `_ensure_fitz()` :81
+  - `_merge_wrapped_lines()` :89 — Text-only fallback for joining word-wrapped lines: a line is joined
+  - `_page_lines()` :110
+  - `_attach_right_columns()` :132 — A short, right-aligned run printed on the same row as a left-hand
+  - `_split_bullet()` :179 — Return the bullet text without its glyph, or None if not a bullet.
+  - `_continues()` :186 — Is `line` a word-wrap continuation of the item ending with `prev`?
+  - `_assemble()` :209 — Join continuation lines onto their bullet/paragraph. Each returned
+  - `_body_size()` :233
+  - `_is_heading()` :240
+  - `parse()` :256
 - function **`_clean()`** ([app/ingestion/pdf.py:54](../app/ingestion/pdf.py#L54))
 - function **`_is_bold_span()`** ([app/ingestion/pdf.py:60](../app/ingestion/pdf.py#L60))
+- function **`_join_wrapped()`** ([app/ingestion/pdf.py:64](../app/ingestion/pdf.py#L64)) — Join a wrapped line to the one before it. A line that breaks after
 - **Imports:** `ingestion/docx.py`, `ingestion/ocr.py`, `rendering/document_map.py`
 - **Imported by:** `eval/golden.py`, `services/tailor.py`, `validation/output.py`
 - **Tested by:** `tests/unit/test_parser_regressions_p42.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_pdf_parser.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_structure_extractor.py`
 
 ### `app/llm/client.py`
 
-**Layer:** LLM · **Stage:** 3 JD analysis, 7 Rewrite · **Lines:** 641
+**Layer:** LLM · **Stage:** 3 JD analysis, 7 Rewrite · **Lines:** 648
 
 - class **`LLMClient`** ([app/llm/client.py:58](../app/llm/client.py#L58)) — Unified client for text generation across three interchangeable providers:
   - `__init__()` :74
@@ -656,9 +657,9 @@ _Run evaluation cases through the pipeline and collect metrics (P4.1)._
   - `_generate_anthropic()` :480
   - `_generate_json_anthropic()` :485 — Structured outputs guarantee the response matches the schema, so
   - `generate_json()` :506 — Generate structured JSON conforming to a Pydantic model.
-- function **`_requested_wait()`** ([app/llm/client.py:597](../app/llm/client.py#L597)) — How long Groq asks us to wait: the retry-after header, else the
-- function **`_retry_after_seconds()`** ([app/llm/client.py:613](../app/llm/client.py#L613)) — Seconds to wait before retrying a 429: the server's `retry-after`
-- function **`strict_json_schema()`** ([app/llm/client.py:628](../app/llm/client.py#L628)) — Adapt a Pydantic JSON schema for strict structured-output modes: every
+- function **`_requested_wait()`** ([app/llm/client.py:604](../app/llm/client.py#L604)) — How long Groq asks us to wait: the retry-after header, else the
+- function **`_retry_after_seconds()`** ([app/llm/client.py:620](../app/llm/client.py#L620)) — Seconds to wait before retrying a 429: the server's `retry-after`
+- function **`strict_json_schema()`** ([app/llm/client.py:635](../app/llm/client.py#L635)) — Adapt a Pydantic JSON schema for strict structured-output modes: every
 - **Imports:** `config/settings.py`, `llm/schemas.py`, `validation/safety.py`
 - **Imported by:** `analysis/jd_analyzer.py`, `analysis/matcher.py`, `analysis/rewriter.py`, `analysis/structure_extractor.py`, `analysis/summary_writer.py`, `analysis/tailor_planner.py`, `cli.py`, `eval/harness.py`, `services/tailor.py`, `ui.py`, `scripts/benchmark_model.py`
 - **Tested by:** `tests/unit/test_llm_client.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_validation.py`
@@ -836,14 +837,14 @@ _Local profile of facts the user has confirmed (P3.2)._
 
 ### `app/services/run_manager.py`
 
-**Layer:** Services · **Stage:** 10 Report · **Lines:** 37
+**Layer:** Services · **Stage:** 10 Report · **Lines:** 40
 
 - class **`RunManager`** ([app/services/run_manager.py:8](../app/services/run_manager.py#L8))
   - `__init__()` :9
   - `create_run()` :12
   - `save_json()` :30
 - **Imported by:** `services/tailor.py`
-- **Tested by:** `tests/unit/test_cli_parity.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_new_role.py`, `tests/unit/test_profile_store.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_tailor_resume_flow.py`
+- **Tested by:** `tests/unit/test_cli_parity.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_new_role.py`, `tests/unit/test_profile_store.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_tailor_resume_flow.py`, `tests/unit/test_validation.py`
 
 ### `app/services/tailor.py`
 
