@@ -1,7 +1,9 @@
-import { motion } from "motion/react";
-import { useRef, useState } from "react";
+import { motion, useMotionValue } from "motion/react";
+import { type PointerEvent, useRef, useState } from "react";
 import { useFocusHeading } from "../lib/useFocusHeading";
 import { Button } from "../components/Button";
+import { FluidField } from "../components/hero/FluidField";
+import { ProofSheet } from "../components/hero/ProofSheet";
 import { UploadForm, type UploadValues } from "../components/UploadForm";
 import type { Intent, Run } from "../lib/store";
 
@@ -13,10 +15,10 @@ const HOW_IT_WORKS = [
 
 const rise = {
   hidden: { opacity: 0, y: 14 },
-  shown: (i: number) => ({ opacity: 1, y: 0, transition: { duration: 0.6, delay: 0.08 * i, ease: [0.22, 1, 0.36, 1] as const } }),
+  shown: (i: number) => ({ opacity: 1, y: 0, transition: { duration: 0.7, delay: 0.08 * i, ease: [0.22, 1, 0.36, 1] as const } }),
 };
 
-/** First screen: hero, the upload form, and how it works. */
+/** First screen: the proof demonstration, the upload form, and how it works. */
 export function Landing({ onStart, busy, run, maxUploadMb, error, errorKey }: {
   onStart: (intent: Intent, values: UploadValues) => void;
   busy?: boolean;
@@ -29,6 +31,10 @@ export function Landing({ onStart, busy, run, maxUploadMb, error, errorKey }: {
   // Coming back to this page (a run exists): put focus on its heading.
   const heading = useFocusHeading(Boolean(run.file));
   const start = useRef<HTMLElement>(null);
+  // The pointer over the hero: -0.5..0.5 for the sheets' tilt, 0..1 for the ink.
+  const tiltX = useMotionValue(0);
+  const tiltY = useMotionValue(0);
+  const pointer = useRef({ x: 0.7, y: 0.5 });
 
   const begin = (next: Intent) => {
     setIntent(next);
@@ -37,32 +43,49 @@ export function Landing({ onStart, busy, run, maxUploadMb, error, errorKey }: {
     start.current?.querySelector<HTMLElement>("input, textarea")?.focus({ preventScroll: true });
   };
 
+  const onPointerMove = (e: PointerEvent<HTMLElement>) => {
+    const box = e.currentTarget.getBoundingClientRect();
+    const x = (e.clientX - box.left) / box.width;
+    const y = (e.clientY - box.top) / box.height;
+    tiltX.set(x - 0.5);
+    tiltY.set(y - 0.5);
+    pointer.current = { x, y: 1 - y };
+  };
+  const onPointerLeave = () => {
+    tiltX.set(0);
+    tiltY.set(0);
+  };
+
   return (
     <>
-      <section className="mx-auto flex max-w-[1240px] flex-col items-center gap-6 px-4 pb-14 pt-16 text-center md:px-8 md:pt-24">
-        <motion.p variants={rise} initial="hidden" animate="shown" custom={0}
-          className="flex items-center gap-3.5 text-xs tracking-[0.28em] text-pencil">
-          <span aria-hidden="true" className="h-px w-10 bg-pencil" />
-          RESUME TAILORING
-          <span aria-hidden="true" className="h-px w-10 bg-pencil" />
-        </motion.p>
-        <motion.h1 ref={heading} tabIndex={-1} variants={rise} initial="hidden" animate="shown" custom={1}
-          className="max-w-[900px] outline-none font-display text-[44px] font-medium leading-[1.02] tracking-[-0.01em] sm:text-6xl md:text-[76px]">
-          Your experience, presented for the role.
-        </motion.h1>
-        <motion.p variants={rise} initial="hidden" animate="shown" custom={2}
-          className="max-w-[620px] text-base leading-relaxed text-muted md:text-lg">
-          Upload your resume and paste the job description. Every rewrite is built from what is already on your
-          resume. Nothing is invented.
-        </motion.p>
-        <motion.div variants={rise} initial="hidden" animate="shown" custom={3}
-          className="mt-3 flex flex-col gap-3.5 sm:flex-row">
-          <Button variant="primary" size="lg" onClick={() => begin("tailor")}>Tailor my resume</Button>
-          <Button size="lg" onClick={() => begin("check")}>Just check my match</Button>
-        </motion.div>
+      <section onPointerMove={onPointerMove} onPointerLeave={onPointerLeave} className="relative isolate overflow-hidden">
+        <FluidField pointer={pointer}
+          className="absolute inset-0 -z-10 [mask-image:linear-gradient(180deg,transparent_0%,transparent_38%,black_72%,black_86%,transparent_100%)] lg:[mask-composite:intersect] lg:[mask-image:linear-gradient(90deg,transparent_0%,transparent_34%,black_66%),linear-gradient(180deg,black_0%,black_72%,transparent_100%)]" />
+        <div className="mx-auto grid max-w-[1240px] items-center gap-12 px-4 pb-16 pt-12 md:px-8 lg:grid-cols-12 lg:gap-8 lg:pb-24 lg:pt-20">
+          <div className="flex flex-col items-start gap-6 lg:col-span-6">
+            <motion.h1 ref={heading} tabIndex={-1} variants={rise} initial="hidden" animate="shown" custom={0}
+              className="font-display text-[42px] font-bold leading-[1.02] tracking-[-0.035em] outline-none sm:text-[56px] lg:text-[62px]">
+              Your experience, presented for the role.
+            </motion.h1>
+            <motion.p variants={rise} initial="hidden" animate="shown" custom={1}
+              className="max-w-[46ch] text-[17px] leading-relaxed text-muted lg:text-lg">
+              Upload your resume and paste the job description. Every rewrite is built from what is already on your
+              resume. Nothing is invented.
+            </motion.p>
+            <motion.div variants={rise} initial="hidden" animate="shown" custom={2}
+              className="mt-2 flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
+              <Button variant="primary" size="lg" onClick={() => begin("tailor")}>Tailor my resume</Button>
+              <Button size="lg" onClick={() => begin("check")}>Just check my match</Button>
+            </motion.div>
+          </div>
+          <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.9, delay: 0.2, ease: [0.22, 1, 0.36, 1] }} className="lg:col-span-6">
+            <ProofSheet tiltX={tiltX} tiltY={tiltY} />
+          </motion.div>
+        </div>
       </section>
 
-      <section ref={start} id="start" aria-labelledby="start-title" className="mx-auto max-w-[1240px] scroll-mt-6 px-4 md:px-8">
+      <section ref={start} id="start" aria-labelledby="start-title" className="mx-auto max-w-[1240px] scroll-mt-6 px-4 pt-4 md:px-8">
         <h2 id="start-title" className="sr-only">
           {intent === "tailor" ? "Tailor your resume" : "Check your match"}
         </h2>
@@ -70,17 +93,19 @@ export function Landing({ onStart, busy, run, maxUploadMb, error, errorKey }: {
           maxUploadMb={maxUploadMb} serverError={error} serverErrorKey={errorKey} />
       </section>
 
-      <section aria-labelledby="how-title" className="mx-auto flex max-w-[1240px] flex-col gap-9 px-4 pb-20 pt-24 md:px-8">
-        <div className="flex items-center gap-5">
-          <h2 id="how-title" className="whitespace-nowrap font-display text-[40px] font-medium">How it works</h2>
-          <span aria-hidden="true" className="h-px flex-1 bg-line" />
-        </div>
-        <ol className="grid gap-8 md:grid-cols-3 md:gap-6">
+      <section aria-labelledby="how-title" className="mx-auto flex max-w-[1240px] flex-col gap-10 px-4 pb-24 pt-28 md:px-8">
+        <h2 id="how-title" className="font-display text-[32px] font-bold tracking-[-0.025em] md:text-[40px]">How it works</h2>
+        <ol className="relative grid gap-10 md:grid-cols-3 md:gap-8">
+          {/* the route between the steps, drawn like a pencil rule */}
+          <span aria-hidden="true" className="absolute left-[22px] top-[22px] hidden h-px w-[calc(100%-44px)] bg-[repeating-linear-gradient(90deg,var(--field)_0_6px,transparent_6px_12px)] md:block" />
           {HOW_IT_WORKS.map((item, i) => (
-            <li key={item.title} className="flex flex-col gap-3 border-t border-pencil pt-5">
-              <span aria-hidden="true" className="font-display text-[44px] leading-none text-pencil">0{i + 1}</span>
-              <span className="text-lg font-medium">{item.title}</span>
-              <span className="text-sm leading-relaxed text-muted">{item.text}</span>
+            <li key={item.title} className="relative flex flex-col gap-3">
+              <span aria-hidden="true"
+                className="tabular flex size-11 items-center justify-center rounded-full border-2 border-pencil bg-bg font-display text-lg font-bold text-pencil">
+                {i + 1}
+              </span>
+              <span className="mt-2 text-xl font-semibold tracking-[-0.01em]">{item.title}</span>
+              <span className="max-w-[38ch] text-[15px] leading-relaxed text-muted">{item.text}</span>
             </li>
           ))}
         </ol>

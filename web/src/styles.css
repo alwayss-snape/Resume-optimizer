@@ -161,3 +161,97 @@ h3 {
 @utility tabular {
   font-variant-numeric: tabular-nums;
 }
+
+/* Landing demo (P6.4): proof marks that draw themselves on white paper, in
+   both themes. `data-on` switches a mark on; transitions do the drawing. */
+.pm-del {
+  background: linear-gradient(currentColor, currentColor) no-repeat 0 60% / 0% 1.6px;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  transition: background-size 0.55s cubic-bezier(0.22, 1, 0.36, 1), color 0.3s;
+}
+.pm-del[data-on] {
+  background-size: 100% 1.6px;
+  color: #bf3328;
+}
+
+.pm-ins {
+  position: relative;
+  display: inline-block;
+  width: 0;
+}
+.pm-ins-word {
+  position: absolute;
+  bottom: 1.05em;
+  left: -0.15em;
+  white-space: nowrap;
+  font-style: italic;
+  line-height: 1;
+  color: #2f62d8;
+  opacity: 0;
+  transform: translateY(0.3em);
+  transition: opacity 0.35s, transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.pm-caret {
+  position: absolute;
+  bottom: -0.05em;
+  left: -0.42em;
+  width: 0.62em;
+  height: 0.5em;
+  fill: none;
+  stroke: #2f62d8;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 20;
+  stroke-dashoffset: 20;
+  transition: stroke-dashoffset 0.4s ease-out;
+}
+.pm-ins[data-on] .pm-ins-word {
+  opacity: 1;
+  transform: none;
+}
+.pm-ins[data-on] .pm-caret {
+  stroke-dashoffset: 0;
+}
+
+.pm-hl {
+  background-image: linear-gradient(100deg, transparent 0.15em, rgb(242 212 61 / 0.6) 0.3em, rgb(242 212 61 / 0.6) calc(100% - 0.3em), transparent calc(100% - 0.15em));
+  background-repeat: no-repeat;
+  background-position: 0 72%;
+  background-size: 0% 70%;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  padding-inline: 0.04em;
+  transition: background-size 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.pm-hl[data-on] {
+  background-size: 100% 70%;
+}
+
+.pm-note {
+  border: 1px solid #c9d6f5;
+  background: #ffffff;
+  padding: 0.5em 0.7em;
+  font-size: 0.85em;
+  line-height: 1.35;
+  color: #2550b8;
+  box-shadow: 0 2px 4px rgb(0 0 0 / 0.08), 0 14px 26px -12px rgb(0 0 0 / 0.3);
+  opacity: 0;
+  translate: 0 0.5em;
+  transition: opacity 0.4s, translate 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.pm-note[data-on] {
+  opacity: 1;
+  translate: 0 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pm-del,
+  .pm-ins-word,
+  .pm-caret,
+  .pm-hl,
+  .pm-note {
+    transition: none;
+  }
+}

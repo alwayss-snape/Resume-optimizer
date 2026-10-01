@@ -37,18 +37,23 @@ function TemplateCard({ value, current, onSelect, title, badge, text, disabled, 
 }) {
   const selected = current === value;
   return (
-    <label className={`flex items-center gap-5 border bg-panel p-5 transition-colors has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-pencil ${
-      disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"} ${selected ? "border-pencil" : "border-line hover:border-line-strong"}`}>
+    <label className={`relative flex items-center gap-5 rounded-[3px] bg-panel p-5 shadow-sheet transition-[border-color,box-shadow] has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-3 has-[:focus-visible]:outline-pencil ${
+      disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"} ${selected ? "border-2 border-pencil p-[19px]" : "border border-field hover:border-ink"}`}>
       <input type="radio" name="template" value={value} checked={selected} disabled={disabled}
         onChange={() => onSelect(value)} className="sr-only" />
       {children}
       <span className="flex flex-col gap-2">
         <span className="flex flex-wrap items-center gap-2.5">
-          <span className="font-display text-[22px] font-semibold">{title}</span>
-          {badge && <span className="bg-pencil px-2 py-0.5 text-[11px] tracking-[0.12em] text-on-pencil">{badge}</span>}
+          <span className="font-display text-lg font-bold tracking-[-0.01em]">{title}</span>
+          {badge && <span className="rounded-[3px] bg-pencil-soft px-2 py-0.5 text-xs font-semibold text-pencil">{badge}</span>}
         </span>
         <span className="text-sm leading-relaxed text-muted">{text}</span>
       </span>
+      {selected && (
+        <span aria-hidden="true" className="absolute right-3 top-3 flex size-6 items-center justify-center rounded-full bg-pencil text-on-pencil">
+          <Icon name="check" size={14} strokeWidth={2.4} />
+        </span>
+      )}
     </label>
   );
 }
@@ -127,10 +132,10 @@ export function UploadForm({ intent, onSubmit, busy = false, initial, maxUploadM
   return (
     <form className="flex flex-col gap-10" onSubmit={(e) => { e.preventDefault(); submit(); }} noValidate>
       <div className="grid gap-6 md:grid-cols-2">
-        <section className="flex flex-col gap-4 border border-line bg-panel p-6 md:p-7">
+        <section className="sheet flex flex-col gap-4 rounded-[3px] p-6 md:p-7">
           <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-            <h2 className="font-display text-[26px] font-semibold">Your resume</h2>
-            <span className="text-xs text-muted">DOCX or PDF, up to {maxUploadMb} MB</span>
+            <h2 className="font-display text-[22px] font-bold tracking-[-0.015em]">Your resume</h2>
+            <span className="text-[13px] text-muted">DOCX or PDF, up to {maxUploadMb} MB</span>
           </div>
           <label htmlFor={fileId}
             onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
@@ -138,11 +143,11 @@ export function UploadForm({ intent, onSubmit, busy = false, initial, maxUploadM
               if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setDragging(false);
             }}
             onDrop={onDrop}
-            className={`flex cursor-pointer flex-col items-center gap-3 border border-dashed px-6 py-9 text-center transition-colors has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-pencil ${
-              dragging ? "border-pencil bg-pencil-soft" : "border-field hover:border-pencil"}`}>
-            <Icon name="upload" size={34} strokeWidth={1.3} className="text-pencil" />
-            <span className="text-base">Drop your resume here</span>
-            <span className="text-[13px] text-muted">or <span className="text-pencil underline">browse files</span></span>
+            className={`flex flex-1 cursor-pointer flex-col items-center justify-center gap-3 rounded-[3px] border-2 border-dashed px-6 py-10 text-center transition-colors has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-3 has-[:focus-visible]:outline-pencil ${
+              dragging ? "border-pencil bg-pencil-soft" : "border-field hover:border-pencil hover:bg-pencil-soft has-[[aria-invalid=true]]:border-danger"}`}>
+            <Icon name="upload" size={32} strokeWidth={1.5} className="text-pencil" />
+            <span className="text-base font-semibold">Drop your resume here</span>
+            <span className="text-sm text-muted">or <span className="font-medium text-pencil underline">browse files</span></span>
             <input id={fileId} ref={input} type="file" accept={ACCEPTED.join(",")} className="sr-only"
               {...invalid("file")}
               onChange={(e) => {
@@ -151,42 +156,42 @@ export function UploadForm({ intent, onSubmit, busy = false, initial, maxUploadM
               }} />
           </label>
           {file && (
-            <div className="flex items-center gap-3.5 border border-line bg-panel-2 px-4 py-3">
+            <div className="flex items-center gap-3.5 rounded-[3px] border border-success-line bg-panel-2 px-4 py-3">
               <Icon name="check" className="text-success" />
               <span className="flex min-w-0 flex-1 flex-col">
-                <span className="truncate text-sm">{file.name}</span>
+                <span className="truncate text-sm font-medium">{file.name}</span>
                 <span className="text-xs text-muted">{formatSize(file.size)}</span>
               </span>
               <button type="button" onClick={() => input.current?.click()}
-                className="min-h-11 text-[13px] text-muted hover:text-ink">Replace</button>
+                className="min-h-11 text-sm font-medium text-pencil underline-offset-4 hover:underline">Replace</button>
             </div>
           )}
         </section>
 
-        <section className="flex flex-col gap-4 border border-line bg-panel p-6 md:p-7">
+        <section className="sheet flex flex-col gap-4 rounded-[3px] p-6 md:p-7">
           <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-            <h2 className="font-display text-[26px] font-semibold"><label htmlFor={jdId}>The job description</label></h2>
-            <span className="text-xs text-muted">Paste the full text</span>
+            <h2 className="font-display text-[22px] font-bold tracking-[-0.015em]"><label htmlFor={jdId}>The job description</label></h2>
+            <span className="text-[13px] text-muted">Paste the full text</span>
           </div>
           <textarea id={jdId} ref={jd} value={jdText} onChange={(e) => setJdText(e.target.value)} {...invalid("jd")}
             placeholder="Paste the job title, responsibilities and requirements here."
-            className="min-h-[232px] flex-1 resize-y border border-field bg-panel-2 p-4 text-sm leading-relaxed text-ink placeholder:text-muted" />
-          <span className="self-end text-xs text-muted">{jdText.length.toLocaleString()} characters</span>
+            className="min-h-[232px] flex-1 resize-y rounded-[3px] border border-field bg-panel p-4 text-[15px] leading-relaxed text-ink placeholder:text-muted hover:border-ink focus-visible:border-pencil aria-[invalid=true]:border-2 aria-[invalid=true]:border-danger" />
+          <span className="tabular self-end text-[13px] text-muted">{jdText.length.toLocaleString()} characters</span>
         </section>
       </div>
 
       {intent === "tailor" && (
         <fieldset className="flex flex-col gap-4">
-          <legend className="mb-4 text-xs tracking-[0.24em] text-muted">OUTPUT FORMAT</legend>
+          <legend className="mb-4 font-display text-lg font-bold tracking-[-0.01em]">Output format</legend>
           <div className="grid gap-6 md:grid-cols-2">
-            <TemplateCard value="ats" current={template} onSelect={setTemplate} title="ATS template" badge="RECOMMENDED"
+            <TemplateCard value="ats" current={template} onSelect={setTemplate} title="ATS template" badge="Recommended"
               text="Clean single-column A4 layout. Sections are ordered for the role and fitted to one or two pages.">
-              <span aria-hidden="true" className="flex h-[120px] w-[92px] shrink-0 flex-col gap-[5px] bg-paper p-2.5">
-                <span className="h-1.5 w-3/5 bg-[#1a1a17]" />
-                <span className="h-[3px] w-4/5 bg-[#8c8678]" />
-                <span className="my-0.5 h-px bg-pencil" />
+              <span aria-hidden="true" className="flex h-[120px] w-[92px] shrink-0 flex-col gap-[5px] border border-line bg-paper p-2.5 shadow-sheet">
+                <span className="h-1.5 w-3/5 bg-[#1b1b1f]" />
+                <span className="h-[3px] w-4/5 bg-[#9a9ba2]" />
+                <span className="my-0.5 h-px bg-[#2f62d8]" />
                 {[95, 88, 92, 40, 90, 70].map((w, i) => (
-                  <span key={i} className={`h-[3px] ${i === 3 ? "bg-[#1a1a17]" : "bg-[#8c8678]"}`} style={{ width: `${w}%` }} />
+                  <span key={i} className={`h-[3px] ${i === 3 ? "bg-[#1b1b1f]" : "bg-[#c9c9c3]"}`} style={{ width: `${w}%` }} />
                 ))}
               </span>
             </TemplateCard>
@@ -213,8 +218,8 @@ export function UploadForm({ intent, onSubmit, busy = false, initial, maxUploadM
           {!busy && <Icon name="arrow-right" />}
         </Button>
         <div>
-          {error ? <p key={error.n} id={errorId} role="alert" className="text-sm text-danger">{error.text}</p>
-            : serverError && <p key={serverErrorKey} role="alert" className="text-sm text-danger">{serverError}</p>}
+          {error ? <p key={error.n} id={errorId} role="alert" className="flex items-center gap-2 text-sm font-medium text-danger"><Icon name="alert" size={16} /><span><span className="font-semibold">Error:</span> {error.text}</span></p>
+            : serverError && <p key={serverErrorKey} role="alert" className="flex items-center gap-2 text-sm font-medium text-danger"><Icon name="alert" size={16} /><span><span className="font-semibold">Error:</span> {serverError}</span></p>}
         </div>
       </div>
     </form>

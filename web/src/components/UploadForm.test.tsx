@@ -64,11 +64,11 @@ test("a missing job description focuses the box", async () => {
   await user.upload(screen.getByLabelText(/Drop your resume here/), file("cv.docx"));
   await user.click(screen.getByRole("button", { name: /Check my match/ }));
   expect(screen.getByLabelText("The job description")).toHaveFocus();
-  expect(screen.getByLabelText("The job description")).toHaveAccessibleDescription("Paste the job description.");
+  expect(screen.getByLabelText("The job description")).toHaveAccessibleDescription("Error: Paste the job description.");
 });
 
 test("the match check needs no output format", () => {
   render(<UploadForm intent="check" onSubmit={vi.fn()} />);
-  expect(screen.queryByText("OUTPUT FORMAT")).toBeNull();
+  expect(screen.queryByText("Output format")).toBeNull();
   expect(screen.getByRole("button", { name: /Check my match/ })).toBeInTheDocument();
 });

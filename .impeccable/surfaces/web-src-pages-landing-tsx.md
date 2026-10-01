@@ -65,6 +65,11 @@ Tokens (both themes; every text pair ≥ 4.5:1, boundaries ≥ 3:1):
 Marks never rely on colour alone: insertions are underlined or caret-marked, removals struck. Missing job keywords use
 an empty marker in ink/pencil, not red. A rejected change shows the original in plain ink. The score is pencil blue.
 
+Built (P6.4): hero split 6/6 at desktop (5/7 broke the headline into four lines); no kicker (craft-floor ban).
+Paper stays white in dark mode too: documents are white paper under a lamp; only the desk and UI sheets go dark.
+A job keyword missing from the resume is never highlighted yellow (yellow means matched); it gets a dotted underline.
+Margin notes are hidden below 640 px (the description carries them).
+
 ## Risks to manage
 Red marks can read as criticism of the user's writing: red only strikes removed words; insertions, actions and the
 score use blue; copy stays warm. Editorial looks are common: keep the proof grammar functional (marks carry meaning)

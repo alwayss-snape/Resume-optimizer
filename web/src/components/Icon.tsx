@@ -1,5 +1,5 @@
 // Inline stroke icons, drawn to match the thin-line look.
-type Name = "check" | "settings" | "upload" | "file" | "close" | "arrow-right";
+type Name = "check" | "settings" | "upload" | "file" | "close" | "arrow-right" | "alert";
 
 const PATHS: Record<Name, string[]> = {
   check: ["M20 6 9 17l-5-5"],
@@ -8,6 +8,7 @@ const PATHS: Record<Name, string[]> = {
   file: ["M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z", "M14 3v5h5"],
   close: ["M18 6 6 18M6 6l12 12"],
   "arrow-right": ["M4 12h15M13 6l6 6-6 6"],
+  alert: ["M12 3 2.5 20h19z", "M12 10v4.5", "M12 17.2v.3"],
 };
 
 export function Icon({ name, size = 18, strokeWidth = 1.6, className }: {
