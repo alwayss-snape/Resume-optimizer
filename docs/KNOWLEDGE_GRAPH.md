@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**55 app modules · 49 test files · 100 classes · 853 functions/methods · 17,443 lines of Python** · source hash `d767a04da19a9c8b`
+**55 app modules · 49 test files · 100 classes · 855 functions/methods · 17,482 lines of Python** · source hash `1083ed0188f4ed5c`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -480,7 +480,7 @@ _The web app (P5.1): `uvicorn app.api.main:app`._
 
 ### `app/api/routes.py`
 
-**Layer:** Web API · **Stage:** all · **Lines:** 474
+**Layer:** Web API · **Stage:** all · **Lines:** 475
 
 _HTTP endpoints, one per step of the review flow (P5.1)._
 
@@ -516,10 +516,10 @@ _HTTP endpoints, one per step of the review flow (P5.1)._
 - function **`proposals()`** ([app/api/routes.py:324](../app/api/routes.py#L324)) — Step 2: apply the user's fixes, then draft rewrites and gap
 - function **`match_preview()`** ([app/api/routes.py:368](../app/api/routes.py#L368)) — The match rate if the selected (and edited) proposals were applied.
 - function **`tailor()`** ([app/api/routes.py:378](../app/api/routes.py#L378)) — Step 3: apply the review and generate the files. Streams progress.
-- function **`_result_path()`** ([app/api/routes.py:437](../app/api/routes.py#L437))
-- function **`download()`** ([app/api/routes.py:445](../app/api/routes.py#L445))
-- function **`preview()`** ([app/api/routes.py:453](../app/api/routes.py#L453)) — One page of the tailored PDF as a PNG (Chrome blocks embedded PDFs).
-- function **`reset()`** ([app/api/routes.py:462](../app/api/routes.py#L462)) — Start over: delete this visitor's files and state. If a step is still
+- function **`_result_path()`** ([app/api/routes.py:438](../app/api/routes.py#L438))
+- function **`download()`** ([app/api/routes.py:446](../app/api/routes.py#L446))
+- function **`preview()`** ([app/api/routes.py:454](../app/api/routes.py#L454)) — One page of the tailored PDF as a PNG (Chrome blocks embedded PDFs).
+- function **`reset()`** ([app/api/routes.py:463](../app/api/routes.py#L463)) — Start over: delete this visitor's files and state. If a step is still
 - **Imports:** `api/__init__.py`, `api/sessions.py`, `rendering/pdf_converter.py`, `rendering/review_view.py`
 - **Imported by:** `api/main.py`
 - **Tested by:** `tests/unit/test_api.py`
@@ -993,7 +993,7 @@ _Local profile of facts the user has confirmed (P3.2)._
 
 ### `app/services/tailor.py`
 
-**Layer:** Services · **Stage:** all · **Lines:** 1088
+**Layer:** Services · **Stage:** all · **Lines:** 1101
 
 - class **`TailorService`** ([app/services/tailor.py:55](../app/services/tailor.py#L55))
   - `__init__()` :56
@@ -1021,7 +1021,7 @@ _Local profile of facts the user has confirmed (P3.2)._
   - `incorporate_user_addition()` :548 — Fold a user-supplied free-text addition (a project, an
   - `tailor_resume()` :627
 - function **`_progress()`** ([app/services/tailor.py:44](../app/services/tailor.py#L44)) — A progress reporter that can never break a run (P3.6).
-- function **`_merge_usage()`** ([app/services/tailor.py:1079](../app/services/tailor.py#L1079)) — Combine two LLMClient.get_usage_summary() dicts into one.
+- function **`_merge_usage()`** ([app/services/tailor.py:1092](../app/services/tailor.py#L1092)) — Combine two LLMClient.get_usage_summary() dicts into one.
 - **Imports:** `analysis/experience.py`, `analysis/gap_questions.py`, `analysis/jd_analyzer.py`, `analysis/keyword_match.py`, `analysis/matcher.py`, `analysis/resume_normalizer.py`, `analysis/rewriter.py`, `analysis/scoring.py`, `analysis/semantic_matcher.py`, `analysis/skills_tailor.py`, `analysis/structure_extractor.py`, `analysis/summary_writer.py`, `analysis/tailor_planner.py`, `domain/evidence.py`, `domain/job.py`, `domain/report.py`, `domain/resume.py`, `domain/resume_document.py`, `domain/tailoring.py`, `ingestion/docx.py`, `ingestion/pdf.py`, `llm/client.py`, `rendering/docx_patcher.py`, `rendering/html_renderer.py`, `rendering/layout.py`, `rendering/page_fit.py`, `rendering/pdf_converter.py`, `rendering/template_renderer.py`, `services/profile_store.py`, `services/run_manager.py`, `validation/content_lint.py`, `validation/factual.py`, `validation/output.py`, `validation/safety.py`, `validation/structural.py`
 - **Imported by:** `api/main.py`, `cli.py`, `eval/harness.py`, `ui.py`
 - **Tested by:** `tests/integration/test_end_to_end.py`, `tests/unit/test_api.py`, `tests/unit/test_check_parsed_resume.py`, `tests/unit/test_cli.py`, `tests/unit/test_cli_parity.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_new_role.py`, `tests/unit/test_profile_store.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_review_view.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_tailor_resume_flow.py`, `tests/unit/test_tailor_service_addition.py`, `tests/unit/test_ui.py`

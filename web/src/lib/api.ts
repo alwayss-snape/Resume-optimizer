@@ -176,3 +176,40 @@ export const tailorResume = (body: TailorRequest, onProgress: (m: string) => voi
 
 export const fileUrl = (kind: "docx" | "pdf" | "changes") => `/api/files/${kind}`;
 export const previewUrl = (page: number, version: string | number) => `/api/preview/${page}?v=${version}`;
+
+/** Fetch a result file and hand it to the browser as a download; throws
+ *  ApiError (e.g. an expired session) instead of saving an error page. */
+export async function downloadFile(kind: "docx" | "pdf" | "changes"): Promise<void> {
+  let response: Response;
+  try {
+    response = await fetch(fileUrl(kind), { credentials: "same-origin" });
+  } catch {
+    throw new ApiError(0, "Can't reach the server. Check your connection and try again.");
+  }
+  if (!response.ok) {
+    let body: unknown = null;
+    try {
+      body = await response.json();
+    } catch {
+      /* not JSON */
+    }
+    throw new ApiError(response.status, errorMessage(response.status, body));
+  }
+  const disposition = response.headers.get("content-disposition") ?? "";
+  const name = /filename\*?=(?:UTF-8'')?"?([^";]+)"?/i.exec(disposition)?.[1];
+  const url = URL.createObjectURL(await response.blob());
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = name ? decodeURIComponent(name) : `resume.${kind === "changes" ? "md" : kind}`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 10_000);
+}
+
+/** The change log (changes.md) as text. */
+export async function getChangeLog(): Promise<string> {
+  const response = await fetch(fileUrl("changes"), { credentials: "same-origin" });
+  if (!response.ok) throw new ApiError(response.status, errorMessage(response.status, null));
+  return response.text();
+}

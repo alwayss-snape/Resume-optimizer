@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "d767a04da19a9c8b",
+  "source_hash": "1083ed0188f4ed5c",
   "stats": {
     "files": 135,
     "python_files": 112,
     "app_modules": 55,
     "test_files": 49,
     "classes": 100,
-    "functions": 853,
-    "lines_of_python": 17443
+    "functions": 855,
+    "lines_of_python": 17482
   },
   "axes": {
     "x": "location (path)",
@@ -1146,7 +1146,7 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 474,
+      "lines": 475,
       "doc": "HTTP endpoints, one per step of the review flow (P5.1).",
       "classes": [
         {
@@ -1322,22 +1322,22 @@
         },
         {
           "name": "_result_path",
-          "line": 437,
+          "line": 438,
           "doc": ""
         },
         {
           "name": "download",
-          "line": 445,
+          "line": 446,
           "doc": ""
         },
         {
           "name": "preview",
-          "line": 453,
+          "line": 454,
           "doc": "One page of the tailored PDF as a PNG (Chrome blocks embedded PDFs)."
         },
         {
           "name": "reset",
-          "line": 462,
+          "line": 463,
           "doc": "Start over: delete this visitor's files and state. If a step is still"
         }
       ]
@@ -3040,7 +3040,7 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 1088,
+      "lines": 1101,
       "doc": "",
       "classes": [
         {
@@ -3179,7 +3179,7 @@
         },
         {
           "name": "_merge_usage",
-          "line": 1079,
+          "line": 1092,
           "doc": "Combine two LLMClient.get_usage_summary() dicts into one."
         }
       ]
@@ -6328,7 +6328,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 175,
+      "lines": 200,
       "doc": "tailor_resume orchestration: pre-approved proposals and Strict Factual Mode.",
       "classes": [],
       "functions": [
@@ -6386,6 +6386,16 @@
           "name": "test_page_fit_trims_are_reported_and_rendered",
           "line": 152,
           "doc": "P2.4: tailor_resume fits the template to the page target and reports"
+        },
+        {
+          "name": "test_result_reports_what_was_applied",
+          "line": 178,
+          "doc": "P5.5: the results screen shows what really went into the files."
+        },
+        {
+          "name": "test_result_reports_strict_mode_withholding",
+          "line": 192,
+          "doc": ""
         }
       ]
     },

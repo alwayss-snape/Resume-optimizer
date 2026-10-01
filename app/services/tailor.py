@@ -736,6 +736,7 @@ class TailorService:
         original_evidence = copy.deepcopy(evidence_list)
 
         rejected_count = 0
+        strict_withheld = False
         for prop in proposals:
             if getattr(prop, "user_edited", False):
                 # The user wrote or changed this text themselves in the
@@ -819,6 +820,7 @@ class TailorService:
             resume.skills = original_resume.skills
             evidence_list[:] = original_evidence
             approved_proposals = []
+            strict_withheld = True
             warnings.append(
                 "Strict Factual Mode: all rewrites withheld because at least one rewrite failed validation."
             )
@@ -1073,6 +1075,17 @@ class TailorService:
             "docx_warnings": docx_warnings,
             "pdf_warnings": pdf_warnings,
             "success": success,
+            # What really went into the files (P5.5), for an honest summary.
+            "applied": {
+                "bullets": sum(1 for p in approved_proposals if getattr(p, "kind", "bullet") == "bullet"
+                               and _prop_text(p).strip() != (getattr(p, "original_text", "") or "").strip()),
+                "bullets_edited": sum(1 for p in approved_proposals if getattr(p, "kind", "bullet") == "bullet"
+                                      and getattr(p, "user_edited", False)),
+                "summary": any(getattr(p, "kind", "") == "summary" for p in approved_proposals),
+                "skills": any(getattr(p, "kind", "") == "skills" for p in approved_proposals),
+                "rejected": rejected_count,
+                "strict_withheld": strict_withheld,
+            },
         }
 
 

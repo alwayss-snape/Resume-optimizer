@@ -173,3 +173,28 @@ def test_page_fit_trims_are_reported_and_rendered(tmp_path, monkeypatch):
     report = open(result["changes_md"], encoding="utf-8").read()
     assert all(t in report for t in trims)
     assert "1 page(s), target 1, 2 render(s)" in report
+
+
+def test_result_reports_what_was_applied(tmp_path):
+    """P5.5: the results screen shows what really went into the files."""
+    service = _service(tmp_path)
+    (b, ev), (b2, ev2) = _bullets_with_evidence()[:2]
+    edited = _proposal(b2, ev2, "My own words about " + b2.text)
+    edited["user_edited"] = True
+    result = service.tailor_resume(
+        SAMPLE_DOCX, SAMPLE_JD, str(tmp_path / "out"), mode="ATS_DEFAULT",
+        preapproved_proposals=[_proposal(b, ev, "Successfully " + b.text), edited],
+    )
+    assert result["applied"] == {"bullets": 2, "bullets_edited": 1, "summary": False, "skills": False,
+                                 "rejected": 0, "strict_withheld": False}
+
+
+def test_result_reports_strict_mode_withholding(tmp_path):
+    service = _service(tmp_path)
+    (b, ev), (b2, ev2) = _bullets_with_evidence()[:2]
+    invented = _proposal(b2, ev2, b2.text + " across 97 countries")  # a new number fails the fact check
+    result = service.tailor_resume(
+        SAMPLE_DOCX, SAMPLE_JD, str(tmp_path / "out"), mode="ATS_DEFAULT", strict_factual=True,
+        preapproved_proposals=[_proposal(b, ev, "Successfully " + b.text), invented],
+    )
+    assert result["applied"]["strict_withheld"] is True and result["applied"]["bullets"] == 0

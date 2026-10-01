@@ -1,0 +1,118 @@
+import { render, screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { afterEach, beforeEach, expect, test, vi } from "vitest";
+import { initialReview } from "../lib/review";
+import { EMPTY_RUN, useApp } from "../lib/store";
+import type { TailorResult } from "../lib/types";
+import { DRAFTED, MATCH } from "../test/fixtures";
+import { Results } from "./Results";
+
+const RESULT: TailorResult = {
+  success: true, alignment_score: 78.4, initial_alignment_score: 48.2, keyword_match: MATCH,
+  content_lint: { bullets: 6, bullets_with_metrics: 2, issues: [{ check: "pronoun", where: "Northwind", message: "Drop personal pronouns." }] },
+  addition_note: null, warnings: [], docx_warnings: [], pdf_warnings: [], target_pages: 1, pages: 2,
+  applied: { bullets: 4, bullets_edited: 0, summary: true, skills: false, rejected: 0, strict_withheld: false },
+  files: { docx: true, pdf: true, changes: true },
+};
+
+function show(result: Partial<TailorResult> = {}) {
+  useApp.setState({ step: "results", reached: 3, run: { ...EMPTY_RUN, drafted: DRAFTED, review: initialReview(DRAFTED),
+    results: { ...RESULT, ...result }, resultsVersion: 3 } });
+  return render(<Results />);
+}
+
+beforeEach(() => useApp.setState({ running: false }));
+afterEach(() => vi.unstubAllGlobals());
+
+test("before and after, downloads, stats and page previews", () => {
+  show();
+  expect(screen.getByRole("heading", { name: "Your resume is ready." })).toHaveFocus();
+  expect(screen.getByRole("img", { name: /48.2% before, 78.4% after/ })).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "Download PDF" })).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "Download DOCX" })).toBeInTheDocument();
+  expect(screen.getByText("Job keywords now on your resume").previousSibling).toHaveTextContent("1 of 3");
+  expect(screen.getByText(/Bullets rewritten/).previousSibling).toHaveTextContent("4"); // the server's count
+  const pages = screen.getAllByRole("img", { name: /Page \d of your tailored resume/ });
+  expect(pages.map((p) => p.getAttribute("src"))).toEqual(["/api/preview/1?v=3", "/api/preview/2?v=3"]);
+});
+
+test("no PDF: DOCX is the main download and the preview explains", () => {
+  show({ files: { docx: true, pdf: false, changes: true }, pages: 0 });
+  expect(screen.queryByRole("button", { name: "Download PDF" })).toBeNull();
+  expect(screen.getByText(/needs LibreOffice/)).toBeInTheDocument();
+  expect(screen.getByText(/No preview is available/)).toBeInTheDocument();
+});
+
+test("change log is fetched once and rendered as text", async () => {
+  const fetchMock = vi.fn(async () => new Response("# Tailoring Report\n\n- Rewrote **bullet 1**\n- <img src=x onerror=alert(1)>"));
+  vi.stubGlobal("fetch", fetchMock);
+  const user = userEvent.setup();
+  show();
+  await user.click(screen.getByRole("tab", { name: "Change log" }));
+  expect(await screen.findByText("bullet 1")).toHaveProperty("tagName", "STRONG");
+  expect(screen.getByText("<img src=x onerror=alert(1)>")).toBeInTheDocument(); // shown as text, not markup
+  expect(document.querySelector("img[src='x']")).toBeNull();
+  await user.click(screen.getByRole("tab", { name: "Preview" }));
+  await user.click(screen.getByRole("tab", { name: "Change log" }));
+  expect(fetchMock).toHaveBeenCalledTimes(1);
+});
+
+test("content and file checks; warnings change the headline", async () => {
+  const user = userEvent.setup();
+  // tailor_resume repeats file warnings inside `warnings`.
+  show({ success: false, pdf_warnings: ["Name not found on page 1"],
+    warnings: ["Name not found on page 1", "Kept your edited text as written (not fact-checked): Shipped X"] });
+  expect(screen.getByRole("heading", { name: /ready, with warnings/ })).toBeInTheDocument();
+  await user.click(screen.getByRole("tab", { name: /Content checks/ }));
+  expect(screen.getByText("Drop personal pronouns.")).toBeInTheDocument();
+  expect(screen.getByText(/2 of 6 bullets include a number/)).toBeInTheDocument();
+  const fileTab = screen.getByRole("tab", { name: /File checks/ });
+  expect(within(fileTab).getByText("(1)")).toBeInTheDocument();
+  await user.click(fileTab);
+  expect(screen.getByText("PDF: Name not found on page 1")).toBeInTheDocument();
+  expect(screen.queryByText(/Kept your edited text/)).toBeNull();
+  await user.click(screen.getByRole("tab", { name: /Notes/ }));
+  expect(screen.getByText(/Kept your edited text/)).toBeInTheDocument();
+  expect(screen.queryByText("Name not found on page 1")).toBeNull();
+});
+
+test("strict mode withholding is said up front", () => {
+  show({ applied: { ...RESULT.applied!, bullets: 0, strict_withheld: true },
+    warnings: ["Strict Factual Mode: all rewrites withheld because at least one rewrite failed validation."] });
+  expect(screen.getByRole("status")).toHaveTextContent(/withheld every rewrite/);
+  expect(screen.getByText(/Bullets rewritten/).previousSibling).toHaveTextContent("0");
+});
+
+test("a download that fails says why instead of saving an error page", async () => {
+  vi.stubGlobal("fetch", vi.fn(async () => new Response(JSON.stringify({ detail: "Your session has expired. Please upload your resume again." }),
+    { status: 404, headers: { "Content-Type": "application/json" } })));
+  const user = userEvent.setup();
+  show();
+  await user.click(screen.getByRole("button", { name: "Download PDF" }));
+  expect(await screen.findByRole("alert")).toHaveTextContent("Your session has expired");
+});
+
+test("the change log renders its keyword table and nested warnings", async () => {
+  vi.stubGlobal("fetch", vi.fn(async () => new Response(
+    "## Keyword Match\n\n| Keyword | Kind | Required | Found in |\n|---|---|---|---|\n| Python | hard | yes | skills |\n\n- DOCX warnings (1):\n  - Font fallback used")));
+  const user = userEvent.setup();
+  show();
+  await user.click(screen.getByRole("tab", { name: "Change log" }));
+  expect(await screen.findByRole("columnheader", { name: "Keyword" })).toBeInTheDocument();
+  expect(screen.getByRole("cell", { name: "Python" })).toBeInTheDocument();
+  expect(screen.queryByText(/\|---/)).toBeNull();
+  const nested = screen.getByText("Font fallback used");
+  expect(nested.closest("ul")!.parentElement).toHaveTextContent("DOCX warnings (1):");
+});
+
+test("Back to review returns to the review step", async () => {
+  const user = userEvent.setup();
+  show();
+  await user.click(screen.getByRole("button", { name: /Back to review/ }));
+  expect(useApp.getState().step).toBe("review");
+});
+
+test("own-wording bullets aren't called fact-checked", () => {
+  show({ applied: { ...RESULT.applied!, bullets: 3, bullets_edited: 1 } });
+  expect(screen.getByText(/1 in your own words, the rest fact-checked/)).toBeInTheDocument();
+});

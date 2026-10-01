@@ -421,6 +421,7 @@ def tailor(request: Request, body: TailorIn, session: Session = Depends(current_
             "docx_warnings": results.get("docx_warnings") or [],
             "pdf_warnings": results.get("pdf_warnings") or [],
             "target_pages": results.get("target_pages"),
+            "applied": results.get("applied"),
             "pages": pages,
             "files": {kind: bool(results.get(key)) and os.path.exists(results[key])
                       for kind, key in FILE_KINDS.items()},

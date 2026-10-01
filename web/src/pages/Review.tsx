@@ -106,6 +106,10 @@ export function Review() {
     }
     setError(null);
     setProgress([]);
+    // The server deletes the previous files before generating, so the old
+    // results must not stay reachable if this run fails.
+    updateRun({ results: null });
+    useApp.setState((s) => ({ reached: Math.min(s.reached, 2) }));
     const step = beginStep();
     try {
       const results = await tailorResume(

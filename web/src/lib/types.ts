@@ -160,6 +160,8 @@ export interface TailorResult {
   docx_warnings: string[];
   pdf_warnings: string[];
   target_pages: number | null;
+  applied: { bullets: number; bullets_edited: number; summary: boolean; skills: boolean; rejected: number;
+    strict_withheld: boolean } | null;
   pages: number;
   files: { docx: boolean; pdf: boolean; changes: boolean };
 }
