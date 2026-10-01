@@ -13,7 +13,7 @@ export function DiffText({ spans, side }: { spans: DiffSpan[]; side: "original" 
         if (s.changed) {
           node = side === "original"
             ? <del className="decoration-danger/70">{node}</del>
-            : <ins className="bg-gold-soft no-underline">{node}</ins>;
+            : <ins className="bg-pencil-soft no-underline">{node}</ins>;
         }
         const next = spans[i + 1];
         return (

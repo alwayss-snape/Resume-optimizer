@@ -41,10 +41,10 @@ export function Landing({ onStart, busy, run, maxUploadMb, error, errorKey }: {
     <>
       <section className="mx-auto flex max-w-[1240px] flex-col items-center gap-6 px-4 pb-14 pt-16 text-center md:px-8 md:pt-24">
         <motion.p variants={rise} initial="hidden" animate="shown" custom={0}
-          className="flex items-center gap-3.5 text-xs tracking-[0.28em] text-gold">
-          <span aria-hidden="true" className="h-px w-10 bg-gold" />
+          className="flex items-center gap-3.5 text-xs tracking-[0.28em] text-pencil">
+          <span aria-hidden="true" className="h-px w-10 bg-pencil" />
           RESUME TAILORING
-          <span aria-hidden="true" className="h-px w-10 bg-gold" />
+          <span aria-hidden="true" className="h-px w-10 bg-pencil" />
         </motion.p>
         <motion.h1 ref={heading} tabIndex={-1} variants={rise} initial="hidden" animate="shown" custom={1}
           className="max-w-[900px] outline-none font-display text-[44px] font-medium leading-[1.02] tracking-[-0.01em] sm:text-6xl md:text-[76px]">
@@ -77,8 +77,8 @@ export function Landing({ onStart, busy, run, maxUploadMb, error, errorKey }: {
         </div>
         <ol className="grid gap-8 md:grid-cols-3 md:gap-6">
           {HOW_IT_WORKS.map((item, i) => (
-            <li key={item.title} className="flex flex-col gap-3 border-t border-gold pt-5">
-              <span aria-hidden="true" className="font-display text-[44px] leading-none text-gold">0{i + 1}</span>
+            <li key={item.title} className="flex flex-col gap-3 border-t border-pencil pt-5">
+              <span aria-hidden="true" className="font-display text-[44px] leading-none text-pencil">0{i + 1}</span>
               <span className="text-lg font-medium">{item.title}</span>
               <span className="text-sm leading-relaxed text-muted">{item.text}</span>
             </li>

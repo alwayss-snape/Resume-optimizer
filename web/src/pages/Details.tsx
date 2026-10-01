@@ -87,7 +87,7 @@ export function Details() {
       </div>
 
       {run.parseIssues.length > 0 && (
-        <ul className="flex flex-col gap-2 border border-gold/60 bg-gold-soft p-4 text-sm">
+        <ul className="flex flex-col gap-2 border border-pencil/60 bg-pencil-soft p-4 text-sm">
           {run.parseIssues.map((issue) => (
             <li key={issue}>Possible reading problem: {issue}</li>
           ))}
@@ -115,7 +115,7 @@ export function Details() {
           <fieldset key={job.id} className="flex flex-col gap-4 border border-line bg-panel p-6">
             <legend className="sr-only">Job {i + 1}</legend>
             <div className="flex flex-wrap items-baseline justify-between gap-2">
-              <span className="text-xs tracking-[0.2em] text-gold">JOB {i + 1}</span>
+              <span className="text-xs tracking-[0.2em] text-pencil">JOB {i + 1}</span>
               <span className="text-xs text-muted">
                 {job.bullets} bullet{job.bullets === 1 ? "" : "s"}{job.groups ? ` in ${job.groups} sub-sections` : ""}
               </span>

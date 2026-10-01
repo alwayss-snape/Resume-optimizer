@@ -9,8 +9,8 @@ import { useFocusHeading } from "../lib/useFocusHeading";
 const STATUS: Record<MatchStatus, { label: string; tone: string }> = {
   EXPLICIT: { label: "Shown", tone: "text-success border-success-line" },
   SUPPORTED: { label: "Shown", tone: "text-success border-success-line" },
-  PARTIAL: { label: "Partly", tone: "text-gold border-gold/60" },
-  SEMANTIC_PARTIAL: { label: "Similar wording", tone: "text-gold border-gold/60" },
+  PARTIAL: { label: "Partly", tone: "text-pencil border-pencil/60" },
+  SEMANTIC_PARTIAL: { label: "Similar wording", tone: "text-pencil border-pencil/60" },
   UNCERTAIN: { label: "Unclear", tone: "text-muted border-field" },
   MISSING: { label: "Not shown", tone: "text-danger border-danger/50" },
 };
@@ -66,7 +66,7 @@ export function Report({ report, onTailor, onStartOver, busy, error }: {
     <div className="mx-auto flex max-w-[1240px] flex-col gap-12 px-4 py-12 md:px-8 md:py-16">
       <section className="grid items-center gap-10 md:grid-cols-[1fr_360px]">
         <div className="flex flex-col gap-5">
-          <p className="text-xs tracking-[0.28em] text-gold">MATCH REPORT</p>
+          <p className="text-xs tracking-[0.28em] text-pencil">MATCH REPORT</p>
           <h1 ref={heading} tabIndex={-1} className="font-display text-5xl font-medium leading-[1.02] outline-none md:text-[64px]">
             How your resume reads for this job.
           </h1>
@@ -107,7 +107,7 @@ export function Report({ report, onTailor, onStartOver, busy, error }: {
               aria-selected={tab === t.id} aria-controls="req-panel" tabIndex={tab === t.id ? 0 : -1}
               onClick={() => setTab(t.id)} onKeyDown={(e) => onTabKey(e, i)}
               className={`min-h-11 whitespace-nowrap border-b-2 pb-2 text-sm transition-colors ${
-                tab === t.id ? "border-gold text-ink" : "border-transparent text-muted hover:text-ink"}`}>
+                tab === t.id ? "border-pencil text-ink" : "border-transparent text-muted hover:text-ink"}`}>
               {t.label} <span className="text-muted">({lists[t.id].length})</span>
             </button>
           ))}

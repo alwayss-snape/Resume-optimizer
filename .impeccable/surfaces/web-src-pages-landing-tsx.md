@@ -18,7 +18,7 @@ on the landing hero that tilts with the cursor and visibly rewrites; a living fl
 THESIS: Every change is shown the way an editor marks a proof: struck, inserted, explained in the margin, and the
 user's to keep or reverse. Refuses the SaaS "AI resume builder" (gradients, sparkles, gauges) and the dark luxury look.
 OWN-WORLD: Bright bond paper (#FFFFFF sheets on a #F6F6F3 desk), graphite ink #1B1B1F, editor's blue pencil #2F62D8
-as the single action colour (buttons, focus, insertions, carets), proof red #C93A2F only for removed words and
+as the single action colour (buttons, focus, insertions, carets), proof red #BF3328 only for removed words and
 strike marks, highlighter yellow #F2D43D swiped behind matched job keywords. Sheets have real paper edges, a soft
 contact shadow and a slight lift; no rounded SaaS cards, no gradients, no glass. Type: Schibsted Grotesk for UI and
 headings (a newsroom face), Source Serif 4 for resume/proof text so documents read as documents; margin notes in
@@ -57,7 +57,7 @@ Tokens (both themes; every text pair ≥ 4.5:1, boundaries ≥ 3:1):
 | pencil (action, insert, focus) | #2F62D8 | #8FAEFF |
 | pencil-hover | #2550B8 | #B0C6FF |
 | on-pencil | #FFFFFF | #16171B |
-| proof red (removed words only) | #C93A2F | #FF8A7E |
+| proof red (removed words only) | #BF3328 | #FF8A7E |
 | highlighter (behind ink) | #F2D43D | #544D2C |
 | danger (errors: icon + "Error:" prefix + 2px border, never struck) | #B3261E | #FF9B8F |
 | success | #1E7A4C | #6FD39E |

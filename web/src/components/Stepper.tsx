@@ -10,14 +10,14 @@ export function Stepper() {
   if (step === "report") {
     return (
       <nav aria-label="Progress">
-        <p className="text-[13px] text-muted">Match report</p>
+        <p className="text-sm font-semibold text-ink">Match report</p>
       </nav>
     );
   }
 
   return (
     <nav aria-label="Progress">
-      <div className="flex items-center gap-3 text-[13px] text-muted md:hidden">
+      <div className="flex items-center gap-3 text-sm text-muted md:hidden">
         {current > 0 && !running && (
           <button type="button" onClick={() => goTo(STEPS[current - 1].id)}
             aria-label={`Back to ${STEPS[current - 1].label}`}
@@ -27,18 +27,18 @@ export function Stepper() {
           </button>
         )}
         <p>
-          Step {current + 1} of {STEPS.length} · <span className="text-ink">{STEPS[current].label}</span>
+          Step {current + 1} of {STEPS.length} · <span className="font-semibold text-ink">{STEPS[current].label}</span>
         </p>
       </div>
-      <ol className="hidden items-center gap-3.5 text-[13px] md:flex">
+      <ol className="hidden items-center gap-3 text-sm md:flex">
         {STEPS.map((s, i) => {
           const done = i < current;
           const isCurrent = i === current;
           const canVisit = i <= reached && !isCurrent && !running;
           const marker = (
             <span
-              className={`flex size-[22px] items-center justify-center rounded-full text-[11px] ${
-                done ? "bg-line text-gold" : isCurrent ? "border border-gold text-gold" : "border border-line-strong"
+              className={`tabular flex size-[22px] items-center justify-center rounded-full text-xs font-semibold ${
+                done ? "bg-pencil-soft text-pencil" : isCurrent ? "bg-pencil text-on-pencil" : "border border-field text-muted"
               }`}
             >
               {done ? <Icon name="check" size={12} strokeWidth={2.4} /> : i + 1}
@@ -46,7 +46,7 @@ export function Stepper() {
           );
           return (
             <li key={s.id} className="flex items-center gap-3.5">
-              {i > 0 && <span aria-hidden="true" className={`h-px w-7 ${i <= current ? "bg-gold" : "bg-line-strong"}`} />}
+              {i > 0 && <span aria-hidden="true" className={`h-px w-6 ${i <= current ? "bg-pencil" : "bg-line-strong"}`} />}
               {canVisit ? (
                 <button type="button" onClick={() => goTo(s.id)}
                   className="flex min-h-11 items-center gap-2 text-muted transition-colors hover:text-ink">
@@ -55,7 +55,7 @@ export function Stepper() {
                 </button>
               ) : (
                 <span aria-current={isCurrent ? "step" : undefined}
-                  className={`flex min-h-11 items-center gap-2 ${isCurrent ? "text-ink" : "text-muted"}`}>
+                  className={`flex min-h-11 items-center gap-2 ${isCurrent ? "font-semibold text-ink" : "text-muted"}`}>
                   {marker}
                   {s.label}
                 </span>

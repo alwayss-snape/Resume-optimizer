@@ -88,7 +88,7 @@ export const DEFAULT_SETTINGS: Settings = {
   model: null,
   strictFactual: false,
   rememberAnswers: true,
-  theme: "dark",
+  theme: "system",
 };
 
 // Storage that never throws (private windows, blocked site data).
@@ -135,8 +135,15 @@ export const useApp = create<AppState>()(
     // Only preferences persist; the run itself lives on the server.
     {
       name: SETTINGS_KEY,
-      version: 1,
+      version: 2,
       storage: safeStorage,
+      // v2 (redesign): "dark" was the old default, saved for everyone who changed any setting, so it counts as
+      // "system" once. The pre-paint script in index.html applies the same rule.
+      migrate: (persisted, version) => {
+        const settings = (persisted as { settings?: Partial<Settings> } | undefined)?.settings;
+        if ((version ?? 0) < 2 && settings?.theme === "dark") return { settings: { ...settings, theme: "system" } };
+        return persisted as { settings: Settings };
+      },
       partialize: (s) => ({ settings: s.settings }),
       merge: (persisted, current) => ({
         ...current,

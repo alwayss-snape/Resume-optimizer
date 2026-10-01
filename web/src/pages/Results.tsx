@@ -29,7 +29,7 @@ function Download({ kind, label, primary, onError }: {
         downloadFile(kind).catch((e) => onError(friendlyError(e))).finally(() => setBusy(false));
       }}
       className={`inline-flex h-13 items-center justify-center gap-2.5 rounded-[2px] px-6 text-[15px] transition-colors disabled:opacity-60 ${
-        primary ? "bg-gold font-semibold text-on-gold hover:bg-gold-hover" : "border border-line-strong text-ink hover:border-gold"}`}>
+        primary ? "bg-pencil font-semibold text-on-pencil hover:bg-pencil-hover" : "border border-line-strong text-ink hover:border-pencil"}`}>
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round"
         strokeLinejoin="round" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14" /></svg>
       {label}
@@ -72,19 +72,19 @@ function ScoreReveal({ result }: { result: TailorResult }) {
             {b}<span className="text-[0.45em]">%</span>
           </span>
         </div>
-        <svg width="72" height="24" viewBox="0 0 80 24" fill="none" stroke="var(--gold)" strokeWidth="1.2" className="mb-4 w-12 shrink sm:mb-6 sm:w-[72px]">
+        <svg width="72" height="24" viewBox="0 0 80 24" fill="none" stroke="var(--pencil)" strokeWidth="1.2" className="mb-4 w-12 shrink sm:mb-6 sm:w-[72px]">
           <path d="M0 12h76M68 5l8 7-8 7" />
         </svg>
         <div className="flex flex-col items-end gap-1">
-          <span className="text-[13px] text-gold">After</span>
+          <span className="text-[13px] text-pencil">After</span>
           <span className="font-display text-5xl leading-[0.9] sm:text-7xl md:text-[88px]">
-            {a}<span className="text-[0.45em] text-gold">%</span>
+            {a}<span className="text-[0.45em] text-pencil">%</span>
           </span>
         </div>
       </div>
       <div aria-hidden="true" className="flex flex-col gap-2.5">
         <div className="h-2 bg-line"><div className="h-full bg-line-strong" style={{ width: `${Math.min(100, before)}%` }} /></div>
-        <div className="h-2 bg-line"><div className="h-full bg-gold" style={{ width: `${Math.min(100, after)}%` }} /></div>
+        <div className="h-2 bg-line"><div className="h-full bg-pencil" style={{ width: `${Math.min(100, after)}%` }} /></div>
       </div>
       <span aria-hidden="true" className={`text-[13px] ${v.tone === "good" ? "text-success" : "text-muted"}`}>{v.text}</span>
     </div>
@@ -133,7 +133,7 @@ export function Results() {
     <div className="mx-auto flex max-w-[1240px] flex-col gap-12 px-4 py-12 md:px-8 md:py-16">
       <section className="grid items-center gap-10 md:grid-cols-2 md:gap-12">
         <div className="flex flex-col gap-5">
-          <p className="text-xs tracking-[0.28em] text-gold">TAILORED RESUME</p>
+          <p className="text-xs tracking-[0.28em] text-pencil">TAILORED RESUME</p>
           <h1 ref={heading} tabIndex={-1} className="font-display text-5xl font-medium leading-[1.02] outline-none md:text-[68px]">
             {result.success ? "Your resume is ready." : "Your resume is ready, with warnings."}
           </h1>
@@ -143,7 +143,7 @@ export function Results() {
               : "Some checks on the finished files raised problems. See File checks below before you send it."}
           </p>
           {applied?.strict_withheld && (
-            <p role="status" className="m-0 border border-gold/60 bg-gold-soft p-4 text-sm leading-relaxed">
+            <p role="status" className="m-0 border border-pencil/60 bg-pencil-soft p-4 text-sm leading-relaxed">
               Strict factual mode withheld every rewrite, because at least one failed the fact check. The files keep your
               original wording. Go back to review to edit or reject the failing rewrite, or turn strict mode off in settings.
             </p>
@@ -179,7 +179,7 @@ export function Results() {
               aria-selected={tab === t} aria-controls="results-panel" tabIndex={tab === t ? 0 : -1}
               onClick={() => setTab(t)} onKeyDown={(e) => onTabKey(e, i)}
               className={`min-h-11 whitespace-nowrap border-b-2 pb-2 text-[15px] transition-colors ${
-                tab === t ? "border-gold text-ink" : "border-transparent text-muted hover:text-ink"}`}>
+                tab === t ? "border-pencil text-ink" : "border-transparent text-muted hover:text-ink"}`}>
               {t}
               {t === "Content checks" && issues.length ? <span className="text-muted"> ({issues.length})</span> : null}
               {t === "Notes" && notes.length ? <span className="text-muted"> ({notes.length})</span> : null}
@@ -231,7 +231,7 @@ export function Results() {
                 <ul className="flex flex-col">
                   {issues.map((issue, i) => (
                     <li key={i} className="flex flex-col gap-1 border-t border-line py-4">
-                      <span className="text-xs text-gold">{CHECK_LABELS[issue.check] ?? issue.check} · {issue.where}</span>
+                      <span className="text-xs text-pencil">{CHECK_LABELS[issue.check] ?? issue.check} · {issue.where}</span>
                       <span className="text-sm">{issue.message}</span>
                     </li>
                   ))}

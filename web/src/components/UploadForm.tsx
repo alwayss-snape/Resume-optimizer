@@ -37,15 +37,15 @@ function TemplateCard({ value, current, onSelect, title, badge, text, disabled, 
 }) {
   const selected = current === value;
   return (
-    <label className={`flex items-center gap-5 border bg-panel p-5 transition-colors has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-gold ${
-      disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"} ${selected ? "border-gold" : "border-line hover:border-line-strong"}`}>
+    <label className={`flex items-center gap-5 border bg-panel p-5 transition-colors has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-pencil ${
+      disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"} ${selected ? "border-pencil" : "border-line hover:border-line-strong"}`}>
       <input type="radio" name="template" value={value} checked={selected} disabled={disabled}
         onChange={() => onSelect(value)} className="sr-only" />
       {children}
       <span className="flex flex-col gap-2">
         <span className="flex flex-wrap items-center gap-2.5">
           <span className="font-display text-[22px] font-semibold">{title}</span>
-          {badge && <span className="bg-gold px-2 py-0.5 text-[11px] tracking-[0.12em] text-on-gold">{badge}</span>}
+          {badge && <span className="bg-pencil px-2 py-0.5 text-[11px] tracking-[0.12em] text-on-pencil">{badge}</span>}
         </span>
         <span className="text-sm leading-relaxed text-muted">{text}</span>
       </span>
@@ -138,11 +138,11 @@ export function UploadForm({ intent, onSubmit, busy = false, initial, maxUploadM
               if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setDragging(false);
             }}
             onDrop={onDrop}
-            className={`flex cursor-pointer flex-col items-center gap-3 border border-dashed px-6 py-9 text-center transition-colors has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-gold ${
-              dragging ? "border-gold bg-gold-soft" : "border-field hover:border-gold"}`}>
-            <Icon name="upload" size={34} strokeWidth={1.3} className="text-gold" />
+            className={`flex cursor-pointer flex-col items-center gap-3 border border-dashed px-6 py-9 text-center transition-colors has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-pencil ${
+              dragging ? "border-pencil bg-pencil-soft" : "border-field hover:border-pencil"}`}>
+            <Icon name="upload" size={34} strokeWidth={1.3} className="text-pencil" />
             <span className="text-base">Drop your resume here</span>
-            <span className="text-[13px] text-muted">or <span className="text-gold underline">browse files</span></span>
+            <span className="text-[13px] text-muted">or <span className="text-pencil underline">browse files</span></span>
             <input id={fileId} ref={input} type="file" accept={ACCEPTED.join(",")} className="sr-only"
               {...invalid("file")}
               onChange={(e) => {
@@ -184,7 +184,7 @@ export function UploadForm({ intent, onSubmit, busy = false, initial, maxUploadM
               <span aria-hidden="true" className="flex h-[120px] w-[92px] shrink-0 flex-col gap-[5px] bg-paper p-2.5">
                 <span className="h-1.5 w-3/5 bg-[#1a1a17]" />
                 <span className="h-[3px] w-4/5 bg-[#8c8678]" />
-                <span className="my-0.5 h-px bg-gold" />
+                <span className="my-0.5 h-px bg-pencil" />
                 {[95, 88, 92, 40, 90, 70].map((w, i) => (
                   <span key={i} className={`h-[3px] ${i === 3 ? "bg-[#1a1a17]" : "bg-[#8c8678]"}`} style={{ width: `${w}%` }} />
                 ))}

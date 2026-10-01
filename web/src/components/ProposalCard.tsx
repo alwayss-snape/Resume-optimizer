@@ -14,7 +14,7 @@ import { Icon } from "./Icon";
 const STATE_TONE: Record<ProposalState, string> = {
   pass: "text-success border-success-line",
   unchanged: "text-muted border-field",
-  check: "text-gold border-gold/60",
+  check: "text-pencil border-pencil/60",
   dropped: "text-danger border-danger/50",
   failed: "text-danger border-danger/50",
 };
@@ -108,7 +108,7 @@ export const ProposalCard = forwardRef<HTMLElement, {
         <Icon name="close" className="shrink-0 text-danger" />
         <p className="m-0 flex-1 break-words text-[15px] leading-relaxed text-muted line-through decoration-field">{p.original}</p>
         <span className="text-[13px] text-danger">Rejected, original kept</span>
-        <Button variant="ghost" onClick={() => decideAndFocus("accept")} className="text-gold hover:text-gold-hover">Undo</Button>
+        <Button variant="ghost" onClick={() => decideAndFocus("accept")} className="text-pencil hover:text-pencil-hover">Undo</Button>
       </article>
     );
   }
@@ -116,7 +116,7 @@ export const ProposalCard = forwardRef<HTMLElement, {
   return (
     <article ref={setRefs} tabIndex={0} onKeyDown={onKeyDown} aria-label={label}
       aria-keyshortcuts="A R E ArrowUp ArrowDown" aria-describedby={shortcutsHintId}
-      className="flex flex-col gap-4 border border-line bg-panel p-5 outline-offset-2 transition-colors focus-visible:border-gold focus-visible:outline-none md:p-6">
+      className="flex flex-col gap-4 border border-line bg-panel p-5 outline-offset-2 transition-colors focus-visible:border-pencil focus-visible:outline-none md:p-6">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <span className="text-[13px] text-muted">{label}</span>
         <span className={`border px-2.5 py-1 text-xs ${STATE_TONE[edited ? "pass" : p.state]}`}>
@@ -126,7 +126,7 @@ export const ProposalCard = forwardRef<HTMLElement, {
 
       {editing ? (
         <div className="flex flex-col gap-3">
-          <label htmlFor={editId} className="text-[11px] tracking-[0.18em] text-gold">YOUR VERSION</label>
+          <label htmlFor={editId} className="text-[11px] tracking-[0.18em] text-pencil">YOUR VERSION</label>
           <textarea id={editId} ref={box} value={draft} rows={p.kind === "skills" ? 6 : 3}
             onChange={(e) => setDraft(e.target.value)}
             onBlur={() => save(false)}
@@ -154,7 +154,7 @@ export const ProposalCard = forwardRef<HTMLElement, {
               : <p className="m-0 text-[15px] text-muted">(none)</p>}
           </div>
           <div className="flex flex-col gap-2">
-            <span className="text-[11px] tracking-[0.18em] text-gold">{edited ? "YOUR VERSION" : "PROPOSED"}</span>
+            <span className="text-[11px] tracking-[0.18em] text-pencil">{edited ? "YOUR VERSION" : "PROPOSED"}</span>
             {edited ? <p className="m-0 whitespace-pre-line break-words text-[15px] leading-relaxed">{text}</p>
               : <DiffText spans={p.diff.proposed} side="proposed" />}
           </div>
@@ -165,7 +165,7 @@ export const ProposalCard = forwardRef<HTMLElement, {
         <p className="m-0 text-[13px] leading-relaxed text-muted">
           {p.state === "failed" && !edited ? <span className="text-danger">Not rewritten: the AI call failed, so your original is shown. </span> : null}
           {p.note && !edited && p.state !== "failed"
-            ? <span className={p.state === "check" ? "text-gold" : "text-danger"}>{p.note}. </span> : null}
+            ? <span className={p.state === "check" ? "text-pencil" : "text-danger"}>{p.note}. </span> : null}
           {p.state === "dropped" && !edited ? "Edit it, or it won't be used. " : null}
           {p.rationale ? `Why: ${p.rationale}` : !p.note ? `${p.state_meaning.charAt(0).toUpperCase()}${p.state_meaning.slice(1)}.` : null}
         </p>

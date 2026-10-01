@@ -1,46 +1,61 @@
 @import "tailwindcss";
 
-/* Design tokens (P5.2). Dark is the house look; light is cream paper with
-   ink. Every colour pair used for text meets WCAG AA (4.5:1). */
+/* Design tokens (P6.3, Editor's Proof). Light is bright bond paper on a pale
+   desk; dark is the same proof under a desk lamp. Every text pair meets WCAG
+   AA (4.5:1) and every control boundary 3:1 (`field`); `line` is decorative.
+   Blue pencil is the one action colour; proof red marks removed words only;
+   errors use `danger`, always with an icon and words, never a strike. */
 :root,
-[data-theme="dark"] {
-  --bg: #0e0e0c;
-  --panel: #171714;
-  --panel-2: #1f1e1a;
-  --line: #2a2823;
-  --line-strong: #4a463c;
-  --field: #6e685c; /* input borders: 3:1 on panels (WCAG 1.4.11) */
-  --ink: #ede6d6;
-  --muted: #a39c8c;
-  --gold: #b89b5e;
-  --gold-hover: #d4ba82;
-  --on-gold: #0e0e0c;
-  --gold-soft: rgb(184 155 94 / 0.16);
-  --danger: #c2766f;
-  --success: #8fa88a;
-  --success-line: #4f5e4c;
-  --paper: #f4efe4;
-  color-scheme: dark;
+[data-theme="light"] {
+  --bg: #f6f6f3; /* desk */
+  --panel: #ffffff; /* sheet */
+  --panel-2: #f0f0ec;
+  --line: #e2e2dd;
+  --line-strong: #c9c9c3;
+  --field: #85868e;
+  --ink: #1b1b1f;
+  --muted: #5f6068;
+  --pencil: #2f62d8;
+  --pencil-hover: #2550b8;
+  --on-pencil: #ffffff;
+  --pencil-soft: rgb(47 98 216 / 0.09);
+  --strike: #bf3328;
+  --highlight: #f2d43d;
+  --highlight-soft: rgb(242 212 61 / 0.55);
+  --danger: #b3261e;
+  --success: #1e7a4c;
+  --success-line: #8fc4a5;
+  --warning: #8a5a00;
+  --paper: #ffffff;
+  --sheet-shadow: 0 1px 2px rgb(27 27 31 / 0.06), 0 10px 28px -12px rgb(27 27 31 / 0.18);
+  --sheet-shadow-lift: 0 2px 4px rgb(27 27 31 / 0.06), 0 22px 44px -18px rgb(27 27 31 / 0.28);
+  color-scheme: light;
 }
 
-[data-theme="light"] {
-  --bg: #f4efe4;
-  --panel: #fbf8f1;
-  --panel-2: #efe8da;
-  --line: #ddd4c2;
-  --line-strong: #b9ad95;
-  --field: #8c826e;
-  --ink: #1a1a17;
-  --muted: #5e584c;
-  --gold: #7a5f28;
-  --gold-hover: #5f4a1e;
-  --on-gold: #fbf8f1;
-  --gold-soft: rgb(122 95 40 / 0.12);
-  --danger: #9a3b34;
-  --success: #4f6b4a;
-  --success-line: #9db497;
+[data-theme="dark"] {
+  --bg: #16171b;
+  --panel: #1f2026;
+  --panel-2: #272932;
+  --line: #33353e;
+  --line-strong: #4a4c57;
+  --field: #75767f;
+  --ink: #ececef;
+  --muted: #a3a4ac;
+  --pencil: #8faeff;
+  --pencil-hover: #b0c6ff;
+  --on-pencil: #16171b;
+  --pencil-soft: rgb(143 174 255 / 0.13);
+  --strike: #ff8a7e;
+  --highlight: #544d2c;
+  --highlight-soft: #544d2c;
+  --danger: #ff9b8f;
+  --success: #6fd39e;
+  --success-line: #2f5a44;
+  --warning: #e8b54a;
   --paper: #ffffff;
-  color-scheme: light;
+  --sheet-shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 12px 32px -12px rgb(0 0 0 / 0.6);
+  --sheet-shadow-lift: 0 2px 4px rgb(0 0 0 / 0.4), 0 24px 48px -16px rgb(0 0 0 / 0.7);
+  color-scheme: dark;
 }
 
 @theme inline {
@@ -52,16 +67,23 @@
   --color-field: var(--field);
   --color-ink: var(--ink);
   --color-muted: var(--muted);
-  --color-gold: var(--gold);
-  --color-gold-hover: var(--gold-hover);
-  --color-on-gold: var(--on-gold);
-  --color-gold-soft: var(--gold-soft);
+  --color-pencil: var(--pencil);
+  --color-pencil-hover: var(--pencil-hover);
+  --color-on-pencil: var(--on-pencil);
+  --color-pencil-soft: var(--pencil-soft);
+  --color-strike: var(--strike);
+  --color-highlight: var(--highlight);
+  --color-highlight-soft: var(--highlight-soft);
   --color-danger: var(--danger);
   --color-success: var(--success);
   --color-success-line: var(--success-line);
+  --color-warning: var(--warning);
   --color-paper: var(--paper);
-  --font-display: "Cormorant Garamond", "Iowan Old Style", Georgia, serif;
-  --font-sans: "Instrument Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --shadow-sheet: var(--sheet-shadow);
+  --shadow-sheet-lift: var(--sheet-shadow-lift);
+  --font-display: "Schibsted Grotesk", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-sans: "Schibsted Grotesk", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-serif: "Source Serif 4", "Iowan Old Style", Georgia, serif;
 }
 
 html {
@@ -69,6 +91,10 @@ html {
   color: var(--ink);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+  caret-color: var(--pencil);
+  accent-color: var(--pencil);
+  scrollbar-color: var(--field) var(--bg);
+  text-underline-offset: 0.18em;
 }
 
 body {
@@ -77,10 +103,61 @@ body {
 }
 
 :focus-visible {
-  outline: 2px solid var(--gold);
+  outline: 2px solid var(--pencil);
   outline-offset: 3px;
 }
 
 ::selection {
-  background: var(--gold-soft);
+  background: var(--highlight-soft);
+  color: var(--ink);
+}
+
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+
+/* Proof marks. They never rely on colour alone: an insertion is underlined,
+   a removal is struck through, a matched keyword carries a highlighter swipe.
+   Never stack mark-ins / mark-del on mark-hl (coloured text on yellow fails AA);
+   a highlighted keyword stays ink. */
+@utility mark-ins {
+  color: var(--pencil);
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.2em;
+}
+
+@utility mark-del {
+  color: var(--strike);
+  text-decoration: line-through;
+  text-decoration-thickness: 1.5px;
+}
+
+@utility mark-hl {
+  background-image: linear-gradient(
+    100deg,
+    transparent 0.2em,
+    var(--highlight-soft) 0.3em,
+    var(--highlight-soft) calc(100% - 0.3em),
+    transparent calc(100% - 0.2em)
+  );
+  background-size: 100% 72%;
+  background-position: 0 70%;
+  background-repeat: no-repeat;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  padding-inline: 0.12em;
+}
+
+/* A sheet of paper on the desk: square corners, a real edge, soft contact shadow. */
+@utility sheet {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  box-shadow: var(--sheet-shadow);
+}
+
+@utility tabular {
+  font-variant-numeric: tabular-nums;
 }

@@ -18,7 +18,7 @@ import { useApp } from "../lib/store";
 import type { MatchPreview } from "../lib/types";
 import { useFocusHeading } from "../lib/useFocusHeading";
 
-const SECTION_LABEL = "flex items-center gap-3.5 text-xs tracking-[0.2em] text-gold";
+const SECTION_LABEL = "flex items-center gap-3.5 text-xs tracking-[0.2em] text-pencil";
 
 /** Step 3 (P3.4 / P5.4): accept, reject or edit each rewrite; answer the
  *  questions about what the job asks for; add anything else; then generate. */
@@ -177,7 +177,7 @@ export function Review() {
               No rewrites could be drafted, so the cards show your original text. {llm.fix_hint} Then start over.
             </div>
           ) : llm.failed ? (
-            <div role="status" className="border border-gold/60 p-4 text-sm">
+            <div role="status" className="border border-pencil/60 p-4 text-sm">
               {llm.failed} of {llm.attempted} rewrites failed and show your original text.
               {llm.errors?.[0] ? ` Reason: ${llm.errors[0]}` : ""}
             </div>
@@ -196,7 +196,7 @@ export function Review() {
           {groups.map((g) => (
             <section key={g.key} aria-label={g.label} className="flex flex-col gap-4">
               <div className="mt-3 flex items-center gap-3.5">
-                <h2 className="text-xs tracking-[0.2em] text-gold">{g.label.toUpperCase()}</h2>
+                <h2 className="text-xs tracking-[0.2em] text-pencil">{g.label.toUpperCase()}</h2>
                 <span aria-hidden="true" className="h-px flex-1 bg-line" />
               </div>
               {g.items.map((p) => {
@@ -244,8 +244,8 @@ export function Review() {
 
           <section aria-label="Add more" className="mt-6 flex flex-col gap-4">
             <details className="group border border-dashed border-field bg-panel">
-              <summary className="flex min-h-15 cursor-pointer list-none items-center gap-2.5 px-5 text-sm hover:text-gold [&::-webkit-details-marker]:hidden">
-                <Icon name="close" size={16} className="rotate-45 text-gold transition-transform group-open:rotate-0" />
+              <summary className="flex min-h-15 cursor-pointer list-none items-center gap-2.5 px-5 text-sm hover:text-pencil [&::-webkit-details-marker]:hidden">
+                <Icon name="close" size={16} className="rotate-45 text-pencil transition-transform group-open:rotate-0" />
                 Add anything else in your own words
               </summary>
               <div className="grid gap-4 border-t border-line p-5 md:grid-cols-[2fr_1fr]">
@@ -258,8 +258,8 @@ export function Review() {
             </details>
             <details open={jobOpen} onToggle={(e) => setJobOpen(e.currentTarget.open)}
               className="group border border-dashed border-field bg-panel">
-              <summary className="flex min-h-15 cursor-pointer list-none items-center gap-2.5 px-5 text-sm hover:text-gold [&::-webkit-details-marker]:hidden">
-                <Icon name="close" size={16} className="rotate-45 text-gold transition-transform group-open:rotate-0" />
+              <summary className="flex min-h-15 cursor-pointer list-none items-center gap-2.5 px-5 text-sm hover:text-pencil [&::-webkit-details-marker]:hidden">
+                <Icon name="close" size={16} className="rotate-45 text-pencil transition-transform group-open:rotate-0" />
                 Add a job that isn't on your resume
               </summary>
               <div className="border-t border-line p-5">

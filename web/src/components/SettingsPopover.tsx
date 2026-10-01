@@ -4,9 +4,9 @@ import { type Theme, resolveModel, useApp } from "../lib/store";
 import { Icon } from "./Icon";
 
 const THEMES: { id: Theme; label: string }[] = [
-  { id: "dark", label: "Dark" },
-  { id: "light", label: "Light" },
   { id: "system", label: "System" },
+  { id: "light", label: "Light" },
+  { id: "dark", label: "Dark" },
 ];
 
 function Toggle({ label, help, checked, onChange }: {
@@ -24,7 +24,7 @@ function Toggle({ label, help, checked, onChange }: {
       </div>
       <input id={id} type="checkbox" role="switch" checked={checked} aria-describedby={`${id}-help`}
         onChange={(e) => onChange(e.target.checked)}
-        className="mt-0.5 size-[22px] shrink-0 cursor-pointer accent-[var(--gold)]" />
+        className="mt-0.5 size-[22px] shrink-0 cursor-pointer" />
     </div>
   );
 }
@@ -74,17 +74,17 @@ export function SettingsPopover({ config }: { config: AppConfig | null | undefin
       <button ref={button} type="button" aria-label="Settings" aria-expanded={open} aria-controls={panelId}
         onClick={() => setOpen((v) => !v)}
         className={`flex size-11 items-center justify-center rounded-full border transition-colors ${
-          open ? "border-gold text-gold" : "border-line text-muted hover:text-ink"}`}>
+          open ? "border-pencil bg-pencil-soft text-pencil" : "border-field bg-panel text-muted hover:text-ink"}`}>
         <Icon name="settings" />
       </button>
       {open && (
         <div ref={panel} id={panelId} role="group" aria-label="Settings"
-          className="absolute right-0 top-14 z-30 flex w-[min(340px,calc(100vw-32px))] flex-col gap-5 border border-line bg-panel p-5 shadow-[0_24px_60px_rgb(0_0_0/0.35)]">
+          className="sheet absolute right-0 top-14 z-30 flex w-[min(340px,calc(100vw-32px))] flex-col gap-5 p-5 shadow-sheet-lift">
           <div className="flex flex-col gap-2">
-            <label htmlFor={modelId} className="text-[11px] tracking-[0.2em] text-muted">AI MODEL</label>
+            <label htmlFor={modelId} className="text-sm font-semibold text-ink">AI model</label>
             <select id={modelId} value={model} disabled={!models.length}
               onChange={(e) => updateSettings({ model: resolveModel(e.target.value, models) })}
-              className="h-11 border border-field bg-panel-2 px-3 text-sm text-ink">
+              className="h-11 rounded-[3px] border border-field bg-panel px-3 text-sm text-ink">
               {models.map((m) => (
                 <option key={m} value={m}>{m}</option>
               ))}
@@ -101,12 +101,12 @@ export function SettingsPopover({ config }: { config: AppConfig | null | undefin
             help="Skills you confirm are offered again for your next job description during this visit. Never shared."
             checked={settings.rememberAnswers} onChange={(v) => updateSettings({ rememberAnswers: v })} />
           <fieldset className="flex flex-col gap-2">
-            <legend className="mb-2 text-[11px] tracking-[0.2em] text-muted">APPEARANCE</legend>
-            <div className="grid grid-cols-3 border border-field">
+            <legend className="mb-2 text-sm font-semibold text-ink">Appearance</legend>
+            <div className="grid grid-cols-3 overflow-hidden rounded-[3px] border border-field">
               {THEMES.map((t) => (
                 <label key={t.id}
-                  className={`flex h-11 cursor-pointer items-center justify-center border-b-2 text-sm transition-colors has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-gold ${
-                    settings.theme === t.id ? "border-gold bg-gold-soft text-ink" : "border-transparent text-muted hover:text-ink"}`}>
+                  className={`flex h-11 cursor-pointer items-center justify-center border-b-2 text-sm transition-colors has-[:focus-visible]:outline-2 has-[:focus-visible]:-outline-offset-4 has-[:focus-visible]:outline-pencil ${
+                    settings.theme === t.id ? "border-pencil bg-pencil-soft font-semibold text-ink" : "border-transparent text-muted hover:text-ink"}`}>
                   <input type="radio" name="theme" value={t.id} checked={settings.theme === t.id}
                     onChange={() => updateSettings({ theme: t.id })} className="sr-only" />
                   {t.label}

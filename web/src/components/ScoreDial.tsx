@@ -32,7 +32,7 @@ export function ScoreDial({ value, before, band, size = 180, label = "Keyword ma
             <circle cx="90" cy="90" r={R} fill="none" stroke="var(--line-strong)" strokeWidth="6"
               strokeDasharray={`${(before / 100) * CIRCUMFERENCE} ${CIRCUMFERENCE}`} transform="rotate(-90 90 90)" />
           )}
-          <motion.circle cx="90" cy="90" r={R} fill="none" stroke="var(--gold)" strokeWidth="6" strokeLinecap="round"
+          <motion.circle cx="90" cy="90" r={R} fill="none" stroke="var(--pencil)" strokeWidth="6" strokeLinecap="round"
             style={{ strokeDasharray: dash }} transform="rotate(-90 90 90)" />
         </svg>
         <div aria-hidden="true" className="absolute inset-0 flex flex-col items-center justify-center">
@@ -58,7 +58,7 @@ export function BandBar({ value, band }: { value: number; band: [number, number]
     <div className="flex w-full flex-col gap-1.5" aria-hidden="true">
       <div className="relative h-1.5 bg-line">
         <div className="absolute inset-y-0 bg-success/45" style={{ left: `${low}%`, width: `${high - low}%` }} />
-        <div className="absolute -top-[5px] h-4 w-0.5 bg-gold" style={{ left: `${Math.min(99.5, value)}%` }} />
+        <div className="absolute -top-[5px] h-4 w-0.5 bg-pencil" style={{ left: `${Math.min(99.5, value)}%` }} />
       </div>
       <div className="flex justify-between text-[11px] text-muted">
         <span>0</span>

@@ -16,15 +16,15 @@ test("opens, changes settings, and closes on Escape", async () => {
 
   await user.click(gear);
   expect(screen.getByRole("group", { name: "Settings" })).toBeInTheDocument();
-  expect(screen.getByLabelText("AI MODEL")).toHaveFocus(); // focus moves into the menu
+  expect(screen.getByLabelText("AI model")).toHaveFocus(); // focus moves into the menu
   expect(screen.getByText("Provider: Groq (cloud)")).toBeInTheDocument();
 
-  await user.selectOptions(screen.getByLabelText("AI MODEL"), "openai/gpt-oss-20b");
+  await user.selectOptions(screen.getByLabelText("AI model"), "openai/gpt-oss-20b");
   await user.click(screen.getByRole("switch", { name: /Strict factual mode/ }));
   await user.click(screen.getByRole("radio", { name: "Light" }));
   expect(useApp.getState().settings).toMatchObject({ model: "openai/gpt-oss-20b", strictFactual: true, theme: "light" });
 
-  await user.selectOptions(screen.getByLabelText("AI MODEL"), "openai/gpt-oss-120b");
+  await user.selectOptions(screen.getByLabelText("AI model"), "openai/gpt-oss-120b");
   expect(useApp.getState().settings.model).toBeNull(); // the default is stored as "no choice"
 
   await user.keyboard("{Escape}");
@@ -36,13 +36,13 @@ test("a saved model the provider no longer offers falls back to the default", as
   useApp.setState({ settings: { ...DEFAULT_SETTINGS, model: "qwen3:4b" } });
   render(<SettingsPopover config={config} />);
   await userEvent.click(screen.getByRole("button", { name: "Settings" }));
-  expect(screen.getByLabelText("AI MODEL")).toHaveValue("openai/gpt-oss-120b");
+  expect(screen.getByLabelText("AI model")).toHaveValue("openai/gpt-oss-120b");
 });
 
 test("says so when the server can't be reached", async () => {
   render(<SettingsPopover config={null} />);
   await userEvent.click(screen.getByRole("button", { name: "Settings" }));
-  expect(screen.getByLabelText("AI MODEL")).toBeDisabled();
+  expect(screen.getByLabelText("AI model")).toBeDisabled();
   expect(screen.getByText(/Can't reach the server/)).toBeInTheDocument();
 });
 

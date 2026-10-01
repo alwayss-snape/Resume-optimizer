@@ -52,9 +52,9 @@ export function GapQuestionCard({ question: q, value, onChange, targets }: {
         {q.keywords.map((k) => {
           const on = value.ticked.includes(k);
           return (
-            <label key={k} className={`flex min-h-11 cursor-pointer items-center gap-2.5 border px-4 text-sm has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-gold ${
-              on ? "border-gold bg-gold-soft" : "border-field"}`}>
-              <input type="checkbox" checked={on} onChange={() => toggle(k)} className="size-4 accent-[var(--gold)]" />
+            <label key={k} className={`flex min-h-11 cursor-pointer items-center gap-2.5 border px-4 text-sm has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-pencil ${
+              on ? "border-pencil bg-pencil-soft" : "border-field"}`}>
+              <input type="checkbox" checked={on} onChange={() => toggle(k)} className="size-4 accent-[var(--pencil)]" />
               I have used {k}
             </label>
           );

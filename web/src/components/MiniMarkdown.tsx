@@ -28,7 +28,7 @@ export function MiniMarkdown({ source }: { source: string }) {
   const flushList = () => {
     if (!list.length) return;
     blocks.push(
-      <ul key={`ul${blocks.length}`} className="my-2 flex list-disc flex-col gap-1.5 pl-5 text-sm leading-relaxed text-muted marker:text-gold">
+      <ul key={`ul${blocks.length}`} className="my-2 flex list-disc flex-col gap-1.5 pl-5 text-sm leading-relaxed text-muted marker:text-pencil">
         {list.map((item, i) => (
           <li key={i} className="break-words">
             {inline(item.text)}

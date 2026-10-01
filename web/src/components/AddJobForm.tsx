@@ -52,7 +52,7 @@ export function AddJobForm({ value, onChange }: { value: NewJob; onChange: (v: N
       <TextField label="Location" value={value.location} placeholder="City, Country" onChange={(e) => set({ location: e.target.value })} />
       <label htmlFor={currentId} className="flex min-h-11 cursor-pointer items-center gap-3 self-end text-sm">
         <input id={currentId} type="checkbox" checked={value.current} onChange={(e) => set({ current: e.target.checked })}
-          className="size-[18px] accent-[var(--gold)]" />
+          className="size-[18px] accent-[var(--pencil)]" />
         I currently work here
       </label>
       <MonthYear label="Start *" value={value.start} onChange={(start) => set({ start })} />

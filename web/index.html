@@ -1,23 +1,25 @@
 <!doctype html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="light">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Tailor your resume to a job description. Every rewrite comes from what is already on your resume." />
     <title>Tailor · Resume Studio</title>
     <script>
-      // Apply the saved theme before the first paint (no dark flash for light-theme users).
+      // Apply the theme before the first paint (no flash of the wrong theme). "system" (the default) follows the
+      // OS: dark only when it asks for dark. A saved "dark" from before the redesign (v1) counts as "system".
       try {
-        var t = (JSON.parse(localStorage.getItem("tailor-settings") || "{}").state || {}).settings;
-        t = t && t.theme;
-        if (t === "system") t = matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+        var saved = JSON.parse(localStorage.getItem("tailor-settings") || "{}");
+        var t = ((saved.state || {}).settings || {}).theme;
+        if (["light", "dark", "system"].indexOf(t) < 0 || ((saved.version || 0) < 2 && t === "dark")) t = "system";
+        if (t === "system") t = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
         if (t === "light" || t === "dark") document.documentElement.dataset.theme = t;
       } catch (e) {}
     </script>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:ital,wght@0,400..800;1,400..800&family=Source+Serif+4:ital,opsz,wght@0,8..60,400..700;1,8..60,400..700&display=swap" rel="stylesheet" />
   </head>
   <body>
     <div id="root"></div>
