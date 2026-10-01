@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "1083ed0188f4ed5c",
+  "source_hash": "bd923952106d6649",
   "stats": {
-    "files": 135,
-    "python_files": 112,
-    "app_modules": 55,
-    "test_files": 49,
+    "files": 133,
+    "python_files": 110,
+    "app_modules": 54,
+    "test_files": 48,
     "classes": 100,
-    "functions": 855,
-    "lines_of_python": 17482
+    "functions": 826,
+    "lines_of_python": 16400
   },
   "axes": {
     "x": "location (path)",
@@ -217,7 +217,7 @@
       "type": "file",
       "layer": "Root",
       "stages": [],
-      "lines": 100
+      "lines": 97
     },
     {
       "id": "CLAUDE.md",
@@ -231,7 +231,7 @@
       "type": "file",
       "layer": "Root",
       "stages": [],
-      "lines": 38
+      "lines": 39
     },
     {
       "id": "app/analysis/change_proposal.py",
@@ -2734,63 +2734,43 @@
       "stages": [
         "7 Rewrite"
       ],
-      "lines": 154,
-      "doc": "What the proposal review screen shows (P3.4), as plain functions so the",
+      "lines": 110,
+      "doc": "What the proposal review screen shows (P3.4, served by the web API since",
       "classes": [],
       "functions": [
         {
           "name": "_words",
-          "line": 20,
+          "line": 15,
           "doc": "Words, with each line break kept as its own token (skills are lines)."
         },
         {
-          "name": "_escape",
-          "line": 30,
-          "doc": ""
-        },
-        {
           "name": "_keyword_spans",
-          "line": 34,
+          "line": 20,
           "doc": "Indexes of words that are part of a JD keyword (case-insensitive,"
         },
         {
-          "name": "_render",
-          "line": 48,
-          "doc": ""
-        },
-        {
-          "name": "diff_html",
-          "line": 63,
-          "doc": "(original_html, proposed_html): removed words struck through on the"
-        },
-        {
           "name": "_diff",
-          "line": 73,
+          "line": 34,
           "doc": "Both texts as words, plus the indexes removed from the original and"
         },
         {
           "name": "diff_spans",
-          "line": 87,
-          "doc": "The same diff as diff_html, as data for a web client that renders it"
+          "line": 48,
+          "doc": "A word diff as data for the web client, which renders it itself: one"
         },
         {
           "name": "proposal_state",
-          "line": 111,
+          "line": 73,
           "doc": "One of PROPOSAL_STATES' keys for a proposal."
         },
         {
-          "name": "status_badge",
-          "line": 122,
-          "doc": "(badge, meaning) for one proposal, as the Streamlit page shows it."
-        },
-        {
           "name": "score_breakdown",
-          "line": 128,
+          "line": 84,
           "doc": "Per keyword kind: how many found and how much of the rate it earns."
         },
         {
           "name": "gap_table",
-          "line": 145,
+          "line": 101,
           "doc": "Missing JD keywords, required and heaviest first, and whether a gap"
         }
       ]
@@ -3185,53 +3165,6 @@
       ]
     },
     {
-      "id": "app/ui.py",
-      "type": "python",
-      "layer": "Entry points",
-      "stages": [
-        "1 Ingest",
-        "2 Normalize",
-        "3 JD analysis",
-        "4 Match",
-        "5 Score",
-        "6 Plan",
-        "7 Rewrite",
-        "8 Validate",
-        "9 Render",
-        "10 Report"
-      ],
-      "lines": 725,
-      "doc": "",
-      "classes": [],
-      "functions": [
-        {
-          "name": "show_pdf_preview",
-          "line": 27,
-          "doc": ""
-        },
-        {
-          "name": "_cleanup_session_state",
-          "line": 38,
-          "doc": "Remove temp files from a previous run and reset to a clean 'idle' state."
-        },
-        {
-          "name": "_show_content_checks",
-          "line": 104,
-          "doc": "P2.6: advice on the finished resume; nothing is changed automatically."
-        },
-        {
-          "name": "_show_keyword_match",
-          "line": 236,
-          "doc": "Match rate against the target band, then the matched / missing table"
-        },
-        {
-          "name": "_draft_proposals",
-          "line": 268,
-          "doc": ""
-        }
-      ]
-    },
-    {
       "id": "app/validation/content_lint.py",
       "type": "python",
       "layer": "Validation",
@@ -3470,7 +3403,7 @@
       "type": "file",
       "layer": "Root",
       "stages": [],
-      "lines": 48
+      "lines": 47
     },
     {
       "id": "scripts/autocommit.sh",
@@ -3597,118 +3530,118 @@
       "type": "python",
       "layer": "Tooling",
       "stages": [],
-      "lines": 737,
+      "lines": 735,
       "doc": "Regenerate the repo's living docs: the knowledge graph and the change log.",
       "classes": [],
       "functions": [
         {
           "name": "git",
-          "line": 135,
+          "line": 133,
           "doc": ""
         },
         {
           "name": "layer_of",
-          "line": 142,
+          "line": 140,
           "doc": ""
         },
         {
           "name": "module_name",
-          "line": 149,
+          "line": 147,
           "doc": ""
         },
         {
           "name": "first_line",
-          "line": 156,
+          "line": 154,
           "doc": ""
         },
         {
           "name": "list_files",
-          "line": 165,
+          "line": 163,
           "doc": "Tracked + new (not ignored) files, restricted to the project map."
         },
         {
           "name": "parse_python",
-          "line": 183,
+          "line": 181,
           "doc": ""
         },
         {
           "name": "symbols_of",
-          "line": 211,
+          "line": 209,
           "doc": ""
         },
         {
           "name": "settings_fields",
-          "line": 224,
+          "line": 222,
           "doc": ""
         },
         {
           "name": "build_graph",
-          "line": 243,
+          "line": 241,
           "doc": ""
         },
         {
           "name": "render_graph_md",
-          "line": 317,
+          "line": 315,
           "doc": ""
         },
         {
           "name": "write_graph",
-          "line": 515,
+          "line": 513,
           "doc": ""
         },
         {
           "name": "commit_info",
-          "line": 558,
+          "line": 556,
           "doc": ""
         },
         {
           "name": "changed_files",
-          "line": 569,
+          "line": 567,
           "doc": ""
         },
         {
           "name": "is_major",
-          "line": 582,
+          "line": 580,
           "doc": ""
         },
         {
           "name": "blob",
-          "line": 591,
+          "line": 589,
           "doc": ""
         },
         {
           "name": "structure_delta",
-          "line": 596,
+          "line": 594,
           "doc": ""
         },
         {
           "name": "render_entry",
-          "line": 619,
+          "line": 617,
           "doc": ""
         },
         {
           "name": "_split_entries",
-          "line": 662,
+          "line": 660,
           "doc": ""
         },
         {
           "name": "_join",
-          "line": 674,
+          "line": 672,
           "doc": ""
         },
         {
           "name": "log_entry",
-          "line": 678,
+          "line": 676,
           "doc": ""
         },
         {
           "name": "backfill",
-          "line": 696,
+          "line": 694,
           "doc": ""
         },
         {
           "name": "main",
-          "line": 713,
+          "line": 711,
           "doc": ""
         }
       ]
@@ -4117,38 +4050,33 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 118,
-      "doc": "P3.5: \"Check parsed resume\" step: corrections applied by the service,",
+      "lines": 78,
+      "doc": "P3.5: \"Check parsed resume\" step: corrections applied by the service",
       "classes": [],
       "functions": [
         {
           "name": "_service",
-          "line": 15,
+          "line": 8,
           "doc": ""
         },
         {
           "name": "test_corrections_change_header_and_roles_but_not_the_input",
-          "line": 19,
+          "line": 12,
           "doc": ""
         },
         {
           "name": "test_unchanged_form_is_not_a_correction",
-          "line": 44,
+          "line": 37,
           "doc": ""
         },
         {
           "name": "test_promotion_roles_can_be_edited",
-          "line": 59,
-          "doc": ""
-        },
-        {
-          "name": "test_ui_check_parse_stage_end_to_end",
-          "line": 72,
+          "line": 52,
           "doc": ""
         },
         {
           "name": "test_a_dated_role_without_a_title_is_kept",
-          "line": 105,
+          "line": 65,
           "doc": "P5.3 review: a role read with dates but no title must survive an"
         }
       ]
@@ -4446,53 +4374,48 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 103,
+      "lines": 83,
       "doc": "Suggest-and-confirm gaps (P3.1).",
       "classes": [],
       "functions": [
         {
           "name": "_resume",
-          "line": 16,
+          "line": 12,
           "doc": ""
         },
         {
           "name": "_job",
-          "line": 22,
+          "line": 18,
           "doc": ""
         },
         {
           "name": "test_questions_group_missing_keywords_by_jd_line_required_first",
-          "line": 32,
+          "line": 28,
           "doc": ""
         },
         {
           "name": "_service",
-          "line": 41,
+          "line": 37,
           "doc": ""
         },
         {
           "name": "test_only_ticked_keywords_are_added_to_skills",
-          "line": 49,
+          "line": 45,
           "doc": ""
         },
         {
           "name": "test_answer_becomes_a_bullet_and_an_embellished_polish_is_refused",
-          "line": 60,
+          "line": 56,
           "doc": ""
         },
         {
           "name": "test_faithful_polish_is_used",
-          "line": 73,
+          "line": 69,
           "doc": ""
         },
         {
           "name": "test_generate_proposals_asks_instead_of_suggesting",
-          "line": 81,
-          "doc": ""
-        },
-        {
-          "name": "test_ui_sends_ticked_answers_to_tailor",
-          "line": 88,
+          "line": 77,
           "doc": ""
         }
       ]
@@ -4763,68 +4686,63 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 104,
+      "lines": 89,
       "doc": "Keyword-level match rate as the headline score (P1.2).",
       "classes": [],
       "functions": [
         {
           "name": "_resume",
-          "line": 12,
+          "line": 8,
           "doc": ""
         },
         {
           "name": "_job",
-          "line": 23,
+          "line": 19,
           "doc": ""
         },
         {
           "name": "_rows",
-          "line": 32,
+          "line": 28,
           "doc": ""
         },
         {
           "name": "test_aliases_plurals_and_implied_terms",
-          "line": 36,
+          "line": 32,
           "doc": ""
         },
         {
           "name": "test_whole_tokens_only",
-          "line": 44,
+          "line": 40,
           "doc": ""
         },
         {
           "name": "test_multi_word_term_within_one_sentence",
-          "line": 52,
+          "line": 48,
           "doc": ""
         },
         {
           "name": "test_required_keywords_weigh_more_and_rate_is_weighted",
-          "line": 58,
+          "line": 54,
           "doc": ""
         },
         {
           "name": "test_perfect_match_is_100_and_empty_is_0",
-          "line": 67,
+          "line": 63,
           "doc": ""
         },
         {
           "name": "test_title_gets_partial_credit_from_role_titles",
-          "line": 73,
+          "line": 69,
           "doc": ""
         },
         {
           "name": "test_soft_skills_count_less",
-          "line": 83,
+          "line": 79,
           "doc": ""
         },
         {
           "name": "test_tokens_normalise_case_alias_and_plural",
-          "line": 90,
-          "doc": ""
-        },
-        {
-          "name": "test_analysis_view_shows_keyword_table",
-          "line": 94,
+          "line": 86,
           "doc": ""
         }
       ]
@@ -5023,88 +4941,68 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 174,
+      "lines": 128,
       "doc": "P3.3: add a job that isn't on the resume yet.",
       "classes": [],
       "functions": [
         {
           "name": "_service",
-          "line": 18,
+          "line": 14,
           "doc": ""
         },
         {
           "name": "_resume",
-          "line": 26,
+          "line": 22,
           "doc": ""
         },
         {
           "name": "test_split_description",
-          "line": 36,
+          "line": 32,
           "doc": ""
         },
         {
           "name": "test_new_role_goes_in_date_order_with_bullets",
-          "line": 44,
+          "line": 40,
           "doc": ""
         },
         {
           "name": "test_current_role_goes_first",
-          "line": 59,
+          "line": 55,
           "doc": ""
         },
         {
           "name": "test_polish_that_adds_facts_is_refused",
-          "line": 69,
+          "line": 65,
           "doc": ""
         },
         {
           "name": "test_company_and_title_required",
-          "line": 79,
+          "line": 75,
           "doc": ""
         },
         {
           "name": "test_user_added_bullets_are_never_trimmed_first",
-          "line": 84,
+          "line": 80,
           "doc": ""
         },
         {
           "name": "test_tailor_renders_new_role_even_in_preserve_mode",
-          "line": 92,
-          "doc": ""
-        },
-        {
-          "name": "_app",
-          "line": 104,
-          "doc": ""
-        },
-        {
-          "name": "test_ui_sends_new_role",
-          "line": 117,
-          "doc": ""
-        },
-        {
-          "name": "test_ui_requires_company_and_title",
-          "line": 131,
+          "line": 88,
           "doc": ""
         },
         {
           "name": "test_dates_and_description_required",
-          "line": 146,
+          "line": 106,
           "doc": "Review finding: without these the new job reads back wrongly in an ATS."
         },
         {
           "name": "test_keywords_offered_to_the_polish_are_whole_words",
-          "line": 153,
+          "line": 113,
           "doc": ""
         },
         {
           "name": "test_every_ongoing_job_keeps_the_larger_minimum",
-          "line": 161,
-          "doc": ""
-        },
-        {
-          "name": "test_ui_partial_job_is_not_silently_dropped",
-          "line": 169,
+          "line": 121,
           "doc": ""
         }
       ]
@@ -5467,88 +5365,73 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 176,
+      "lines": 119,
       "doc": "P3.2: confirmed gap answers are saved locally and offered on the next JD.",
       "classes": [],
       "functions": [
         {
           "name": "_q",
-          "line": 14,
+          "line": 10,
           "doc": ""
         },
         {
           "name": "test_record_and_known_are_case_insensitive",
-          "line": 18,
+          "line": 14,
           "doc": ""
         },
         {
           "name": "test_new_answer_replaces_blank_keeps",
-          "line": 29,
+          "line": 25,
           "doc": ""
         },
         {
           "name": "test_nothing_ticked_writes_nothing",
-          "line": 38,
+          "line": 34,
           "doc": ""
         },
         {
           "name": "test_forget_one_and_all",
-          "line": 45,
+          "line": 41,
           "doc": ""
         },
         {
           "name": "test_corrupt_file_starts_fresh_and_is_kept",
-          "line": 52,
+          "line": 48,
           "doc": ""
         },
         {
           "name": "test_tests_never_touch_the_real_profile",
-          "line": 60,
+          "line": 56,
           "doc": ""
         },
         {
           "name": "_service",
-          "line": 67,
+          "line": 63,
           "doc": ""
         },
         {
           "name": "test_saved_answers_prefill_the_next_jds_questions",
-          "line": 81,
+          "line": 77,
           "doc": ""
         },
         {
           "name": "test_tailor_saves_ticked_answers_unless_told_not_to",
-          "line": 90,
-          "doc": ""
-        },
-        {
-          "name": "test_ui_prefills_and_forgets",
-          "line": 100,
+          "line": 86,
           "doc": ""
         },
         {
           "name": "test_prefilled_answer_is_not_copied_to_other_ticked_keywords",
-          "line": 129,
+          "line": 98,
           "doc": ""
         },
         {
           "name": "test_unreadable_profile_is_left_alone",
-          "line": 139,
+          "line": 108,
           "doc": ""
         },
         {
           "name": "test_forget_on_empty_profile_writes_nothing",
-          "line": 146,
-          "doc": ""
-        },
-        {
-          "name": "test_unticked_question_withdraws_the_prefilled_answer",
-          "line": 151,
-          "doc": ""
-        },
-        {
-          "name": "test_start_over_clears_gap_widgets",
-          "line": 169,
+          "line": 115,
           "doc": ""
         }
       ]
@@ -5727,108 +5610,73 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 182,
+      "lines": 107,
       "doc": "P3.4: the proposal review screen (diff, badges, breakdown, gap table,",
       "classes": [],
       "functions": [
         {
-          "name": "test_diff_marks_removed_added_and_keywords_and_escapes",
-          "line": 19,
-          "doc": ""
-        },
-        {
-          "name": "test_multi_word_keyword_is_highlighted_whole",
-          "line": 28,
-          "doc": ""
-        },
-        {
-          "name": "test_status_badges",
-          "line": 33,
-          "doc": ""
-        },
-        {
           "name": "_report",
-          "line": 41,
+          "line": 13,
           "doc": ""
         },
         {
           "name": "test_score_breakdown_adds_up_to_the_rate",
-          "line": 50,
+          "line": 22,
           "doc": ""
         },
         {
           "name": "test_gap_table_orders_required_first_and_marks_asked",
-          "line": 57,
+          "line": 29,
           "doc": ""
         },
         {
           "name": "_parsed",
-          "line": 63,
+          "line": 35,
           "doc": ""
         },
         {
           "name": "_job",
-          "line": 70,
+          "line": 42,
           "doc": ""
         },
         {
           "name": "test_preview_applies_ticked_edits_without_touching_the_parse",
-          "line": 75,
+          "line": 47,
           "doc": ""
         },
         {
           "name": "_proposal",
-          "line": 85,
-          "doc": ""
-        },
-        {
-          "name": "_app",
-          "line": 90,
-          "doc": ""
-        },
-        {
-          "name": "test_review_shows_badges_diff_and_gap_table",
-          "line": 106,
-          "doc": ""
-        },
-        {
-          "name": "test_accept_all_and_reject_all",
-          "line": 115,
-          "doc": ""
-        },
-        {
-          "name": "test_recalculate_uses_ticked_edited_text_and_generates_nothing",
-          "line": 123,
-          "doc": ""
-        },
-        {
-          "name": "test_diff_neutralises_markdown_and_latex_and_keeps_lines",
-          "line": 134,
-          "doc": ""
-        },
-        {
-          "name": "test_dotnet_highlights",
-          "line": 142,
+          "line": 57,
           "doc": ""
         },
         {
           "name": "test_preview_skips_rejected_unless_edited",
-          "line": 147,
+          "line": 62,
           "doc": ""
         },
         {
-          "name": "test_new_proposals_clear_the_old_live_rate",
-          "line": 158,
+          "name": "_marked",
+          "line": 75,
           "doc": ""
         },
         {
-          "name": "test_diff_spans_match_diff_html_marks",
-          "line": 166,
-          "doc": "P5.1: the web client gets the same diff as data, unescaped."
+          "name": "test_diff_marks_removed_added_and_keywords",
+          "line": 79,
+          "doc": "The review diff as data (P5.1): text unescaped (the client escapes it)."
         },
         {
-          "name": "test_proposal_state_matches_status_badge",
-          "line": 177,
+          "name": "test_multi_word_and_dotnet_keywords_are_marked_whole",
+          "line": 89,
+          "doc": ""
+        },
+        {
+          "name": "test_diff_keeps_line_breaks_and_markdown_characters",
+          "line": 96,
+          "doc": ""
+        },
+        {
+          "name": "test_proposal_states",
+          "line": 102,
           "doc": ""
         }
       ]
@@ -6328,7 +6176,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 200,
+      "lines": 206,
       "doc": "tailor_resume orchestration: pre-approved proposals and Strict Factual Mode.",
       "classes": [],
       "functions": [
@@ -6396,6 +6244,11 @@
           "name": "test_result_reports_strict_mode_withholding",
           "line": 192,
           "doc": ""
+        },
+        {
+          "name": "test_ats_template_is_the_default_output",
+          "line": 203,
+          "doc": "P2.2: the ATS template is the default; keeping the DOCX layout is opt-in."
         }
       ]
     },
@@ -6524,37 +6377,6 @@
           "name": "test_template_renderer_handles_missing_optional_fields",
           "line": 68,
           "doc": "No dates, no location, no email \u2014 must not crash, and must still"
-        }
-      ]
-    },
-    {
-      "id": "tests/unit/test_ui.py",
-      "type": "python",
-      "layer": "Tests",
-      "stages": [],
-      "lines": 64,
-      "doc": "",
-      "classes": [],
-      "functions": [
-        {
-          "name": "test_ui_importable",
-          "line": 3,
-          "doc": "Verify Streamlit app module can be imported without error."
-        },
-        {
-          "name": "test_ats_template_is_the_default_output",
-          "line": 9,
-          "doc": "P2.2: the ATS template is the default; PRESERVE is an opt-in under Advanced."
-        },
-        {
-          "name": "test_results_show_content_checks",
-          "line": 25,
-          "doc": "P2.6: the results screen lists the content checks."
-        },
-        {
-          "name": "test_results_preview_shows_pdf_pages_as_images",
-          "line": 44,
-          "doc": "Chrome blocks a PDF embedded in the page, so the preview renders each"
         }
       ]
     },
@@ -6849,11 +6671,6 @@
     {
       "from": "app/analysis/keyword_match.py",
       "to": "tests/unit/test_parser_regressions_p42.py",
-      "type": "tested_by"
-    },
-    {
-      "from": "app/analysis/keyword_match.py",
-      "to": "tests/unit/test_review_view.py",
       "type": "tested_by"
     },
     {
@@ -7635,11 +7452,6 @@
       "from": "app/domain/report.py",
       "to": "app/domain/report.py::TailoringReport",
       "type": "contains"
-    },
-    {
-      "from": "app/domain/report.py",
-      "to": "tests/unit/test_keyword_match.py",
-      "type": "tested_by"
     },
     {
       "from": "app/domain/report.py",
@@ -8967,51 +8779,6 @@
       "type": "tested_by"
     },
     {
-      "from": "app/services/tailor.py",
-      "to": "tests/unit/test_ui.py",
-      "type": "tested_by"
-    },
-    {
-      "from": "app/ui.py",
-      "to": "app/api/__init__.py",
-      "type": "imports"
-    },
-    {
-      "from": "app/ui.py",
-      "to": "app/api/forms.py",
-      "type": "imports"
-    },
-    {
-      "from": "app/ui.py",
-      "to": "app/llm/client.py",
-      "type": "imports"
-    },
-    {
-      "from": "app/ui.py",
-      "to": "app/rendering/pdf_converter.py",
-      "type": "imports"
-    },
-    {
-      "from": "app/ui.py",
-      "to": "app/rendering/review_view.py",
-      "type": "imports"
-    },
-    {
-      "from": "app/ui.py",
-      "to": "app/services/profile_store.py",
-      "type": "imports"
-    },
-    {
-      "from": "app/ui.py",
-      "to": "app/services/tailor.py",
-      "type": "imports"
-    },
-    {
-      "from": "app/ui.py",
-      "to": "tests/unit/test_ui.py",
-      "type": "tested_by"
-    },
-    {
       "from": "app/validation/content_lint.py",
       "to": "app/analysis/experience.py",
       "type": "imports"
@@ -9039,11 +8806,6 @@
     {
       "from": "app/validation/content_lint.py",
       "to": "tests/unit/test_content_lint.py",
-      "type": "tested_by"
-    },
-    {
-      "from": "app/validation/content_lint.py",
-      "to": "tests/unit/test_ui.py",
       "type": "tested_by"
     },
     {

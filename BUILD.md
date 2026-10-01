@@ -71,22 +71,19 @@ python -m app.cli tailor \
   --output ./data/output/
 ```
 
-### Streamlit UI Mode
+### Web app
+
+Build the front end once, then run the API, which serves it:
 
 ```bash
-streamlit run app/ui.py
-```
-
-### Web API (P5.1; the new web UI's backend)
-
-```bash
-uvicorn app.api.main:app --reload --port 8000
+cd web && npm install && npm run build && cd ..
+uvicorn app.api.main:app --port 8000      # open http://localhost:8000
 ```
 
 Interactive API docs at http://localhost:8000/api/docs. Settings: `API_SESSION_TTL_MINUTES` (60),
-`API_MAX_UPLOAD_MB` (5), `API_RATE_LIMIT_PER_HOUR` (30). Once `web/` is built, its `dist/` is served at `/`.
+`API_MAX_UPLOAD_MB` (5), `API_RATE_LIMIT_PER_HOUR` (30). PDF output and the page preview need LibreOffice.
 
-### Web UI (P5.2+; React, in `web/`)
+### Front-end development (React, in `web/`)
 
 Needs Node 20+ (developed on Node 22: `brew install node@22`, then put `/opt/homebrew/opt/node@22/bin` first on
 `PATH`).
@@ -94,7 +91,7 @@ Needs Node 20+ (developed on Node 22: `brew install node@22`, then put `/opt/hom
 ```bash
 cd web
 npm install
-npm run dev        # http://localhost:5173, proxies /api to the API on :8000 (start uvicorn too)
+npm run dev        # http://localhost:5173 with hot reload; proxies /api to uvicorn on :8000 (run it with --reload)
 npm test           # Vitest component tests
 npm run build      # type-check + production build into web/dist, which FastAPI then serves at /
 ```

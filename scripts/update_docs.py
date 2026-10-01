@@ -53,7 +53,6 @@ LAYERS = [
     ("app/services/", "Services"),
     ("app/config/", "Config"),
     ("app/api/", "Web API"),
-    ("app/ui.py", "Entry points"),
     ("app/cli.py", "Entry points"),
     ("tests/", "Tests"),
     ("scripts/", "Tooling"),
@@ -115,7 +114,6 @@ STAGE_MAP: Dict[str, List[str]] = {
     "app/api/forms.py": ["7 Rewrite", "10 Report"],
     "app/services/profile_store.py": ["7 Rewrite"],
     "app/services/tailor.py": STAGES,  # the orchestrator touches every stage
-    "app/ui.py": STAGES,
     "app/cli.py": STAGES,
     "app/api/main.py": STAGES,
     "app/api/routes.py": STAGES,
@@ -493,7 +491,7 @@ def render_graph_md(g: dict) -> str:
     if not untested:
         w("- none")
     w("")
-    entry_points = {"app/ui.py", "app/cli.py", "app/api/main.py"}
+    entry_points = {"app/cli.py", "app/api/main.py"}
     orphans = [p for p in app_files if p not in entry_points and not imported_by.get(p) and not p.endswith("__init__.py")]
     w("**Not imported by any app code** (possibly dead code, or only used by tests/scripts):")
     w("")

@@ -31,7 +31,7 @@ export interface ReviewState {
 
 export const EMPTY_JOB: NewJob = { company: "", title: "", location: "", current: false, start: "", end: "", description: "" };
 
-/** Every proposal starts accepted (as in Streamlit); saved answers pre-tick
+/** Every proposal starts accepted (as the old Streamlit page did); saved answers pre-tick
  *  their keywords and pre-fill the answer. */
 export function initialReview(drafted: ProposalsResult): ReviewState {
   return {

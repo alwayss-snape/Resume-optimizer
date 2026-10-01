@@ -1,15 +1,8 @@
-"""P3.5: "Check parsed resume" step: corrections applied by the service,
-and the Streamlit stage wired end to end (with the rewrite step mocked)."""
-import os
-import shutil
-from unittest.mock import patch
-
-from streamlit.testing.v1 import AppTest
-
+"""P3.5: "Check parsed resume" step: corrections applied by the service
+(the web flow over HTTP is covered in test_api.py)."""
 from app.services.tailor import TailorService
 
 REPLICA = "tests/fixtures/resumes/replica_layout.pdf"
-UI_SCRIPT = os.path.abspath("app/ui.py")
 
 
 def _service():
@@ -67,39 +60,6 @@ def test_promotion_roles_can_be_edited():
     exp = doc.resume.experience[0]
     assert changed and exp.title == "Lead Data Scientist"
     assert [r.title for r in exp.all_roles()] == ["Lead Data Scientist", "Data Scientist"]
-
-
-def test_ui_check_parse_stage_end_to_end(tmp_path):
-    # The UI deletes the uploaded temp file on "Start Over", so hand it a copy.
-    resume_copy = tmp_path / "upload.pdf"
-    shutil.copy(REPLICA, resume_copy)
-    parsed = _service().parse_resume(str(resume_copy))
-    at = AppTest.from_file(UI_SCRIPT, default_timeout=60)
-    at.session_state["stage"] = "check_parse"
-    at.session_state["parsed"] = parsed
-    at.session_state["parse_issues"] = []
-    at.session_state["resume_path"] = str(resume_copy)
-    at.session_state["jd_text"] = "Requirements:\n- Python."
-    at.session_state["model_choice"] = "openai/gpt-oss-120b"
-    at.run()
-    assert not at.exception
-    assert at.text_input[0].value == "Jordan Avery"
-    companies = [t.value for t in at.text_input if t.label == "Company"]
-    assert companies == ["Northwind Analytics - A Contoso Group Company", "Blue Harbor Bank"]
-    titles = [t.value for t in at.text_input if t.label in ("Title", "Earlier title")]
-    assert titles == ["Senior Data Scientist", "Data Scientist", "Analytics Intern"]
-
-    at.text_input[1].set_value("Senior Data Scientist")  # headline
-    fake = {"proposals": [], "gap_questions": [], "llm_available": True, "llm_status": {},
-            "llm_usage": None, "alignment_score": 50.0, "experience_options": []}
-    with patch.object(TailorService, "generate_proposals", return_value=fake) as gen:
-        confirm = next(b for b in at.button if b.label.startswith("✅ Looks right"))
-        confirm.click().run()
-    assert not at.exception
-    assert at.session_state["stage"] == "proposals"
-    assert at.session_state["parse_corrected"] is True
-    sent = gen.call_args.kwargs["parsed"]
-    assert sent[1].resume.candidate.headline == "Senior Data Scientist"
 
 
 def test_a_dated_role_without_a_title_is_kept():

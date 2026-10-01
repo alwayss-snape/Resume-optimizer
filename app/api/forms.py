@@ -1,9 +1,9 @@
 """What the review form sends, turned into what TailorService takes (P5.1).
 
-Moved out of the Streamlit page so the web API and Streamlit share one
-tested copy: which proposals are applied (with the user's edits), which gap
+Plain, tested functions (they began as inline code in the old Streamlit
+page): which proposals are applied (with the user's edits), which gap
 answers count, where an addition goes, and the "add a job" form's checks.
-Plain functions, no web framework imports.
+No web framework imports.
 """
 from datetime import date
 from typing import Dict, Iterable, List, Optional, Tuple

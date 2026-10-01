@@ -1,6 +1,6 @@
 """Per-visitor state for the web API (P5.1).
 
-Holds what Streamlit kept in st.session_state: the uploaded resume's temp
+Holds one visitor's run: the uploaded resume's temp
 file, the checked parse, the analysed JD, the proposals and gap questions,
 and the output folder. Kept in memory, keyed by an opaque random id sent as
 a cookie, and dropped (temp files included) after `ttl_seconds` without a

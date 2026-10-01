@@ -1,9 +1,8 @@
-"""What the proposal review screen shows (P3.4), as plain functions so the
-Streamlit page stays thin and this stays testable: a word-level diff with
-JD keywords highlighted, one status badge per proposal, the match rate
-broken down by keyword kind, and the keyword gap table."""
+"""What the proposal review screen shows (P3.4, served by the web API since
+P5.1), as plain functions: a word-level diff with JD keywords marked, one
+status per proposal, the match rate broken down by keyword kind, and the
+keyword gap table."""
 import difflib
-import html
 import re
 from typing import Iterable, List, Optional, Tuple
 
@@ -12,23 +11,10 @@ from app.domain.report import KeywordMatchReport
 KIND_LABELS = {"hard": "Hard skills", "title": "Job title", "education": "Education",
                "certification": "Certifications", "soft": "Soft skills"}
 
-_DEL_STYLE = "background:#fde2e2;color:#8a1c1c;text-decoration:line-through"
-_ADD_STYLE = "background:#dcfce7;color:#14532d"
-_KEY_STYLE = "font-weight:700;border-bottom:2px solid #1f4e79"
-
 
 def _words(text: str) -> List[str]:
     """Words, with each line break kept as its own token (skills are lines)."""
     return re.findall(r"\S+|\n", text or "")
-
-
-# st.markdown still reads Markdown and LaTeX inside HTML: "$2M to $1M" would
-# become math and "*" emphasis. These become numeric entities after escaping.
-_MARKDOWN_CHARS = {c: f"&#{ord(c)};" for c in "$*_`[]#~\\|"}
-
-
-def _escape(word: str) -> str:
-    return "".join(_MARKDOWN_CHARS.get(c, c) for c in html.escape(word))
 
 
 def _keyword_spans(words: List[str], keywords: Iterable[str]) -> set:
@@ -43,31 +29,6 @@ def _keyword_spans(words: List[str], keywords: Iterable[str]) -> set:
             if clean[i:i + n] == parts:
                 hits.update(range(i, i + n))
     return hits
-
-
-def _render(words: List[str], marked: set, style: str, keywords: set) -> str:
-    out = []
-    for i, w in enumerate(words):
-        if w == "\n":
-            out.append("<br>")
-            continue
-        piece = _escape(w)
-        if i in keywords:
-            piece = f'<span style="{_KEY_STYLE}">{piece}</span>'
-        if i in marked:
-            piece = f'<span style="{style}">{piece}</span>'
-        out.append(piece)
-    return " ".join(out).replace(" <br> ", "<br>")
-
-
-def diff_html(original: str, proposed: str, keywords: Optional[Iterable[str]] = None) -> Tuple[str, str]:
-    """(original_html, proposed_html): removed words struck through on the
-    left, added words highlighted on the right, JD keywords in bold on both.
-    All text is HTML-escaped."""
-    a, b, removed, added = _diff(original, proposed)
-    kws = list(keywords or [])
-    return (_render(a, removed, _DEL_STYLE, _keyword_spans(a, kws)),
-            _render(b, added, _ADD_STYLE, _keyword_spans(b, kws)))
 
 
 def _diff(original: str, proposed: str) -> Tuple[List[str], List[str], set, set]:
@@ -85,9 +46,10 @@ def _diff(original: str, proposed: str) -> Tuple[List[str], List[str], set, set]
 
 
 def diff_spans(original: str, proposed: str, keywords: Optional[Iterable[str]] = None) -> Tuple[List[dict], List[dict]]:
-    """The same diff as diff_html, as data for a web client that renders it
-    itself: one {"text", "changed", "keyword"} per word; a line break is
-    {"text": "\n"}. Text is not escaped (the client must escape it)."""
+    """A word diff as data for the web client, which renders it itself: one
+    {"text", "changed", "keyword"} per word (removed words on the original,
+    added ones on the proposal); a line break is {"text": "\\n"}. Text is not
+    escaped (the client must escape it)."""
     a, b, removed, added = _diff(original, proposed)
     kws = list(keywords or [])
 
@@ -97,7 +59,7 @@ def diff_spans(original: str, proposed: str, keywords: Optional[Iterable[str]] =
     return spans(a, removed, _keyword_spans(a, kws)), spans(b, added, _keyword_spans(b, kws))
 
 
-# state -> (icon, label, meaning). A failed call or a REJECT verdict wins
+# state -> (icon, label, meaning); the web client shows label and meaning. A failed call or a REJECT verdict wins
 # over everything else, since that's what the user must act on.
 PROPOSAL_STATES = {
     "failed": ("❌", "Not rewritten", "the AI call failed; your original text is shown"),
@@ -117,12 +79,6 @@ def proposal_state(status: Optional[str], validation: Optional[str], changed: bo
     if validation == "NEEDS_CONFIRM":
         return "check"
     return "pass" if changed else "unchanged"
-
-
-def status_badge(status: Optional[str], validation: Optional[str], changed: bool) -> Tuple[str, str]:
-    """(badge, meaning) for one proposal, as the Streamlit page shows it."""
-    icon, label, meaning = PROPOSAL_STATES[proposal_state(status, validation, changed)]
-    return f"{icon} {label}", meaning
 
 
 def score_breakdown(report: Optional[KeywordMatchReport]) -> List[dict]:

@@ -198,3 +198,9 @@ def test_result_reports_strict_mode_withholding(tmp_path):
         preapproved_proposals=[_proposal(b, ev, "Successfully " + b.text), invented],
     )
     assert result["applied"]["strict_withheld"] is True and result["applied"]["bullets"] == 0
+
+
+def test_ats_template_is_the_default_output():
+    """P2.2: the ATS template is the default; keeping the DOCX layout is opt-in."""
+    import inspect
+    assert inspect.signature(TailorService.tailor_resume).parameters["mode"].default == "ATS_DEFAULT"

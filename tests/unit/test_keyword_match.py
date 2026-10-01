@@ -1,11 +1,7 @@
 """Keyword-level match rate as the headline score (P1.2)."""
-import os
-
-from streamlit.testing.v1 import AppTest
 
 from app.analysis.keyword_match import KeywordMatcher, tokens
 from app.domain.job import JobDescription, Requirement
-from app.domain.report import TailoringReport
 from app.domain.resume import Candidate, Experience, Resume, ResumeBullet, Role
 
 
@@ -91,14 +87,3 @@ def test_tokens_normalise_case_alias_and_plural():
     assert tokens("Feature Stores for ML") == ["feature", "store", "for", "machine", "learning"]
 
 
-def test_analysis_view_shows_keyword_table():
-    resume = _resume(["Used Python."])
-    report = KeywordMatcher().match(_job(["Python", "Kafka"], ["Python", "Kafka"]), resume)
-    at = AppTest.from_file(os.path.abspath("app/ui.py"), default_timeout=60)
-    at.session_state["stage"] = "analysis"
-    at.session_state["analysis_report"] = TailoringReport(alignment_score=report.rate, keyword_match=report,
-                                                          score_components={"evidence_score": 12.0})
-    at.run()
-    assert not at.exception
-    assert at.metric[0].value == "50.0%"
-    assert len(at.dataframe) == 2  # keyword table + score breakdown (P3.4)

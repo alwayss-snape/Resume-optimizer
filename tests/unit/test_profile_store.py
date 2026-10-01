@@ -1,10 +1,6 @@
 """P3.2: confirmed gap answers are saved locally and offered on the next JD."""
-import json
 import os
-import shutil
-from unittest.mock import MagicMock, patch
-
-from streamlit.testing.v1 import AppTest
+from unittest.mock import MagicMock
 
 from app.analysis.gap_questions import GapQuestion
 from app.config.settings import settings
@@ -97,33 +93,6 @@ def test_tailor_saves_ticked_answers_unless_told_not_to(tmp_path):
     assert "Kafka" in service.profile_store.known(["Kafka"])
 
 
-def test_ui_prefills_and_forgets(tmp_path):
-    from app.services.tailor import TailorService
-    ProfileStore().record([{"question_id": "q", "confirmed_keywords": ["PyTorch"], "answer": "Trained CNNs."}], [])
-    question = GapQuestion(id="gap_1", requirement="PyTorch", priority="required", keywords=["PyTorch", "JAX"],
-                           question="?", saved_keywords=["PyTorch"], saved_answer="Trained CNNs.")
-    resume_copy = tmp_path / "upload.docx"
-    shutil.copy("tests/fixtures/resumes/sample.docx", resume_copy)
-    at = AppTest.from_file(os.path.abspath("app/ui.py"), default_timeout=60)
-    for key, value in {"stage": "proposals", "proposals": [], "gap_questions": [question], "experience_options": [],
-                       "resume_path": str(resume_copy), "jd_text": "x", "model_choice": "m",
-                       "render_mode": "ATS_DEFAULT", "strict_factual": False, "pre_score": 10.0}.items():
-        at.session_state[key] = value
-    at.run()
-    assert not at.exception
-    boxes = {c.label: c.value for c in at.checkbox if c.label.startswith("I have used")}
-    assert boxes == {"I have used PyTorch": True, "I have used JAX": False}
-    assert at.text_area(key="gap_1_answer").value == "Trained CNNs."
-    with patch.object(TailorService, "tailor_resume", return_value={"success": True}) as tailor:
-        next(b for b in at.button if b.label == "Apply & Generate").click().run()
-    kwargs = tailor.call_args.kwargs
-    assert kwargs["remember_answers"] is True and kwargs["gap_questions"][0].id == "gap_1"
-    at.session_state["stage"] = "idle"
-    at.run()
-    next(b for b in at.sidebar.button if b.label.startswith("Forget")).click().run()
-    assert ProfileStore().load().facts == {}
-
-
 # -- review fixes ----------------------------------------------------------------
 
 def test_prefilled_answer_is_not_copied_to_other_ticked_keywords(tmp_path):
@@ -148,29 +117,3 @@ def test_forget_on_empty_profile_writes_nothing(tmp_path):
     assert ProfileStore(str(path)).forget() == 0 and not path.exists()
 
 
-def test_unticked_question_withdraws_the_prefilled_answer(tmp_path):
-    from app.services.tailor import TailorService
-    question = GapQuestion(id="gap_1", requirement="PyTorch", priority="required", keywords=["PyTorch"],
-                           question="?", saved_keywords=["PyTorch"], saved_answer="Trained CNNs.")
-    resume_copy = tmp_path / "upload.docx"
-    shutil.copy("tests/fixtures/resumes/sample.docx", resume_copy)
-    at = AppTest.from_file(os.path.abspath("app/ui.py"), default_timeout=60)
-    for key, value in {"stage": "proposals", "proposals": [], "gap_questions": [question], "experience_options": [],
-                       "resume_path": str(resume_copy), "jd_text": "x", "model_choice": "m",
-                       "render_mode": "ATS_DEFAULT", "strict_factual": False, "pre_score": 10.0}.items():
-        at.session_state[key] = value
-    at.run()
-    next(c for c in at.checkbox if c.label == "I have used PyTorch").uncheck()
-    with patch.object(TailorService, "tailor_resume", return_value={"success": True}) as tailor:
-        next(b for b in at.button if b.label == "Apply & Generate").click().run()
-    assert tailor.call_args.kwargs["gap_answers"] == []
-
-
-def test_start_over_clears_gap_widgets(tmp_path):
-    at = AppTest.from_file(os.path.abspath("app/ui.py"), default_timeout=60)
-    at.session_state["stage"] = "proposals"
-    at.session_state["gap_1_Kafka"] = True
-    at.session_state["gap_1_answer"] = "old answer"
-    at.run()
-    next(b for b in at.sidebar.button if b.label == "🔄 Start Over").click().run()
-    assert "gap_1_Kafka" not in at.session_state and "gap_1_answer" not in at.session_state

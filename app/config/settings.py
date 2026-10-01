@@ -39,7 +39,7 @@ class Settings(BaseSettings):
     # Facts the user confirmed in gap questions, reused across JDs (P3.2).
     # Personal data: gitignored, never sent anywhere.
     # Absolute under the repo, so it's always the gitignored folder no matter
-    # where Streamlit / the CLI is started from.
+    # where the web API or the CLI is started from.
     profile_path: str = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
                                      "data", "profile", "facts.json")
 

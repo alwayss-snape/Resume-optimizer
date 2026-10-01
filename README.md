@@ -8,7 +8,8 @@ Local-first, privacy-focused application for tailoring resumes to job descriptio
 - **Evidence Ledger:** All rewrites reference verifiable source evidence.
 - **Layout Preservation:** Patches existing `.docx` elements preserving formatting, fonts, and styles.
 - **Hybrid Matching Engine:** Exact, alias, and local embedding-based semantic matching. The semantic layer only considers requirements the deterministic layer leaves unmatched, is clearly labeled as an inferred (not exact) match wherever shown, and never overrides a deterministic match.
-- **CLI & Web UI:** Includes both a command-line interface and a Streamlit dashboard.
+- **Web app & CLI:** A React web app (`web/`) on a FastAPI backend (`app/api/`): upload, check what was read,
+  review every rewrite with a live match score, then download DOCX/PDF. Also a command-line interface.
 
 ## Quick Start
 

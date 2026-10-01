@@ -1,41 +1,13 @@
 """P3.4: the proposal review screen (diff, badges, breakdown, gap table,
 accept/reject all, recalculated match rate)."""
-import os
-import shutil
-from unittest.mock import patch
-
-from streamlit.testing.v1 import AppTest
 
 from app.analysis.change_proposal import ChangeProposal
-from app.analysis.keyword_match import KeywordMatcher
 from app.domain.job import JobDescription, Requirement
 from app.domain.report import KeywordMatchReport, KeywordRow
 from app.domain.resume import Candidate, Experience, Resume, ResumeBullet
 from app.domain.resume_document import ResumeDocument
-from app.rendering.review_view import diff_html, gap_table, score_breakdown, status_badge
+from app.rendering.review_view import diff_spans, gap_table, proposal_state, score_breakdown
 from app.services.tailor import TailorService
-
-
-def test_diff_marks_removed_added_and_keywords_and_escapes():
-    left, right = diff_html("Built <fast> pipelines in python", "Built Spark pipelines in Python on AWS",
-                            keywords=["Spark", "Python", "AWS"])
-    assert "line-through" in left and "&lt;fast&gt;" in left and "<fast>" not in left
-    assert "dcfce7" in right  # added words highlighted
-    assert right.count("font-weight:700") == 3  # Spark, Python, AWS
-    assert "font-weight:700" in left  # "python" is a keyword on the left too
-
-
-def test_multi_word_keyword_is_highlighted_whole():
-    _, right = diff_html("x", "Built feature stores for ML.", keywords=["feature stores"])
-    assert right.count("font-weight:700") == 2
-
-
-def test_status_badges():
-    assert status_badge("llm_error", "PASS", True)[0].startswith("❌")
-    assert status_badge("ok", "REJECT", True)[0].startswith("⛔")
-    assert status_badge("ok", "NEEDS_CONFIRM", True)[0].startswith("⚠️")
-    assert status_badge("unchanged", "PASS", False)[0].startswith("➖")
-    assert status_badge("ok", "PASS", True)[0].startswith("✅")
 
 
 def _report():
@@ -87,63 +59,6 @@ def _proposal(i, text, new, validation="PASS", status="ok"):
                           original_text=text, proposed_text=new, validation=validation, status=status)
 
 
-def _app(tmp_path, proposals):
-    resume_copy = tmp_path / "upload.docx"
-    shutil.copy("tests/fixtures/resumes/sample.docx", resume_copy)
-    job = _job()
-    at = AppTest.from_file(os.path.abspath("app/ui.py"), default_timeout=60)
-    for key, value in {"stage": "proposals", "proposals": proposals, "gap_questions": [],
-                       "experience_options": [], "resume_path": str(resume_copy), "jd_text": "x",
-                       "model_choice": "m", "render_mode": "ATS_DEFAULT", "strict_factual": False,
-                       "pre_score": 10.0, "parsed": _parsed(), "job_description": job,
-                       "keyword_match": KeywordMatcher().match(job, _parsed()[1].resume)}.items():
-        at.session_state[key] = value
-    at.run()
-    assert not at.exception
-    return at
-
-
-def test_review_shows_badges_diff_and_gap_table(tmp_path):
-    at = _app(tmp_path, [_proposal(1, "Built pipelines.", "Built Kafka pipelines."),
-                         _proposal(2, "Built pipelines.", "Built pipelines.", validation="REJECT")])
-    md = " ".join(m.value for m in at.markdown)
-    assert "✅ Pass" in md and "⛔ Will be dropped" in md
-    assert "dcfce7" in md  # the diff is rendered
-    assert any("Keyword gaps" in e.label for e in at.expander)
-
-
-def test_accept_all_and_reject_all(tmp_path):
-    at = _app(tmp_path, [_proposal(1, "a", "b"), _proposal(2, "c", "d")])
-    next(b for b in at.button if b.label == "✖️ Reject all").click().run()
-    assert [c.value for c in at.checkbox if c.label == "Apply"] == [False, False]
-    next(b for b in at.button if b.label == "✅ Accept all").click().run()
-    assert [c.value for c in at.checkbox if c.label == "Apply"] == [True, True]
-
-
-def test_recalculate_uses_ticked_edited_text_and_generates_nothing(tmp_path):
-    at = _app(tmp_path, [_proposal(1, "Built pipelines.", "Built pipelines.")])
-    next(t for t in at.text_area if t.label.startswith("Edit proposed text")).input("Built Kafka pipelines.")
-    with patch.object(TailorService, "tailor_resume") as tailor:
-        next(b for b in at.button if b.label == "🔄 Recalculate match rate").click().run()
-    assert not at.exception and not tailor.called
-    live = at.session_state["live_match"]
-    assert any(r.keyword == "Kafka" and r.found for r in live.rows)
-    assert any(m.label == "Match rate with your current selection" for m in at.metric)
-
-
-def test_diff_neutralises_markdown_and_latex_and_keeps_lines():
-    left, right = diff_html("Cut cost from $2M to $1M", "Cut *cost* from $2M to $1M_x\nTools: Git",
-                            keywords=[".NET"])
-    for html_out in (left, right):
-        assert "$" not in html_out and "*" not in html_out and "_" not in html_out.replace("line-through", "")
-    assert "&#36;2M" in left and "<br>" in right
-
-
-def test_dotnet_highlights():
-    _, right = diff_html("", "Built .NET services.", keywords=[".NET"])
-    assert "font-weight:700" in right
-
-
 def test_preview_skips_rejected_unless_edited():
     parsed, service = _parsed(), TailorService(llm_client=None)
     rejected = {"kind": "bullet", "target_semantic_id": "b1", "proposed_text": "Built Kafka pipelines.",
@@ -155,28 +70,38 @@ def test_preview_skips_rejected_unless_edited():
                for r in service.preview_keyword_match(parsed, _job(), [edited]).rows)
 
 
-def test_new_proposals_clear_the_old_live_rate(tmp_path):
-    at = _app(tmp_path, [_proposal(1, "Built pipelines.", "Built pipelines.")])
-    next(b for b in at.button if b.label == "🔄 Recalculate match rate").click().run()
-    assert "live_match" in at.session_state
-    next(b for b in at.sidebar.button if b.label == "🔄 Start Over").click().run()
-    assert "live_match" not in at.session_state
 
 
-def test_diff_spans_match_diff_html_marks():
-    """P5.1: the web client gets the same diff as data, unescaped."""
-    from app.rendering.review_view import diff_spans
-    left, right = diff_spans("Built <b> tools in Python", "Built forecasting tools in Python", ["Python"])
-    assert [s["text"] for s in right] == ["Built", "forecasting", "tools", "in", "Python"]
-    assert [s["changed"] for s in right] == [False, True, False, False, False]
-    assert right[-1]["keyword"] and not right[0]["keyword"]
-    assert left[1] == {"text": "<b>", "changed": True, "keyword": False}
-    assert diff_spans("a\nb", "a\nb")[1][1] == {"text": "\n"}
+def _marked(spans, key):
+    return [s["text"] for s in spans if s.get(key)]
 
 
-def test_proposal_state_matches_status_badge():
-    from app.rendering.review_view import proposal_state, status_badge
-    assert proposal_state("llm_error", "REJECT", True) == "failed"
+def test_diff_marks_removed_added_and_keywords():
+    """The review diff as data (P5.1): text unescaped (the client escapes it)."""
+    left, right = diff_spans("Built <fast> pipelines in python", "Built Spark pipelines in Python on AWS",
+                             keywords=["Spark", "Python", "AWS"])
+    assert _marked(left, "changed") == ["<fast>"]
+    assert _marked(right, "changed") == ["Spark", "on", "AWS"]
+    assert _marked(right, "keyword") == ["Spark", "Python", "AWS"]
+    assert _marked(left, "keyword") == ["python"]  # a keyword on the original too
+
+
+def test_multi_word_and_dotnet_keywords_are_marked_whole():
+    _, right = diff_spans("x", "Built feature stores for ML.", keywords=["feature stores"])
+    assert _marked(right, "keyword") == ["feature", "stores"]
+    _, right = diff_spans("", "Built .NET services.", keywords=[".NET"])
+    assert _marked(right, "keyword") == [".NET"]
+
+
+def test_diff_keeps_line_breaks_and_markdown_characters():
+    _, right = diff_spans("Cut cost from $2M", "Cut *cost* from $2M_x\nTools: Git")
+    assert {"text": "\n"} in right
+    assert any(s["text"] == "*cost*" for s in right) and any(s["text"] == "$2M_x" for s in right)
+
+
+def test_proposal_states():
+    assert proposal_state("llm_error", "REJECT", True) == "failed"  # a failed call wins
     assert proposal_state(None, "REJECT", True) == "dropped"
+    assert proposal_state(None, "NEEDS_CONFIRM", True) == "check"
     assert proposal_state(None, "PASS", False) == "unchanged"
-    assert status_badge(None, "PASS", True) == ("✅ Pass", "fact-checked against your resume")
+    assert proposal_state(None, "PASS", True) == "pass"

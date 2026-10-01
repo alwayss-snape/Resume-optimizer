@@ -1,12 +1,8 @@
 """P3.3: add a job that isn't on the resume yet."""
-import os
-import shutil
-from datetime import date
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import docx
 import pytest
-from streamlit.testing.v1 import AppTest
 
 from app.domain.job import JobDescription
 from app.domain.resume import Candidate, Experience, Resume, ResumeBullet, Role
@@ -101,42 +97,6 @@ def test_tailor_renders_new_role_even_in_preserve_mode(tmp_path):
     assert any("Added a new job" in w for w in result["warnings"])
 
 
-def _app(tmp_path):
-    resume_copy = tmp_path / "upload.docx"
-    shutil.copy("tests/fixtures/resumes/sample.docx", resume_copy)
-    at = AppTest.from_file(os.path.abspath("app/ui.py"), default_timeout=60)
-    for key, value in {"stage": "proposals", "proposals": [], "gap_questions": [], "experience_options": [],
-                       "resume_path": str(resume_copy), "jd_text": "x", "model_choice": "m",
-                       "render_mode": "ATS_DEFAULT", "strict_factual": False, "pre_score": 10.0}.items():
-        at.session_state[key] = value
-    at.run()
-    assert not at.exception
-    return at
-
-
-def test_ui_sends_new_role(tmp_path):
-    at = _app(tmp_path)
-    at.text_input(key="nr_company").input("Globex")
-    at.text_input(key="nr_title").input("Data Engineer")
-    at.checkbox(key="nr_current").check()
-    at.date_input(key="nr_start").set_value(date(2021, 3, 1))
-    at.text_area(key="nr_desc").input("Built pipelines.")
-    with patch.object(TailorService, "tailor_resume", return_value={"success": True}) as tailor:
-        next(b for b in at.button if b.label == "Apply & Generate").click().run()
-    role = tailor.call_args.kwargs["new_role"]
-    assert role == {"company": "Globex", "title": "Data Engineer", "location": "", "current": True,
-                    "description": "Built pipelines.", "start_date": "Mar 2021", "end_date": ""}
-
-
-def test_ui_requires_company_and_title(tmp_path):
-    at = _app(tmp_path)
-    at.text_area(key="nr_desc").input("Built pipelines.")
-    with patch.object(TailorService, "tailor_resume") as tailor:
-        next(b for b in at.button if b.label == "Apply & Generate").click().run()
-    assert not tailor.called
-    assert any("fill in: company, job title, start date" in e.value for e in at.error)
-
-
 @pytest.mark.parametrize("role, desc, message", [
     ({"start_date": "", "end_date": "Dec 2020"}, "Did X.", "start date"),
     ({"start_date": "Jan 2019", "end_date": ""}, "Did X.", "end date"),
@@ -166,9 +126,3 @@ def test_every_ongoing_job_keeps_the_larger_minimum():
     assert _is_current(older_ongoing, 1) and not _is_current(ended, 2) and _is_current(ended, 0)
 
 
-def test_ui_partial_job_is_not_silently_dropped(tmp_path):
-    at = _app(tmp_path)
-    at.text_input(key="nr_location").input("Pune")
-    with patch.object(TailorService, "tailor_resume") as tailor:
-        next(b for b in at.button if b.label == "Apply & Generate").click().run()
-    assert not tailor.called and any("To add the job" in e.value for e in at.error)

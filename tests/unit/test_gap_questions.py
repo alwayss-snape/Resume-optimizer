@@ -1,9 +1,5 @@
 """Suggest-and-confirm gaps (P3.1)."""
-import os
-import shutil
-from unittest.mock import MagicMock, patch
-
-from streamlit.testing.v1 import AppTest
+from unittest.mock import MagicMock
 
 from app.analysis.gap_questions import GapAnswer, build_questions
 from app.analysis.keyword_match import KeywordMatcher
@@ -85,19 +81,3 @@ def test_generate_proposals_asks_instead_of_suggesting(tmp_path):
     assert out["gap_questions"] and all(q.keywords for q in out["gap_questions"])
 
 
-def test_ui_sends_ticked_answers_to_tailor(tmp_path):
-    resume_copy = tmp_path / "upload.docx"
-    shutil.copy("tests/fixtures/resumes/sample.docx", resume_copy)
-    questions = build_questions(_job(), KeywordMatcher().match(_job(), _resume()))
-    at = AppTest.from_file(os.path.abspath("app/ui.py"), default_timeout=60)
-    for key, value in {"stage": "proposals", "proposals": [], "gap_questions": questions, "experience_options": [],
-                       "resume_path": str(resume_copy), "jd_text": "x", "model_choice": "m",
-                       "render_mode": "ATS_DEFAULT", "strict_factual": False, "pre_score": 10.0}.items():
-        at.session_state[key] = value
-    at.run()
-    assert not at.exception
-    next(c for c in at.checkbox if c.label == "I have used PyTorch").check()
-    with patch.object(TailorService, "tailor_resume", return_value={"success": True}) as tailor:
-        next(b for b in at.button if b.label == "Apply & Generate").click().run()
-    answers = tailor.call_args.kwargs["gap_answers"]
-    assert answers == [{"question_id": "gap_1", "confirmed_keywords": ["PyTorch"], "answer": "", "target": "auto"}]

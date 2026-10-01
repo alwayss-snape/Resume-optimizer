@@ -197,7 +197,7 @@ def test_expired_sessions_are_swept_with_their_files(tmp_path):
     assert not upload.exists() and len(store) == 0
 
 
-# --- shared form helpers (used by Streamlit too) ---------------------------
+# --- form helpers --------------------------------------------------------------
 
 def _question(**kw):
     return SimpleNamespace(**{"id": "gap_1", "keywords": ["Airflow", "dbt"], "saved_answer": "", **kw})
