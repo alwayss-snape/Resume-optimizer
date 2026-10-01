@@ -64,6 +64,15 @@ def diff_html(original: str, proposed: str, keywords: Optional[Iterable[str]] = 
     """(original_html, proposed_html): removed words struck through on the
     left, added words highlighted on the right, JD keywords in bold on both.
     All text is HTML-escaped."""
+    a, b, removed, added = _diff(original, proposed)
+    kws = list(keywords or [])
+    return (_render(a, removed, _DEL_STYLE, _keyword_spans(a, kws)),
+            _render(b, added, _ADD_STYLE, _keyword_spans(b, kws)))
+
+
+def _diff(original: str, proposed: str) -> Tuple[List[str], List[str], set, set]:
+    """Both texts as words, plus the indexes removed from the original and
+    added in the proposal (case-insensitive word diff)."""
     a, b = _words(original), _words(proposed)
     removed, added = set(), set()
     matcher = difflib.SequenceMatcher(a=[w.lower() for w in a], b=[w.lower() for w in b], autojunk=False)
@@ -72,23 +81,48 @@ def diff_html(original: str, proposed: str, keywords: Optional[Iterable[str]] = 
             removed.update(range(i1, i2))
         if op in ("insert", "replace"):
             added.update(range(j1, j2))
+    return a, b, removed, added
+
+
+def diff_spans(original: str, proposed: str, keywords: Optional[Iterable[str]] = None) -> Tuple[List[dict], List[dict]]:
+    """The same diff as diff_html, as data for a web client that renders it
+    itself: one {"text", "changed", "keyword"} per word; a line break is
+    {"text": "\n"}. Text is not escaped (the client must escape it)."""
+    a, b, removed, added = _diff(original, proposed)
     kws = list(keywords or [])
-    return (_render(a, removed, _DEL_STYLE, _keyword_spans(a, kws)),
-            _render(b, added, _ADD_STYLE, _keyword_spans(b, kws)))
+
+    def spans(words, marked, key_hits):
+        return [{"text": "\n"} if w == "\n" else {"text": w, "changed": i in marked, "keyword": i in key_hits}
+                for i, w in enumerate(words)]
+    return spans(a, removed, _keyword_spans(a, kws)), spans(b, added, _keyword_spans(b, kws))
+
+
+# state -> (icon, label, meaning). A failed call or a REJECT verdict wins
+# over everything else, since that's what the user must act on.
+PROPOSAL_STATES = {
+    "failed": ("❌", "Not rewritten", "the AI call failed; your original text is shown"),
+    "dropped": ("⛔", "Will be dropped", "fails the fact check; edit it or it won't be used"),
+    "check": ("⚠️", "Check", "facts look right but need your confirmation"),
+    "unchanged": ("➖", "Kept as is", "the AI kept your wording"),
+    "pass": ("✅", "Pass", "fact-checked against your resume"),
+}
+
+
+def proposal_state(status: Optional[str], validation: Optional[str], changed: bool) -> str:
+    """One of PROPOSAL_STATES' keys for a proposal."""
+    if status in ("llm_unavailable", "llm_error"):
+        return "failed"
+    if validation == "REJECT":
+        return "dropped"
+    if validation == "NEEDS_CONFIRM":
+        return "check"
+    return "pass" if changed else "unchanged"
 
 
 def status_badge(status: Optional[str], validation: Optional[str], changed: bool) -> Tuple[str, str]:
-    """(badge, meaning) for one proposal. A failed call or a REJECT verdict
-    wins over everything else, since that's what the user must act on."""
-    if status in ("llm_unavailable", "llm_error"):
-        return "❌ Not rewritten", "the AI call failed; your original text is shown"
-    if validation == "REJECT":
-        return "⛔ Will be dropped", "fails the fact check; edit it or it won't be used"
-    if validation == "NEEDS_CONFIRM":
-        return "⚠️ Check", "facts look right but need your confirmation"
-    if not changed:
-        return "➖ Kept as is", "the AI kept your wording"
-    return "✅ Pass", "fact-checked against your resume"
+    """(badge, meaning) for one proposal, as the Streamlit page shows it."""
+    icon, label, meaning = PROPOSAL_STATES[proposal_state(status, validation, changed)]
+    return f"{icon} {label}", meaning
 
 
 def score_breakdown(report: Optional[KeywordMatchReport]) -> List[dict]:

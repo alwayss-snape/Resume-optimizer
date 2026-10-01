@@ -118,3 +118,19 @@ class ProfileStore:
         if removed:
             self.save(profile)
         return removed
+
+
+class MemoryProfileStore(ProfileStore):
+    """A profile kept in memory, one per web visitor (P5.1): answers are
+    reused for that visitor's next job description during the session, and
+    never shown to anyone else or written to disk."""
+
+    def __init__(self):
+        super().__init__(path="(memory)")
+        self._profile = Profile()
+
+    def load(self) -> Profile:
+        return self._profile.model_copy(deep=True)
+
+    def save(self, profile: Profile) -> None:
+        self._profile = profile.model_copy(deep=True)

@@ -1,6 +1,6 @@
 # Project Overview — Resume-optimizer
 
-_Start here. Last reviewed: 2026-09-29 (branch `fb_ksh`). Hand-maintained — update it when capabilities or open
+_Start here. Last reviewed: 2026-10-01 (branch `fb_ksh`). Hand-maintained — update it when capabilities or open
 issues change. For "where is X in the code" see [KNOWLEDGE_GRAPH.md](KNOWLEDGE_GRAPH.md); for "what changed when"
 see [CHANGE_LOG.md](CHANGE_LOG.md)._
 
@@ -17,7 +17,8 @@ job description, and it:
 Core rule (from ARCHITECTURE.md): _the LLM edits content; deterministic code owns structure, formatting, validation
 and file generation._ Every rewrite must trace back to an "evidence" item from the original resume.
 
-**Ways to run it:** Streamlit UI (`streamlit run app/ui.py`) or CLI (`python -m app.cli analyze|propose|tailor ...`).
+**Ways to run it:** Streamlit UI (`streamlit run app/ui.py`), CLI (`python -m app.cli analyze|propose|tailor ...`),
+or the web API (`uvicorn app.api.main:app`, P5.1), the backend of the new React UI being built in Phase 5.
 **LLM:** Groq cloud (`LLM_PROVIDER=groq`, which is what `.env` uses today) or local Ollama (`qwen3:4b`).
 Semantic matching uses a local embedding model (`all-MiniLM-L6-v2`).
 
@@ -56,6 +57,7 @@ Semantic matching uses a local embedding model (`all-MiniLM-L6-v2`).
 | Add a **new job role** | ✅ Works | Company, title, location, dates or "currently here", description → fact-checked bullets, placed in date order (P3.3) |
 | Strict Factual Mode | ⚠️ Cosmetic | See issue 4 |
 | DOCX / PDF / HTML output | ✅ Works | Re-parsed after rendering to prove it reads back intact (ATS round-trip, P2.5). ATS template (P2.1): A4, Arial, standard headings, section order by experience, "Jan 2022 – Present" dates; files named `First_Last_Resume_<Company>`. Auto page-fit to 1 page (< 8 years) or 2, trimming the least relevant content and reporting it (P2.3–P2.4). PDF and page-fit need LibreOffice installed |
+| Web API | ✅ Works | FastAPI (P5.1): one endpoint per step, SSE progress, per-visitor sessions with expiry, upload checks, rate limit. The React UI (P5.2–P5.6) is next; public-hosting hardening is P5.7 |
 | CLI | ✅ Works | `analyze`, `propose` (editable review file) and `tailor --proposals` with the UI's features: edits, gap answers, additions, a new job, strict mode; live progress (P3.6) |
 | Tests | ✅ 375 passing | `pytest -q` (~50-80 s); the full offline eval of 8 anonymized cases runs with `pytest -m eval` |
 | Evaluation set | ✅ Works | 11 anonymized resume + JD cases with expected facts; `python -m app.eval run --tailor --check` (P4.1, P4.2); LLM-as-judge from another model family, rubric + position-swapped pairwise, `--judge` / `--replay` (P4.3) |

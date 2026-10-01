@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "5eb511a18c634bfd",
+  "source_hash": "3f9fd589eaaff552",
   "stats": {
-    "files": 129,
-    "python_files": 106,
-    "app_modules": 50,
-    "test_files": 48,
-    "classes": 89,
-    "functions": 769,
-    "lines_of_python": 16356
+    "files": 135,
+    "python_files": 112,
+    "app_modules": 55,
+    "test_files": 49,
+    "classes": 100,
+    "functions": 850,
+    "lines_of_python": 17386
   },
   "axes": {
     "x": "location (path)",
@@ -26,7 +26,8 @@
       "Services",
       "Tests",
       "Tooling",
-      "Validation"
+      "Validation",
+      "Web API"
     ],
     "stages": [
       "1 Ingest",
@@ -139,6 +140,24 @@
       "default": "os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), 'data', 'profile', 'facts.json')"
     },
     {
+      "name": "api_session_ttl_minutes",
+      "env": "API_SESSION_TTL_MINUTES",
+      "type": "int",
+      "default": "60"
+    },
+    {
+      "name": "api_max_upload_mb",
+      "env": "API_MAX_UPLOAD_MB",
+      "type": "int",
+      "default": "5"
+    },
+    {
+      "name": "api_rate_limit_per_hour",
+      "env": "API_RATE_LIMIT_PER_HOUR",
+      "type": "int",
+      "default": "30"
+    },
+    {
       "name": "semantic_match_enabled",
       "env": "SEMANTIC_MATCH_ENABLED",
       "type": "bool",
@@ -198,7 +217,7 @@
       "type": "file",
       "layer": "Root",
       "stages": [],
-      "lines": 78
+      "lines": 87
     },
     {
       "id": "CLAUDE.md",
@@ -1016,6 +1035,382 @@
       ]
     },
     {
+      "id": "app/api/__init__.py",
+      "type": "python",
+      "layer": "Web API",
+      "stages": [],
+      "lines": 0,
+      "doc": "",
+      "classes": [],
+      "functions": []
+    },
+    {
+      "id": "app/api/forms.py",
+      "type": "python",
+      "layer": "Web API",
+      "stages": [
+        "7 Rewrite",
+        "10 Report"
+      ],
+      "lines": 108,
+      "doc": "What the review form sends, turned into what TailorService takes (P5.1).",
+      "classes": [],
+      "functions": [
+        {
+          "name": "current_provider",
+          "line": 21,
+          "doc": ""
+        },
+        {
+          "name": "model_options",
+          "line": 25,
+          "doc": "Models offered for the configured provider. The configured default"
+        },
+        {
+          "name": "proposal_text",
+          "line": 38,
+          "doc": ""
+        },
+        {
+          "name": "preapproved",
+          "line": 42,
+          "doc": "The ticked proposals as dicts, carrying the user's edits. `edits`"
+        },
+        {
+          "name": "resolve_target",
+          "line": 59,
+          "doc": "\"auto\", \"new_project\" or a known experience id; anything else is"
+        },
+        {
+          "name": "answer_counts",
+          "line": 67,
+          "doc": "Unticking every keyword also withdraws a pre-filled answer the user"
+        },
+        {
+          "name": "gap_answers",
+          "line": 74,
+          "doc": "The answers that count. `inputs` maps a question id to {\"ticked\":"
+        },
+        {
+          "name": "new_role",
+          "line": 90,
+          "doc": "The \"add a job\" form (P3.3) -> (role dict for tailor_resume, error)."
+        }
+      ]
+    },
+    {
+      "id": "app/api/main.py",
+      "type": "python",
+      "layer": "Web API",
+      "stages": [
+        "1 Ingest",
+        "2 Normalize",
+        "3 JD analysis",
+        "4 Match",
+        "5 Score",
+        "6 Plan",
+        "7 Rewrite",
+        "8 Validate",
+        "9 Render",
+        "10 Report"
+      ],
+      "lines": 51,
+      "doc": "The web app (P5.1): `uvicorn app.api.main:app`.",
+      "classes": [],
+      "functions": [
+        {
+          "name": "default_service",
+          "line": 20,
+          "doc": ""
+        },
+        {
+          "name": "create_app",
+          "line": 27,
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "app/api/routes.py",
+      "type": "python",
+      "layer": "Web API",
+      "stages": [
+        "1 Ingest",
+        "2 Normalize",
+        "3 JD analysis",
+        "4 Match",
+        "5 Score",
+        "6 Plan",
+        "7 Rewrite",
+        "8 Validate",
+        "9 Render",
+        "10 Report"
+      ],
+      "lines": 465,
+      "doc": "HTTP endpoints, one per step of the review flow (P5.1).",
+      "classes": [
+        {
+          "name": "ProposalsIn",
+          "line": 41,
+          "doc": "",
+          "methods": []
+        },
+        {
+          "name": "SelectionItem",
+          "line": 47,
+          "doc": "",
+          "methods": []
+        },
+        {
+          "name": "MatchPreviewIn",
+          "line": 52,
+          "doc": "",
+          "methods": []
+        },
+        {
+          "name": "GapInput",
+          "line": 56,
+          "doc": "",
+          "methods": []
+        },
+        {
+          "name": "AdditionIn",
+          "line": 62,
+          "doc": "",
+          "methods": []
+        },
+        {
+          "name": "NewRoleIn",
+          "line": 67,
+          "doc": "",
+          "methods": []
+        },
+        {
+          "name": "TailorIn",
+          "line": 77,
+          "doc": "",
+          "methods": []
+        },
+        {
+          "name": "RateLimiter",
+          "line": 90,
+          "doc": "At most `limit` calls per `window` seconds per key (visitor IP).",
+          "methods": [
+            {
+              "name": "__init__",
+              "line": 93,
+              "doc": ""
+            },
+            {
+              "name": "check",
+              "line": 98,
+              "doc": ""
+            }
+          ]
+        }
+      ],
+      "functions": [
+        {
+          "name": "rate_limited",
+          "line": 109,
+          "doc": ""
+        },
+        {
+          "name": "current_session",
+          "line": 113,
+          "doc": ""
+        },
+        {
+          "name": "_require",
+          "line": 120,
+          "doc": ""
+        },
+        {
+          "name": "_claim",
+          "line": 125,
+          "doc": ""
+        },
+        {
+          "name": "_save_upload",
+          "line": 130,
+          "doc": "The upload as a temp file, after checking its type and size."
+        },
+        {
+          "name": "_check_jd",
+          "line": 146,
+          "doc": ""
+        },
+        {
+          "name": "_event",
+          "line": 151,
+          "doc": ""
+        },
+        {
+          "name": "_stream",
+          "line": 155,
+          "doc": "Run `work(progress)` in a thread (the session must already be"
+        },
+        {
+          "name": "_service",
+          "line": 187,
+          "doc": "A TailorService for one step. With a session, saved gap answers come"
+        },
+        {
+          "name": "_details",
+          "line": 199,
+          "doc": "What the \"check details\" step shows and edits (P3.5)."
+        },
+        {
+          "name": "_sections",
+          "line": 215,
+          "doc": "Bullet id -> the job or project it belongs to, for grouping cards."
+        },
+        {
+          "name": "_proposal_out",
+          "line": 227,
+          "doc": ""
+        },
+        {
+          "name": "_match_out",
+          "line": 239,
+          "doc": ""
+        },
+        {
+          "name": "_selected",
+          "line": 245,
+          "doc": ""
+        },
+        {
+          "name": "health",
+          "line": 255,
+          "doc": ""
+        },
+        {
+          "name": "config",
+          "line": 260,
+          "doc": ""
+        },
+        {
+          "name": "_model",
+          "line": 266,
+          "doc": ""
+        },
+        {
+          "name": "analyze",
+          "line": 273,
+          "doc": "\"Just check my match\": score only, nothing kept."
+        },
+        {
+          "name": "parse",
+          "line": 287,
+          "doc": "Step 1: read the resume and start a fresh session for this run."
+        },
+        {
+          "name": "proposals",
+          "line": 320,
+          "doc": "Step 2: apply the user's fixes, then draft rewrites and gap"
+        },
+        {
+          "name": "match_preview",
+          "line": 362,
+          "doc": "The match rate if the selected (and edited) proposals were applied."
+        },
+        {
+          "name": "tailor",
+          "line": 372,
+          "doc": "Step 3: apply the review and generate the files. Streams progress."
+        },
+        {
+          "name": "_result_path",
+          "line": 431,
+          "doc": ""
+        },
+        {
+          "name": "download",
+          "line": 439,
+          "doc": ""
+        },
+        {
+          "name": "preview",
+          "line": 447,
+          "doc": "One page of the tailored PDF as a PNG (Chrome blocks embedded PDFs)."
+        },
+        {
+          "name": "reset",
+          "line": 456,
+          "doc": "Start over: delete this visitor's files and state."
+        }
+      ]
+    },
+    {
+      "id": "app/api/sessions.py",
+      "type": "python",
+      "layer": "Web API",
+      "stages": [
+        "10 Report"
+      ],
+      "lines": 94,
+      "doc": "Per-visitor state for the web API (P5.1).",
+      "classes": [
+        {
+          "name": "Session",
+          "line": 24,
+          "doc": "",
+          "methods": [
+            {
+              "name": "reset",
+              "line": 35,
+              "doc": "Delete the session's temp files and forget everything."
+            }
+          ]
+        },
+        {
+          "name": "SessionStore",
+          "line": 54,
+          "doc": "",
+          "methods": [
+            {
+              "name": "__init__",
+              "line": 55,
+              "doc": ""
+            },
+            {
+              "name": "get",
+              "line": 60,
+              "doc": ""
+            },
+            {
+              "name": "create",
+              "line": 68,
+              "doc": ""
+            },
+            {
+              "name": "drop",
+              "line": 74,
+              "doc": "Forget a session now, deleting its temp files."
+            },
+            {
+              "name": "sweep",
+              "line": 80,
+              "doc": "Drop sessions idle longer than the TTL; returns how many. A"
+            },
+            {
+              "name": "__len__",
+              "line": 93,
+              "doc": ""
+            }
+          ]
+        }
+      ],
+      "functions": [
+        {
+          "name": "remove_path",
+          "line": 42,
+          "doc": ""
+        }
+      ]
+    },
+    {
       "id": "app/cli.py",
       "type": "python",
       "layer": "Entry points",
@@ -1072,7 +1467,7 @@
       "type": "python",
       "layer": "Config",
       "stages": [],
-      "lines": 58,
+      "lines": 66,
       "doc": "",
       "classes": [
         {
@@ -2303,7 +2698,7 @@
       "stages": [
         "9 Render"
       ],
-      "lines": 60,
+      "lines": 69,
       "doc": "",
       "classes": [
         {
@@ -2324,7 +2719,13 @@
           ]
         }
       ],
-      "functions": []
+      "functions": [
+        {
+          "name": "pdf_page_images",
+          "line": 63,
+          "doc": "Each PDF page as PNG bytes. Shown as images, a preview works in any"
+        }
+      ]
     },
     {
       "id": "app/rendering/review_view.py",
@@ -2333,7 +2734,7 @@
       "stages": [
         "7 Rewrite"
       ],
-      "lines": 120,
+      "lines": 154,
       "doc": "What the proposal review screen shows (P3.4), as plain functions so the",
       "classes": [],
       "functions": [
@@ -2363,18 +2764,33 @@
           "doc": "(original_html, proposed_html): removed words struck through on the"
         },
         {
+          "name": "_diff",
+          "line": 73,
+          "doc": "Both texts as words, plus the indexes removed from the original and"
+        },
+        {
+          "name": "diff_spans",
+          "line": 87,
+          "doc": "The same diff as diff_html, as data for a web client that renders it"
+        },
+        {
+          "name": "proposal_state",
+          "line": 111,
+          "doc": "One of PROPOSAL_STATES' keys for a proposal."
+        },
+        {
           "name": "status_badge",
-          "line": 80,
-          "doc": "(badge, meaning) for one proposal. A failed call or a REJECT verdict"
+          "line": 122,
+          "doc": "(badge, meaning) for one proposal, as the Streamlit page shows it."
         },
         {
           "name": "score_breakdown",
-          "line": 94,
+          "line": 128,
           "doc": "Per keyword kind: how many found and how much of the rate it earns."
         },
         {
           "name": "gap_table",
-          "line": 111,
+          "line": 145,
           "doc": "Missing JD keywords, required and heaviest first, and whether a gap"
         }
       ]
@@ -2496,7 +2912,7 @@
       "stages": [
         "7 Rewrite"
       ],
-      "lines": 120,
+      "lines": 136,
       "doc": "Local profile of facts the user has confirmed (P3.2).",
       "classes": [
         {
@@ -2545,6 +2961,28 @@
               "name": "forget",
               "line": 110,
               "doc": "Forget one keyword, or everything when keyword is None. Returns how many were removed."
+            }
+          ]
+        },
+        {
+          "name": "MemoryProfileStore",
+          "line": 123,
+          "doc": "A profile kept in memory, one per web visitor (P5.1): answers are",
+          "methods": [
+            {
+              "name": "__init__",
+              "line": 128,
+              "doc": ""
+            },
+            {
+              "name": "load",
+              "line": 132,
+              "doc": ""
+            },
+            {
+              "name": "save",
+              "line": 135,
+              "doc": ""
             }
           ]
         }
@@ -2762,43 +3200,33 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 786,
+      "lines": 725,
       "doc": "",
       "classes": [],
       "functions": [
         {
-          "name": "pdf_page_images",
-          "line": 25,
-          "doc": "Each PDF page as PNG bytes. Shown as images, the preview works in any"
-        },
-        {
           "name": "show_pdf_preview",
-          "line": 35,
+          "line": 27,
           "doc": ""
         },
         {
           "name": "_cleanup_session_state",
-          "line": 46,
+          "line": 38,
           "doc": "Remove temp files from a previous run and reset to a clean 'idle' state."
         },
         {
           "name": "_show_content_checks",
-          "line": 112,
+          "line": 104,
           "doc": "P2.6: advice on the finished resume; nothing is changed automatically."
         },
         {
-          "name": "model_options",
-          "line": 123,
-          "doc": "Models offered in the sidebar for the configured provider. The"
-        },
-        {
           "name": "_show_keyword_match",
-          "line": 265,
+          "line": 236,
           "doc": "Match rate against the target band, then the matched / missing table"
         },
         {
           "name": "_draft_proposals",
-          "line": 297,
+          "line": 268,
           "doc": ""
         }
       ]
@@ -3042,7 +3470,7 @@
       "type": "file",
       "layer": "Root",
       "stages": [],
-      "lines": 45
+      "lines": 48
     },
     {
       "id": "scripts/autocommit.sh",
@@ -3169,118 +3597,118 @@
       "type": "python",
       "layer": "Tooling",
       "stages": [],
-      "lines": 732,
+      "lines": 737,
       "doc": "Regenerate the repo's living docs: the knowledge graph and the change log.",
       "classes": [],
       "functions": [
         {
           "name": "git",
-          "line": 130,
+          "line": 135,
           "doc": ""
         },
         {
           "name": "layer_of",
-          "line": 137,
+          "line": 142,
           "doc": ""
         },
         {
           "name": "module_name",
-          "line": 144,
+          "line": 149,
           "doc": ""
         },
         {
           "name": "first_line",
-          "line": 151,
+          "line": 156,
           "doc": ""
         },
         {
           "name": "list_files",
-          "line": 160,
+          "line": 165,
           "doc": "Tracked + new (not ignored) files, restricted to the project map."
         },
         {
           "name": "parse_python",
-          "line": 178,
+          "line": 183,
           "doc": ""
         },
         {
           "name": "symbols_of",
-          "line": 206,
+          "line": 211,
           "doc": ""
         },
         {
           "name": "settings_fields",
-          "line": 219,
+          "line": 224,
           "doc": ""
         },
         {
           "name": "build_graph",
-          "line": 238,
+          "line": 243,
           "doc": ""
         },
         {
           "name": "render_graph_md",
-          "line": 312,
+          "line": 317,
           "doc": ""
         },
         {
           "name": "write_graph",
-          "line": 510,
+          "line": 515,
           "doc": ""
         },
         {
           "name": "commit_info",
-          "line": 553,
+          "line": 558,
           "doc": ""
         },
         {
           "name": "changed_files",
-          "line": 564,
+          "line": 569,
           "doc": ""
         },
         {
           "name": "is_major",
-          "line": 577,
+          "line": 582,
           "doc": ""
         },
         {
           "name": "blob",
-          "line": 586,
-          "doc": ""
-        },
-        {
-          "name": "structure_delta",
           "line": 591,
           "doc": ""
         },
         {
+          "name": "structure_delta",
+          "line": 596,
+          "doc": ""
+        },
+        {
           "name": "render_entry",
-          "line": 614,
+          "line": 619,
           "doc": ""
         },
         {
           "name": "_split_entries",
-          "line": 657,
+          "line": 662,
           "doc": ""
         },
         {
           "name": "_join",
-          "line": 669,
+          "line": 674,
           "doc": ""
         },
         {
           "name": "log_entry",
-          "line": 673,
+          "line": 678,
           "doc": ""
         },
         {
           "name": "backfill",
-          "line": 691,
+          "line": 696,
           "doc": ""
         },
         {
           "name": "main",
-          "line": 708,
+          "line": 713,
           "doc": ""
         }
       ]
@@ -3458,6 +3886,157 @@
         {
           "name": "test_approved_rewrite_appears_in_all_outputs",
           "line": 14,
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "tests/unit/test_api.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 282,
+      "doc": "Web API (P5.1): the full flow through HTTP, plus the shared form helpers.",
+      "classes": [],
+      "functions": [
+        {
+          "name": "client",
+          "line": 28,
+          "doc": ""
+        },
+        {
+          "name": "_upload",
+          "line": 40,
+          "doc": ""
+        },
+        {
+          "name": "_events",
+          "line": 45,
+          "doc": "SSE body -> [(event, data), ...]."
+        },
+        {
+          "name": "_parse",
+          "line": 54,
+          "doc": ""
+        },
+        {
+          "name": "_draft",
+          "line": 60,
+          "doc": ""
+        },
+        {
+          "name": "test_config_lists_models_for_the_configured_provider",
+          "line": 68,
+          "doc": ""
+        },
+        {
+          "name": "test_full_flow_parse_draft_preview_tailor_download",
+          "line": 74,
+          "doc": ""
+        },
+        {
+          "name": "test_pdf_upload_parses",
+          "line": 110,
+          "doc": ""
+        },
+        {
+          "name": "test_steps_need_a_session",
+          "line": 114,
+          "doc": ""
+        },
+        {
+          "name": "test_tailor_before_drafting_is_refused",
+          "line": 119,
+          "doc": ""
+        },
+        {
+          "name": "test_bad_uploads_are_refused",
+          "line": 129,
+          "doc": ""
+        },
+        {
+          "name": "test_oversized_upload_and_empty_jd_are_refused",
+          "line": 134,
+          "doc": ""
+        },
+        {
+          "name": "test_unknown_model_is_refused",
+          "line": 141,
+          "doc": ""
+        },
+        {
+          "name": "test_invalid_new_role_is_refused_before_any_work",
+          "line": 146,
+          "doc": ""
+        },
+        {
+          "name": "test_rate_limit",
+          "line": 154,
+          "doc": ""
+        },
+        {
+          "name": "test_preview_renders_pdf_pages",
+          "line": 161,
+          "doc": ""
+        },
+        {
+          "name": "test_reset_deletes_temp_files",
+          "line": 175,
+          "doc": ""
+        },
+        {
+          "name": "test_expired_sessions_are_swept_with_their_files",
+          "line": 185,
+          "doc": ""
+        },
+        {
+          "name": "_question",
+          "line": 201,
+          "doc": ""
+        },
+        {
+          "name": "test_gap_answers_count_only_confirmed_input",
+          "line": 205,
+          "doc": ""
+        },
+        {
+          "name": "test_resolve_target_rejects_unknown_ids",
+          "line": 214,
+          "doc": ""
+        },
+        {
+          "name": "test_new_role_validation",
+          "line": 220,
+          "doc": ""
+        },
+        {
+          "name": "test_preapproved_carries_edits",
+          "line": 230,
+          "doc": ""
+        },
+        {
+          "name": "test_failing_service_does_not_lock_the_session",
+          "line": 239,
+          "doc": "Review fix: a step that fails before its worker starts must release"
+        },
+        {
+          "name": "test_worker_errors_are_generic_and_release_the_lock",
+          "line": 251,
+          "doc": ""
+        },
+        {
+          "name": "test_saved_answers_stay_with_their_visitor",
+          "line": 260,
+          "doc": "Review fix: confirmed gap answers are per session, never shared."
+        },
+        {
+          "name": "test_failed_first_parse_leaves_no_session",
+          "line": 272,
+          "doc": ""
+        },
+        {
+          "name": "test_cookie_is_refreshed_on_activity",
+          "line": 279,
           "doc": ""
         }
       ]
@@ -5133,7 +5712,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 163,
+      "lines": 182,
       "doc": "P3.4: the proposal review screen (diff, badges, breakdown, gap table,",
       "classes": [],
       "functions": [
@@ -5225,6 +5804,16 @@
         {
           "name": "test_new_proposals_clear_the_old_live_rate",
           "line": 158,
+          "doc": ""
+        },
+        {
+          "name": "test_diff_spans_match_diff_html_marks",
+          "line": 166,
+          "doc": "P5.1: the web client gets the same diff as data, unescaped."
+        },
+        {
+          "name": "test_proposal_state_matches_status_badge",
+          "line": 177,
           "doc": ""
         }
       ]
@@ -6069,6 +6658,11 @@
     },
     {
       "from": "app/analysis/change_proposal.py",
+      "to": "tests/unit/test_api.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/analysis/change_proposal.py",
       "to": "tests/unit/test_review_view.py",
       "type": "tested_by"
     },
@@ -6126,6 +6720,11 @@
       "from": "app/analysis/gap_questions.py",
       "to": "app/domain/report.py",
       "type": "imports"
+    },
+    {
+      "from": "app/analysis/gap_questions.py",
+      "to": "tests/unit/test_api.py",
+      "type": "tested_by"
     },
     {
       "from": "app/analysis/gap_questions.py",
@@ -6685,6 +7284,131 @@
     {
       "from": "app/analysis/tailor_planner.py",
       "to": "tests/unit/test_tailor_planner.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/api/__init__.py",
+      "to": "tests/unit/test_api.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/api/forms.py",
+      "to": "app/config/settings.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/api/main.py",
+      "to": "app/api/routes.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/api/main.py",
+      "to": "app/api/sessions.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/api/main.py",
+      "to": "app/config/settings.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/api/main.py",
+      "to": "app/llm/client.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/api/main.py",
+      "to": "app/services/tailor.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/api/main.py",
+      "to": "tests/unit/test_api.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/api/routes.py",
+      "to": "app/api/__init__.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/api/routes.py",
+      "to": "app/api/routes.py::AdditionIn",
+      "type": "contains"
+    },
+    {
+      "from": "app/api/routes.py",
+      "to": "app/api/routes.py::GapInput",
+      "type": "contains"
+    },
+    {
+      "from": "app/api/routes.py",
+      "to": "app/api/routes.py::MatchPreviewIn",
+      "type": "contains"
+    },
+    {
+      "from": "app/api/routes.py",
+      "to": "app/api/routes.py::NewRoleIn",
+      "type": "contains"
+    },
+    {
+      "from": "app/api/routes.py",
+      "to": "app/api/routes.py::ProposalsIn",
+      "type": "contains"
+    },
+    {
+      "from": "app/api/routes.py",
+      "to": "app/api/routes.py::RateLimiter",
+      "type": "contains"
+    },
+    {
+      "from": "app/api/routes.py",
+      "to": "app/api/routes.py::SelectionItem",
+      "type": "contains"
+    },
+    {
+      "from": "app/api/routes.py",
+      "to": "app/api/routes.py::TailorIn",
+      "type": "contains"
+    },
+    {
+      "from": "app/api/routes.py",
+      "to": "app/api/sessions.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/api/routes.py",
+      "to": "app/rendering/pdf_converter.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/api/routes.py",
+      "to": "app/rendering/review_view.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/api/routes.py",
+      "to": "tests/unit/test_api.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/api/sessions.py",
+      "to": "app/api/sessions.py::Session",
+      "type": "contains"
+    },
+    {
+      "from": "app/api/sessions.py",
+      "to": "app/api/sessions.py::SessionStore",
+      "type": "contains"
+    },
+    {
+      "from": "app/api/sessions.py",
+      "to": "app/services/profile_store.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/api/sessions.py",
+      "to": "tests/unit/test_api.py",
       "type": "tested_by"
     },
     {
@@ -7879,6 +8603,11 @@
     },
     {
       "from": "app/services/profile_store.py",
+      "to": "app/services/profile_store.py::MemoryProfileStore",
+      "type": "contains"
+    },
+    {
+      "from": "app/services/profile_store.py",
       "to": "app/services/profile_store.py::Profile",
       "type": "contains"
     },
@@ -7901,6 +8630,11 @@
       "from": "app/services/run_manager.py",
       "to": "app/services/run_manager.py::RunManager",
       "type": "contains"
+    },
+    {
+      "from": "app/services/run_manager.py",
+      "to": "tests/unit/test_api.py",
+      "type": "tested_by"
     },
     {
       "from": "app/services/run_manager.py",
@@ -8134,6 +8868,11 @@
     },
     {
       "from": "app/services/tailor.py",
+      "to": "tests/unit/test_api.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/services/tailor.py",
       "to": "tests/unit/test_check_parsed_resume.py",
       "type": "tested_by"
     },
@@ -8199,12 +8938,22 @@
     },
     {
       "from": "app/ui.py",
-      "to": "app/config/settings.py",
+      "to": "app/api/__init__.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/ui.py",
+      "to": "app/api/forms.py",
       "type": "imports"
     },
     {
       "from": "app/ui.py",
       "to": "app/llm/client.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/ui.py",
+      "to": "app/rendering/pdf_converter.py",
       "type": "imports"
     },
     {

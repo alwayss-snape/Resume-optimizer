@@ -43,6 +43,14 @@ class Settings(BaseSettings):
     profile_path: str = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
                                      "data", "profile", "facts.json")
 
+    # Web API (P5.1): idle visitors' sessions and temp files are dropped
+    # after this long; uploads above this size are refused; each visitor IP
+    # may start this many LLM-costing steps (analyse, parse, draft, tailor)
+    # per hour.
+    api_session_ttl_minutes: int = 60
+    api_max_upload_mb: int = 5
+    api_rate_limit_per_hour: int = 30
+
     # Semantic matching (local sentence-transformers embedding layer).
     # Only applied to requirements the deterministic EvidenceMatcher leaves MISSING.
     semantic_match_enabled: bool = True

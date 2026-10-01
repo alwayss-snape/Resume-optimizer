@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**50 app modules · 48 test files · 89 classes · 769 functions/methods · 16,356 lines of Python** · source hash `5eb511a18c634bfd`
+**55 app modules · 49 test files · 100 classes · 850 functions/methods · 17,386 lines of Python** · source hash `3f9fd589eaaff552`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -31,7 +31,7 @@ pyproject.toml
   pre-commit
 app/
   cli.py                                         check_llm(), write_proposals(), _without_mirrors(), read_proposals(), …
-  ui.py                                          pdf_page_images(), show_pdf_preview(), _cleanup_session_state(), _show…
+  ui.py                                          show_pdf_preview(), _cleanup_session_state(), _show_content_checks(), …
   analysis/
     change_proposal.py                           ChangeProposal
     experience.py                                Years of experience from role date ranges (P1.5), and the page target
@@ -48,6 +48,12 @@ app/
     summary_writer.py                            Tailored professional summary (P1.5).
     tailor_planner.py                            TailoringPlanner
     terminology.py                               flat_alias_to_canonical(), normalize_phrase()
+  api/
+    __init__.py
+    forms.py                                     What the review form sends, turned into what TailorService takes (P5.1…
+    main.py                                      The web app (P5.1): `uvicorn app.api.main:app`.
+    routes.py                                    HTTP endpoints, one per step of the review flow (P5.1).
+    sessions.py                                  Per-visitor state for the web API (P5.1).
   config/
     settings.py                                  Settings
   domain/
@@ -123,6 +129,7 @@ tests/
     test_parse_golden.py                         Parse a resume and compare it, field by field, with a hand-checked gol…
     test_preserve_rewrite_end_to_end.py          test_approved_rewrite_appears_in_all_outputs()
   unit/
+    test_api.py                                  Web API (P5.1): the full flow through HTTP, plus the shared form helpe…
     test_ats_round_trip.py                       P2.5: the rendered template must read back exactly as rendered, and the
     test_check_parsed_resume.py                  P3.5: "Check parsed resume" step: corrections applied by the service,
     test_cli.py                                  test_tailor_service_analyze_only(), test_tailor_service_end_to_end_doc…
@@ -182,8 +189,9 @@ Rows = layer (what kind of code), columns = pipeline stage (when it runs during 
 | **Rendering** | `document_map` | · | · | · | · | · | `review_view` | · | `document_map`<br>`docx_patcher`<br>`html_renderer`<br>`layout`<br>`page_fit`<br>`pdf_converter`<br>`template_renderer` | · |
 | **Domain models** | · | `evidence`<br>`resume`<br>`resume_document` | `job` | `evidence`<br>`report` | `report` | `tailoring` | · | · | `resume_document` | · |
 | **Services** | · | · | · | · | · | · | `profile_store` | · | · | `run_manager` |
+| **Web API** | · | · | · | · | · | · | `forms` | · | · | `forms`<br>`sessions` |
 
-Spanning all stages: `app/cli.py`, `app/eval/harness.py`, `app/services/tailor.py`, `app/ui.py`
+Spanning all stages: `app/api/main.py`, `app/api/routes.py`, `app/cli.py`, `app/eval/harness.py`, `app/services/tailor.py`, `app/ui.py`
 
 ## 3. Module cards
 
@@ -197,7 +205,7 @@ Spanning all stages: `app/cli.py`, `app/eval/harness.py`, `app/services/tailor.p
   - `source_id()` :70
   - `rewritten_text()` :79
 - **Imported by:** `analysis/rewriter.py`, `analysis/skills_tailor.py`, `analysis/summary_writer.py`
-- **Tested by:** `tests/unit/test_review_view.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_validation.py`
+- **Tested by:** `tests/unit/test_api.py`, `tests/unit/test_review_view.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_validation.py`
 
 ### `app/analysis/experience.py`
 
@@ -226,7 +234,7 @@ _Suggest-and-confirm gaps (P3.1): ask, never assume._
 - function **`build_questions()`** ([app/analysis/gap_questions.py:38](../app/analysis/gap_questions.py#L38))
 - **Imports:** `analysis/keyword_match.py`, `domain/job.py`, `domain/report.py`
 - **Imported by:** `cli.py`, `services/tailor.py`
-- **Tested by:** `tests/unit/test_gap_questions.py`, `tests/unit/test_profile_store.py`
+- **Tested by:** `tests/unit/test_api.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_profile_store.py`
 
 ### `app/analysis/jd_analyzer.py`
 
@@ -435,6 +443,106 @@ _Tailored professional summary (P1.5)._
 - function **`normalize_phrase()`** ([app/analysis/terminology.py:42](../app/analysis/terminology.py#L42)) — Normalize a phrase to its canonical lowercased form and expand common acronyms.
 - **Imported by:** `analysis/jd_analyzer.py`, `analysis/keyword_match.py`, `analysis/matcher.py`, `validation/factual.py`
 
+### `app/api/__init__.py`
+
+**Layer:** Web API · **Stage:** — · **Lines:** 0
+
+- **Imported by:** `api/routes.py`, `ui.py`
+- **Tested by:** `tests/unit/test_api.py`
+
+### `app/api/forms.py`
+
+**Layer:** Web API · **Stage:** 7 Rewrite, 10 Report · **Lines:** 108
+
+_What the review form sends, turned into what TailorService takes (P5.1)._
+
+- function **`current_provider()`** ([app/api/forms.py:21](../app/api/forms.py#L21))
+- function **`model_options()`** ([app/api/forms.py:25](../app/api/forms.py#L25)) — Models offered for the configured provider. The configured default
+- function **`proposal_text()`** ([app/api/forms.py:38](../app/api/forms.py#L38))
+- function **`preapproved()`** ([app/api/forms.py:42](../app/api/forms.py#L42)) — The ticked proposals as dicts, carrying the user's edits. `edits`
+- function **`resolve_target()`** ([app/api/forms.py:59](../app/api/forms.py#L59)) — "auto", "new_project" or a known experience id; anything else is
+- function **`answer_counts()`** ([app/api/forms.py:67](../app/api/forms.py#L67)) — Unticking every keyword also withdraws a pre-filled answer the user
+- function **`gap_answers()`** ([app/api/forms.py:74](../app/api/forms.py#L74)) — The answers that count. `inputs` maps a question id to {"ticked":
+- function **`new_role()`** ([app/api/forms.py:90](../app/api/forms.py#L90)) — The "add a job" form (P3.3) -> (role dict for tailor_resume, error).
+- **Imports:** `config/settings.py`
+- **Imported by:** `ui.py`
+
+### `app/api/main.py`
+
+**Layer:** Web API · **Stage:** all · **Lines:** 51
+
+_The web app (P5.1): `uvicorn app.api.main:app`._
+
+- function **`default_service()`** ([app/api/main.py:20](../app/api/main.py#L20))
+- function **`create_app()`** ([app/api/main.py:27](../app/api/main.py#L27))
+- **Imports:** `api/routes.py`, `api/sessions.py`, `config/settings.py`, `llm/client.py`, `services/tailor.py`
+- **Tested by:** `tests/unit/test_api.py`
+
+### `app/api/routes.py`
+
+**Layer:** Web API · **Stage:** all · **Lines:** 465
+
+_HTTP endpoints, one per step of the review flow (P5.1)._
+
+- class **`ProposalsIn`** ([app/api/routes.py:41](../app/api/routes.py#L41))
+- class **`SelectionItem`** ([app/api/routes.py:47](../app/api/routes.py#L47))
+- class **`MatchPreviewIn`** ([app/api/routes.py:52](../app/api/routes.py#L52))
+- class **`GapInput`** ([app/api/routes.py:56](../app/api/routes.py#L56))
+- class **`AdditionIn`** ([app/api/routes.py:62](../app/api/routes.py#L62))
+- class **`NewRoleIn`** ([app/api/routes.py:67](../app/api/routes.py#L67))
+- class **`TailorIn`** ([app/api/routes.py:77](../app/api/routes.py#L77))
+- class **`RateLimiter`** ([app/api/routes.py:90](../app/api/routes.py#L90)) — At most `limit` calls per `window` seconds per key (visitor IP).
+  - `__init__()` :93
+  - `check()` :98
+- function **`rate_limited()`** ([app/api/routes.py:109](../app/api/routes.py#L109))
+- function **`current_session()`** ([app/api/routes.py:113](../app/api/routes.py#L113))
+- function **`_require()`** ([app/api/routes.py:120](../app/api/routes.py#L120))
+- function **`_claim()`** ([app/api/routes.py:125](../app/api/routes.py#L125))
+- function **`_save_upload()`** ([app/api/routes.py:130](../app/api/routes.py#L130)) — The upload as a temp file, after checking its type and size.
+- function **`_check_jd()`** ([app/api/routes.py:146](../app/api/routes.py#L146))
+- function **`_event()`** ([app/api/routes.py:151](../app/api/routes.py#L151))
+- function **`_stream()`** ([app/api/routes.py:155](../app/api/routes.py#L155)) — Run `work(progress)` in a thread (the session must already be
+- function **`_service()`** ([app/api/routes.py:187](../app/api/routes.py#L187)) — A TailorService for one step. With a session, saved gap answers come
+- function **`_details()`** ([app/api/routes.py:199](../app/api/routes.py#L199)) — What the "check details" step shows and edits (P3.5).
+- function **`_sections()`** ([app/api/routes.py:215](../app/api/routes.py#L215)) — Bullet id -> the job or project it belongs to, for grouping cards.
+- function **`_proposal_out()`** ([app/api/routes.py:227](../app/api/routes.py#L227))
+- function **`_match_out()`** ([app/api/routes.py:239](../app/api/routes.py#L239))
+- function **`_selected()`** ([app/api/routes.py:245](../app/api/routes.py#L245))
+- function **`health()`** ([app/api/routes.py:255](../app/api/routes.py#L255))
+- function **`config()`** ([app/api/routes.py:260](../app/api/routes.py#L260))
+- function **`_model()`** ([app/api/routes.py:266](../app/api/routes.py#L266))
+- function **`analyze()`** ([app/api/routes.py:273](../app/api/routes.py#L273)) — "Just check my match": score only, nothing kept.
+- function **`parse()`** ([app/api/routes.py:287](../app/api/routes.py#L287)) — Step 1: read the resume and start a fresh session for this run.
+- function **`proposals()`** ([app/api/routes.py:320](../app/api/routes.py#L320)) — Step 2: apply the user's fixes, then draft rewrites and gap
+- function **`match_preview()`** ([app/api/routes.py:362](../app/api/routes.py#L362)) — The match rate if the selected (and edited) proposals were applied.
+- function **`tailor()`** ([app/api/routes.py:372](../app/api/routes.py#L372)) — Step 3: apply the review and generate the files. Streams progress.
+- function **`_result_path()`** ([app/api/routes.py:431](../app/api/routes.py#L431))
+- function **`download()`** ([app/api/routes.py:439](../app/api/routes.py#L439))
+- function **`preview()`** ([app/api/routes.py:447](../app/api/routes.py#L447)) — One page of the tailored PDF as a PNG (Chrome blocks embedded PDFs).
+- function **`reset()`** ([app/api/routes.py:456](../app/api/routes.py#L456)) — Start over: delete this visitor's files and state.
+- **Imports:** `api/__init__.py`, `api/sessions.py`, `rendering/pdf_converter.py`, `rendering/review_view.py`
+- **Imported by:** `api/main.py`
+- **Tested by:** `tests/unit/test_api.py`
+
+### `app/api/sessions.py`
+
+**Layer:** Web API · **Stage:** 10 Report · **Lines:** 94
+
+_Per-visitor state for the web API (P5.1)._
+
+- class **`Session`** ([app/api/sessions.py:24](../app/api/sessions.py#L24))
+  - `reset()` :35 — Delete the session's temp files and forget everything.
+- class **`SessionStore`** ([app/api/sessions.py:54](../app/api/sessions.py#L54))
+  - `__init__()` :55
+  - `get()` :60
+  - `create()` :68
+  - `drop()` :74 — Forget a session now, deleting its temp files.
+  - `sweep()` :80 — Drop sessions idle longer than the TTL; returns how many. A
+- function **`remove_path()`** ([app/api/sessions.py:42](../app/api/sessions.py#L42))
+- **Imports:** `services/profile_store.py`
+- **Imported by:** `api/main.py`, `api/routes.py`
+- **Tested by:** `tests/unit/test_api.py`
+
 ### `app/cli.py`
 
 **Layer:** Entry points · **Stage:** all · **Lines:** 277
@@ -450,10 +558,10 @@ _Tailored professional summary (P1.5)._
 
 ### `app/config/settings.py`
 
-**Layer:** Config · **Stage:** — · **Lines:** 58
+**Layer:** Config · **Stage:** — · **Lines:** 66
 
 - class **`Settings`** ([app/config/settings.py:4](../app/config/settings.py#L4))
-- **Imported by:** `analysis/semantic_matcher.py`, `eval/judge.py`, `llm/client.py`, `services/profile_store.py`, `ui.py`
+- **Imported by:** `analysis/semantic_matcher.py`, `api/forms.py`, `api/main.py`, `eval/judge.py`, `llm/client.py`, `services/profile_store.py`
 - **Tested by:** `tests/unit/test_profile_store.py`
 
 ### `app/domain/evidence.py`
@@ -688,7 +796,7 @@ _LLM-as-judge for the evaluation harness (P4.3)._
 - function **`_retry_after_seconds()`** ([app/llm/client.py:622](../app/llm/client.py#L622)) — Seconds to wait before retrying a 429: the server's `retry-after`
 - function **`strict_json_schema()`** ([app/llm/client.py:637](../app/llm/client.py#L637)) — Adapt a Pydantic JSON schema for strict structured-output modes: every
 - **Imports:** `config/settings.py`, `llm/schemas.py`, `validation/safety.py`
-- **Imported by:** `analysis/jd_analyzer.py`, `analysis/matcher.py`, `analysis/rewriter.py`, `analysis/structure_extractor.py`, `analysis/summary_writer.py`, `analysis/tailor_planner.py`, `cli.py`, `eval/harness.py`, `eval/judge.py`, `services/tailor.py`, `ui.py`, `scripts/benchmark_model.py`
+- **Imported by:** `analysis/jd_analyzer.py`, `analysis/matcher.py`, `analysis/rewriter.py`, `analysis/structure_extractor.py`, `analysis/summary_writer.py`, `analysis/tailor_planner.py`, `api/main.py`, `cli.py`, `eval/harness.py`, `eval/judge.py`, `services/tailor.py`, `ui.py`, `scripts/benchmark_model.py`
 - **Tested by:** `tests/unit/test_judge.py`, `tests/unit/test_llm_client.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_validation.py`
 
 ### `app/llm/schemas.py`
@@ -792,17 +900,18 @@ _Page-fit loop (P2.4): render, count pages, trim, render again._
 
 ### `app/rendering/pdf_converter.py`
 
-**Layer:** Rendering · **Stage:** 9 Render · **Lines:** 60
+**Layer:** Rendering · **Stage:** 9 Render · **Lines:** 69
 
 - class **`PdfConverter`** ([app/rendering/pdf_converter.py:9](../app/rendering/pdf_converter.py#L9))
   - `find_libreoffice_binary()` :10
   - `convert_docx_to_pdf()` :27
-- **Imported by:** `services/tailor.py`, `scripts/make_eval_cases.py`
+- function **`pdf_page_images()`** ([app/rendering/pdf_converter.py:63](../app/rendering/pdf_converter.py#L63)) — Each PDF page as PNG bytes. Shown as images, a preview works in any
+- **Imported by:** `api/routes.py`, `services/tailor.py`, `ui.py`, `scripts/make_eval_cases.py`
 - **Tested by:** `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_ats_round_trip.py`, `tests/unit/test_pdf_converter.py`
 
 ### `app/rendering/review_view.py`
 
-**Layer:** Rendering · **Stage:** 7 Rewrite · **Lines:** 120
+**Layer:** Rendering · **Stage:** 7 Rewrite · **Lines:** 154
 
 _What the proposal review screen shows (P3.4), as plain functions so the_
 
@@ -811,11 +920,14 @@ _What the proposal review screen shows (P3.4), as plain functions so the_
 - function **`_keyword_spans()`** ([app/rendering/review_view.py:34](../app/rendering/review_view.py#L34)) — Indexes of words that are part of a JD keyword (case-insensitive,
 - function **`_render()`** ([app/rendering/review_view.py:48](../app/rendering/review_view.py#L48))
 - function **`diff_html()`** ([app/rendering/review_view.py:63](../app/rendering/review_view.py#L63)) — (original_html, proposed_html): removed words struck through on the
-- function **`status_badge()`** ([app/rendering/review_view.py:80](../app/rendering/review_view.py#L80)) — (badge, meaning) for one proposal. A failed call or a REJECT verdict
-- function **`score_breakdown()`** ([app/rendering/review_view.py:94](../app/rendering/review_view.py#L94)) — Per keyword kind: how many found and how much of the rate it earns.
-- function **`gap_table()`** ([app/rendering/review_view.py:111](../app/rendering/review_view.py#L111)) — Missing JD keywords, required and heaviest first, and whether a gap
+- function **`_diff()`** ([app/rendering/review_view.py:73](../app/rendering/review_view.py#L73)) — Both texts as words, plus the indexes removed from the original and
+- function **`diff_spans()`** ([app/rendering/review_view.py:87](../app/rendering/review_view.py#L87)) — The same diff as diff_html, as data for a web client that renders it
+- function **`proposal_state()`** ([app/rendering/review_view.py:111](../app/rendering/review_view.py#L111)) — One of PROPOSAL_STATES' keys for a proposal.
+- function **`status_badge()`** ([app/rendering/review_view.py:122](../app/rendering/review_view.py#L122)) — (badge, meaning) for one proposal, as the Streamlit page shows it.
+- function **`score_breakdown()`** ([app/rendering/review_view.py:128](../app/rendering/review_view.py#L128)) — Per keyword kind: how many found and how much of the rate it earns.
+- function **`gap_table()`** ([app/rendering/review_view.py:145](../app/rendering/review_view.py#L145)) — Missing JD keywords, required and heaviest first, and whether a gap
 - **Imports:** `domain/report.py`
-- **Imported by:** `ui.py`
+- **Imported by:** `api/routes.py`, `ui.py`
 - **Tested by:** `tests/unit/test_review_view.py`
 
 ### `app/rendering/template_renderer.py`
@@ -847,7 +959,7 @@ _What the proposal review screen shows (P3.4), as plain functions so the_
 
 ### `app/services/profile_store.py`
 
-**Layer:** Services · **Stage:** 7 Rewrite · **Lines:** 120
+**Layer:** Services · **Stage:** 7 Rewrite · **Lines:** 136
 
 _Local profile of facts the user has confirmed (P3.2)._
 
@@ -860,8 +972,12 @@ _Local profile of facts the user has confirmed (P3.2)._
   - `record()` :70 — Save the confirmed keywords (and answer text) from gap answers.
   - `known()` :105 — Saved facts for these keywords (case-insensitive), keyed as given.
   - `forget()` :110 — Forget one keyword, or everything when keyword is None. Returns how many were removed.
+- class **`MemoryProfileStore`** ([app/services/profile_store.py:123](../app/services/profile_store.py#L123)) — A profile kept in memory, one per web visitor (P5.1): answers are
+  - `__init__()` :128
+  - `load()` :132
+  - `save()` :135
 - **Imports:** `config/settings.py`
-- **Imported by:** `services/tailor.py`, `ui.py`
+- **Imported by:** `api/sessions.py`, `services/tailor.py`, `ui.py`
 - **Tested by:** `tests/unit/test_cli_parity.py`, `tests/unit/test_profile_store.py`
 
 ### `app/services/run_manager.py`
@@ -873,7 +989,7 @@ _Local profile of facts the user has confirmed (P3.2)._
   - `create_run()` :12
   - `save_json()` :30
 - **Imported by:** `services/tailor.py`
-- **Tested by:** `tests/unit/test_cli_parity.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_new_role.py`, `tests/unit/test_profile_store.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_tailor_resume_flow.py`, `tests/unit/test_validation.py`
+- **Tested by:** `tests/unit/test_api.py`, `tests/unit/test_cli_parity.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_new_role.py`, `tests/unit/test_profile_store.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_tailor_resume_flow.py`, `tests/unit/test_validation.py`
 
 ### `app/services/tailor.py`
 
@@ -907,21 +1023,19 @@ _Local profile of facts the user has confirmed (P3.2)._
 - function **`_progress()`** ([app/services/tailor.py:44](../app/services/tailor.py#L44)) — A progress reporter that can never break a run (P3.6).
 - function **`_merge_usage()`** ([app/services/tailor.py:1077](../app/services/tailor.py#L1077)) — Combine two LLMClient.get_usage_summary() dicts into one.
 - **Imports:** `analysis/experience.py`, `analysis/gap_questions.py`, `analysis/jd_analyzer.py`, `analysis/keyword_match.py`, `analysis/matcher.py`, `analysis/resume_normalizer.py`, `analysis/rewriter.py`, `analysis/scoring.py`, `analysis/semantic_matcher.py`, `analysis/skills_tailor.py`, `analysis/structure_extractor.py`, `analysis/summary_writer.py`, `analysis/tailor_planner.py`, `domain/evidence.py`, `domain/job.py`, `domain/report.py`, `domain/resume.py`, `domain/resume_document.py`, `domain/tailoring.py`, `ingestion/docx.py`, `ingestion/pdf.py`, `llm/client.py`, `rendering/docx_patcher.py`, `rendering/html_renderer.py`, `rendering/layout.py`, `rendering/page_fit.py`, `rendering/pdf_converter.py`, `rendering/template_renderer.py`, `services/profile_store.py`, `services/run_manager.py`, `validation/content_lint.py`, `validation/factual.py`, `validation/output.py`, `validation/safety.py`, `validation/structural.py`
-- **Imported by:** `cli.py`, `eval/harness.py`, `ui.py`
-- **Tested by:** `tests/integration/test_end_to_end.py`, `tests/unit/test_check_parsed_resume.py`, `tests/unit/test_cli.py`, `tests/unit/test_cli_parity.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_new_role.py`, `tests/unit/test_profile_store.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_review_view.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_tailor_resume_flow.py`, `tests/unit/test_tailor_service_addition.py`, `tests/unit/test_ui.py`
+- **Imported by:** `api/main.py`, `cli.py`, `eval/harness.py`, `ui.py`
+- **Tested by:** `tests/integration/test_end_to_end.py`, `tests/unit/test_api.py`, `tests/unit/test_check_parsed_resume.py`, `tests/unit/test_cli.py`, `tests/unit/test_cli_parity.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_new_role.py`, `tests/unit/test_profile_store.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_review_view.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_tailor_resume_flow.py`, `tests/unit/test_tailor_service_addition.py`, `tests/unit/test_ui.py`
 
 ### `app/ui.py`
 
-**Layer:** Entry points · **Stage:** all · **Lines:** 786
+**Layer:** Entry points · **Stage:** all · **Lines:** 725
 
-- function **`pdf_page_images()`** ([app/ui.py:25](../app/ui.py#L25)) — Each PDF page as PNG bytes. Shown as images, the preview works in any
-- function **`show_pdf_preview()`** ([app/ui.py:35](../app/ui.py#L35))
-- function **`_cleanup_session_state()`** ([app/ui.py:46](../app/ui.py#L46)) — Remove temp files from a previous run and reset to a clean 'idle' state.
-- function **`_show_content_checks()`** ([app/ui.py:112](../app/ui.py#L112)) — P2.6: advice on the finished resume; nothing is changed automatically.
-- function **`model_options()`** ([app/ui.py:123](../app/ui.py#L123)) — Models offered in the sidebar for the configured provider. The
-- function **`_show_keyword_match()`** ([app/ui.py:265](../app/ui.py#L265)) — Match rate against the target band, then the matched / missing table
-- function **`_draft_proposals()`** ([app/ui.py:297](../app/ui.py#L297))
-- **Imports:** `config/settings.py`, `llm/client.py`, `rendering/review_view.py`, `services/profile_store.py`, `services/tailor.py`
+- function **`show_pdf_preview()`** ([app/ui.py:27](../app/ui.py#L27))
+- function **`_cleanup_session_state()`** ([app/ui.py:38](../app/ui.py#L38)) — Remove temp files from a previous run and reset to a clean 'idle' state.
+- function **`_show_content_checks()`** ([app/ui.py:104](../app/ui.py#L104)) — P2.6: advice on the finished resume; nothing is changed automatically.
+- function **`_show_keyword_match()`** ([app/ui.py:236](../app/ui.py#L236)) — Match rate against the target band, then the matched / missing table
+- function **`_draft_proposals()`** ([app/ui.py:268](../app/ui.py#L268))
+- **Imports:** `api/__init__.py`, `api/forms.py`, `llm/client.py`, `rendering/pdf_converter.py`, `rendering/review_view.py`, `services/profile_store.py`, `services/tailor.py`
 - **Tested by:** `tests/unit/test_ui.py`
 
 ### `app/validation/content_lint.py`
@@ -1063,6 +1177,12 @@ flowchart LR
     validation_safety[safety]
     validation_structural[structural]
   end
+  subgraph WebAPI[Web API]
+    api_forms[forms]
+    api_main[main]
+    api_routes[routes]
+    api_sessions[sessions]
+  end
   analysis_gap_questions --> analysis_keyword_match
   analysis_jd_analyzer --> analysis_terminology
   analysis_jd_analyzer --> llm_client
@@ -1087,6 +1207,17 @@ flowchart LR
   analysis_summary_writer --> llm_schemas
   analysis_tailor_planner --> analysis_keyword_match
   analysis_tailor_planner --> llm_client
+  api_forms --> config_settings
+  api_main --> api_routes
+  api_main --> api_sessions
+  api_main --> config_settings
+  api_main --> llm_client
+  api_main --> services_tailor
+  api_routes --> api___init__
+  api_routes --> api_sessions
+  api_routes --> rendering_pdf_converter
+  api_routes --> rendering_review_view
+  api_sessions --> services_profile_store
   cli --> analysis_gap_questions
   cli --> llm_client
   cli --> llm_schemas
@@ -1150,8 +1281,10 @@ flowchart LR
   services_tailor --> validation_output
   services_tailor --> validation_safety
   services_tailor --> validation_structural
-  ui --> config_settings
+  ui --> api___init__
+  ui --> api_forms
   ui --> llm_client
+  ui --> rendering_pdf_converter
   ui --> rendering_review_view
   ui --> services_profile_store
   ui --> services_tailor
@@ -1188,6 +1321,9 @@ From `app/config/settings.py`; each can be overridden by the env var of the same
 | `JUDGE_PROVIDER` | str | `'groq'` |
 | `JUDGE_MODEL` | str | `'qwen/qwen3.8-27b'` |
 | `PROFILE_PATH` | str | `os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), 'data', 'profile', 'facts.json')` |
+| `API_SESSION_TTL_MINUTES` | int | `60` |
+| `API_MAX_UPLOAD_MB` | int | `5` |
+| `API_RATE_LIMIT_PER_HOUR` | int | `30` |
 | `SEMANTIC_MATCH_ENABLED` | bool | `True` |
 | `SEMANTIC_MATCH_MODEL` | str | `'all-MiniLM-L6-v2'` |
 | `SEMANTIC_MATCH_THRESHOLD` | float | `0.58` |
@@ -1208,6 +1344,7 @@ From `app/config/settings.py`; each can be overridden by the env var of the same
 **No test file imports these directly** (they may still be exercised indirectly):
 
 - `app/analysis/terminology.py`
+- `app/api/forms.py`
 - `app/ingestion/ocr.py`
 
 **Not imported by any app code** (possibly dead code, or only used by tests/scripts):

@@ -9,8 +9,10 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 
 import streamlit as st
 
-from app.config.settings import settings
+from app.api import forms
+from app.api.forms import PROVIDER_FIX_HINTS, PROVIDER_LABELS, model_options
 from app.llm.client import LLMClient
+from app.rendering.pdf_converter import pdf_page_images
 from app.rendering.review_view import diff_html, gap_table, score_breakdown, status_badge
 from app.services.profile_store import ProfileStore
 from app.services.tailor import TailorService
@@ -21,16 +23,6 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded",
 )
-
-def pdf_page_images(pdf_path: str, zoom: float = 2.0) -> list:
-    """Each PDF page as PNG bytes. Shown as images, the preview works in any
-    browser: Chrome blocks a PDF embedded in the page, and st.pdf needs an
-    optional extra."""
-    import pymupdf
-
-    with pymupdf.open(pdf_path) as doc:
-        return [page.get_pixmap(matrix=pymupdf.Matrix(zoom, zoom)).tobytes("png") for page in doc]
-
 
 def show_pdf_preview(pdf_path: str) -> None:
     try:
@@ -120,30 +112,9 @@ def _show_content_checks(report) -> None:
             st.markdown(f"- **{CHECK_LABELS.get(issue.check, issue.check)}** · {issue.where}: {issue.message}")
 
 
-def model_options(provider: str) -> list:
-    """Models offered in the sidebar for the configured provider. The
-    configured default always comes first; a model name from one provider
-    must never be sent to another (an Ollama tag sent to Groq made every
-    rewrite fail silently)."""
-    if provider == "anthropic":
-        options = [settings.anthropic_model, "claude-opus-5-5", "claude-sonnet-5-5"]
-    elif provider == "groq":
-        options = [settings.groq_model, "openai/gpt-oss-120b", "openai/gpt-oss-20b"]
-    else:
-        options = [settings.llm_model, "qwen3:4b", "qwen3:8b", "qwen3.5:4b"]
-    return list(dict.fromkeys(o for o in options if o))
-
-
-PROVIDER_LABELS = {"anthropic": "Claude (Anthropic API)", "groq": "Groq (cloud)", "ollama": "Ollama (local)"}
-PROVIDER_FIX_HINTS = {
-    "anthropic": "Check ANTHROPIC_API_KEY in your .env (a pay-as-you-go key from console.anthropic.com).",
-    "groq": "Check GROQ_API_KEY and GROQ_MODEL in your .env.",
-    "ollama": "Start Ollama (`ollama serve`) and pull the model (`ollama pull <model>`).",
-}
-
 # Sidebar settings
 st.sidebar.title("⚙️ Model & Configuration")
-llm_provider = (settings.llm_provider or "ollama").strip().lower()
+llm_provider = forms.current_provider()
 st.sidebar.caption(f"Provider: **{PROVIDER_LABELS.get(llm_provider, llm_provider)}** (set `LLM_PROVIDER` in `.env`)")
 model_choice = st.sidebar.selectbox(
     "Select Model",
@@ -532,7 +503,7 @@ if st.session_state.stage == "proposals":
                 st.caption(meaning)
             if sel:
                 selected.append(p)
-                edits[p.id if hasattr(p, 'id') else i] = edt
+                edits[p.id] = edt
 
         # Suggest-and-confirm (P3.1): only what you confirm is used.
         gap_questions = st.session_state.get("gap_questions") or []
@@ -586,23 +557,7 @@ if st.session_state.stage == "proposals":
 
     def _preapproved():
         """The ticked proposals as dicts, carrying the user's edits."""
-        out = []
-        for p in selected:
-            edited_text = edits.get(p.id if hasattr(p, 'id') else None) or (
-                getattr(p, "proposed_text", None) or getattr(p, "rewritten_text", None) or ""
-            )
-            if hasattr(p, 'model_dump'):
-                base = p.model_dump()
-            elif hasattr(p, 'dict'):
-                base = p.dict()
-            else:
-                base = {}
-            original_proposed = getattr(p, "proposed_text", None) or getattr(p, "rewritten_text", None) or ""
-            base["user_edited"] = edited_text.strip() != original_proposed.strip()
-            base["proposed_text"] = edited_text
-            base.pop("rewritten_text", None)  # model_dump mirrors it; the edit must win
-            out.append(base)
-        return out
+        return forms.preapproved(selected, edits)
 
     if recalc_btn:
         try:
@@ -623,36 +578,20 @@ if st.session_state.stage == "proposals":
             return experience_options[target_labels.index(choice) - 1]["id"]
 
         addition_target = _target_id(target_choice)
-        def _answer_counts(q, ticked, answer):
-            """Unticking every keyword also withdraws a pre-filled answer the
-            user didn't change: nothing is added without their confirmation."""
-            answer = (answer or "").strip()
-            return bool(ticked) or (answer and answer != (q.saved_answer or "").strip())
-
-        gap_answers = [
-            {"question_id": q.id, "confirmed_keywords": ticked, "answer": answer or "", "target": _target_id(where)}
-            for q, ticked, answer, where in gap_inputs if _answer_counts(q, ticked, answer)
-        ]
+        gap_answers = forms.gap_answers(
+            gap_questions,
+            {q.id: {"ticked": ticked, "answer": answer, "target": _target_id(where)}
+             for q, ticked, answer, where in gap_inputs},
+            [o["id"] for o in experience_options],
+        )
 
         preapproved = _preapproved()
 
-        new_role = None
-        if any((v or "").strip() for v in (nr_company, nr_title, nr_desc, nr_location)) or nr_start or nr_end \
-                or nr_current:
-            missing = [label for label, ok in (
-                ("company", (nr_company or "").strip()), ("job title", (nr_title or "").strip()),
-                ("start date", nr_start), ("end date (or tick \"I currently work here\")", nr_end or nr_current),
-                ("what you did there", (nr_desc or "").strip())) if not ok]
-            if missing:
-                st.error("To add the job, fill in: " + ", ".join(missing) + ". Or clear the job fields.")
-                st.stop()
-            if nr_end and not nr_current and nr_end < nr_start:
-                st.error("The new job's end date is before its start date.")
-                st.stop()
-            new_role = {"company": nr_company, "title": nr_title, "location": nr_location,
-                        "current": nr_current, "description": nr_desc,
-                        "start_date": nr_start.strftime("%b %Y") if nr_start else "",
-                        "end_date": nr_end.strftime("%b %Y") if (nr_end and not nr_current) else ""}
+        new_role, role_error = forms.new_role(nr_company, nr_title, nr_location, nr_current, nr_start, nr_end,
+                                              nr_desc)
+        if role_error:
+            st.error(role_error)
+            st.stop()
 
         output_dir = tempfile.mkdtemp()
         try:

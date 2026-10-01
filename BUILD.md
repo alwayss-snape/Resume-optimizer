@@ -76,3 +76,12 @@ python -m app.cli tailor \
 ```bash
 streamlit run app/ui.py
 ```
+
+### Web API (P5.1; the new web UI's backend)
+
+```bash
+uvicorn app.api.main:app --reload --port 8000
+```
+
+Interactive API docs at http://localhost:8000/api/docs. Settings: `API_SESSION_TTL_MINUTES` (60),
+`API_MAX_UPLOAD_MB` (5), `API_RATE_LIMIT_PER_HOUR` (30). Once `web/` is built, its `dist/` is served at `/`.

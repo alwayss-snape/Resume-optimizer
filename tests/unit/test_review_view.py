@@ -161,3 +161,22 @@ def test_new_proposals_clear_the_old_live_rate(tmp_path):
     assert "live_match" in at.session_state
     next(b for b in at.sidebar.button if b.label == "🔄 Start Over").click().run()
     assert "live_match" not in at.session_state
+
+
+def test_diff_spans_match_diff_html_marks():
+    """P5.1: the web client gets the same diff as data, unescaped."""
+    from app.rendering.review_view import diff_spans
+    left, right = diff_spans("Built <b> tools in Python", "Built forecasting tools in Python", ["Python"])
+    assert [s["text"] for s in right] == ["Built", "forecasting", "tools", "in", "Python"]
+    assert [s["changed"] for s in right] == [False, True, False, False, False]
+    assert right[-1]["keyword"] and not right[0]["keyword"]
+    assert left[1] == {"text": "<b>", "changed": True, "keyword": False}
+    assert diff_spans("a\nb", "a\nb")[1][1] == {"text": "\n"}
+
+
+def test_proposal_state_matches_status_badge():
+    from app.rendering.review_view import proposal_state, status_badge
+    assert proposal_state("llm_error", "REJECT", True) == "failed"
+    assert proposal_state(None, "REJECT", True) == "dropped"
+    assert proposal_state(None, "PASS", False) == "unchanged"
+    assert status_badge(None, "PASS", True) == ("✅ Pass", "fact-checked against your resume")

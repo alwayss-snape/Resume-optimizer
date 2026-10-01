@@ -58,3 +58,12 @@ class PdfConverter:
         except Exception as e:
             logger.error(f"PDF conversion exception: {e}")
             return None
+
+
+def pdf_page_images(pdf_path: str, zoom: float = 2.0) -> list:
+    """Each PDF page as PNG bytes. Shown as images, a preview works in any
+    browser: Chrome blocks a PDF embedded in a page."""
+    import pymupdf
+
+    with pymupdf.open(pdf_path) as doc:
+        return [page.get_pixmap(matrix=pymupdf.Matrix(zoom, zoom)).tobytes("png") for page in doc]
