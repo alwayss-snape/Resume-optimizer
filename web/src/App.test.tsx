@@ -164,3 +164,134 @@ test("report tabs move with the arrow keys", async () => {
   expect(screen.getByText("Airflow experience")).toBeInTheDocument();
   expect(first).toHaveAttribute("tabindex", "-1");
 });
+
+
+async function toReview(user: ReturnType<typeof userEvent.setup>) {
+  render(<App />);
+  await fillUpload(user);
+  await user.click(screen.getByRole("button", { name: /Read my resume/ }));
+  await screen.findByRole("heading", { name: "Check your details" });
+  await user.click(screen.getByRole("button", { name: /draft rewrites/ }));
+  return screen.findByRole("heading", { name: "Review changes" });
+}
+
+test("review: live match follows decisions; generate sends them and opens results", async () => {
+  const drafted = { ...DRAFTED, gap_questions: [{ id: "gap_1", requirement: "Experience with Airflow", priority: "required" as const,
+    keywords: ["Airflow"], question: "?", saved_keywords: [], saved_answer: "" }] };
+  const calls = stubApi({
+    "/api/config": () => jsonResponse(CONFIG),
+    "/api/parse": () => jsonResponse({ details: DETAILS, parse_issues: [] }),
+    "/api/proposals": () => sseResponse([["result", drafted]]),
+    "/api/match-preview": () => jsonResponse({ ...drafted.keyword_match, rate: 61.5, delta: 13.3 }),
+    "/api/tailor": () => sseResponse([["progress", { message: "Rendering" }], ["result", {
+      success: true, alignment_score: 61.5, initial_alignment_score: 48.2, keyword_match: null, content_lint: null,
+      addition_note: null, warnings: [], docx_warnings: [], pdf_warnings: [], target_pages: 1, pages: 1,
+      files: { docx: true, pdf: true, changes: true } }]]),
+  });
+  const user = userEvent.setup();
+  await toReview(user);
+  expect(await screen.findByRole("img", { name: /Keyword match: 61.5%, was 48.2%/ }, { timeout: 2000 })).toBeInTheDocument();
+
+  await user.click(screen.getByRole("button", { name: "Reject" }));
+  await waitFor(() => {
+    const previews = calls.filter((c) => c.url === "/api/match-preview");
+    expect(JSON.parse(String(previews.at(-1)!.init!.body))).toEqual({ selection: [] });
+  }, { timeout: 2000 });
+
+  await user.click(screen.getByRole("checkbox", { name: "I have used Airflow" }));
+  await user.click(screen.getAllByRole("button", { name: "Generate my resume" })[0]);
+  expect(await screen.findByRole("heading", { name: "Your resume is ready." })).toBeInTheDocument();
+  const body = JSON.parse(String(calls.find((c) => c.url === "/api/tailor")!.init!.body));
+  expect(body.selection).toEqual([]);
+  expect(body.gap_answers.gap_1).toEqual({ ticked: ["Airflow"], answer: "", target: "auto" });
+  expect(body.new_role).toBeNull();
+});
+
+test("review: a half-filled new job is explained before anything is sent", async () => {
+  const calls = stubApi({
+    "/api/config": () => jsonResponse(CONFIG),
+    "/api/parse": () => jsonResponse({ details: DETAILS, parse_issues: [] }),
+    "/api/proposals": () => sseResponse([["result", DRAFTED]]),
+    "/api/match-preview": () => jsonResponse({ ...DRAFTED.keyword_match, delta: 0 }),
+  });
+  const user = userEvent.setup();
+  await toReview(user);
+  await user.click(screen.getByText("Add a job that isn't on your resume"));
+  await user.type(screen.getByLabelText("Company *"), "Acme");
+  await user.click(screen.getAllByRole("button", { name: "Generate my resume" })[0]);
+  expect(await screen.findByRole("alert")).toHaveTextContent(/fill in: job title/);
+  expect(calls.some((c) => c.url === "/api/tailor")).toBe(false);
+});
+
+test("review: decisions survive going back to details and returning", async () => {
+  stubApi({
+    "/api/config": () => jsonResponse(CONFIG),
+    "/api/parse": () => jsonResponse({ details: DETAILS, parse_issues: [] }),
+    "/api/proposals": () => sseResponse([["result", DRAFTED]]),
+    "/api/match-preview": () => jsonResponse({ ...DRAFTED.keyword_match, delta: 0 }),
+  });
+  const user = userEvent.setup();
+  await toReview(user);
+  await user.click(screen.getByRole("button", { name: "Reject" }));
+  await user.click(screen.getAllByRole("button", { name: /Check details/ })[0]);
+  await screen.findByRole("heading", { name: "Check your details" });
+  await user.click(screen.getAllByRole("button", { name: /Review/ })[0]);
+  await screen.findByRole("heading", { name: "Review changes" });
+  expect(screen.getByRole("article", { name: /rejected/ })).toBeInTheDocument();
+});
+
+
+test("review: text typed but not saved is still sent when generating", async () => {
+  const calls = stubApi({
+    "/api/config": () => jsonResponse(CONFIG),
+    "/api/parse": () => jsonResponse({ details: DETAILS, parse_issues: [] }),
+    "/api/proposals": () => sseResponse([["result", DRAFTED]]),
+    "/api/match-preview": () => jsonResponse({ ...DRAFTED.keyword_match, delta: 0 }),
+    "/api/tailor": () => sseResponse([["error", { message: "stop here" }]]),
+  });
+  const user = userEvent.setup();
+  await toReview(user);
+  await user.click(screen.getByRole("button", { name: "Edit" }));
+  const box = screen.getByLabelText("YOUR VERSION");
+  await user.clear(box);
+  await user.type(box, "Shipped forecasting dashboards in Python");
+  await user.click(screen.getAllByRole("button", { name: "Generate my resume" })[0]);
+  await screen.findByText("stop here");
+  const body = JSON.parse(String(calls.find((c) => c.url === "/api/tailor")!.init!.body));
+  expect(body.selection).toEqual([{ id: "p1", text: "Shipped forecasting dashboards in Python" }]);
+});
+
+test("review: new job dates come from month and year selects", async () => {
+  const calls = stubApi({
+    "/api/config": () => jsonResponse(CONFIG),
+    "/api/parse": () => jsonResponse({ details: DETAILS, parse_issues: [] }),
+    "/api/proposals": () => sseResponse([["result", DRAFTED]]),
+    "/api/match-preview": () => jsonResponse({ ...DRAFTED.keyword_match, delta: 0 }),
+    "/api/tailor": () => sseResponse([["error", { message: "stop here" }]]),
+  });
+  const user = userEvent.setup();
+  await toReview(user);
+  await user.click(screen.getByText("Add a job that isn't on your resume"));
+  await user.type(screen.getByLabelText("Company *"), "Acme");
+  await user.type(screen.getByLabelText("Job title *"), "Engineer");
+  await user.selectOptions(screen.getByLabelText("Start *: month"), "03");
+  await user.selectOptions(screen.getByLabelText("Start *: year"), "2020");
+  await user.click(screen.getByLabelText("I currently work here"));
+  await user.type(screen.getByLabelText(/What did you do there/), "Built the billing service");
+  await user.click(screen.getAllByRole("button", { name: "Generate my resume" })[0]);
+  await screen.findByText("stop here");
+  const body = JSON.parse(String(calls.find((c) => c.url === "/api/tailor")!.init!.body));
+  expect(body.new_role).toMatchObject({ company: "Acme", start: "2020-03-01", end: null, current: true });
+});
+
+test("review: an expired session says so instead of retrying forever", async () => {
+  stubApi({
+    "/api/config": () => jsonResponse(CONFIG),
+    "/api/parse": () => jsonResponse({ details: DETAILS, parse_issues: [] }),
+    "/api/proposals": () => sseResponse([["result", DRAFTED]]),
+    "/api/match-preview": () => jsonResponse({ detail: "Your session has expired. Please upload your resume again." }, 404),
+  });
+  const user = userEvent.setup();
+  await toReview(user);
+  expect(await screen.findByText(/Your session has expired. Use Start over/, {}, { timeout: 2000 })).toBeInTheDocument();
+});

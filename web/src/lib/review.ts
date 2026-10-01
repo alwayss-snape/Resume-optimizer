@@ -61,7 +61,7 @@ export function willApply(p: Proposal, review: ReviewState): boolean {
   return p.state !== "dropped" || isEdited(p, review);
 }
 
-const anyJobField = (j: NewJob) =>
+export const anyJobField = (j: NewJob) =>
   [j.company, j.title, j.location, j.description, j.start, j.end].some((v) => v.trim()) || j.current;
 
 /** Problems with the "add a job" form, as the server would report them;

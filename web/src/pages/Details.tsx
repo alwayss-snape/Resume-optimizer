@@ -3,7 +3,7 @@ import { Button } from "../components/Button";
 import { TextArea, TextField } from "../components/Field";
 import { Icon } from "../components/Icon";
 import { ProgressPanel } from "../components/ProgressPanel";
-import { ApiError, draftProposals } from "../lib/api";
+import { draftProposals, friendlyError } from "../lib/api";
 import { beginStep, isAbort } from "../lib/inflight";
 import { useApp } from "../lib/store";
 import type { Details as DetailsData, JobDetails, Role } from "../lib/types";
@@ -54,8 +54,7 @@ export function Details() {
       advance("review");
     } catch (e) {
       if (isAbort(e) || !step.isCurrent()) return;
-      setError(e instanceof ApiError && e.status === 409
-        ? "Your previous request is still finishing. Please try again in a moment." : (e as Error).message);
+      setError(friendlyError(e));
       setProgress(null);
     } finally {
       step.end();

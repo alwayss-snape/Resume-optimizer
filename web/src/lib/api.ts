@@ -30,6 +30,15 @@ export function errorMessage(status: number, body: unknown): string {
   return status >= 500 ? "Something went wrong on our side. Please try again." : `Request failed (${status}).`;
 }
 
+/** What to tell the user about a failed step. The server's own message is
+ *  shown, except a busy session gets "try again in a moment". */
+export function friendlyError(e: unknown): string {
+  if (e instanceof ApiError && e.status === 409 && /still working/i.test(e.message)) {
+    return "Your previous request is still finishing. Please try again in a moment.";
+  }
+  return (e as Error)?.message || "Something went wrong. Please try again.";
+}
+
 export async function request<T>(path: string, init?: RequestInit): Promise<T> {
   let response: Response;
   try {

@@ -2,7 +2,7 @@ import { AnimatePresence, MotionConfig, motion } from "motion/react";
 import { useEffect, useState } from "react";
 import { Header } from "./components/Header";
 import type { UploadValues } from "./components/UploadForm";
-import { ApiError, type AppConfig, analyze, getConfig, parseResume, resetSession } from "./lib/api";
+import { type AppConfig, analyze, friendlyError, getConfig, parseResume, resetSession } from "./lib/api";
 import { beginStep, cancelSteps, isAbort } from "./lib/inflight";
 import { type Intent, resolveModel, useApp } from "./lib/store";
 import { useTheme } from "./lib/useTheme";
@@ -10,6 +10,7 @@ import { Details } from "./pages/Details";
 import { Landing } from "./pages/Landing";
 import { Report } from "./pages/Report";
 import { Review } from "./pages/Review";
+import { Results } from "./pages/Results";
 
 export function App() {
   const { step, settings, run, updateRun, advance, restart } = useApp();
@@ -35,8 +36,7 @@ export function App() {
       await task(step.isCurrent);
     } catch (e) {
       if (isAbort(e) || !step.isCurrent()) return;
-      setError(e instanceof ApiError && e.status === 409
-        ? "Your previous request is still finishing. Please try again in a moment." : (e as Error).message);
+      setError(friendlyError(e));
       setErrorKey((n) => n + 1);
     } finally {
       if (step.isCurrent()) setBusy(false);
@@ -87,6 +87,9 @@ export function App() {
       break;
     case "review":
       page = run.drafted ? <Review /> : null;
+      break;
+    case "results":
+      page = run.results ? <Results /> : null;
       break;
     case "report":
       page = run.report ? (
