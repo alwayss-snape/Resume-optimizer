@@ -8,7 +8,7 @@ from uuid import uuid4
 from app.analysis.experience import future_dates, is_ongoing, parse_month, target_pages
 from app.analysis.gap_questions import GapAnswer, build_questions
 from app.analysis.jd_analyzer import JDAnalyzer
-from app.analysis.keyword_match import KeywordMatcher, _contains_seq, tokens
+from app.analysis.keyword_match import KeywordMatcher, _contains_seq, resume_sections, tokens
 from app.analysis.matcher import EvidenceMatcher
 from app.analysis.resume_normalizer import ResumeNormalizer
 from app.analysis.rewriter import FAILED_STATUSES, LLMRewriter, RewriteProposal
@@ -163,9 +163,29 @@ class TailorService:
         for the change log."""
         notes: List[str] = []
         known = {k.lower() for items in resume.skills.values() for k in items}
+        # What each keyword is (P8.12): a licence goes under Certifications,
+        # a degree isn't a skill.
+        kinds = {r.keyword.lower(): r.kind for r in self.keyword_matcher.match(job_desc, resume).rows} if job_desc else {}
+        held = {c.get("name", "").lower() for c in resume.certifications}
         for raw in answers:
             ans = raw if isinstance(raw, GapAnswer) else GapAnswer(**raw)
-            added = [k for k in ans.confirmed_keywords if k.strip() and k.lower() not in known]
+            confirmed = [k for k in ans.confirmed_keywords if k.strip()]
+            certs = [k for k in confirmed if kinds.get(k.lower()) == "certification" and k.lower() not in held]
+            degrees = [k for k in confirmed if kinds.get(k.lower()) == "education"]
+            for k in certs:
+                resume.certifications.append({"name": k})
+                held.add(k.lower())
+                evidence_list.append(Evidence(id=f"ev_user_{uuid4().hex[:6]}", source_type="certification",
+                                              source_id="user_confirmed", text=k))
+            if certs:
+                notes.append(f"You confirmed: {', '.join(certs)} (added to Certifications)")
+            if degrees:
+                notes.append(f"You have {', '.join(degrees)}: if it isn't listed, add it under Education on "
+                             "Check your details (a degree isn't added to Skills).")
+            if confirmed and not ans.answer.strip():
+                notes.append(f"Ticked without a line saying where: {', '.join(confirmed)}. A recruiter or "
+                             "interviewer will ask where you used it.")
+            added = [k for k in confirmed if k.lower() not in known and k not in certs and k not in degrees]
             if added:
                 category = next((c for c in resume.skills if self.SKILL_CATEGORY_RE.search(c)), None) or "Skills"
                 resume.skills.setdefault(category, []).extend(added)
@@ -594,7 +614,10 @@ class TailorService:
         # Suggest-and-confirm (P3.1): ask about what the JD wants and the
         # resume doesn't show, instead of drafting experience the candidate
         # may not have. Built in code, no LLM call.
-        gap_questions = build_questions(job_desc, keyword_report, limit=suggestion_limit)
+        gap_questions = build_questions(
+            job_desc, keyword_report, limit=suggestion_limit,
+            resume_text="\n".join(text for _label, text in resume_sections(resume)),
+            education_text=" ".join(f"{e.degree} {e.institution} {' '.join(e.details)}" for e in resume.education))
         self._prefill_from_profile(gap_questions)
 
         llm_available = bool(self.llm_client and self.llm_client.is_available())

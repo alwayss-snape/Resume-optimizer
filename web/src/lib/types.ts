@@ -108,6 +108,8 @@ export interface GapQuestion {
   priority: "required" | "preferred";
   keywords: string[];
   question: string;
+  /** Worded by what is asked: "Tick the ones you hold:" for licences (P8.12). */
+  tick_label?: string;
   saved_keywords: string[];
   saved_answer: string;
 }

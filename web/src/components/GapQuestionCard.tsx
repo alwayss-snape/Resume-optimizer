@@ -56,7 +56,7 @@ export function GapQuestionCard({ question: q, value, onChange, targets }: {
         </p>
       )}
       <div role="group" aria-labelledby={ticksId} className="flex flex-col gap-2.5">
-        <span id={ticksId} className="text-sm text-muted">Tick what you have really done:</span>
+        <span id={ticksId} className="text-sm text-muted">{q.tick_label ?? "Tick what you have really used:"}</span>
         <div className="flex flex-wrap gap-2.5">
           {q.keywords.map((k) => {
             const on = value.ticked.includes(k);
@@ -79,7 +79,13 @@ export function GapQuestionCard({ question: q, value, onChange, targets }: {
           <div className="flex min-w-0 flex-col gap-1.5">
             <label htmlFor={answerId} className="text-sm font-medium text-ink">Where and how? It becomes a bullet as you write it.</label>
             <textarea id={answerId} rows={2} value={value.answer} onChange={(e) => onChange({ ...value, answer: e.target.value })}
+              aria-describedby={value.ticked.length > 0 && !value.answer.trim() ? `${answerId}-hint` : undefined}
               className="resize-y rounded-[3px] border border-field bg-panel px-3.5 py-2.5 text-sm leading-relaxed text-ink focus-visible:border-pencil" />
+            {value.ticked.length > 0 && !value.answer.trim() && (
+              <p id={`${answerId}-hint`} className="m-0 text-xs text-muted">
+                Where did you use it? Without a line saying where, it's only listed, and an interviewer will ask.
+              </p>
+            )}
           </div>
           <TargetSelect value={value.target} onChange={(target) => onChange({ ...value, target })} options={targets} />
         </div>

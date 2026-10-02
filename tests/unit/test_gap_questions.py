@@ -50,7 +50,7 @@ def test_only_ticked_keywords_are_added_to_skills(tmp_path):
     ])
     assert resume.skills["Tools"] == ["Excel", "PyTorch"] and "TensorFlow" not in str(resume.skills)
     assert any(e.text == "PyTorch" and e.source_id == "user_confirmed" for e in evidence)
-    assert notes == ["You confirmed: PyTorch (added to Tools)"]
+    assert "You confirmed: PyTorch (added to Tools)" in notes  # plus a nudge to say where (P8.12)
 
 
 def test_answer_becomes_a_bullet_and_an_embellished_polish_is_refused(tmp_path):
@@ -81,3 +81,34 @@ def test_generate_proposals_asks_instead_of_suggesting(tmp_path):
     assert out["gap_questions"] and all(q.keywords for q in out["gap_questions"])
 
 
+
+
+def test_questions_are_worded_by_kind_and_skip_what_the_resume_shows():
+    """P8.12: no "Have you worked with Bachelor's degree?", nothing already on the resume."""
+    from app.analysis.gap_questions import _wording, partly_shown
+    from app.analysis.keyword_match import tokens
+    resume = tokens("Salesforce and Outreach; OSHA 30; Compact NLC licence; English and Spanish")
+    assert partly_shown("Salesforce CRM", resume)
+    assert partly_shown("OSHA 10 or 30", resume)
+    assert partly_shown("Compact/NLC", resume)
+    assert partly_shown("English/Spanish", resume)
+    assert not partly_shown("Gong", resume) and not partly_shown("Project management", tokens("Built dashboards"))
+    assert partly_shown("Bachelor's degree", [], education_text="Master of Accountancy (MAcc), Baruch College")
+    assert not partly_shown("Bachelor's degree", [], education_text="High School Diploma")
+    assert not partly_shown("Bachelor's degree", tokens("Boston, MA"), education_text="")  # MA the state
+    assert _wording({"certification"}, "ACLS")[1] == "Tick the ones you hold:"
+    assert _wording({"education"}, "a Bachelor's degree")[0].endswith("Do you have it?")
+    assert "real example" in _wording({"soft"}, "stakeholder management")[1]
+
+
+def test_a_ticked_licence_goes_to_certifications(tmp_path):
+    from app.analysis.gap_questions import GapAnswer
+    from app.domain.job import JobDescription, Requirement
+    from app.domain.resume import Candidate, Resume
+    service = TailorService(llm_client=None)
+    job = JobDescription(raw_text="CCRN certification preferred", keywords=["CCRN"], certifications=["CCRN"],
+                         requirements=[Requirement(id="r1", text="CCRN certification preferred")])
+    resume = Resume(candidate=Candidate(name="M"), skills={"Skills": ["Epic"]})
+    notes = service._apply_gap_answers(resume, [], job, [GapAnswer(confirmed_keywords=["CCRN"])])
+    assert resume.certifications == [{"name": "CCRN"}] and resume.skills == {"Skills": ["Epic"]}
+    assert any("where you used it" in n for n in notes)

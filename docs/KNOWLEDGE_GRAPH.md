@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**55 app modules · 59 test files · 103 classes · 935 functions/methods · 18,732 lines of Python** · source hash `f4fc4f1775d3aa2f`
+**55 app modules · 59 test files · 103 classes · 940 functions/methods · 18,858 lines of Python** · source hash `d182945f134d43bd`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -238,13 +238,16 @@ _Years of experience from role date ranges (P1.5), and the page target_
 
 ### `app/analysis/gap_questions.py`
 
-**Layer:** Analysis · **Stage:** 6 Plan · **Lines:** 58
+**Layer:** Analysis · **Stage:** 6 Plan · **Lines:** 130
 
 _Suggest-and-confirm gaps (P3.1): ask, never assume._
 
-- class **`GapQuestion`** ([app/analysis/gap_questions.py:19](../app/analysis/gap_questions.py#L19))
-- class **`GapAnswer`** ([app/analysis/gap_questions.py:31](../app/analysis/gap_questions.py#L31))
-- function **`build_questions()`** ([app/analysis/gap_questions.py:38](../app/analysis/gap_questions.py#L38))
+- class **`GapQuestion`** ([app/analysis/gap_questions.py:20](../app/analysis/gap_questions.py#L20))
+- class **`GapAnswer`** ([app/analysis/gap_questions.py:38](../app/analysis/gap_questions.py#L38))
+- function **`_degree_level()`** ([app/analysis/gap_questions.py:60](../app/analysis/gap_questions.py#L60))
+- function **`partly_shown()`** ([app/analysis/gap_questions.py:68](../app/analysis/gap_questions.py#L68)) — The resume already shows this, or one of its alternatives (P8.12):
+- function **`_wording()`** ([app/analysis/gap_questions.py:89](../app/analysis/gap_questions.py#L89)) — (question, tick label) for what is being asked.
+- function **`build_questions()`** ([app/analysis/gap_questions.py:103](../app/analysis/gap_questions.py#L103))
 - **Imports:** `analysis/keyword_match.py`, `domain/job.py`, `domain/report.py`
 - **Imported by:** `cli.py`, `services/tailor.py`
 - **Tested by:** `tests/unit/test_api.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_profile_store.py`
@@ -1034,38 +1037,38 @@ _Local profile of facts the user has confirmed (P3.2)._
 
 ### `app/services/tailor.py`
 
-**Layer:** Services · **Stage:** all · **Lines:** 1201
+**Layer:** Services · **Stage:** all · **Lines:** 1224
 
 - class **`TailorService`** ([app/services/tailor.py:56](../app/services/tailor.py#L56))
   - `__init__()` :57
   - `generate_preview_md()` :90
   - `_patchable()` :136 — Proposals as in-place DOCX patches. A summary proposal targets the
   - `_apply_gap_answers()` :159 — Ticked keywords join the skills section; a typed answer becomes a
-  - `_prefill_from_profile()` :183 — Answers confirmed for an earlier JD pre-fill the same questions
-  - `_draft_from_answer()` :195 — Polish the candidate's answer into one bullet that may use only
-  - `_split_description()` :214 — Pasted role description -> bullet-sized chunks: one per line (list
-  - `validate_new_role()` :224 — Check a new job before any work is done; raises ValueError with a
-  - `_new_experience()` :249 — An empty job from the "add a job" fields, validated.
-  - `_insert_by_date()` :257 — Place a job in date order: current jobs first, then most recent start.
-  - `add_new_role()` :270 — Add a job the resume doesn't have yet (P3.3). Each chunk of the
-  - `_skills_proposals()` :307 — The skills section with the JD's skills first, when that changes it (P1.6).
-  - `_summary_proposals()` :312 — The tailored summary as a proposal, when one was written (P1.5).
-  - `_embed()` :317 — Sentence embeddings for the planner, loaded lazily; raises when the
-  - `_fit_relevance()` :326 — Planner relevance per bullet for the page-fit loop. Bullets the user
-  - `_render_template()` :336 — One template render plus PDF conversion (the page-fit loop's step).
-  - `_coverage()` :344 — Content coverage of the rendered DOCX against the uploaded file (P8.2).
-  - `_apply_bullet_order()` :369 — Reorder bullets as planned (most relevant first within each
-  - `parse_resume()` :384 — File -> (raw document, ResumeDocument, evidence). The deterministic
-  - `normalize_raw()` :394
-  - `_copy_parsed()` :404 — Deep copies, so a parse kept in UI session state is never mutated.
-  - `preview_keyword_match()` :409 — Match rate if these proposals were applied (P3.4 "recalculate"):
-  - `apply_parse_corrections()` :432 — Apply the user's fixes from the "Check parsed resume" step (P3.5).
-  - `analyze_only()` :529
-  - `generate_proposals()` :555 — Generate rewrite proposals without applying them, plus questions
-  - `incorporate_user_addition()` :625 — Fold a user-supplied free-text addition (a project, an
-  - `tailor_resume()` :704
+  - `_prefill_from_profile()` :203 — Answers confirmed for an earlier JD pre-fill the same questions
+  - `_draft_from_answer()` :215 — Polish the candidate's answer into one bullet that may use only
+  - `_split_description()` :234 — Pasted role description -> bullet-sized chunks: one per line (list
+  - `validate_new_role()` :244 — Check a new job before any work is done; raises ValueError with a
+  - `_new_experience()` :269 — An empty job from the "add a job" fields, validated.
+  - `_insert_by_date()` :277 — Place a job in date order: current jobs first, then most recent start.
+  - `add_new_role()` :290 — Add a job the resume doesn't have yet (P3.3). Each chunk of the
+  - `_skills_proposals()` :327 — The skills section with the JD's skills first, when that changes it (P1.6).
+  - `_summary_proposals()` :332 — The tailored summary as a proposal, when one was written (P1.5).
+  - `_embed()` :337 — Sentence embeddings for the planner, loaded lazily; raises when the
+  - `_fit_relevance()` :346 — Planner relevance per bullet for the page-fit loop. Bullets the user
+  - `_render_template()` :356 — One template render plus PDF conversion (the page-fit loop's step).
+  - `_coverage()` :364 — Content coverage of the rendered DOCX against the uploaded file (P8.2).
+  - `_apply_bullet_order()` :389 — Reorder bullets as planned (most relevant first within each
+  - `parse_resume()` :404 — File -> (raw document, ResumeDocument, evidence). The deterministic
+  - `normalize_raw()` :414
+  - `_copy_parsed()` :424 — Deep copies, so a parse kept in UI session state is never mutated.
+  - `preview_keyword_match()` :429 — Match rate if these proposals were applied (P3.4 "recalculate"):
+  - `apply_parse_corrections()` :452 — Apply the user's fixes from the "Check parsed resume" step (P3.5).
+  - `analyze_only()` :549
+  - `generate_proposals()` :575 — Generate rewrite proposals without applying them, plus questions
+  - `incorporate_user_addition()` :648 — Fold a user-supplied free-text addition (a project, an
+  - `tailor_resume()` :727
 - function **`_progress()`** ([app/services/tailor.py:45](../app/services/tailor.py#L45)) — A progress reporter that can never break a run (P3.6).
-- function **`_merge_usage()`** ([app/services/tailor.py:1192](../app/services/tailor.py#L1192)) — Combine two LLMClient.get_usage_summary() dicts into one.
+- function **`_merge_usage()`** ([app/services/tailor.py:1215](../app/services/tailor.py#L1215)) — Combine two LLMClient.get_usage_summary() dicts into one.
 - **Imports:** `analysis/experience.py`, `analysis/gap_questions.py`, `analysis/jd_analyzer.py`, `analysis/keyword_match.py`, `analysis/matcher.py`, `analysis/resume_normalizer.py`, `analysis/rewriter.py`, `analysis/scoring.py`, `analysis/semantic_matcher.py`, `analysis/skills_tailor.py`, `analysis/structure_extractor.py`, `analysis/summary_writer.py`, `analysis/tailor_planner.py`, `domain/evidence.py`, `domain/job.py`, `domain/report.py`, `domain/resume.py`, `domain/resume_document.py`, `domain/tailoring.py`, `ingestion/docx.py`, `ingestion/pdf.py`, `llm/client.py`, `rendering/docx_patcher.py`, `rendering/html_renderer.py`, `rendering/layout.py`, `rendering/page_fit.py`, `rendering/pdf_converter.py`, `rendering/template_renderer.py`, `services/profile_store.py`, `services/run_manager.py`, `validation/content_lint.py`, `validation/coverage.py`, `validation/factual.py`, `validation/output.py`, `validation/safety.py`, `validation/structural.py`
 - **Imported by:** `api/main.py`, `cli.py`, `eval/harness.py`
 - **Tested by:** `tests/integration/test_coverage_tailor.py`, `tests/integration/test_end_to_end.py`, `tests/unit/test_api.py`, `tests/unit/test_check_parsed_resume.py`, `tests/unit/test_cli.py`, `tests/unit/test_cli_parity.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_new_role.py`, `tests/unit/test_profile_store.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_review_view.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_tailor_resume_flow.py`, `tests/unit/test_tailor_service_addition.py`

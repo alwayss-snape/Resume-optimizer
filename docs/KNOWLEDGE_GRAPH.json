@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "f4fc4f1775d3aa2f",
+  "source_hash": "d182945f134d43bd",
   "stats": {
     "files": 146,
     "python_files": 123,
     "app_modules": 55,
     "test_files": 59,
     "classes": 103,
-    "functions": 935,
-    "lines_of_python": 18732
+    "functions": 940,
+    "lines_of_python": 18858
   },
   "axes": {
     "x": "location (path)",
@@ -334,26 +334,41 @@
       "stages": [
         "6 Plan"
       ],
-      "lines": 58,
+      "lines": 130,
       "doc": "Suggest-and-confirm gaps (P3.1): ask, never assume.",
       "classes": [
         {
           "name": "GapQuestion",
-          "line": 19,
+          "line": 20,
           "doc": "",
           "methods": []
         },
         {
           "name": "GapAnswer",
-          "line": 31,
+          "line": 38,
           "doc": "",
           "methods": []
         }
       ],
       "functions": [
         {
+          "name": "_degree_level",
+          "line": 60,
+          "doc": ""
+        },
+        {
+          "name": "partly_shown",
+          "line": 68,
+          "doc": "The resume already shows this, or one of its alternatives (P8.12):"
+        },
+        {
+          "name": "_wording",
+          "line": 89,
+          "doc": "(question, tick label) for what is being asked."
+        },
+        {
           "name": "build_questions",
-          "line": 38,
+          "line": 103,
           "doc": ""
         }
       ]
@@ -3197,7 +3212,7 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 1201,
+      "lines": 1224,
       "doc": "",
       "classes": [
         {
@@ -3227,117 +3242,117 @@
             },
             {
               "name": "_prefill_from_profile",
-              "line": 183,
+              "line": 203,
               "doc": "Answers confirmed for an earlier JD pre-fill the same questions"
             },
             {
               "name": "_draft_from_answer",
-              "line": 195,
+              "line": 215,
               "doc": "Polish the candidate's answer into one bullet that may use only"
             },
             {
               "name": "_split_description",
-              "line": 214,
+              "line": 234,
               "doc": "Pasted role description -> bullet-sized chunks: one per line (list"
             },
             {
               "name": "validate_new_role",
-              "line": 224,
+              "line": 244,
               "doc": "Check a new job before any work is done; raises ValueError with a"
             },
             {
               "name": "_new_experience",
-              "line": 249,
+              "line": 269,
               "doc": "An empty job from the \"add a job\" fields, validated."
             },
             {
               "name": "_insert_by_date",
-              "line": 257,
+              "line": 277,
               "doc": "Place a job in date order: current jobs first, then most recent start."
             },
             {
               "name": "add_new_role",
-              "line": 270,
+              "line": 290,
               "doc": "Add a job the resume doesn't have yet (P3.3). Each chunk of the"
             },
             {
               "name": "_skills_proposals",
-              "line": 307,
+              "line": 327,
               "doc": "The skills section with the JD's skills first, when that changes it (P1.6)."
             },
             {
               "name": "_summary_proposals",
-              "line": 312,
+              "line": 332,
               "doc": "The tailored summary as a proposal, when one was written (P1.5)."
             },
             {
               "name": "_embed",
-              "line": 317,
+              "line": 337,
               "doc": "Sentence embeddings for the planner, loaded lazily; raises when the"
             },
             {
               "name": "_fit_relevance",
-              "line": 326,
+              "line": 346,
               "doc": "Planner relevance per bullet for the page-fit loop. Bullets the user"
             },
             {
               "name": "_render_template",
-              "line": 336,
+              "line": 356,
               "doc": "One template render plus PDF conversion (the page-fit loop's step)."
             },
             {
               "name": "_coverage",
-              "line": 344,
+              "line": 364,
               "doc": "Content coverage of the rendered DOCX against the uploaded file (P8.2)."
             },
             {
               "name": "_apply_bullet_order",
-              "line": 369,
+              "line": 389,
               "doc": "Reorder bullets as planned (most relevant first within each"
             },
             {
               "name": "parse_resume",
-              "line": 384,
+              "line": 404,
               "doc": "File -> (raw document, ResumeDocument, evidence). The deterministic"
             },
             {
               "name": "normalize_raw",
-              "line": 394,
+              "line": 414,
               "doc": ""
             },
             {
               "name": "_copy_parsed",
-              "line": 404,
+              "line": 424,
               "doc": "Deep copies, so a parse kept in UI session state is never mutated."
             },
             {
               "name": "preview_keyword_match",
-              "line": 409,
+              "line": 429,
               "doc": "Match rate if these proposals were applied (P3.4 \"recalculate\"):"
             },
             {
               "name": "apply_parse_corrections",
-              "line": 432,
+              "line": 452,
               "doc": "Apply the user's fixes from the \"Check parsed resume\" step (P3.5)."
             },
             {
               "name": "analyze_only",
-              "line": 529,
+              "line": 549,
               "doc": ""
             },
             {
               "name": "generate_proposals",
-              "line": 555,
+              "line": 575,
               "doc": "Generate rewrite proposals without applying them, plus questions"
             },
             {
               "name": "incorporate_user_addition",
-              "line": 625,
+              "line": 648,
               "doc": "Fold a user-supplied free-text addition (a project, an"
             },
             {
               "name": "tailor_resume",
-              "line": 704,
+              "line": 727,
               "doc": ""
             }
           ]
@@ -3351,7 +3366,7 @@
         },
         {
           "name": "_merge_usage",
-          "line": 1192,
+          "line": 1215,
           "doc": "Combine two LLMClient.get_usage_summary() dicts into one."
         }
       ]
@@ -4895,7 +4910,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 83,
+      "lines": 114,
       "doc": "Suggest-and-confirm gaps (P3.1).",
       "classes": [],
       "functions": [
@@ -4937,6 +4952,16 @@
         {
           "name": "test_generate_proposals_asks_instead_of_suggesting",
           "line": 77,
+          "doc": ""
+        },
+        {
+          "name": "test_questions_are_worded_by_kind_and_skip_what_the_resume_shows",
+          "line": 86,
+          "doc": "P8.12: no \"Have you worked with Bachelor's degree?\", nothing already on the resume."
+        },
+        {
+          "name": "test_a_ticked_licence_goes_to_certifications",
+          "line": 104,
           "doc": ""
         }
       ]
