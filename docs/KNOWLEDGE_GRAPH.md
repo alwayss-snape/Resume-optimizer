@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**55 app modules · 57 test files · 103 classes · 911 functions/methods · 18,273 lines of Python** · source hash `0f5cf4b266ac956f`
+**55 app modules · 58 test files · 103 classes · 922 functions/methods · 18,483 lines of Python** · source hash `83329a601278051f`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -147,6 +147,7 @@ tests/
     test_env.py                                  test_environment_baseline()
     test_eval_harness.py                         Evaluation harness (P4.1).
     test_experience.py                           P2.3: years of experience (overlaps merged) -> 1 or 2 target pages.
+    test_fact_check_p89.py                       P8.9: the fact check catches wording borrowed from the job description,
     test_gap_questions.py                        Suggest-and-confirm gaps (P3.1).
     test_html_renderer.py                        test_html_renderer_outputs_ats_sections_and_escapes_content()
     test_jd_analyzer.py                          test_jd_analyzer_heuristic(), test_heading_variants_are_not_extracted_…
@@ -206,13 +207,13 @@ Spanning all stages: `app/api/main.py`, `app/api/routes.py`, `app/cli.py`, `app/
 
 ### `app/analysis/change_proposal.py`
 
-**Layer:** Analysis · **Stage:** 7 Rewrite · **Lines:** 85
+**Layer:** Analysis · **Stage:** 7 Rewrite · **Lines:** 88
 
 - class **`ChangeProposal`** ([app/analysis/change_proposal.py:6](../app/analysis/change_proposal.py#L6)) — Richer change proposal schema for review and audit.
-  - `model_dump()` :45
-  - `semantic_id()` :60
-  - `source_id()` :70
-  - `rewritten_text()` :79
+  - `model_dump()` :48
+  - `semantic_id()` :63
+  - `source_id()` :73
+  - `rewritten_text()` :82
 - **Imported by:** `analysis/rewriter.py`, `analysis/skills_tailor.py`, `analysis/summary_writer.py`
 - **Tested by:** `tests/unit/test_api.py`, `tests/unit/test_review_view.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_validation.py`
 
@@ -367,7 +368,7 @@ _Keyword-level match rate, the headline score (P1.2)._
 - function **`breaks_bullet_rules()`** ([app/analysis/rewriter.py:50](../app/analysis/rewriter.py#L50)) — True when a bullet is over the word limit or uses a filler word.
 - **Imports:** `analysis/change_proposal.py`, `domain/evidence.py`, `domain/job.py`, `domain/resume.py`, `domain/tailoring.py`, `llm/client.py`, `llm/schemas.py`
 - **Imported by:** `analysis/summary_writer.py`, `rendering/docx_patcher.py`, `services/tailor.py`, `validation/content_lint.py`, `validation/factual.py`
-- **Tested by:** `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_docx_renderer.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_tailor_planner.py`, `tests/unit/test_tailor_resume_flow.py`, `tests/unit/test_validation.py`
+- **Tested by:** `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_docx_renderer.py`, `tests/unit/test_fact_check_p89.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_tailor_planner.py`, `tests/unit/test_tailor_resume_flow.py`, `tests/unit/test_validation.py`
 - **Prompts:** `llm/prompts/rewrite_bullet.txt`, `llm/prompts/rewrite_role.txt`
 
 ### `app/analysis/scoring.py`
@@ -435,14 +436,16 @@ _LLM-assisted resume structure extraction with a verbatim guard (P1.13)._
 
 ### `app/analysis/summary_writer.py`
 
-**Layer:** Analysis · **Stage:** 7 Rewrite · **Lines:** 112
+**Layer:** Analysis · **Stage:** 7 Rewrite · **Lines:** 141
 
 _Tailored professional summary (P1.5)._
 
 - class **`SummaryWriter`** ([app/analysis/summary_writer.py:33](../app/analysis/summary_writer.py#L33))
   - `__init__()` :34
-  - `facts()` :38 — The inputs code decides; the LLM only phrases them.
-  - `propose()` :55 — A summary proposal, or None when there's nothing to write from
+  - `sane_title()` :41 — A title fit to print (P8.10: a misread "03/" became the summary's
+  - `years_claim()` :49 — The years the resume itself states, if it states any (open issue
+  - `facts()` :60 — The inputs code decides; the LLM only phrases them.
+  - `propose()` :80 — A summary proposal, or None when there's nothing to write from
 - **Imports:** `analysis/change_proposal.py`, `analysis/experience.py`, `analysis/rewriter.py`, `domain/evidence.py`, `domain/job.py`, `domain/report.py`, `domain/resume.py`, `llm/client.py`, `llm/schemas.py`
 - **Imported by:** `services/tailor.py`
 - **Tested by:** `tests/unit/test_summary_writer.py`
@@ -507,7 +510,7 @@ _The web app (P5.1): `uvicorn app.api.main:app`._
 
 ### `app/api/routes.py`
 
-**Layer:** Web API · **Stage:** all · **Lines:** 481
+**Layer:** Web API · **Stage:** all · **Lines:** 482
 
 _HTTP endpoints, one per step of the review flow (P5.1)._
 
@@ -533,20 +536,20 @@ _HTTP endpoints, one per step of the review flow (P5.1)._
 - function **`_details()`** ([app/api/routes.py:203](../app/api/routes.py#L203)) — What the "check details" step shows and edits (P3.5).
 - function **`_sections()`** ([app/api/routes.py:219](../app/api/routes.py#L219)) — Bullet id -> the job or project it belongs to, for grouping cards.
 - function **`_proposal_out()`** ([app/api/routes.py:231](../app/api/routes.py#L231))
-- function **`_match_out()`** ([app/api/routes.py:243](../app/api/routes.py#L243))
-- function **`_selected()`** ([app/api/routes.py:249](../app/api/routes.py#L249))
-- function **`health()`** ([app/api/routes.py:259](../app/api/routes.py#L259))
-- function **`config()`** ([app/api/routes.py:264](../app/api/routes.py#L264))
-- function **`_model()`** ([app/api/routes.py:271](../app/api/routes.py#L271))
-- function **`analyze()`** ([app/api/routes.py:278](../app/api/routes.py#L278)) — "Just check my match": score only, nothing kept.
-- function **`parse()`** ([app/api/routes.py:292](../app/api/routes.py#L292)) — Step 1: read the resume and start a fresh session for this run.
-- function **`proposals()`** ([app/api/routes.py:325](../app/api/routes.py#L325)) — Step 2: apply the user's fixes, then draft rewrites and gap
-- function **`match_preview()`** ([app/api/routes.py:374](../app/api/routes.py#L374)) — The match rate if the selected (and edited) proposals were applied.
-- function **`tailor()`** ([app/api/routes.py:384](../app/api/routes.py#L384)) — Step 3: apply the review and generate the files. Streams progress.
-- function **`_result_path()`** ([app/api/routes.py:444](../app/api/routes.py#L444))
-- function **`download()`** ([app/api/routes.py:452](../app/api/routes.py#L452))
-- function **`preview()`** ([app/api/routes.py:460](../app/api/routes.py#L460)) — One page of the tailored PDF as a PNG (Chrome blocks embedded PDFs).
-- function **`reset()`** ([app/api/routes.py:469](../app/api/routes.py#L469)) — Start over: delete this visitor's files and state. If a step is still
+- function **`_match_out()`** ([app/api/routes.py:244](../app/api/routes.py#L244))
+- function **`_selected()`** ([app/api/routes.py:250](../app/api/routes.py#L250))
+- function **`health()`** ([app/api/routes.py:260](../app/api/routes.py#L260))
+- function **`config()`** ([app/api/routes.py:265](../app/api/routes.py#L265))
+- function **`_model()`** ([app/api/routes.py:272](../app/api/routes.py#L272))
+- function **`analyze()`** ([app/api/routes.py:279](../app/api/routes.py#L279)) — "Just check my match": score only, nothing kept.
+- function **`parse()`** ([app/api/routes.py:293](../app/api/routes.py#L293)) — Step 1: read the resume and start a fresh session for this run.
+- function **`proposals()`** ([app/api/routes.py:326](../app/api/routes.py#L326)) — Step 2: apply the user's fixes, then draft rewrites and gap
+- function **`match_preview()`** ([app/api/routes.py:375](../app/api/routes.py#L375)) — The match rate if the selected (and edited) proposals were applied.
+- function **`tailor()`** ([app/api/routes.py:385](../app/api/routes.py#L385)) — Step 3: apply the review and generate the files. Streams progress.
+- function **`_result_path()`** ([app/api/routes.py:445](../app/api/routes.py#L445))
+- function **`download()`** ([app/api/routes.py:453](../app/api/routes.py#L453))
+- function **`preview()`** ([app/api/routes.py:461](../app/api/routes.py#L461)) — One page of the tailored PDF as a PNG (Chrome blocks embedded PDFs).
+- function **`reset()`** ([app/api/routes.py:470](../app/api/routes.py#L470)) — Start over: delete this visitor's files and state. If a step is still
 - **Imports:** `api/__init__.py`, `api/sessions.py`, `rendering/pdf_converter.py`, `rendering/review_view.py`
 - **Imported by:** `api/main.py`
 - **Tested by:** `tests/unit/test_api.py`
@@ -597,7 +600,7 @@ _Per-visitor state for the web API (P5.1)._
 
 - class **`Evidence`** ([app/domain/evidence.py:4](../app/domain/evidence.py#L4))
 - **Imported by:** `analysis/matcher.py`, `analysis/resume_normalizer.py`, `analysis/rewriter.py`, `analysis/semantic_matcher.py`, `analysis/structure_extractor.py`, `analysis/summary_writer.py`, `analysis/tailor_planner.py`, `services/tailor.py`, `validation/factual.py`
-- **Tested by:** `tests/unit/test_matcher.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_semantic_matcher.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_tailor_planner.py`, `tests/unit/test_tailor_service_addition.py`, `tests/unit/test_validation.py`
+- **Tested by:** `tests/unit/test_fact_check_p89.py`, `tests/unit/test_matcher.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_semantic_matcher.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_tailor_planner.py`, `tests/unit/test_tailor_service_addition.py`, `tests/unit/test_validation.py`
 
 ### `app/domain/job.py`
 
@@ -1027,7 +1030,7 @@ _Local profile of facts the user has confirmed (P3.2)._
 
 ### `app/services/tailor.py`
 
-**Layer:** Services · **Stage:** all · **Lines:** 1195
+**Layer:** Services · **Stage:** all · **Lines:** 1197
 
 - class **`TailorService`** ([app/services/tailor.py:56](../app/services/tailor.py#L56))
   - `__init__()` :57
@@ -1055,10 +1058,10 @@ _Local profile of facts the user has confirmed (P3.2)._
   - `apply_parse_corrections()` :428 — Apply the user's fixes from the "Check parsed resume" step (P3.5).
   - `analyze_only()` :525
   - `generate_proposals()` :551 — Generate rewrite proposals without applying them, plus questions
-  - `incorporate_user_addition()` :620 — Fold a user-supplied free-text addition (a project, an
-  - `tailor_resume()` :699
+  - `incorporate_user_addition()` :621 — Fold a user-supplied free-text addition (a project, an
+  - `tailor_resume()` :700
 - function **`_progress()`** ([app/services/tailor.py:45](../app/services/tailor.py#L45)) — A progress reporter that can never break a run (P3.6).
-- function **`_merge_usage()`** ([app/services/tailor.py:1186](../app/services/tailor.py#L1186)) — Combine two LLMClient.get_usage_summary() dicts into one.
+- function **`_merge_usage()`** ([app/services/tailor.py:1188](../app/services/tailor.py#L1188)) — Combine two LLMClient.get_usage_summary() dicts into one.
 - **Imports:** `analysis/experience.py`, `analysis/gap_questions.py`, `analysis/jd_analyzer.py`, `analysis/keyword_match.py`, `analysis/matcher.py`, `analysis/resume_normalizer.py`, `analysis/rewriter.py`, `analysis/scoring.py`, `analysis/semantic_matcher.py`, `analysis/skills_tailor.py`, `analysis/structure_extractor.py`, `analysis/summary_writer.py`, `analysis/tailor_planner.py`, `domain/evidence.py`, `domain/job.py`, `domain/report.py`, `domain/resume.py`, `domain/resume_document.py`, `domain/tailoring.py`, `ingestion/docx.py`, `ingestion/pdf.py`, `llm/client.py`, `rendering/docx_patcher.py`, `rendering/html_renderer.py`, `rendering/layout.py`, `rendering/page_fit.py`, `rendering/pdf_converter.py`, `rendering/template_renderer.py`, `services/profile_store.py`, `services/run_manager.py`, `validation/content_lint.py`, `validation/coverage.py`, `validation/factual.py`, `validation/output.py`, `validation/safety.py`, `validation/structural.py`
 - **Imported by:** `api/main.py`, `cli.py`, `eval/harness.py`
 - **Tested by:** `tests/integration/test_coverage_tailor.py`, `tests/integration/test_end_to_end.py`, `tests/unit/test_api.py`, `tests/unit/test_check_parsed_resume.py`, `tests/unit/test_cli.py`, `tests/unit/test_cli_parity.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_new_role.py`, `tests/unit/test_profile_store.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_review_view.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_tailor_resume_flow.py`, `tests/unit/test_tailor_service_addition.py`
@@ -1096,25 +1099,27 @@ _Content coverage (P8.2): does every line of the uploaded resume reach the_
 
 ### `app/validation/factual.py`
 
-**Layer:** Validation · **Stage:** 8 Validate · **Lines:** 321
+**Layer:** Validation · **Stage:** 8 Validate · **Lines:** 422
 
 - class **`ClaimCheck`** ([app/validation/factual.py:13](../app/validation/factual.py#L13))
 - class **`ValidationResult`** ([app/validation/factual.py:20](../app/validation/factual.py#L20))
 - class **`FactualValidator`** ([app/validation/factual.py:32](../app/validation/factual.py#L32)) — Checks that a rewrite adds no facts beyond the resume's evidence.
-  - `dropped_facts()` :80 — (dropped factual terms, dropped content words, retention share,
-  - `__init__()` :108
-  - `extract_numbers()` :120
-  - `_stem()` :125 — Crude stemmer so inflections compare equal:
-  - `_keys()` :139 — All forms a term can match by: stem plus canonical alias.
-  - `_term_keys()` :147
-  - `_is_factual()` :160
-  - `_positioned_tokens()` :174 — (token, starts_a_sentence) pairs, so the capital of every
-  - `_validate_skills()` :183 — The skills section may be reordered and respelled, never extended (P1.6).
-  - `_validate_summary()` :195 — A summary may draw on the whole resume (P1.5): every factual term
-  - `validate_proposal()` :232
+  - `dropped_facts()` :106 — (dropped factual terms, dropped content words, retention share,
+  - `__init__()` :134
+  - `extract_numbers()` :146
+  - `_stem()` :151 — Crude stemmer so inflections compare equal:
+  - `_keys()` :165 — All forms a term can match by: stem plus canonical alias.
+  - `_term_keys()` :173
+  - `_is_factual()` :186
+  - `_positioned_tokens()` :200 — (token, starts_a_sentence) pairs, so the capital of every
+  - `_validate_skills()` :209 — The skills section may be reordered and respelled, never extended (P1.6).
+  - `_validate_summary()` :221 — A summary may draw on the whole resume (P1.5): every factual term
+  - `_owner_prefix()` :273 — 'exp_001_b03' -> 'exp_001_': the job (or project) a bullet belongs to.
+  - `_new_words()` :278 — Plain words a rewrite adds (P8.9): (borrowed from the JD only,
+  - `validate_proposal()` :299
 - **Imports:** `analysis/rewriter.py`, `analysis/skills_tailor.py`, `analysis/terminology.py`, `domain/evidence.py`
 - **Imported by:** `services/tailor.py`
-- **Tested by:** `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_validation.py`
+- **Tested by:** `tests/unit/test_fact_check_p89.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_validation.py`
 
 ### `app/validation/output.py`
 

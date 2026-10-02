@@ -57,6 +57,32 @@ class FactualValidator:
         "mentoring", "team", "teams", "hire", "hired", "hiring", "founded", "founder", "owned",
         "launched", "patent", "patented", "award", "awarded", "promoted", "headed", "supervised",
         "director", "architect", "principal", "senior", "staff",
+        # P8.9: the same kind of claim, so the same rule (U29)
+        "oversaw", "directed", "spearheaded", "orchestrated", "coached", "trained", "educated", "precepted",
+    }
+
+    # Action verbs a rewrite may choose freely: they restate the work, they
+    # don't add a fact. Anything else new needs the resume to say it (P8.9).
+    ACTION_VERBS = {
+        "achieved", "administered", "analysed", "analyzed", "assessed", "assisted", "automated", "closed",
+        "collaborated", "completed", "conducted", "configured", "consolidated", "contributed", "coordinated",
+        "documented", "drafted", "established", "evaluated", "executed", "exceeded", "expanded", "facilitated",
+        "generated", "handled", "identified", "installed", "integrated", "maintained", "migrated", "monitored",
+        "operated", "optimised", "optimized", "organised", "organized", "partnered", "performed", "planned",
+        "prepared", "presented", "processed", "produced", "provided", "ran", "repaired", "researched",
+        "resolved", "reviewed", "scheduled", "secured", "served", "shipped", "simplified", "solved", "tested",
+        "tracked", "trained", "troubleshot", "updated", "upgraded", "wrote", "accelerated", "grew", "cut",
+        "saved", "raised", "lowered", "enhanced", "strengthened", "refined", "modernized", "standardized",
+        "provide", "providing", "perform", "performing", "manage", "managing",
+    }
+    # Common words that carry no claim of their own.
+    GENERAL_WORDS = {
+        "within", "between", "among", "after", "before", "during", "every", "without", "toward", "towards",
+        "upon", "along", "around", "many", "much", "same", "some", "they", "what", "will", "would", "could",
+        "should", "have", "been", "being", "were", "into", "onto", "less", "least", "high", "higher", "quality",
+        "results", "result", "process", "processes", "operations", "daily", "weekly", "monthly", "annual",
+        "annually", "your", "only", "just", "including", "per", "first", "time", "times", "year", "years",
+        "month", "months", "week", "weeks", "total", "overall", "new", "existing", "current", "currently",
     }
 
     # Words that don't carry a bullet's facts, so dropping them loses nothing:
@@ -193,7 +219,7 @@ class FactualValidator:
                                 claim_checks=[check], warnings=warnings)
 
     def _validate_summary(self, proposal, evidence_list: List[Evidence],
-                          jd_keywords: Optional[List[str]]) -> ValidationResult:
+                          jd_keywords: Optional[List[str]], jd_text: Optional[str] = None) -> ValidationResult:
         """A summary may draw on the whole resume (P1.5): every factual term
         must appear somewhere in it, and every number must be in it or be
         one of the proposal's allowed facts (the computed years)."""
@@ -223,17 +249,59 @@ class FactualValidator:
         if unsupported:
             verdict = "REJECT"
             warnings.append("Summary rejected: terms not found anywhere in your resume: " + ", ".join(unsupported))
+        # P8.10: a repeated phrase ("B2B SaaS sales in B2B SaaS") reads as filler.
+        words = [w.lower() for w in self.TOKEN_RE.findall(text)]
+        pairs = [f"{a} {b}" for a, b in zip(words, words[1:])
+                 if a not in self.FILLER_WORDS and b not in self.FILLER_WORDS and len(a) > 2 and len(b) > 1]
+        repeated = sorted({p for p in pairs if pairs.count(p) > 1})
+        if repeated:
+            verdict = "REJECT"
+            warnings.append("Summary rejected: repeats " + ", ".join(f"'{p}'" for p in repeated))
+        # P8.9: plain words that only the job description uses are claims too.
+        borrowed, _ = self._new_words(text, resume_keys, resume_keys, self._term_keys([jd_text]) if jd_text else set())
+        if borrowed:
+            verdict = "REJECT"
+            warnings.append("Summary rejected: borrows the job description's wording, which your resume doesn't "
+                            "support: " + ", ".join(f"'{t}'" for t in borrowed))
         check = ClaimCheck(claim=text, evidence_ids=getattr(proposal, "evidence_ids", None) or [],
                            status="SUPPORTED" if verdict == "PASS" else "UNSUPPORTED",
                            explanation=" ".join(warnings) or "Every term and number appears in the resume.")
         return ValidationResult(approved=verdict != "REJECT", proposal=proposal, verdict=verdict,
                                 claim_checks=[check], warnings=warnings)
 
+    @staticmethod
+    def _owner_prefix(semantic_id: Optional[str]) -> Optional[str]:
+        """'exp_001_b03' -> 'exp_001_': the job (or project) a bullet belongs to."""
+        m = re.match(r"^((?:exp|proj)_\d+_)", semantic_id or "")
+        return m.group(1) if m else None
+
+    def _new_words(self, text: str, own_keys: Set[str], resume_keys: Set[str], jd_keys: Set[str]):
+        """Plain words a rewrite adds (P8.9): (borrowed from the JD only,
+        not in the resume at all). Factual terms are checked separately."""
+        borrowed: List[str] = []
+        unknown: List[str] = []
+        for token in self.TOKEN_RE.findall(text):
+            low = token.lower()
+            if len(low) <= 3 or not low.isalpha():
+                continue
+            keys = self._keys(low)
+            if (low in self.FILLER_WORDS or low in self.ACTION_VERBS or low in self.GENERAL_WORDS
+                    or self._stem(low) in {self._stem(v) for v in self.ACTION_VERBS} or keys & own_keys
+                    or keys & resume_keys):
+                continue
+            if keys & jd_keys:
+                if token not in borrowed:
+                    borrowed.append(token)
+            elif token not in unknown:
+                unknown.append(token)
+        return borrowed, unknown
+
     def validate_proposal(
         self,
         proposal: RewriteProposal,
         evidence_list: List[Evidence],
         jd_keywords: Optional[List[str]] = None,
+        jd_text: Optional[str] = None,
     ) -> ValidationResult:
         warnings: List[str] = []
         confirm_terms: List[str] = []
@@ -241,7 +309,7 @@ class FactualValidator:
         verdict: Verdict = "PASS"
 
         if getattr(proposal, "kind", "bullet") == "summary":
-            return self._validate_summary(proposal, evidence_list, jd_keywords)
+            return self._validate_summary(proposal, evidence_list, jd_keywords, jd_text)
         if getattr(proposal, "kind", "bullet") == "skills":
             return self._validate_skills(proposal)
 
@@ -270,19 +338,35 @@ class FactualValidator:
                 [getattr(proposal, "original_text", "")])
             resume_keys = self._term_keys(ev.text for ev in evidence_list)
             vocab = self._term_keys(jd_keywords or []) | set(self._canon.values()) | set(self._canon)
+            # P8.9: a fact must come from this job, its sub-headings, the
+            # skills list or the summary; one found only under another job
+            # or section (a student rotation, another employer) is not this
+            # job's to claim (U2).
+            prefix = self._owner_prefix(prop_sem_id)
+            near_keys = self._term_keys(
+                ev.text for ev in evidence_list
+                if (prefix and (ev.source_id or "").startswith(prefix)) or ev.source_type in ("skill", "summary"))
 
             unsupported: List[str] = []
+            elsewhere: List[str] = []
             for i, token in enumerate(self.TOKEN_RE.findall(rewritten_text)):
                 if not self._is_factual(token, is_first=(i == 0), vocab=vocab):
                     continue
                 parts = [p for p in token.split("/") if p]
                 if all(self._keys(p) & own_keys for p in parts):
                     continue
-                if all(self._keys(p) & resume_keys for p in parts):
+                scope = token.lower() in self.SCOPE_CLAIMS
+                if all(self._keys(p) & (resume_keys if scope or not prefix else near_keys) for p in parts):
                     if token not in confirm_terms:
                         confirm_terms.append(token)
+                elif all(self._keys(p) & resume_keys for p in parts):
+                    if token not in elsewhere:
+                        elsewhere.append(token)
                 elif token not in unsupported:
                     unsupported.append(token)
+
+            jd_keys = self._term_keys([jd_text]) if jd_text else set()
+            borrowed, unknown_words = self._new_words(rewritten_text, own_keys, resume_keys, jd_keys)
 
             # P1.14: a rewrite must not lose information either.
             dropped_terms, lost_words, retention, lost_items = self.dropped_facts(
@@ -300,7 +384,24 @@ class FactualValidator:
                 warnings.append(
                     "Rewrite rejected: introduces terms not found anywhere in your resume: " + ", ".join(unsupported)
                 )
-            elif confirm_terms and verdict == "PASS":
+            if elsewhere:
+                verdict = "REJECT"
+                warnings.append(
+                    "Rewrite rejected: uses " + ", ".join(f"'{t}'" for t in elsewhere)
+                    + " from another part of your resume, not this job."
+                )
+            if borrowed:
+                verdict = "REJECT"
+                warnings.append(
+                    "Rewrite rejected: borrows the job description's wording, which your resume doesn't support: "
+                    + ", ".join(f"'{t}'" for t in borrowed)
+                )
+            if verdict == "PASS" and len(unknown_words) >= 2:
+                verdict = "NEEDS_CONFIRM"
+                warnings.append(
+                    "Please check: adds wording your resume doesn't use: " + ", ".join(f"'{t}'" for t in unknown_words)
+                )
+            if confirm_terms and verdict == "PASS":
                 verdict = "NEEDS_CONFIRM"
                 warnings.append(
                     "Please check: uses " + ", ".join(f"'{t}'" for t in confirm_terms)

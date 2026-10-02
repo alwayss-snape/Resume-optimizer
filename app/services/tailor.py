@@ -582,7 +582,8 @@ class TailorService:
         # Fact-check now so the review UI can show each proposal's verdict
         # (and what would be dropped) before the user applies anything.
         for prop in proposals:
-            res = self.validator.validate_proposal(prop, evidence_list, jd_keywords=job_desc.keywords)
+            res = self.validator.validate_proposal(prop, evidence_list, jd_keywords=job_desc.keywords,
+                                                 jd_text=job_desc.raw_text)
             prop.validation = res.verdict
             prop.validation_note = "; ".join(res.warnings) or None
 
@@ -822,7 +823,8 @@ class TailorService:
                     f"Kept your edited text as written (not fact-checked): {getattr(prop, 'proposed_text', '')[:80]}"
                 )
                 continue
-            res = self.validator.validate_proposal(prop, evidence_list, jd_keywords=job_desc.keywords)
+            res = self.validator.validate_proposal(prop, evidence_list, jd_keywords=job_desc.keywords,
+                                                 jd_text=job_desc.raw_text)
             if res.approved:
                 approved_proposals.append(prop)
                 warnings.extend(res.warnings)  # NEEDS_CONFIRM notes: kept, but worth a look

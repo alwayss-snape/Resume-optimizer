@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "0f5cf4b266ac956f",
+  "source_hash": "83329a601278051f",
   "stats": {
-    "files": 144,
-    "python_files": 121,
+    "files": 145,
+    "python_files": 122,
     "app_modules": 55,
-    "test_files": 57,
+    "test_files": 58,
     "classes": 103,
-    "functions": 911,
-    "lines_of_python": 18273
+    "functions": 922,
+    "lines_of_python": 18483
   },
   "axes": {
     "x": "location (path)",
@@ -240,7 +240,7 @@
       "stages": [
         "7 Rewrite"
       ],
-      "lines": 85,
+      "lines": 88,
       "doc": "",
       "classes": [
         {
@@ -250,22 +250,22 @@
           "methods": [
             {
               "name": "model_dump",
-              "line": 45,
+              "line": 48,
               "doc": ""
             },
             {
               "name": "semantic_id",
-              "line": 60,
+              "line": 63,
               "doc": ""
             },
             {
               "name": "source_id",
-              "line": 70,
+              "line": 73,
               "doc": ""
             },
             {
               "name": "rewritten_text",
-              "line": 79,
+              "line": 82,
               "doc": ""
             }
           ]
@@ -1027,7 +1027,7 @@
       "stages": [
         "7 Rewrite"
       ],
-      "lines": 112,
+      "lines": 141,
       "doc": "Tailored professional summary (P1.5).",
       "classes": [
         {
@@ -1041,13 +1041,23 @@
               "doc": ""
             },
             {
+              "name": "sane_title",
+              "line": 41,
+              "doc": "A title fit to print (P8.10: a misread \"03/\" became the summary's"
+            },
+            {
+              "name": "years_claim",
+              "line": 49,
+              "doc": "The years the resume itself states, if it states any (open issue"
+            },
+            {
               "name": "facts",
-              "line": 38,
+              "line": 60,
               "doc": "The inputs code decides; the LLM only phrases them."
             },
             {
               "name": "propose",
-              "line": 55,
+              "line": 80,
               "doc": "A summary proposal, or None when there's nothing to write from"
             }
           ]
@@ -1241,7 +1251,7 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 481,
+      "lines": 482,
       "doc": "HTTP endpoints, one per step of the review flow (P5.1).",
       "classes": [
         {
@@ -1367,72 +1377,72 @@
         },
         {
           "name": "_match_out",
-          "line": 243,
+          "line": 244,
           "doc": ""
         },
         {
           "name": "_selected",
-          "line": 249,
+          "line": 250,
           "doc": ""
         },
         {
           "name": "health",
-          "line": 259,
+          "line": 260,
           "doc": ""
         },
         {
           "name": "config",
-          "line": 264,
+          "line": 265,
           "doc": ""
         },
         {
           "name": "_model",
-          "line": 271,
+          "line": 272,
           "doc": ""
         },
         {
           "name": "analyze",
-          "line": 278,
+          "line": 279,
           "doc": "\"Just check my match\": score only, nothing kept."
         },
         {
           "name": "parse",
-          "line": 292,
+          "line": 293,
           "doc": "Step 1: read the resume and start a fresh session for this run."
         },
         {
           "name": "proposals",
-          "line": 325,
+          "line": 326,
           "doc": "Step 2: apply the user's fixes, then draft rewrites and gap"
         },
         {
           "name": "match_preview",
-          "line": 374,
+          "line": 375,
           "doc": "The match rate if the selected (and edited) proposals were applied."
         },
         {
           "name": "tailor",
-          "line": 384,
+          "line": 385,
           "doc": "Step 3: apply the review and generate the files. Streams progress."
         },
         {
           "name": "_result_path",
-          "line": 444,
+          "line": 445,
           "doc": ""
         },
         {
           "name": "download",
-          "line": 452,
+          "line": 453,
           "doc": ""
         },
         {
           "name": "preview",
-          "line": 460,
+          "line": 461,
           "doc": "One page of the tailored PDF as a PNG (Chrome blocks embedded PDFs)."
         },
         {
           "name": "reset",
-          "line": 469,
+          "line": 470,
           "doc": "Start over: delete this visitor's files and state. If a step is still"
         }
       ]
@@ -2471,7 +2481,7 @@
       "type": "prompt",
       "layer": "LLM",
       "stages": [],
-      "lines": 15
+      "lines": 16
     },
     {
       "id": "app/llm/schemas.py",
@@ -3172,7 +3182,7 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 1195,
+      "lines": 1197,
       "doc": "",
       "classes": [
         {
@@ -3307,12 +3317,12 @@
             },
             {
               "name": "incorporate_user_addition",
-              "line": 620,
+              "line": 621,
               "doc": "Fold a user-supplied free-text addition (a project, an"
             },
             {
               "name": "tailor_resume",
-              "line": 699,
+              "line": 700,
               "doc": ""
             }
           ]
@@ -3326,7 +3336,7 @@
         },
         {
           "name": "_merge_usage",
-          "line": 1186,
+          "line": 1188,
           "doc": "Combine two LLMClient.get_usage_summary() dicts into one."
         }
       ]
@@ -3431,7 +3441,7 @@
       "stages": [
         "8 Validate"
       ],
-      "lines": 321,
+      "lines": 422,
       "doc": "",
       "classes": [
         {
@@ -3453,57 +3463,67 @@
           "methods": [
             {
               "name": "dropped_facts",
-              "line": 80,
+              "line": 106,
               "doc": "(dropped factual terms, dropped content words, retention share,"
             },
             {
               "name": "__init__",
-              "line": 108,
+              "line": 134,
               "doc": ""
             },
             {
               "name": "extract_numbers",
-              "line": 120,
+              "line": 146,
               "doc": ""
             },
             {
               "name": "_stem",
-              "line": 125,
+              "line": 151,
               "doc": "Crude stemmer so inflections compare equal:"
             },
             {
               "name": "_keys",
-              "line": 139,
+              "line": 165,
               "doc": "All forms a term can match by: stem plus canonical alias."
             },
             {
               "name": "_term_keys",
-              "line": 147,
+              "line": 173,
               "doc": ""
             },
             {
               "name": "_is_factual",
-              "line": 160,
+              "line": 186,
               "doc": ""
             },
             {
               "name": "_positioned_tokens",
-              "line": 174,
+              "line": 200,
               "doc": "(token, starts_a_sentence) pairs, so the capital of every"
             },
             {
               "name": "_validate_skills",
-              "line": 183,
+              "line": 209,
               "doc": "The skills section may be reordered and respelled, never extended (P1.6)."
             },
             {
               "name": "_validate_summary",
-              "line": 195,
+              "line": 221,
               "doc": "A summary may draw on the whole resume (P1.5): every factual term"
             },
             {
+              "name": "_owner_prefix",
+              "line": 273,
+              "doc": "'exp_001_b03' -> 'exp_001_': the job (or project) a bullet belongs to."
+            },
+            {
+              "name": "_new_words",
+              "line": 278,
+              "doc": "Plain words a rewrite adds (P8.9): (borrowed from the JD only,"
+            },
+            {
               "name": "validate_proposal",
-              "line": 232,
+              "line": 299,
               "doc": ""
             }
           ]
@@ -4800,6 +4820,52 @@
         {
           "name": "test_no_dated_roles_is_one_page",
           "line": 36,
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "tests/unit/test_fact_check_p89.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 74,
+      "doc": "P8.9: the fact check catches wording borrowed from the job description,",
+      "classes": [],
+      "functions": [
+        {
+          "name": "_check",
+          "line": 20,
+          "doc": ""
+        },
+        {
+          "name": "test_fact_from_another_section_is_rejected",
+          "line": 29,
+          "doc": ""
+        },
+        {
+          "name": "test_skill_from_the_skills_list_needs_confirmation_not_rejection",
+          "line": 36,
+          "doc": ""
+        },
+        {
+          "name": "test_jd_only_wording_is_rejected",
+          "line": 41,
+          "doc": ""
+        },
+        {
+          "name": "test_new_claim_words_need_confirmation",
+          "line": 51,
+          "doc": ""
+        },
+        {
+          "name": "test_plain_rewording_still_passes",
+          "line": 60,
+          "doc": ""
+        },
+        {
+          "name": "test_scope_verbs_follow_one_rule",
+          "line": 65,
           "doc": ""
         }
       ]
@@ -7448,6 +7514,11 @@
     },
     {
       "from": "app/analysis/rewriter.py",
+      "to": "tests/unit/test_fact_check_p89.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/analysis/rewriter.py",
       "to": "tests/unit/test_project_rewrites.py",
       "type": "tested_by"
     },
@@ -7905,6 +7976,11 @@
       "from": "app/domain/evidence.py",
       "to": "app/domain/evidence.py::Evidence",
       "type": "contains"
+    },
+    {
+      "from": "app/domain/evidence.py",
+      "to": "tests/unit/test_fact_check_p89.py",
+      "type": "tested_by"
     },
     {
       "from": "app/domain/evidence.py",
@@ -9540,6 +9616,11 @@
       "from": "app/validation/factual.py",
       "to": "app/validation/factual.py::ValidationResult",
       "type": "contains"
+    },
+    {
+      "from": "app/validation/factual.py",
+      "to": "tests/unit/test_fact_check_p89.py",
+      "type": "tested_by"
     },
     {
       "from": "app/validation/factual.py",
