@@ -404,6 +404,11 @@ class ResumeNormalizer:
         company, location = self._split_company_location(", ".join(after))
         return title, company, location
 
+    def _ends_with_suffix(self, text: str) -> bool:
+        """"CloudMetrics Inc." ends with a full stop but is a company, not a sentence."""
+        last = (text or "").rstrip().split()[-1:] or [""]
+        return bool(self._COMPANY_SUFFIX_RE.fullmatch(last[0]))
+
     def _next_is_meta_line(self, blocks, idx: int) -> bool:
         """The ATS template prints 'Company · Location' under the title line."""
         following = next((b for b in blocks[idx + 1:] if b.text.strip()), None)
@@ -845,7 +850,7 @@ class ResumeNormalizer:
                 if (kind is None and current_exp is not None and current_exp.title
                         and (not current_exp.company or current_exp.id in inherited_company)
                         and not current_exp_has_content and block.block_type != "bullet"
-                        and len(text) < 90 and not left.rstrip().endswith(".")
+                        and len(text) < 90 and (not left.rstrip().endswith(".") or self._ends_with_suffix(left))
                         and not self._is_dated_line(block)):
                     # Title line first, then "Company · Location" (the ATS
                     # template's order): this line names the job's company.
@@ -861,6 +866,10 @@ class ResumeNormalizer:
                 if kind == "dated":
                     title, start, end = self._parse_title_and_dates(left)
                     extras = None
+                    if start is None and right_col and re.fullmatch(r"\(?" + self._DATE + r"\)?", right_col.strip(),
+                                                                    re.IGNORECASE):
+                        # "Writer<tab>Summer 2021": a single date in the right column.
+                        start, right_col = right_col.strip("() "), None
                     if start is None and right_col and self._trailing_dates(right_col)[0] is not None:
                         # "Title<tab>Aug 2024 – Present": the dates are the
                         # right column, not a location.

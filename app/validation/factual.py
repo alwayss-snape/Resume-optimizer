@@ -71,9 +71,9 @@ class FactualValidator:
         "operated", "optimised", "optimized", "organised", "organized", "partnered", "performed", "planned",
         "prepared", "presented", "processed", "produced", "provided", "ran", "repaired", "researched",
         "resolved", "reviewed", "scheduled", "secured", "served", "shipped", "simplified", "solved", "tested",
-        "tracked", "trained", "troubleshot", "updated", "upgraded", "wrote", "accelerated", "grew", "cut",
+        "tracked", "troubleshot", "updated", "upgraded", "wrote", "accelerated", "grew", "cut",
         "saved", "raised", "lowered", "enhanced", "strengthened", "refined", "modernized", "standardized",
-        "provide", "providing", "perform", "performing", "manage", "managing",
+        "provide", "providing", "perform", "performing",
     }
     # Common words that carry no claim of their own.
     GENERAL_WORDS = {
@@ -83,7 +83,18 @@ class FactualValidator:
         "results", "result", "process", "processes", "operations", "daily", "weekly", "monthly", "annual",
         "annually", "your", "only", "just", "including", "per", "first", "time", "times", "year", "years",
         "month", "months", "week", "weeks", "total", "overall", "new", "existing", "current", "currently",
+        # Words every resume and JD share; they claim nothing (Stage I gate)
+        "experience", "experienced", "certification", "certifications", "certified", "skills", "skilled", "role",
+        "roles", "position", "setting", "settings", "environment", "environments", "background",
+        "licence", "license", "licensed", "licenced", "credential", "credentials", "holds", "holding",
     }
+    # Irregular past tenses, so "Troubleshoot" -> "Troubleshot" isn't a dropped word.
+    IRREGULAR = {"troubleshot": "troubleshoot", "ran": "run", "led": "lead", "built": "build", "wrote": "write",
+                 "taught": "teach", "drove": "drive", "grew": "grow", "made": "make", "sold": "sell", "won": "win",
+                 "began": "begin", "brought": "bring", "bought": "buy", "chose": "choose", "held": "hold",
+                 "kept": "keep", "met": "meet", "oversaw": "oversee", "spent": "spend", "took": "take",
+                 "sought": "seek", "rebuilt": "rebuild", "rewrote": "rewrite", "undertook": "undertake",
+                 "taught": "teach", "fed": "feed", "flew": "fly", "gave": "give", "went": "go", "sent": "send"}
 
     # Words that don't carry a bullet's facts, so dropping them loses nothing:
     # connectors, generic verbs and adjectives a rewrite normally changes.
@@ -159,6 +170,13 @@ class FactualValidator:
         """Crude stemmer so inflections compare equal:
         cutting/cut, processed/processing/process, services/service."""
         w = word.lower()
+        # US / UK spellings compare equal (Stage I review): containerised /
+        # containerized, organisation / organization, colour / color.
+        w = re.sub(r"isation$", "ization", w)
+        w = re.sub(r"is(e|ed|es|ing)$", r"iz\1", w) if len(w) > 5 else w
+        w = re.sub(r"our$", "or", w) if len(w) > 5 else w
+        w = re.sub(r"lling$", "ling", w)
+        w = re.sub(r"lled$", "led", w)
         for suffix in ("ing", "ed", "es", "s", "ly"):
             if w.endswith(suffix) and len(w) > len(suffix) + 2:
                 w = w[: -len(suffix)]
@@ -173,6 +191,8 @@ class FactualValidator:
         """All forms a term can match by: stem plus canonical alias."""
         low = word.lower()
         keys = {self._stem(low), low}
+        if low in self.IRREGULAR:
+            keys |= {self.IRREGULAR[low], self._stem(self.IRREGULAR[low])}
         if low in self._canon:
             keys.add(self._canon[low])
         return keys
@@ -188,6 +208,9 @@ class FactualValidator:
                 for part in re.split(r"[/]", tok):
                     if part:
                         keys |= self._keys(part)
+                        for piece in part.split("-"):  # "post-operative" also gives post, operative
+                            if piece and piece != part:
+                                keys |= self._keys(piece)
         return keys
 
     def _is_factual(self, token: str, is_first: bool, vocab: Set[str]) -> bool:
@@ -258,15 +281,19 @@ class FactualValidator:
             warnings.append("Summary rejected: terms not found anywhere in your resume: " + ", ".join(unsupported))
         # P8.10: a repeated phrase ("B2B SaaS sales in B2B SaaS") reads as filler.
         words = [w.lower() for w in self.TOKEN_RE.findall(text)]
+        stop = self.FILLER_WORDS | {"of", "in", "to", "on", "at", "as", "by", "an", "a", "or", "years", "year"}
         pairs = [f"{a} {b}" for a, b in zip(words, words[1:])
-                 if a not in self.FILLER_WORDS and b not in self.FILLER_WORDS and len(a) > 2 and len(b) > 1]
+                 if a not in stop and b not in stop and len(a) > 2 and len(b) > 2]
         repeated = sorted({p for p in pairs if pairs.count(p) > 1})
         if repeated:
             verdict = "REJECT"
             warnings.append("Summary rejected: repeats " + ", ".join(f"'{p}'" for p in repeated))
         # P8.9: plain words that only the job description uses are claims too.
         borrowed, _ = self._new_words(text, resume_keys, resume_keys, self._term_keys([jd_text]) if jd_text else set())
-        if borrowed:
+        if len(borrowed) == 1 and verdict == "PASS":
+            verdict = "NEEDS_CONFIRM"
+            warnings.append(f"Please check: '{borrowed[0]}' comes from the job description, not your resume.")
+        elif borrowed:
             verdict = "REJECT"
             warnings.append("Summary rejected: borrows the job description's wording, which your resume doesn't "
                             "support: " + ", ".join(f"'{t}'" for t in borrowed))
@@ -282,19 +309,30 @@ class FactualValidator:
         m = re.match(r"^((?:exp|proj)_\d+_)", semantic_id or "")
         return m.group(1) if m else None
 
+    def _content_tokens(self, text: str):
+        """Plain words of a text in order, hyphenated words split into parts
+        ("critically-ill" -> critically, ill)."""
+        for token in self.TOKEN_RE.findall(text):
+            for part in token.split("-"):
+                if part:
+                    yield part
+
+    def _is_plain(self, low: str) -> bool:
+        return len(low) > 3 and low.isalpha() and not (
+            low in self.FILLER_WORDS or low in self.ACTION_VERBS or low in self.GENERAL_WORDS
+            or self._stem(low) in {self._stem(v) for v in self.ACTION_VERBS})
+
     def _new_words(self, text: str, own_keys: Set[str], resume_keys: Set[str], jd_keys: Set[str]):
         """Plain words a rewrite adds (P8.9): (borrowed from the JD only,
         not in the resume at all). Factual terms are checked separately."""
         borrowed: List[str] = []
         unknown: List[str] = []
-        for token in self.TOKEN_RE.findall(text):
+        for token in self._content_tokens(text):
             low = token.lower()
-            if len(low) <= 3 or not low.isalpha():
+            if not self._is_plain(low):
                 continue
             keys = self._keys(low)
-            if (low in self.FILLER_WORDS or low in self.ACTION_VERBS or low in self.GENERAL_WORDS
-                    or self._stem(low) in {self._stem(v) for v in self.ACTION_VERBS} or keys & own_keys
-                    or keys & resume_keys):
+            if keys & own_keys or keys & resume_keys:
                 continue
             if keys & jd_keys:
                 if token not in borrowed:
@@ -302,6 +340,27 @@ class FactualValidator:
             elif token not in unknown:
                 unknown.append(token)
         return borrowed, unknown
+
+    def _words_from_elsewhere(self, text: str, near_keys: Set[str], resume_keys: Set[str]) -> List[List[str]]:
+        """Runs of consecutive plain words that the resume uses only under
+        another job or section (Stage I review: "titrating cardiac drips"
+        moved from one hospital job to another passed as ordinary words)."""
+        runs: List[List[str]] = []
+        current: List[str] = []
+        for token in self._content_tokens(text):
+            low = token.lower()
+            if not self._is_plain(low):
+                continue  # filler doesn't break a run ("drips and monitoring")
+            keys = self._keys(low)
+            if keys & resume_keys and not keys & near_keys:
+                current.append(token)
+            else:
+                if current:
+                    runs.append(current)
+                current = []
+        if current:
+            runs.append(current)
+        return runs
 
     def validate_proposal(
         self,
@@ -352,7 +411,8 @@ class FactualValidator:
             prefix = self._owner_prefix(prop_sem_id)
             near_keys = self._term_keys(
                 ev.text for ev in evidence_list
-                if (prefix and (ev.source_id or "").startswith(prefix)) or ev.source_type in ("skill", "summary"))
+                if (prefix and (ev.source_id or "").startswith(prefix))
+                or ev.source_type in ("skill", "summary", "certification", "education"))
 
             unsupported: List[str] = []
             elsewhere: List[str] = []
@@ -374,6 +434,7 @@ class FactualValidator:
 
             jd_keys = self._term_keys([jd_text]) if jd_text else set()
             borrowed, unknown_words = self._new_words(rewritten_text, own_keys, resume_keys, jd_keys)
+            moved = self._words_from_elsewhere(rewritten_text, own_keys | near_keys, resume_keys) if prefix else []
 
             # P1.14: a rewrite must not lose information either.
             dropped_terms, lost_words, retention, lost_items = self.dropped_facts(
@@ -397,12 +458,24 @@ class FactualValidator:
                     "Rewrite rejected: uses " + ", ".join(f"'{t}'" for t in elsewhere)
                     + " from another part of your resume, not this job."
                 )
-            if borrowed:
+            if any(len(run) >= 2 for run in moved):
+                verdict = "REJECT"
+                warnings.append("Rewrite rejected: describes work your resume lists under another job: "
+                                + "; ".join(f"'{' '.join(run)}'" for run in moved if len(run) >= 2))
+            elif moved and verdict == "PASS":
+                verdict = "NEEDS_CONFIRM"
+                warnings.append("Please check: uses " + ", ".join(f"'{run[0]}'" for run in moved)
+                                + " from another part of your resume, not this job.")
+            # One JD-only word is worth a look; two or more are the JD's claim (Stage I review).
+            if len(borrowed) >= 2:
                 verdict = "REJECT"
                 warnings.append(
                     "Rewrite rejected: borrows the job description's wording, which your resume doesn't support: "
                     + ", ".join(f"'{t}'" for t in borrowed)
                 )
+            elif borrowed and verdict == "PASS":
+                verdict = "NEEDS_CONFIRM"
+                warnings.append(f"Please check: '{borrowed[0]}' comes from the job description, not your resume.")
             if verdict == "PASS" and len(unknown_words) >= 2:
                 verdict = "NEEDS_CONFIRM"
                 warnings.append(

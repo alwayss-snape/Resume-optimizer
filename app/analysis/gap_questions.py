@@ -48,29 +48,54 @@ _GENERIC = {"experience", "knowledge", "skill", "degree", "management", "system"
             "proficiency", "proficient", "certification", "certified", "license", "licence", "software", "platform",
             "data", "service", "process", "practice", "standard", "method", "methodology", "level", "the", "and"}
 # A degree the resume shows covers a lower one the JD asks for.
+# Words are matched in any case; short forms ("B.S.", "MSc", "MBA") only as
+# written, so "be" / "me" / "MS SQL" aren't degrees (Stage I review).
 _DEGREE_LEVELS = [
-    ("high school", r"high school|ged|diploma"),
-    ("associate", r"associate(?:'s)? (?:degree|of)"),
-    ("bachelor", r"bachelor|b\.?\s?(?:s|a|sc|e|tech|com|ed)\b\.?|bsn|bfa|beng"),
-    ("master", r"master|m\.?\s?(?:s|a|sc|e|tech|com|ed)\b\.?|mba|msn|mfa|mpa|mph|macc|meng|llm"),
-    ("doctorate", r"ph\.?\s?d|doctor|j\.?\s?d\b|m\.?\s?d\b"),
+    ("high school", r"(?i:high school|\bged\b|diploma)"),
+    ("associate", r"(?i:associate(?:'s)? (?:degree|of))"),
+    ("bachelor", r"(?i:bachelor)|\bB\.\s?(?:S|A|Sc|E|Tech|Com|Ed)\b\.?|\b(?:BS|BA|BSc|BEng|BSN|BFA|BTech|BCom)\b"),
+    ("master", r"(?i:master)|\bM\.\s?(?:S|A|Sc|E|Tech|Com|Ed)\b\.?|\b(?:MS|MA|MSc|MBA|MSN|MFA|MPA|MPH|MAcc|MEng|LLM)\b"),
+    ("doctorate", r"(?i:ph\.?\s?d|doctor)|\bM\.\s?D\b"),
 ]
 
 
 def _degree_level(text: str) -> int:
     level = -1
     for i, (_name, pattern) in enumerate(_DEGREE_LEVELS):
-        if re.search(rf"\b(?:{pattern})", text or "", re.IGNORECASE):
+        if re.search(pattern, text or ""):
             level = i
     return level
 
 
-def partly_shown(keyword: str, resume_tokens: List[str], education_text: str = "") -> bool:
+# A vendor or product name with a generic tail: "Salesforce CRM" is shown by
+# "Salesforce", but "Spring Boot" isn't shown by "Spring 2019".
+_GENERIC_TAIL = {"crm", "platform", "suite", "software", "tool", "system", "certification", "certificate",
+                 "license", "licence", "program", "framework", "library", "studio", "cloud"}
+_CREDENTIAL_LINE = re.compile(r"\b(?:certif\w*|licen[cs]\w*|credential\w*|registered|board[- ]certified)\b", re.I)
+
+
+def infer_kind(keyword: str, kind: str, requirement: str = "") -> str:
+    """The keyword's kind when the JD analysis couldn't tell (offline it
+    calls everything "hard"): a degree or a credential (Stage I review)."""
+    if kind not in ("hard", "", None):
+        return kind
+    if re.search(r"(?i:degree|bachelor|master|diploma|\bged\b|ph\.?\s?d|doctorate)", keyword):
+        return "education"
+    if re.search(r"(?i:certif|licen[cs]|credential)", keyword):
+        return "certification"
+    if re.fullmatch(r"[A-Z][A-Z0-9-]{1,6}", keyword.strip()) and _CREDENTIAL_LINE.search(requirement or ""):
+        return "certification"  # "CCRN" in "BLS and ACLS certification required; CCRN preferred"
+    return kind or "hard"
+
+
+def partly_shown(keyword: str, resume_tokens: List[str], education_text: str = "", kind: str = "") -> bool:
     """The resume already shows this, or one of its alternatives (P8.12):
     "OSHA 10 or 30" by "OSHA 30", "Compact/NLC" by "NLC", "Salesforce CRM"
     by "Salesforce", "Bachelor's degree" by a Master's."""
     vocab = set(resume_tokens)
-    alts = [a for a in re.split(r"\s+or\s+|/|,", keyword, flags=re.IGNORECASE) if a.strip()]
+    # "Compact/NLC" and "English/Spanish" are alternatives; "lockout/tagout" is one thing.
+    slash = "/" if re.search(r"[A-Z]", keyword) else r"(?!)"
+    alts = [a for a in re.split(r"\s+or\s+|" + slash + "|,", keyword, flags=re.IGNORECASE) if a.strip()]
     prefix = [t for t in tokens(alts[0]) if not t.isdigit()] if alts else []
     for alt in alts:
         alt_tokens = tokens(alt)
@@ -79,9 +104,10 @@ def partly_shown(keyword: str, resume_tokens: List[str], education_text: str = "
         if alt_tokens and _contains_seq(resume_tokens, alt_tokens):
             return True
     words = tokens(keyword)
-    distinctive = [t for t in words if len(t) >= 3 and t not in _GENERIC and not t.isdigit()]
-    if len(words) > 1 and distinctive and distinctive[0] in vocab:
+    if len(words) > 1 and words[0] in vocab and all(t in _GENERIC_TAIL for t in words[1:]):
         return True
+    if kind != "education":
+        return False
     asked = _degree_level(keyword)
     return asked >= 0 and _degree_level(education_text) >= asked  # degrees only, never "Boston, MA"
 
@@ -103,9 +129,15 @@ def _wording(kinds: Set[str], listed: str):
 def build_questions(job: JobDescription, report: KeywordMatchReport, limit: int = MAX_QUESTIONS,
                     resume_text: Optional[str] = None, education_text: str = "") -> List[GapQuestion]:
     missing = [r for r in report.missing if r.kind in ("hard", "certification", "soft", "education")]
+    line_of = {}
+    for req in job.requirements:
+        for r in missing:
+            if r.keyword not in line_of and _contains_seq(tokens(req.text), tokens(r.keyword)):
+                line_of[r.keyword] = req.text
+    kind_of = {r.keyword: infer_kind(r.keyword, r.kind, line_of.get(r.keyword, "")) for r in missing}
     if resume_text is not None:  # never ask about what the resume already shows (P8.12)
         resume_tokens = tokens(resume_text)
-        missing = [r for r in missing if not partly_shown(r.keyword, resume_tokens, education_text)]
+        missing = [r for r in missing if not partly_shown(r.keyword, resume_tokens, education_text, kind_of[r.keyword])]
     questions: List[Dict] = []
     asked = set()
     for req in sorted(job.requirements, key=lambda r: r.priority != "required"):
@@ -119,11 +151,11 @@ def build_questions(job: JobDescription, report: KeywordMatchReport, limit: int 
         asked.update(r.keyword for r in kws)
         names = [r.keyword for r in kws]
         listed = names[0] if len(names) == 1 else ", ".join(names[:-1]) + " or " + names[-1]
-        question, label = _wording({r.kind for r in kws}, listed)
+        question, label = _wording({kind_of[r.keyword] for r in kws}, listed)
         questions.append({
             "requirement": req.text, "priority": req.priority, "keywords": names,
             "weight": sum(r.weight for r in kws), "question": question, "tick_label": label,
-            "kinds": {r.keyword: r.kind for r in kws},
+            "kinds": {r.keyword: kind_of[r.keyword] for r in kws},
         })
     questions.sort(key=lambda q: (q["priority"] != "required", -q["weight"]))
     return [GapQuestion(id=f"gap_{i + 1}", **{k: v for k, v in q.items() if k != "weight"})

@@ -6,7 +6,7 @@ from typing import Callable, Dict, List, Optional, Tuple
 from uuid import uuid4
 
 from app.analysis.experience import future_dates, is_ongoing, parse_month, target_pages
-from app.analysis.gap_questions import GapAnswer, build_questions
+from app.analysis.gap_questions import GapAnswer, build_questions, infer_kind
 from app.analysis.jd_analyzer import JDAnalyzer
 from app.analysis.keyword_match import KeywordMatcher, _contains_seq, resume_sections, tokens
 from app.analysis.matcher import EvidenceMatcher
@@ -157,7 +157,7 @@ class TailorService:
     SKILL_CATEGORY_RE = re.compile(r"tool|framework|librar|technolog|platform|skill", re.IGNORECASE)
 
     def _apply_gap_answers(self, resume: Resume, evidence_list: List, job_desc: JobDescription,
-                           answers: List) -> List[str]:
+                           answers: List, questions: Optional[List] = None) -> List[str]:
         """Ticked keywords join the skills section; a typed answer becomes a
         bullet drafted only from the candidate's words (P3.1). Returns notes
         for the change log."""
@@ -165,7 +165,10 @@ class TailorService:
         known = {k.lower() for items in resume.skills.values() for k in items}
         # What each keyword is (P8.12): a licence goes under Certifications,
         # a degree isn't a skill.
-        kinds = {r.keyword.lower(): r.kind for r in self.keyword_matcher.match(job_desc, resume).rows} if job_desc else {}
+        kinds = {r.keyword.lower(): infer_kind(r.keyword, r.kind) for r in self.keyword_matcher.match(job_desc, resume).rows} \
+            if job_desc else {}
+        for q in questions or []:  # the kinds the questions were asked with win
+            kinds.update({k.lower(): v for k, v in (getattr(q, "kinds", None) or {}).items()})
         held = {c.get("name", "").lower() for c in resume.certifications}
         for raw in answers:
             ans = raw if isinstance(raw, GapAnswer) else GapAnswer(**raw)
@@ -182,8 +185,9 @@ class TailorService:
             if degrees:
                 notes.append(f"You have {', '.join(degrees)}: if it isn't listed, add it under Education on "
                              "Check your details (a degree isn't added to Skills).")
-            if confirmed and not ans.answer.strip():
-                notes.append(f"Ticked without a line saying where: {', '.join(confirmed)}. A recruiter or "
+            unexplained = [k for k in confirmed if k not in certs and k not in degrees]
+            if unexplained and not ans.answer.strip():
+                notes.append(f"Ticked without a line saying where: {', '.join(unexplained)}. A recruiter or "
                              "interviewer will ask where you used it.")
             added = [k for k in confirmed if k.lower() not in known and k not in certs and k not in degrees]
             if added:
@@ -828,6 +832,9 @@ class TailorService:
             proposals = self._summary_proposals(resume, job_desc, initial_keywords, evidence_list)
             proposals += self._skills_proposals(resume, initial_keywords)
             proposals += self.rewriter.execute_plan(resume, plan, evidence_list, job_desc)
+            # Nobody reviewed these: an opt-in proposal (a summary replacing
+            # the user's own) stays out unless chosen (Stage I review).
+            proposals = [p for p in proposals if not getattr(p, "opt_in", False)]
             _append_progress(f"Planner created plan with {len(plan.actions)} actions; generated {len(proposals)} proposals")
 
         approved_proposals: List[RewriteProposal] = []
@@ -956,7 +963,7 @@ class TailorService:
         # everything just applied — the rewrites above and this addition.
         # Answers to the gap questions (P3.1): only what the candidate
         # confirmed, in their own words.
-        gap_notes = self._apply_gap_answers(resume, evidence_list, job_desc, gap_answers or [])
+        gap_notes = self._apply_gap_answers(resume, evidence_list, job_desc, gap_answers or [], gap_questions)
         if remember_answers and gap_answers:
             try:
                 saved = self.profile_store.record(gap_answers, gap_questions or [])

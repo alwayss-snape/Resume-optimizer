@@ -110,6 +110,7 @@ export interface GapQuestion {
   question: string;
   /** Worded by what is asked: "Tick the ones you hold:" for licences (P8.12). */
   tick_label?: string;
+  kinds?: Record<string, string>;
   saved_keywords: string[];
   saved_answer: string;
 }

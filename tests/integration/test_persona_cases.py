@@ -23,8 +23,8 @@ PERSONAS = [c for c in load_cases(include_private=False, include_personas=True) 
 CONTENT_XFAIL = {}
 # Until Stage K, scoring and page checks fail for most personas too.
 FULL_XFAIL = {name: 'scoring (Stage K), page target (P8.16) or round-trip quirks (P8.26)'
-              for name in ['teacher', 'eu_cv', 'spanish', 'nurse', 'sales', 'lawyer', 'academic',
-                           'executive', 'gap', 'veteran', 'eu_en', 'india', 'federal', 'nurse-pdf', 'sales-pdf']}
+              for name in ['teacher', 'eu_cv', 'spanish', 'nurse', 'lawyer', 'academic',
+                           'executive', 'veteran', 'eu_en', 'india', 'federal', 'nurse-pdf']}
 
 _RESULTS = {}
 

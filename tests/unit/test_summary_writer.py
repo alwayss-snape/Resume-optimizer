@@ -156,3 +156,13 @@ def test_years_follow_the_resumes_own_claim_and_titles_are_sane():
     writer, _llm = _writer("Senior Data Scientist with 7 years in forecasting, using Python and SQL.")
     prop = writer.propose(resume, _job(), KeywordMatcher().match(_job(), resume), _evidence(resume), TODAY)
     assert prop.opt_in is True  # the resume has its own summary
+
+
+def test_years_claim_prefers_career_claims_and_titles_allow_numbers():
+    from app.analysis.summary_writer import SummaryWriter
+    r = _resume()
+    r.summary = "3 years of Python and 10 years of experience in software overall."
+    assert SummaryWriter.years_claim(r) == "10 years"
+    r.summary = "President's Club 3 years running."
+    assert SummaryWriter.years_claim(r, computed=10.0) is None  # far below the dated roles: not a career claim
+    assert SummaryWriter.sane_title("24/7 NOC Engineer") and SummaryWriter.sane_title("ISO 27001 Lead Auditor")

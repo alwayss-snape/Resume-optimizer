@@ -93,8 +93,9 @@ def test_questions_are_worded_by_kind_and_skip_what_the_resume_shows():
     assert partly_shown("Compact/NLC", resume)
     assert partly_shown("English/Spanish", resume)
     assert not partly_shown("Gong", resume) and not partly_shown("Project management", tokens("Built dashboards"))
-    assert partly_shown("Bachelor's degree", [], education_text="Master of Accountancy (MAcc), Baruch College")
-    assert not partly_shown("Bachelor's degree", [], education_text="High School Diploma")
+    assert partly_shown("Bachelor's degree", [], education_text="Master of Accountancy (MAcc), Baruch College",
+                        kind="education")
+    assert not partly_shown("Bachelor's degree", [], education_text="High School Diploma", kind="education")
     assert not partly_shown("Bachelor's degree", tokens("Boston, MA"), education_text="")  # MA the state
     assert _wording({"certification"}, "ACLS")[1] == "Tick the ones you hold:"
     assert _wording({"education"}, "a Bachelor's degree")[0].endswith("Do you have it?")
@@ -111,4 +112,20 @@ def test_a_ticked_licence_goes_to_certifications(tmp_path):
     resume = Resume(candidate=Candidate(name="M"), skills={"Skills": ["Epic"]})
     notes = service._apply_gap_answers(resume, [], job, [GapAnswer(confirmed_keywords=["CCRN"])])
     assert resume.certifications == [{"name": "CCRN"}] and resume.skills == {"Skills": ["Epic"]}
-    assert any("where you used it" in n for n in notes)
+    assert not any("where you used it" in n for n in notes)  # a licence is held, not used somewhere
+
+
+def test_stage_i_review_partly_shown_and_kinds():
+    from app.analysis.gap_questions import infer_kind, partly_shown
+    from app.analysis.keyword_match import tokens
+    r = tokens("Projects; Spring 2019; power distribution; customer discovery; Google Cloud; Adobe Illustrator; "
+               "business days; Microsoft Office; tagout")
+    for kw in ("Project management", "Spring Boot", "Power BI", "Customer service", "Google Analytics",
+               "Adobe Photoshop", "Business development", "Microsoft Azure", "lockout/tagout"):
+        assert not partly_shown(kw, r), kw
+    assert not partly_shown("MS SQL Server", [], education_text="MBA, Kellogg", kind="hard")
+    assert partly_shown("Bachelor's degree", [], education_text="M.S., Computer Science", kind="education")
+    assert not partly_shown("Bachelor's degree", [], education_text="to be completed", kind="education")
+    assert infer_kind("CCRN", "hard", "BLS and ACLS certification required; CCRN preferred") == "certification"
+    assert infer_kind("ICU", "hard", "1 year ICU preferred") == "hard"
+    assert infer_kind("High school diploma or GED", "hard") == "education"

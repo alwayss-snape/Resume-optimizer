@@ -42,19 +42,30 @@ class SummaryWriter:
         """A title fit to print (P8.10: a misread "03/" became the summary's
         first words): letters, no date fragments, not a sentence."""
         t = (title or "").strip()
-        return (bool(re.search(r"[^\W\d_]{2}", t)) and not re.search(r"\d{1,2}/|\d{4}", t)
+        return (bool(re.search(r"[^\W\d_]{2}", t))
+                and not re.search(r"\b\d{1,2}/(?:\d{2,4}\b|\s|$)|\b(?:19|20)\d{2}\b", t)
                 and len(t.split()) <= 8 and not t.endswith(".") and len(t) <= 70)
 
     @classmethod
-    def years_claim(cls, resume: Resume) -> Optional[str]:
-        """The years the resume itself states, if it states any (open issue
-        3: "4+ years" computed vs "3.6 years" written; sales 7 vs 10+)."""
+    def years_claim(cls, resume: Resume, computed: Optional[float] = None) -> Optional[str]:
+        """The years of experience the resume itself states, if it states
+        any (open issue 3: "4+ years" computed vs "3.6 years" written; sales
+        7 vs 10+). "N years of experience" wins over "3 years of Python";
+        otherwise the largest claim; one far below the dated roles is not a
+        career claim and the computed years are used instead."""
+        claims = []
         for text in (resume.summary, resume.candidate.headline):
-            m = cls._YEARS_CLAIM_RE.search(text or "")
-            if m:
-                n = m.group(1)
-                return f"{n} year" if n == "1" else f"{n} years"
-        return None
+            for m in cls._YEARS_CLAIM_RE.finditer(text or ""):
+                after = (text or "")[m.end():m.end() + 25].lower()
+                career = bool(re.match(r"\s*(?:of\s+)?(?:professional\s+|total\s+|overall\s+)?(?:experience|in\b|across\b)",
+                                        after))
+                claims.append((career, float(m.group(1).rstrip("+")), m.group(1)))
+        if not claims:
+            return None
+        career, value, n = max(claims)
+        if computed and value < 0.5 * computed:
+            return None
+        return f"{n} year" if n == "1" else f"{n} years"
 
     @classmethod
     def facts(cls, resume: Resume, keyword_report: KeywordMatchReport, today: Optional[date] = None) -> dict:
@@ -70,7 +81,8 @@ class SummaryWriter:
             title = resume.candidate.headline
         return {
             "title": title or "",
-            "years": cls.years_claim(resume) or years_phrase(years_of_experience(resume, today)),
+            "years": cls.years_claim(resume, years_of_experience(resume, today))
+                     or years_phrase(years_of_experience(resume, today)),
             "skills": skills,
             "credentials": credentials,
             "results": results[:MAX_RESULT_LINES],

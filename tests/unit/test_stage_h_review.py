@@ -82,3 +82,14 @@ def test_merged_skill_categories_are_not_lost():
     blocks = [B(id="b1", text="Cloud: AWS"), B(id="b2", text="Testing: GoogleTest")]
     report = content_coverage(blocks, "Other: AWS, GoogleTest", ignore_words=["Cloud", "Testing"])
     assert report.lost == []
+
+
+def test_template_lines_read_back(tmp_path):
+    """Stage I gate: "Writer<tab>Summer 2021" keeps its date; "CloudMetrics Inc." is a company."""
+    r = _parse([("Jordan Kim", "b"), ("jordan@example.com | 312-555-0166", "p"), ("WORK EXPERIENCE", "h"),
+                ("Senior Account Executive\tJan 2021 – Present", "b"), ("CloudMetrics Inc. · Chicago, IL", "p"),
+                ("Closed the largest deal.", "li"), ("Curriculum Writer (contract)\tSummer 2021", "b"),
+                ("Texas Education Agency", "p"), ("Wrote 12 lesson modules.", "li")], tmp_path)
+    assert [(e.company, e.title, e.start_date) for e in r.experience] == [
+        ("CloudMetrics Inc.", "Senior Account Executive", "Jan 2021"),
+        ("Texas Education Agency", "Curriculum Writer (contract)", "Summer 2021")]

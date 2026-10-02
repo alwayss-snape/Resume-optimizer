@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "d182945f134d43bd",
+  "source_hash": "4cb95d2f65c2f28b",
   "stats": {
-    "files": 146,
-    "python_files": 123,
-    "app_modules": 55,
-    "test_files": 59,
-    "classes": 103,
-    "functions": 940,
-    "lines_of_python": 18858
+    "files": 148,
+    "python_files": 125,
+    "app_modules": 56,
+    "test_files": 60,
+    "classes": 105,
+    "functions": 972,
+    "lines_of_python": 19569
   },
   "axes": {
     "x": "location (path)",
@@ -334,7 +334,7 @@
       "stages": [
         "6 Plan"
       ],
-      "lines": 130,
+      "lines": 162,
       "doc": "Suggest-and-confirm gaps (P3.1): ask, never assume.",
       "classes": [
         {
@@ -353,22 +353,27 @@
       "functions": [
         {
           "name": "_degree_level",
-          "line": 60,
+          "line": 62,
           "doc": ""
         },
         {
+          "name": "infer_kind",
+          "line": 77,
+          "doc": "The keyword's kind when the JD analysis couldn't tell (offline it"
+        },
+        {
           "name": "partly_shown",
-          "line": 68,
+          "line": 91,
           "doc": "The resume already shows this, or one of its alternatives (P8.12):"
         },
         {
           "name": "_wording",
-          "line": 89,
+          "line": 115,
           "doc": "(question, tick label) for what is being asked."
         },
         {
           "name": "build_questions",
-          "line": 103,
+          "line": 129,
           "doc": ""
         }
       ]
@@ -591,7 +596,7 @@
       "stages": [
         "2 Normalize"
       ],
-      "lines": 1237,
+      "lines": 1246,
       "doc": "",
       "classes": [
         {
@@ -695,98 +700,103 @@
               "doc": "'Shift Supervisor, Starbucks, Atlanta GA' -> (title, company,"
             },
             {
-              "name": "_next_is_meta_line",
+              "name": "_ends_with_suffix",
               "line": 407,
+              "doc": "\"CloudMetrics Inc.\" ends with a full stop but is a company, not a sentence."
+            },
+            {
+              "name": "_next_is_meta_line",
+              "line": 412,
               "doc": "The ATS template prints 'Company \u00b7 Location' under the title line."
             },
             {
               "name": "_trim",
-              "line": 420,
+              "line": 425,
               "doc": "Strip separators left around removed dates, keeping a closing"
             },
             {
               "name": "_split_skill_line",
-              "line": 436,
+              "line": 441,
               "doc": "'Languages: Python, SQL<tab>Frameworks: Pandas, and XGBoost' ->"
             },
             {
               "name": "_skill_items",
-              "line": 457,
+              "line": 462,
               "doc": ""
             },
             {
               "name": "_split_education_line",
-              "line": 475,
+              "line": 480,
               "doc": "'B.S. Biology, University of Texas at Austin, 2016' -> (degree,"
             },
             {
               "name": "_looks_like_degree",
-              "line": 521,
+              "line": 526,
               "doc": "'B.Tech in Computer Science' yes; 'State University' no."
             },
             {
               "name": "_split_middle_dot",
-              "line": 527,
+              "line": 532,
               "doc": "'Acme Corp \u00b7 Pune, India' -> ('Acme Corp', 'Pune, India'), the"
             },
             {
               "name": "_is_dated_line",
-              "line": 536,
+              "line": 541,
               "doc": "A job title/company line carrying a date range or year. A date"
             },
             {
               "name": "_header_range",
-              "line": 551,
+              "line": 556,
               "doc": "A date range inside a job header line, or None. Trailing ranges"
             },
             {
               "name": "_experience_line_kind",
-              "line": 568,
+              "line": 573,
               "doc": "'dated' (title and/or company with dates), 'header_line' (a short"
             },
             {
               "name": "_add_role",
-              "line": 587,
+              "line": 592,
               "doc": "Record a role; the first one also fills the entry's title/dates."
             },
             {
               "name": "_merge_links",
-              "line": 597,
+              "line": 602,
               "doc": "Profile links from the file's hyperlinks and from URLs written in"
             },
             {
               "name": "_trailing_dates",
-              "line": 611,
+              "line": 616,
               "doc": "(match, start, end) for a trailing date range or single date."
             },
             {
               "name": "_extract_date_range",
-              "line": 621,
+              "line": 626,
               "doc": ""
             },
             {
               "name": "_strip_date_range",
-              "line": 627,
+              "line": 632,
               "doc": ""
             },
             {
               "name": "_parse_title_and_dates",
-              "line": 631,
+              "line": 636,
               "doc": "'Data Scientist II | August 2024 - Present' ->"
             },
             {
               "name": "_split_list_items",
-              "line": 646,
+              "line": 651,
               "doc": "Items of a certification / award line. ';' always separates"
             },
             {
               "name": "_split_respecting_parens",
-              "line": 665,
+              "line": 670,
               "doc": "Split on sep_chars, but never inside ( ) or [ ] groups \u2014 so"
             },
             {
               "name": "normalize",
-              "line": 688,
+              "line": 693,
               "doc": ""
             }
           ]
@@ -1052,7 +1062,7 @@
       "stages": [
         "7 Rewrite"
       ],
-      "lines": 141,
+      "lines": 153,
       "doc": "Tailored professional summary (P1.5).",
       "classes": [
         {
@@ -1072,17 +1082,17 @@
             },
             {
               "name": "years_claim",
-              "line": 49,
-              "doc": "The years the resume itself states, if it states any (open issue"
+              "line": 50,
+              "doc": "The years of experience the resume itself states, if it states"
             },
             {
               "name": "facts",
-              "line": 60,
+              "line": 71,
               "doc": "The inputs code decides; the LLM only phrases them."
             },
             {
               "name": "propose",
-              "line": 80,
+              "line": 92,
               "doc": "A summary proposal, or None when there's nothing to write from"
             }
           ]
@@ -1276,198 +1286,214 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 482,
+      "lines": 530,
       "doc": "HTTP endpoints, one per step of the review flow (P5.1).",
       "classes": [
         {
           "name": "ProposalsIn",
-          "line": 41,
+          "line": 43,
           "doc": "",
           "methods": []
         },
         {
           "name": "SelectionItem",
-          "line": 48,
+          "line": 50,
           "doc": "",
           "methods": []
         },
         {
           "name": "MatchPreviewIn",
-          "line": 53,
+          "line": 55,
           "doc": "",
           "methods": []
         },
         {
           "name": "GapInput",
-          "line": 57,
+          "line": 59,
           "doc": "",
           "methods": []
         },
         {
           "name": "AdditionIn",
-          "line": 63,
+          "line": 65,
           "doc": "",
           "methods": []
         },
         {
           "name": "NewRoleIn",
-          "line": 68,
+          "line": 70,
           "doc": "",
           "methods": []
         },
         {
           "name": "TailorIn",
-          "line": 78,
+          "line": 80,
           "doc": "",
           "methods": []
         },
         {
           "name": "RateLimiter",
-          "line": 91,
+          "line": 93,
           "doc": "At most `limit` calls per `window` seconds per key (visitor IP).",
           "methods": [
             {
               "name": "__init__",
-              "line": 94,
+              "line": 96,
               "doc": ""
             },
             {
               "name": "check",
-              "line": 99,
+              "line": 101,
               "doc": ""
             }
           ]
+        },
+        {
+          "name": "ArrangeIn",
+          "line": 455,
+          "doc": "",
+          "methods": []
         }
       ],
       "functions": [
         {
           "name": "rate_limited",
-          "line": 110,
+          "line": 112,
           "doc": ""
         },
         {
           "name": "current_session",
-          "line": 114,
+          "line": 116,
           "doc": ""
         },
         {
           "name": "_require",
-          "line": 121,
+          "line": 123,
           "doc": ""
         },
         {
           "name": "_claim",
-          "line": 126,
+          "line": 128,
           "doc": ""
         },
         {
           "name": "_save_upload",
-          "line": 131,
+          "line": 133,
           "doc": "The upload as a temp file, after checking its type and size."
         },
         {
           "name": "_check_jd",
-          "line": 147,
+          "line": 149,
           "doc": ""
         },
         {
           "name": "_event",
-          "line": 152,
+          "line": 154,
           "doc": ""
         },
         {
           "name": "_stream",
-          "line": 156,
+          "line": 158,
           "doc": "Run `work(progress)` in a thread (the session must already be"
         },
         {
           "name": "_service",
-          "line": 191,
+          "line": 193,
           "doc": "A TailorService for one step. With a session, saved gap answers come"
         },
         {
           "name": "_details",
-          "line": 203,
+          "line": 205,
           "doc": "What the \"check details\" step shows and edits (P3.5)."
         },
         {
           "name": "_sections",
-          "line": 219,
+          "line": 221,
           "doc": "Bullet id -> the job or project it belongs to, for grouping cards."
         },
         {
           "name": "_proposal_out",
-          "line": 231,
+          "line": 233,
           "doc": ""
         },
         {
           "name": "_match_out",
-          "line": 244,
+          "line": 246,
           "doc": ""
         },
         {
           "name": "_selected",
-          "line": 250,
+          "line": 252,
           "doc": ""
         },
         {
           "name": "health",
-          "line": 260,
+          "line": 262,
           "doc": ""
         },
         {
           "name": "config",
-          "line": 265,
+          "line": 267,
           "doc": ""
         },
         {
           "name": "_model",
-          "line": 272,
+          "line": 274,
           "doc": ""
         },
         {
           "name": "analyze",
-          "line": 279,
+          "line": 281,
           "doc": "\"Just check my match\": score only, nothing kept."
         },
         {
           "name": "parse",
-          "line": 293,
+          "line": 295,
           "doc": "Step 1: read the resume and start a fresh session for this run."
         },
         {
           "name": "proposals",
-          "line": 326,
+          "line": 328,
           "doc": "Step 2: apply the user's fixes, then draft rewrites and gap"
         },
         {
           "name": "match_preview",
-          "line": 375,
+          "line": 377,
           "doc": "The match rate if the selected (and edited) proposals were applied."
         },
         {
           "name": "tailor",
-          "line": 385,
+          "line": 387,
           "doc": "Step 3: apply the review and generate the files. Streams progress."
         },
         {
+          "name": "_results_out",
+          "line": 424,
+          "doc": "What the Results (and Arrange) screen gets after a run."
+        },
+        {
+          "name": "arrange",
+          "line": 463,
+          "doc": "Re-render the tailored resume as the user arranged it (P8.13). No LLM"
+        },
+        {
           "name": "_result_path",
-          "line": 445,
+          "line": 493,
           "doc": ""
         },
         {
           "name": "download",
-          "line": 453,
+          "line": 501,
           "doc": ""
         },
         {
           "name": "preview",
-          "line": 461,
+          "line": 509,
           "doc": "One page of the tailored PDF as a PNG (Chrome blocks embedded PDFs)."
         },
         {
           "name": "reset",
-          "line": 470,
+          "line": 518,
           "doc": "Start over: delete this visitor's files and state. If a step is still"
         }
       ]
@@ -1931,7 +1957,7 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 527,
+      "lines": 529,
       "doc": "Run evaluation cases through the pipeline and collect metrics (P4.1).",
       "classes": [
         {
@@ -1998,87 +2024,87 @@
         },
         {
           "name": "attainable_coverage",
-          "line": 234,
+          "line": 236,
           "doc": "Of the JD keywords written verbatim somewhere in the resume, the share"
         },
         {
           "name": "_norm_number",
-          "line": 253,
+          "line": 255,
           "doc": ""
         },
         {
           "name": "fabricated_numbers",
-          "line": 258,
+          "line": 260,
           "doc": "Numbers (with their units) in the tailored resume that the original"
         },
         {
           "name": "stuffing",
-          "line": 268,
+          "line": 270,
           "doc": "Signs of keyword stuffing: tailoring pushed the rate above the target"
         },
         {
           "name": "_docx_text",
-          "line": 278,
+          "line": 280,
           "doc": ""
         },
         {
           "name": "is_content_failure",
-          "line": 293,
+          "line": 295,
           "doc": ""
         },
         {
           "name": "_same_text",
-          "line": 297,
+          "line": 299,
           "doc": ""
         },
         {
           "name": "check_job_details",
-          "line": 302,
+          "line": 304,
           "doc": "Each job's title, company, dates and bullet count as the file states"
         },
         {
           "name": "check_must_keep",
-          "line": 322,
+          "line": 324,
           "doc": "Source phrases that must survive into the rendered file."
         },
         {
           "name": "check_expected",
-          "line": 331,
+          "line": 333,
           "doc": "Compare a run with the case's expected.json; one message per miss."
         },
         {
           "name": "_judge",
-          "line": 400,
+          "line": 402,
           "doc": "Judge one tailored resume (P4.3) and record what the judge cost."
         },
         {
           "name": "replay_case",
-          "line": 411,
+          "line": 413,
           "doc": "Judge the tailored output a previous run saved in replay_dir/<case>/"
         },
         {
           "name": "run",
-          "line": 431,
+          "line": 433,
           "doc": ""
         },
         {
           "name": "_flatten",
-          "line": 451,
+          "line": 453,
           "doc": ""
         },
         {
           "name": "compare",
-          "line": 468,
+          "line": 470,
           "doc": "Human-readable differences per case between a report and a baseline."
         },
         {
           "name": "_judge_summary",
-          "line": 496,
+          "line": 498,
           "doc": ""
         },
         {
           "name": "summary_lines",
-          "line": 502,
+          "line": 504,
           "doc": ""
         }
       ]
@@ -2797,7 +2823,7 @@
       "stages": [
         "9 Render"
       ],
-      "lines": 215,
+      "lines": 243,
       "doc": "Page-fit loop (P2.4): render, count pages, trim, render again.",
       "classes": [
         {
@@ -2830,26 +2856,26 @@
             {
               "name": "fit",
               "line": 85,
-              "doc": ""
+              "doc": "`pinned`: bullet ids, project ids and \"interests\" the user kept on"
             },
             {
               "name": "_drop_interests",
-              "line": 128,
+              "line": 133,
               "doc": ""
             },
             {
               "name": "_trim_bullets",
-              "line": 135,
-              "doc": "Least relevant bullets first, within the per-role minimums."
+              "line": 140,
+              "doc": "Least relevant bullets first, within the per-role minimums; never"
             },
             {
               "name": "_drop_sections",
-              "line": 165,
-              "doc": "Least relevant job sub-section or project, as a whole."
+              "line": 176,
+              "doc": "Least relevant job sub-section or project, as a whole; never one"
             },
             {
               "name": "_compact",
-              "line": 199,
+              "line": 216,
               "doc": ""
             }
           ]
@@ -2868,12 +2894,17 @@
         },
         {
           "name": "_is_current",
-          "line": 206,
+          "line": 223,
           "doc": "The first job, and any other job that hasn't ended, keep the larger"
         },
         {
+          "name": "_owner_label",
+          "line": 230,
+          "doc": "\"Lakeshore Electric (Journeyman Electrician)\" or a project's name, so"
+        },
+        {
           "name": "_short",
-          "line": 213,
+          "line": 241,
           "doc": ""
         }
       ]
@@ -3078,6 +3109,74 @@
       "functions": []
     },
     {
+      "id": "app/services/arrange.py",
+      "type": "python",
+      "layer": "Services",
+      "stages": [],
+      "lines": 205,
+      "doc": "Arrange and edit before download (P8.13\u2013P8.16).",
+      "classes": [
+        {
+          "name": "Layout",
+          "line": 30,
+          "doc": "",
+          "methods": []
+        }
+      ],
+      "functions": [
+        {
+          "name": "_owners",
+          "line": 45,
+          "doc": ""
+        },
+        {
+          "name": "default_layout",
+          "line": 49,
+          "doc": "The layout tailoring produced: everything shown, in its current order."
+        },
+        {
+          "name": "_ordered",
+          "line": 59,
+          "doc": "Items in `order`; any not listed keep their place after the listed ones."
+        },
+        {
+          "name": "apply_layout",
+          "line": 65,
+          "doc": "A copy of `full` arranged as `layout` says. Unknown ids are ignored;"
+        },
+        {
+          "name": "section_order",
+          "line": 93,
+          "doc": "The render order: the user's order, then anything it doesn't list."
+        },
+        {
+          "name": "notes_for",
+          "line": 101,
+          "doc": "Things worth pointing out about the user's arrangement. Advice only."
+        },
+        {
+          "name": "_today",
+          "line": 123,
+          "doc": ""
+        },
+        {
+          "name": "_all_text",
+          "line": 128,
+          "doc": ""
+        },
+        {
+          "name": "view",
+          "line": 135,
+          "doc": "What the Arrange screen shows: every section with its entries and"
+        },
+        {
+          "name": "trimmed_items",
+          "line": 190,
+          "doc": "What page-fit removed: bullets (with their job), projects, Interests."
+        }
+      ]
+    },
+    {
       "id": "app/services/profile_store.py",
       "type": "python",
       "layer": "Services",
@@ -3212,148 +3311,153 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 1224,
+      "lines": 1357,
       "doc": "",
       "classes": [
         {
           "name": "TailorService",
-          "line": 56,
+          "line": 59,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
-              "line": 57,
+              "line": 60,
               "doc": ""
             },
             {
               "name": "generate_preview_md",
-              "line": 90,
+              "line": 93,
               "doc": ""
             },
             {
               "name": "_patchable",
-              "line": 136,
+              "line": 139,
               "doc": "Proposals as in-place DOCX patches. A summary proposal targets the"
             },
             {
               "name": "_apply_gap_answers",
-              "line": 159,
+              "line": 162,
               "doc": "Ticked keywords join the skills section; a typed answer becomes a"
             },
             {
               "name": "_prefill_from_profile",
-              "line": 203,
+              "line": 210,
               "doc": "Answers confirmed for an earlier JD pre-fill the same questions"
             },
             {
               "name": "_draft_from_answer",
-              "line": 215,
+              "line": 222,
               "doc": "Polish the candidate's answer into one bullet that may use only"
             },
             {
               "name": "_split_description",
-              "line": 234,
+              "line": 241,
               "doc": "Pasted role description -> bullet-sized chunks: one per line (list"
             },
             {
               "name": "validate_new_role",
-              "line": 244,
+              "line": 251,
               "doc": "Check a new job before any work is done; raises ValueError with a"
             },
             {
               "name": "_new_experience",
-              "line": 269,
+              "line": 276,
               "doc": "An empty job from the \"add a job\" fields, validated."
             },
             {
               "name": "_insert_by_date",
-              "line": 277,
+              "line": 284,
               "doc": "Place a job in date order: current jobs first, then most recent start."
             },
             {
               "name": "add_new_role",
-              "line": 290,
+              "line": 297,
               "doc": "Add a job the resume doesn't have yet (P3.3). Each chunk of the"
             },
             {
               "name": "_skills_proposals",
-              "line": 327,
+              "line": 334,
               "doc": "The skills section with the JD's skills first, when that changes it (P1.6)."
             },
             {
               "name": "_summary_proposals",
-              "line": 332,
+              "line": 339,
               "doc": "The tailored summary as a proposal, when one was written (P1.5)."
             },
             {
               "name": "_embed",
-              "line": 337,
+              "line": 344,
               "doc": "Sentence embeddings for the planner, loaded lazily; raises when the"
             },
             {
               "name": "_fit_relevance",
-              "line": 346,
+              "line": 353,
               "doc": "Planner relevance per bullet for the page-fit loop. Bullets the user"
             },
             {
               "name": "_render_template",
-              "line": 356,
+              "line": 363,
               "doc": "One template render plus PDF conversion (the page-fit loop's step)."
             },
             {
               "name": "_coverage",
-              "line": 364,
+              "line": 371,
               "doc": "Content coverage of the rendered DOCX against the uploaded file (P8.2)."
             },
             {
               "name": "_apply_bullet_order",
-              "line": 389,
+              "line": 398,
               "doc": "Reorder bullets as planned (most relevant first within each"
             },
             {
               "name": "parse_resume",
-              "line": 404,
+              "line": 413,
               "doc": "File -> (raw document, ResumeDocument, evidence). The deterministic"
             },
             {
               "name": "normalize_raw",
-              "line": 414,
+              "line": 423,
               "doc": ""
             },
             {
               "name": "_copy_parsed",
-              "line": 424,
+              "line": 433,
               "doc": "Deep copies, so a parse kept in UI session state is never mutated."
             },
             {
               "name": "preview_keyword_match",
-              "line": 429,
+              "line": 438,
               "doc": "Match rate if these proposals were applied (P3.4 \"recalculate\"):"
             },
             {
               "name": "apply_parse_corrections",
-              "line": 452,
+              "line": 461,
               "doc": "Apply the user's fixes from the \"Check parsed resume\" step (P3.5)."
             },
             {
               "name": "analyze_only",
-              "line": 549,
+              "line": 558,
               "doc": ""
             },
             {
               "name": "generate_proposals",
-              "line": 575,
+              "line": 584,
               "doc": "Generate rewrite proposals without applying them, plus questions"
             },
             {
               "name": "incorporate_user_addition",
-              "line": 648,
+              "line": 657,
               "doc": "Fold a user-supplied free-text addition (a project, an"
             },
             {
               "name": "tailor_resume",
-              "line": 727,
+              "line": 736,
               "doc": ""
+            },
+            {
+              "name": "arrange",
+              "line": 1243,
+              "doc": "Re-render the tailored resume as the user arranged it (P8.13\u2013P8.16):"
             }
           ]
         }
@@ -3361,12 +3465,17 @@
       "functions": [
         {
           "name": "_progress",
-          "line": 45,
+          "line": 48,
           "doc": "A progress reporter that can never break a run (P3.6)."
         },
         {
+          "name": "_hidden_text",
+          "line": 1321,
+          "doc": "Text of the sections the user hid, so coverage counts it as their choice."
+        },
+        {
           "name": "_merge_usage",
-          "line": 1215,
+          "line": 1348,
           "doc": "Combine two LLMClient.get_usage_summary() dicts into one."
         }
       ]
@@ -3471,7 +3580,7 @@
       "stages": [
         "8 Validate"
       ],
-      "lines": 429,
+      "lines": 502,
       "doc": "",
       "classes": [
         {
@@ -3493,67 +3602,82 @@
           "methods": [
             {
               "name": "dropped_facts",
-              "line": 109,
+              "line": 120,
               "doc": "(dropped factual terms, dropped content words, retention share,"
             },
             {
               "name": "__init__",
-              "line": 141,
+              "line": 152,
               "doc": ""
             },
             {
               "name": "extract_numbers",
-              "line": 153,
+              "line": 164,
               "doc": ""
             },
             {
               "name": "_stem",
-              "line": 158,
+              "line": 169,
               "doc": "Crude stemmer so inflections compare equal:"
             },
             {
               "name": "_keys",
-              "line": 172,
+              "line": 190,
               "doc": "All forms a term can match by: stem plus canonical alias."
             },
             {
               "name": "_term_keys",
-              "line": 180,
+              "line": 200,
               "doc": ""
             },
             {
               "name": "_is_factual",
-              "line": 193,
+              "line": 216,
               "doc": ""
             },
             {
               "name": "_positioned_tokens",
-              "line": 207,
+              "line": 230,
               "doc": "(token, starts_a_sentence) pairs, so the capital of every"
             },
             {
               "name": "_validate_skills",
-              "line": 216,
+              "line": 239,
               "doc": "The skills section may be reordered and respelled, never extended (P1.6)."
             },
             {
               "name": "_validate_summary",
-              "line": 228,
+              "line": 251,
               "doc": "A summary may draw on the whole resume (P1.5): every factual term"
             },
             {
               "name": "_owner_prefix",
-              "line": 280,
+              "line": 307,
               "doc": "'exp_001_b03' -> 'exp_001_': the job (or project) a bullet belongs to."
             },
             {
+              "name": "_content_tokens",
+              "line": 312,
+              "doc": "Plain words of a text in order, hyphenated words split into parts"
+            },
+            {
+              "name": "_is_plain",
+              "line": 320,
+              "doc": ""
+            },
+            {
               "name": "_new_words",
-              "line": 285,
+              "line": 325,
               "doc": "Plain words a rewrite adds (P8.9): (borrowed from the JD only,"
             },
             {
+              "name": "_words_from_elsewhere",
+              "line": 344,
+              "doc": "Runs of consecutive plain words that the resume uses only under"
+            },
+            {
               "name": "validate_proposal",
-              "line": 306,
+              "line": 365,
               "doc": ""
             }
           ]
@@ -4014,6 +4138,37 @@
       "lines": 47
     },
     {
+      "id": "tests/integration/test_arrange.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 62,
+      "doc": "P8.13\u2013P8.16: arrange and edit after tailoring, with no LLM call.",
+      "classes": [],
+      "functions": [
+        {
+          "name": "_tailored",
+          "line": 11,
+          "doc": ""
+        },
+        {
+          "name": "test_layout_moves_hides_removes_and_edits_without_crossing_jobs",
+          "line": 20,
+          "doc": ""
+        },
+        {
+          "name": "test_reordering_jobs_out_of_date_order_is_pointed_out",
+          "line": 49,
+          "doc": ""
+        },
+        {
+          "name": "test_no_rewrites_accepted_means_no_silent_reorder",
+          "line": 57,
+          "doc": "P8.14: the file's order stays when nothing was accepted."
+        }
+      ]
+    },
+    {
       "id": "tests/integration/test_coverage_tailor.py",
       "type": "python",
       "layer": "Tests",
@@ -4179,7 +4334,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 326,
+      "lines": 348,
       "doc": "Web API (P5.1): the full flow through HTTP, plus the shared form helpers.",
       "classes": [],
       "functions": [
@@ -4337,6 +4492,11 @@
           "name": "test_an_added_job_comes_back_as_an_ordinary_one",
           "line": 313,
           "doc": "Drafting returns the corrected details, so the form shows an added job"
+        },
+        {
+          "name": "test_arrange_after_tailoring",
+          "line": 329,
+          "doc": "P8.13: the result carries what the Arrange screen edits; a layout"
         }
       ]
     },
@@ -4859,7 +5019,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 83,
+      "lines": 130,
       "doc": "P8.9: the fact check catches wording borrowed from the job description,",
       "classes": [],
       "functions": [
@@ -4879,9 +5039,9 @@
           "doc": ""
         },
         {
-          "name": "test_jd_only_wording_is_rejected",
+          "name": "test_jd_only_wording_is_flagged_and_two_words_are_rejected",
           "line": 41,
-          "doc": ""
+          "doc": "One JD-only word needs a look (Stage I review); two or more are the JD's claim."
         },
         {
           "name": "test_new_claim_words_need_confirmation",
@@ -4902,6 +5062,26 @@
           "name": "test_dropping_a_superlative_needs_confirmation",
           "line": 77,
           "doc": "P8.11: \"largest deal in company history\" -> \"largest company deal\" weakens a claim."
+        },
+        {
+          "name": "test_irregular_past_tense_and_generic_words_are_not_claims",
+          "line": 86,
+          "doc": "Stage I gate: \"Troubleshoot\" -> \"Troubleshot\" drops nothing; \"experience\" claims nothing."
+        },
+        {
+          "name": "test_plain_words_from_another_job_are_rejected",
+          "line": 104,
+          "doc": "Stage I review: \"titrating cardiac drips\" belongs to the other hospital."
+        },
+        {
+          "name": "test_a_credential_belongs_to_the_person_not_one_job",
+          "line": 111,
+          "doc": ""
+        },
+        {
+          "name": "test_one_borrowed_word_is_a_check_not_a_rejection_and_spellings_match",
+          "line": 117,
+          "doc": ""
         }
       ]
     },
@@ -4910,7 +5090,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 114,
+      "lines": 131,
       "doc": "Suggest-and-confirm gaps (P3.1).",
       "classes": [],
       "functions": [
@@ -4961,7 +5141,12 @@
         },
         {
           "name": "test_a_ticked_licence_goes_to_certifications",
-          "line": 104,
+          "line": 105,
+          "doc": ""
+        },
+        {
+          "name": "test_stage_i_review_partly_shown_and_kinds",
+          "line": 118,
           "doc": ""
         }
       ]
@@ -6639,7 +6824,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 84,
+      "lines": 95,
       "doc": "Regressions from the independent review of Stage H (P8.1\u2013P8.8): ordinary",
       "classes": [],
       "functions": [
@@ -6682,6 +6867,11 @@
           "name": "test_merged_skill_categories_are_not_lost",
           "line": 81,
           "doc": ""
+        },
+        {
+          "name": "test_template_lines_read_back",
+          "line": 87,
+          "doc": "Stage I gate: \"Writer<tab>Summer 2021\" keeps its date; \"CloudMetrics Inc.\" is a company."
         }
       ]
     },
@@ -6759,7 +6949,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 158,
+      "lines": 168,
       "doc": "Summary tailoring (P1.5) and years of experience from dates.",
       "classes": [],
       "functions": [
@@ -6837,6 +7027,11 @@
           "name": "test_years_follow_the_resumes_own_claim_and_titles_are_sane",
           "line": 144,
           "doc": "P8.10: the summary repeats the years the resume states (computed"
+        },
+        {
+          "name": "test_years_claim_prefers_career_claims_and_titles_allow_numbers",
+          "line": 161,
+          "doc": ""
         }
       ]
     },
@@ -7960,6 +8155,11 @@
     },
     {
       "from": "app/api/routes.py",
+      "to": "app/api/routes.py::ArrangeIn",
+      "type": "contains"
+    },
+    {
+      "from": "app/api/routes.py",
       "to": "app/api/routes.py::GapInput",
       "type": "contains"
     },
@@ -8006,6 +8206,11 @@
     {
       "from": "app/api/routes.py",
       "to": "app/rendering/review_view.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/api/routes.py",
+      "to": "app/services/arrange.py",
       "type": "imports"
     },
     {
@@ -8665,6 +8870,11 @@
     },
     {
       "from": "app/eval/harness.py",
+      "to": "tests/integration/test_arrange.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/eval/harness.py",
       "to": "tests/integration/test_eval_cases.py",
       "type": "tested_by"
     },
@@ -9304,6 +9514,31 @@
       "type": "tested_by"
     },
     {
+      "from": "app/services/arrange.py",
+      "to": "app/analysis/experience.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/services/arrange.py",
+      "to": "app/domain/resume.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/services/arrange.py",
+      "to": "app/rendering/layout.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/services/arrange.py",
+      "to": "app/services/arrange.py::Layout",
+      "type": "contains"
+    },
+    {
+      "from": "app/services/arrange.py",
+      "to": "tests/integration/test_arrange.py",
+      "type": "tested_by"
+    },
+    {
       "from": "app/services/profile_store.py",
       "to": "app/config/settings.py",
       "type": "imports"
@@ -9535,6 +9770,11 @@
     },
     {
       "from": "app/services/tailor.py",
+      "to": "app/services/arrange.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/services/tailor.py",
       "to": "app/services/profile_store.py",
       "type": "imports"
     },
@@ -9577,6 +9817,11 @@
       "from": "app/services/tailor.py",
       "to": "app/validation/structural.py",
       "type": "imports"
+    },
+    {
+      "from": "app/services/tailor.py",
+      "to": "tests/integration/test_arrange.py",
+      "type": "tested_by"
     },
     {
       "from": "app/services/tailor.py",
@@ -9687,6 +9932,11 @@
       "from": "app/validation/coverage.py",
       "to": "app/validation/coverage.py::CoverageReport",
       "type": "contains"
+    },
+    {
+      "from": "app/validation/coverage.py",
+      "to": "tests/integration/test_arrange.py",
+      "type": "tested_by"
     },
     {
       "from": "app/validation/coverage.py",

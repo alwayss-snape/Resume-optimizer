@@ -192,7 +192,9 @@ def run_case(case: Case, *, live: bool = False, tailor: bool = False, out_dir: O
 def _tailor_metrics(service, case: Case, jd_text: str, parsed, generated: Dict, out_dir: Optional[str],
                     source_text: str = "", job=None):
     proposals = generated["proposals"]
-    approved = [p.model_dump() for p in proposals if getattr(p, "validation", None) != "REJECT"]
+    # As the review screen starts: fact-check failures and opt-in proposals unticked.
+    approved = [p.model_dump() for p in proposals
+                if getattr(p, "validation", None) != "REJECT" and not getattr(p, "opt_in", False)]
     case_dir = os.path.join(out_dir or tempfile.mkdtemp(prefix="eval_"), case.name)
     os.makedirs(case_dir, exist_ok=True)
     result = service.tailor_resume(
