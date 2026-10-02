@@ -49,6 +49,10 @@ class Experience(BaseModel):
     # Source block ids of the entry's header lines (title, company, dates),
     # so a check can tell which lines of the file this job came from.
     source_blocks: List[str] = Field(default_factory=list)
+    # Further facts on the job's header lines, verbatim (P8.5): "40 hours per
+    # week | Salary: $94,199 per year". Shown under the job, never rewritten,
+    # reordered or trimmed.
+    details: List[str] = Field(default_factory=list)
 
     def all_roles(self) -> List[Role]:
         if self.roles:

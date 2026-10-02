@@ -21,29 +21,18 @@ PERSONAS = [c for c in load_cases(include_private=False, include_personas=True) 
 
 # Persona -> why it still fails. Remove an entry when the case passes.
 CONTENT_XFAIL = {
-    'nurse': "'Title<tab>Company' then a dates line, MM/YYYY dates (P8.5, P8.6)",
-    'nurse-pdf': 'MM/YYYY dates and job lines (P8.5, P8.6)',
-    'teacher': "two degrees merged (P8.8); 'Summer 2021' date (P8.6)",
-    'electrician': "'Title, Company, dates' lines (P8.5)",
-    'warehouse': "'Delivery Driver' not a role word (P8.5)",
-    'retail': "'Title, Company, City' lines (P8.5)",
-    'sales': "'Title, Company, City<tab>dates' lines (P8.5)",
-    'sales-pdf': 'PDF job lines and bullets (P8.5, P8.7)',
-    'accountant': "'Title, Company, City<tab>MM/YYYY' lines (P8.5, P8.6)",
-    'lawyer': '100+ character job line read as a bullet (P8.5); two degrees merged (P8.8)',
-    'academic': "'Title, Company<tab>dates' lines (P8.5); two degrees merged (P8.8)",
-    'designer': "'Title, Company, dates' lines (P8.5)",
-    'executive': 'role words (P8.5); two degrees merged (P8.8)',
-    'gap': 'role words (P8.5)',
-    'veteran': "'Title, Company, City<tab>dates' lines (P8.5)",
-    'eu_en': 'DD/MM/YYYY dates (P8.6); job lines (P8.5)',
-    'india': "'Till Date' (P8.6); job lines (P8.5)",
-    'federal': 'job header over three lines (P8.5)',
+    'nurse-pdf': "'·' bullets and date dashes from the PDF's font (P8.7)",
+    'teacher': 'two degrees merged (P8.8)',
+    'sales-pdf': "'·' bullets and date dashes from the PDF's font (P8.7)",
+    'lawyer': 'two degrees merged (P8.8)',
+    'academic': 'two degrees merged (P8.8)',
+    'executive': 'two degrees merged (P8.8)',
     'textbox': 'text boxes ignored (P8.7)',
 }
 # Until Stage K, scoring and page checks fail for most personas too.
 FULL_XFAIL = {name: 'content (see CONTENT_XFAIL), scoring (Stage K) or page target (P8.16)'
-              for name in [*CONTENT_XFAIL, 'newgrad', 'eu_cv', 'spanish']}
+              for name in [*CONTENT_XFAIL, 'newgrad', 'eu_cv', 'spanish', 'nurse', 'sales', 'lawyer', 'academic',
+                           'executive', 'gap', 'veteran', 'eu_en', 'india', 'federal']}
 
 _RESULTS = {}
 

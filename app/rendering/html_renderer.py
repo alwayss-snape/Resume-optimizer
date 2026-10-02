@@ -36,6 +36,7 @@ class HtmlResumeRenderer:
             f"<h3>{html.escape(heading)}</h3>"
             f"<span class='dates'>{html.escape(self._dates(first))}</span></div>",
             self._meta_line(item.company if heading != item.company else "", item.location),
+            *(f"<p class='meta'>{html.escape(d)}</p>" for d in item.details),
         ]
         for role in roles[1:]:
             parts.append(

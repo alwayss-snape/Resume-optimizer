@@ -295,7 +295,17 @@ class ResumeNormalizer:
         r"\b(?:engineer|engineering|developer|scientist|analyst|manager|intern|internship|teacher|designer|"
         r"consultant|lead|director|administrator|architect|specialist|officer|associate|assistant|head|vp|"
         r"president|founder|co-founder|coordinator|executive|researcher|fellow|trainee|technician|"
-        r"programmer|owner|principal|staff|sde|sre|devops|writer|editor|accountant|advisor|tutor)\b",
+        r"programmer|owner|principal|staff|sde|sre|devops|writer|editor|accountant|advisor|tutor|"
+        # P8.5: titles outside tech
+        r"nurse|rn|lpn|electrician|apprentice|journeyman|plumber|carpenter|welder|mechanic|foreman|"
+        r"superintendent|inspector|driver|operator|supervisor|clerk|attorney|lawyer|paralegal|counsel|"
+        r"barista|cashier|server|cook|chef|bartender|professor|postdoc|lecturer|instructor|educator|"
+        r"ncoic|nco|sergeant|lieutenant|captain|marketer|caregiver|representative|rep|agent|recruiter|"
+        r"planner|buyer|auditor|bookkeeper|controller|cfo|ceo|coo|cto|cmo|svp|evp|chief|partner|member|"
+        r"secretary|receptionist|therapist|pharmacist|physician|counselor|counsellor|coach|trainer|"
+        r"dispatcher|courier|handler|picker|packer|loader|stocker|merchandiser|salesperson|worker|aide|"
+        r"freelancer|contractor|translator|interpreter|librarian|statistician|economist|strategist|"
+        r"copywriter|photographer|artist|producer|estimator|teller|banker|underwriter|actuary)\b",
         re.IGNORECASE)
 
     def _looks_like_title(self, text: str) -> bool:
@@ -325,6 +335,49 @@ class ResumeNormalizer:
         if words and self._ROLE_WORDS_RE.fullmatch(words[-1]):
             return 2
         return 1 if self._looks_like_title(text) else 0
+
+    _COMPANY_SUFFIX_RE = re.compile(
+        r"\b(?:inc|llc|llp|ltd|limited|corp|corporation|co|company|group|gmbh|ag|sa|plc|pvt|bank|university"
+        r"|college|school|hospital|clinic|center|centre|institute|agency|department|army|navy|isd)\b\.?",
+        re.IGNORECASE)
+
+    def _split_company_location(self, text: str) -> Tuple[str, Optional[str]]:
+        """'Banner Medical Center, Phoenix, AZ' -> ('Banner Medical Center',
+        'Phoenix, AZ'); 'Groupe SEB, Lyon' -> ('Groupe SEB', 'Lyon'). A long
+        or company-like last part stays in the company ("Hon. Ellen Park,
+        U.S. District Court for the District of Maryland")."""
+        parts = self._split_respecting_parens(text, ",")
+        if len(parts) < 2:
+            return text.strip(), None
+        if re.fullmatch(r"[A-Z]{2}", parts[-1]) and len(parts) >= 3:
+            return ", ".join(parts[:-2]), ", ".join(parts[-2:])
+        last = parts[-1]
+        if (len(last.split()) <= 3 and not re.search(r"\d", last) and not self._COMPANY_SUFFIX_RE.search(last)
+                and not self._looks_like_title(last) and last[:1].isupper()):
+            return ", ".join(parts[:-1]), last
+        return text.strip(), None
+
+    def _split_comma_job(self, body: str) -> Optional[Tuple[str, str, Optional[str]]]:
+        """'Shift Supervisor, Starbucks, Atlanta GA' -> (title, company,
+        location) by role words (P8.5); None when no part reads as a title."""
+        parts = self._split_respecting_parens(body, ",")
+        if len(parts) < 2:
+            return None
+        scores = [self._title_score(p) for p in parts]
+        if max(scores) == 0:
+            return None
+        t = scores.index(max(scores))
+        title, before, after = parts[t], parts[:t], parts[t + 1:]
+        if before:
+            return title, ", ".join(before), (", ".join(after) or None)
+        company, location = self._split_company_location(", ".join(after))
+        return title, company, location
+
+    def _next_is_meta_line(self, blocks, idx: int) -> bool:
+        """The ATS template prints 'Company · Location' under the title line."""
+        following = next((b for b in blocks[idx + 1:] if b.text.strip()), None)
+        return bool(following and following.block_type != "bullet" and " · " in following.text
+                    and not self._is_dated_line(following))
 
     # Chars trimmed off a title/company fragment once the trailing date range
     # (and whatever separated it, e.g. "Title | Aug 2024 - Present") has been
@@ -391,11 +444,17 @@ class ResumeNormalizer:
         return text, None
 
     def _is_dated_line(self, block) -> bool:
-        """A job title/company line carrying a date range or year."""
+        """A job title/company line carrying a date range or year. A date
+        range decides it at any length (P8.5: a 100+ character legal title
+        line was read as a bullet); a lone year only on a short line."""
         if block is None or block.block_type in ("bullet", "name"):
             return False
         text = block.text.strip()
-        return bool(text) and len(text) < 100 and bool(self.YEAR_OR_PRESENT.search(text))
+        if not text:
+            return False
+        if self.DATE_RANGE_ANY_RE.search(text):
+            return not (len(text) > 140 and text.endswith("."))  # a sentence that mentions a period
+        return len(text) < 100 and bool(self.YEAR_OR_PRESENT.search(text))
 
     def _experience_line_kind(self, block, text: str) -> str:
         """'dated' (title and/or company with dates), 'header_line' (a short
@@ -467,8 +526,7 @@ class ResumeNormalizer:
         m, start, end = self._trailing_dates(text)
         if not m:
             return text.strip(), None, None
-        title = text[:m.start()].strip(self._TRIM_CHARS)
-        return (title or text.strip()), start, end
+        return text[:m.start()].strip(self._TRIM_CHARS), start, end
 
     # A list piece that is a date or an expiry, not an item of its own:
     # "Certified Public Accountant (CPA), New York, 2021" is one entry.
@@ -689,39 +747,82 @@ class ResumeNormalizer:
 
                 if kind == "dated":
                     title, start, end = self._parse_title_and_dates(left)
-                    if start is None and right_col and self.DATE_RANGE_RE.search(right_col):
+                    extras = None
+                    if start is None and right_col and self._trailing_dates(right_col)[0] is not None:
                         # "Title<tab>Aug 2024 – Present": the dates are the
                         # right column, not a location.
-                        _, start, end = self._parse_title_and_dates(right_col)
-                        right_col = None
-                    body = self._strip_date_range(left)
+                        rest, start, end = self._parse_title_and_dates(right_col)
+                        right_col = rest or None
+                    if start is None:
+                        # Dates mid-line: "10/2019 – Present | 40 hours per week | Salary: ..."
+                        m = self.DATE_RANGE_ANY_RE.search(left)
+                        if m:
+                            start, end = m.group(1).strip(), m.group(2).strip()
+                            title = left[:m.start()].strip(self._TRIM_CHARS)
+                            extras = left[m.end():].strip(self._TRIM_CHARS + "|·") or None
+                        else:
+                            title = left.strip()
+                    body = title
                     dash_parts = [p.strip() for p in re.split(r"\s+—\s+|\s+-\s+|\s+\|\s+", body) if p.strip()]
-                    role = Role(title=title, start_date=start, end_date=end)
+                    starts_entry = current_exp is None or current_exp_has_content or bool(current_exp.title)
+                    comma_job = self._split_comma_job(body) if (
+                        len(dash_parts) < 2 and "," in body and starts_entry) else None
 
-                    if len(dash_parts) >= 2 and (current_exp is None or current_exp_has_content or current_exp.title):
+                    if not body and current_exp is not None and not current_exp_has_content:
+                        # A line of dates under the job's header line(s).
+                        if not current_exp.title and not current_exp.roles:
+                            # "Title<tab>Company, City" then "03/2021 - Present":
+                            # the header line held the title (P8.5).
+                            head, rest = current_exp.company, current_exp.location
+                            if rest and self._title_score(head) > self._title_score(rest.split(",")[0]):
+                                current_exp.company, current_exp.location = self._split_company_location(rest)
+                                self._add_role(current_exp, Role(title=head, start_date=start, end_date=end))
+                            elif not rest and self._title_score(head) == 2:
+                                # "Registered Nurse" then the dates; a company line may follow.
+                                current_exp.company = ""
+                                self._add_role(current_exp, Role(title=head, start_date=start, end_date=end))
+                            else:
+                                self._add_role(current_exp, Role(title="", start_date=start, end_date=end))
+                        elif current_exp.title and current_exp.start_date is None and not current_exp.roles:
+                            current_exp.start_date, current_exp.end_date = start, end
+                        else:
+                            self._add_role(current_exp, Role(title="", start_date=start, end_date=end))
+                    elif len(dash_parts) >= 2 and starts_entry and not self._next_is_meta_line(blocks, idx):
                         # Combined single line: "Company — Title (dates)" or
                         # "Title | Company | dates"; role words decide which is which.
-                        # The most title-like part is the title; the company is
-                        # the last remaining part ("Title - Team | Company").
                         title_part, company_part = self._split_title_company(body)
-                        current_exp = new_experience(company_part, right_col)
+                        location = right_col
+                        if location is None:
+                            company_part, location = self._split_company_location(company_part)
+                        current_exp = new_experience(company_part, location)
+                        self._add_role(current_exp, Role(title=title_part, start_date=start, end_date=end))
+                    elif comma_job and not self._next_is_meta_line(blocks, idx):
+                        # "Title, Company, City, dates" (P8.5).
+                        title_part, company_part, location = comma_job
+                        current_exp = new_experience(company_part, right_col or location)
                         self._add_role(current_exp, Role(title=title_part, start_date=start, end_date=end))
                     elif current_exp is None:
                         current_exp = new_experience("", right_col)
-                        self._add_role(current_exp, role)
+                        self._add_role(current_exp, Role(title=body, start_date=start, end_date=end))
                     elif current_exp_has_content:
                         # A new title after bullets, with no company line in
                         # between: another role at the same company, listed
-                        # with its own bullets.
-                        current_exp = new_experience(current_exp.company, current_exp.location)
+                        # with its own bullets. Its location is copied only
+                        # when it is a place, never a date column (P8.5).
+                        location = current_exp.location
+                        if location and self.YEAR_OR_PRESENT.search(location):
+                            location = None
+                        current_exp = new_experience(current_exp.company, right_col or location)
                         inherited_company.add(current_exp.id)
-                        self._add_role(current_exp, role)
+                        self._add_role(current_exp, Role(title=body, start_date=start, end_date=end))
                     else:
                         # First role for a company header, or a second role
                         # (promotion) listed before any bullets.
-                        self._add_role(current_exp, role)
+                        self._add_role(current_exp, Role(title=body, start_date=start, end_date=end))
                         if right_col and not current_exp.location:
                             current_exp.location = right_col
+                    if extras:
+                        current_exp.details.append(extras)
                     current_group = None
                     current_exp.source_blocks.append(block.id)
 
@@ -732,6 +833,17 @@ class ResumeNormalizer:
                     current_exp.company = left
                     if right_col and not current_exp.location:
                         current_exp.location = right_col
+                    current_exp.source_blocks.append(block.id)
+
+                elif (kind == "company" and current_exp is not None and not current_exp_has_content
+                      and not current_exp.title and not current_exp.roles and current_exp.company
+                      and self._title_score(current_exp.company) > self._title_score(left)):
+                    # "Program Analyst (GS-0343-12)", then "U.S. Department of
+                    # Agriculture, Washington, DC", then the dates: the first
+                    # line was the title (P8.5).
+                    current_exp.title = current_exp.company
+                    current_exp.company, location = self._split_company_location(left)
+                    current_exp.location = right_col or location or current_exp.location
                     current_exp.source_blocks.append(block.id)
 
                 elif kind == "company" or (kind == "header_line" and current_exp is None):

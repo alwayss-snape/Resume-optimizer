@@ -140,6 +140,9 @@ class OutputQAValidator:
             missing = [line.text for line in section.lines if norm(line.text) not in raw_text]
             if missing:
                 problems.append(f"\"{section.heading}\": {len(missing)} line(s) not read back")
+        job_details = [d for e in expected.experience for d in getattr(e, "details", [])]
+        if any(norm(d) not in raw_text for d in job_details):
+            problems.append("job details not read back")
         details = getattr(exp_c, "details", [])
         if any(norm(d) not in raw_text for d in details):
             problems.append("header details not read back")

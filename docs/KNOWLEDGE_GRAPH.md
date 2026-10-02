@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**55 app modules · 54 test files · 103 classes · 889 functions/methods · 17,828 lines of Python** · source hash `82a755f9f1cfe044`
+**55 app modules · 55 test files · 103 classes · 899 functions/methods · 18,034 lines of Python** · source hash `d6e6af5cf8d1cfd8`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -151,6 +151,7 @@ tests/
     test_jd_analyzer.py                          test_jd_analyzer_heuristic(), test_heading_variants_are_not_extracted_…
     test_jd_analyzer_llm.py                      _FakeLLMClient
     test_jd_analyzer_v2.py                       JD analysis v2 (P1.1): title/company without labels, whole-line
+    test_job_lines_p85.py                        P8.5: job-line formats outside tech: title / company / location / dates
     test_judge.py                                P4.3: LLM-as-judge (rubric + position-swapped pairwise), with a fake
     test_kept_sections_p83.py                    P8.3: sections the model has no fields for are kept verbatim under the…
     test_keyword_match.py                        Keyword-level match rate as the headline score (P1.2).
@@ -305,7 +306,7 @@ _Keyword-level match rate, the headline score (P1.2)._
 
 ### `app/analysis/resume_normalizer.py`
 
-**Layer:** Analysis · **Stage:** 2 Normalize · **Lines:** 976
+**Layer:** Analysis · **Stage:** 2 Normalize · **Lines:** 1088
 
 - class **`ResumeNormalizer`** ([app/analysis/resume_normalizer.py:9](../app/analysis/resume_normalizer.py#L9))
   - `find_phone()` :62 — The first phone number in a line, as written, or None.
@@ -322,27 +323,30 @@ _Keyword-level match rate, the headline score (P1.2)._
   - `_looks_like_location()` :227
   - `_is_detail()` :231 — A header part worth keeping as is: not contact data (email,
   - `_is_section_title()` :281
-  - `_looks_like_title()` :301
-  - `_split_title_company()` :304 — 'Title | Company | Place', 'Company — Title', 'Title — Team — Company'
-  - `_title_score()` :321 — 2 when a role word ends the phrase ("Data Analyst"), 1 when it's
-  - `_split_skill_line()` :343 — 'Languages: Python, SQL<tab>Frameworks: Pandas, and XGBoost' ->
-  - `_skill_items()` :364
-  - `_looks_like_degree()` :379 — 'B.Tech in Computer Science' yes; 'State University' no.
-  - `_split_middle_dot()` :384 — 'Acme Corp · Pune, India' -> ('Acme Corp', 'Pune, India'), the
-  - `_is_dated_line()` :393 — A job title/company line carrying a date range or year.
-  - `_experience_line_kind()` :400 — 'dated' (title and/or company with dates), 'header_line' (a short
-  - `_add_role()` :419 — Record a role; the first one also fills the entry's title/dates.
-  - `_merge_links()` :429 — Profile links from the file's hyperlinks and from URLs written in
-  - `_trailing_dates()` :443 — (match, start, end) for a trailing date range or single date.
-  - `_extract_date_range()` :453
-  - `_strip_date_range()` :459
-  - `_parse_title_and_dates()` :463 — 'Data Scientist II | August 2024 - Present' ->
-  - `_split_list_items()` :479 — Items of a certification / award line. ';' always separates
-  - `_split_respecting_parens()` :498 — Split on sep_chars, but never inside ( ) or [ ] groups — so
-  - `normalize()` :521
+  - `_looks_like_title()` :311
+  - `_split_title_company()` :314 — 'Title | Company | Place', 'Company — Title', 'Title — Team — Company'
+  - `_title_score()` :331 — 2 when a role word ends the phrase ("Data Analyst"), 1 when it's
+  - `_split_company_location()` :344 — 'Banner Medical Center, Phoenix, AZ' -> ('Banner Medical Center',
+  - `_split_comma_job()` :360 — 'Shift Supervisor, Starbucks, Atlanta GA' -> (title, company,
+  - `_next_is_meta_line()` :376 — The ATS template prints 'Company · Location' under the title line.
+  - `_split_skill_line()` :396 — 'Languages: Python, SQL<tab>Frameworks: Pandas, and XGBoost' ->
+  - `_skill_items()` :417
+  - `_looks_like_degree()` :432 — 'B.Tech in Computer Science' yes; 'State University' no.
+  - `_split_middle_dot()` :437 — 'Acme Corp · Pune, India' -> ('Acme Corp', 'Pune, India'), the
+  - `_is_dated_line()` :446 — A job title/company line carrying a date range or year. A date
+  - `_experience_line_kind()` :459 — 'dated' (title and/or company with dates), 'header_line' (a short
+  - `_add_role()` :478 — Record a role; the first one also fills the entry's title/dates.
+  - `_merge_links()` :488 — Profile links from the file's hyperlinks and from URLs written in
+  - `_trailing_dates()` :502 — (match, start, end) for a trailing date range or single date.
+  - `_extract_date_range()` :512
+  - `_strip_date_range()` :518
+  - `_parse_title_and_dates()` :522 — 'Data Scientist II | August 2024 - Present' ->
+  - `_split_list_items()` :537 — Items of a certification / award line. ';' always separates
+  - `_split_respecting_parens()` :556 — Split on sep_chars, but never inside ( ) or [ ] groups — so
+  - `normalize()` :579
 - **Imports:** `domain/evidence.py`, `domain/resume.py`, `domain/resume_document.py`, `ingestion/docx.py`
 - **Imported by:** `analysis/structure_extractor.py`, `eval/golden.py`, `services/tailor.py`, `validation/output.py`
-- **Tested by:** `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_ats_round_trip.py`, `tests/unit/test_contact_p84.py`, `tests/unit/test_dates_p86.py`, `tests/unit/test_kept_sections_p83.py`, `tests/unit/test_parser_regressions_p42.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_structure_extractor.py`, `tests/unit/test_tailor_resume_flow.py`
+- **Tested by:** `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_ats_round_trip.py`, `tests/unit/test_contact_p84.py`, `tests/unit/test_dates_p86.py`, `tests/unit/test_job_lines_p85.py`, `tests/unit/test_kept_sections_p83.py`, `tests/unit/test_parser_regressions_p42.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_structure_extractor.py`, `tests/unit/test_tailor_resume_flow.py`
 
 ### `app/analysis/rewriter.py`
 
@@ -615,20 +619,20 @@ _Per-visitor state for the web API (P5.1)._
 
 ### `app/domain/resume.py`
 
-**Layer:** Domain models · **Stage:** 2 Normalize · **Lines:** 112
+**Layer:** Domain models · **Stage:** 2 Normalize · **Lines:** 116
 
 - class **`Candidate`** ([app/domain/resume.py:5](../app/domain/resume.py#L5))
   - `display_links()` :17 — Links as shown on a resume: 'linkedin.com/in/x', no scheme/www.
 - class **`ResumeBullet`** ([app/domain/resume.py:21](../app/domain/resume.py#L21))
 - class **`Role`** ([app/domain/resume.py:29](../app/domain/resume.py#L29)) — One title held at a company, e.g. 'Data Scientist II, Aug 2024 - Present'.
 - class **`Experience`** ([app/domain/resume.py:35](../app/domain/resume.py#L35)) — One company entry. `title` / `start_date` / `end_date` describe the
-  - `all_roles()` :53
-  - `bullet_groups()` :60 — Consecutive bullets grouped by sub-heading, in document order.
-- class **`Project`** ([app/domain/resume.py:70](../app/domain/resume.py#L70))
-- class **`Education`** ([app/domain/resume.py:77](../app/domain/resume.py#L77))
-- class **`SectionLine`** ([app/domain/resume.py:88](../app/domain/resume.py#L88))
-- class **`OtherSection`** ([app/domain/resume.py:94](../app/domain/resume.py#L94)) — A section the resume model has no fields for (Publications, Bar
-- class **`Resume`** ([app/domain/resume.py:102](../app/domain/resume.py#L102))
+  - `all_roles()` :57
+  - `bullet_groups()` :64 — Consecutive bullets grouped by sub-heading, in document order.
+- class **`Project`** ([app/domain/resume.py:74](../app/domain/resume.py#L74))
+- class **`Education`** ([app/domain/resume.py:81](../app/domain/resume.py#L81))
+- class **`SectionLine`** ([app/domain/resume.py:92](../app/domain/resume.py#L92))
+- class **`OtherSection`** ([app/domain/resume.py:98](../app/domain/resume.py#L98)) — A section the resume model has no fields for (Publications, Bar
+- class **`Resume`** ([app/domain/resume.py:106](../app/domain/resume.py#L106))
 - **Imported by:** `analysis/experience.py`, `analysis/keyword_match.py`, `analysis/resume_normalizer.py`, `analysis/rewriter.py`, `analysis/skills_tailor.py`, `analysis/structure_extractor.py`, `analysis/summary_writer.py`, `analysis/tailor_planner.py`, `domain/resume_document.py`, `eval/golden.py`, `rendering/html_renderer.py`, `rendering/layout.py`, `rendering/page_fit.py`, `services/tailor.py`, `validation/content_lint.py`, `validation/structural.py`
 - **Tested by:** `tests/unit/test_ats_round_trip.py`, `tests/unit/test_check_parsed_resume.py`, `tests/unit/test_content_lint.py`, `tests/unit/test_dates_p86.py`, `tests/unit/test_docx_renderer.py`, `tests/unit/test_experience.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_html_renderer.py`, `tests/unit/test_keyword_match.py`, `tests/unit/test_new_role.py`, `tests/unit/test_page_fit.py`, `tests/unit/test_parser_regressions_p42.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_resume_document.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_review_view.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_tailor_planner.py`, `tests/unit/test_tailor_service_addition.py`, `tests/unit/test_template_layout.py`, `tests/unit/test_template_renderer_standalone.py`
 
@@ -758,7 +762,7 @@ _LLM-as-judge for the evaluation harness (P4.3)._
   - `parse()` :116
 - **Imports:** `rendering/document_map.py`
 - **Imported by:** `analysis/resume_normalizer.py`, `analysis/structure_extractor.py`, `eval/golden.py`, `ingestion/pdf.py`, `services/tailor.py`, `validation/output.py`
-- **Tested by:** `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_ats_round_trip.py`, `tests/unit/test_docx_parser.py`, `tests/unit/test_docx_renderer.py`, `tests/unit/test_kept_sections_p83.py`, `tests/unit/test_parser_regressions_p42.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_pdf_parser.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_structure_extractor.py`, `tests/unit/test_tailor_resume_flow.py`
+- **Tested by:** `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_ats_round_trip.py`, `tests/unit/test_docx_parser.py`, `tests/unit/test_docx_renderer.py`, `tests/unit/test_job_lines_p85.py`, `tests/unit/test_kept_sections_p83.py`, `tests/unit/test_parser_regressions_p42.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_pdf_parser.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_structure_extractor.py`, `tests/unit/test_tailor_resume_flow.py`
 
 ### `app/ingestion/ocr.py`
 
@@ -868,17 +872,17 @@ _LLM-as-judge for the evaluation harness (P4.3)._
 
 ### `app/rendering/html_renderer.py`
 
-**Layer:** Rendering · **Stage:** 9 Render · **Lines:** 159
+**Layer:** Rendering · **Stage:** 9 Render · **Lines:** 160
 
 - class **`HtmlResumeRenderer`** ([app/rendering/html_renderer.py:10](../app/rendering/html_renderer.py#L10)) — Render an ATS-safe, printable résumé from the canonical document.
   - `_items()` :13
   - `_meta_line()` :16 — A de-emphasized 'Company · Location' style line under a bolded
   - `_dates()` :25
   - `_experience_entry()` :28
-  - `_section()` :53
-  - `_other()` :56 — A kept section (P8.3), each line as written.
-  - `render()` :73 — Same sections, order and headings as the DOCX template (P2.1).
-  - `write_html()` :155
+  - `_section()` :54
+  - `_other()` :57 — A kept section (P8.3), each line as written.
+  - `render()` :74 — Same sections, order and headings as the DOCX template (P2.1).
+  - `write_html()` :156
 - **Imports:** `domain/resume.py`, `domain/resume_document.py`, `rendering/layout.py`
 - **Imported by:** `services/tailor.py`
 - **Tested by:** `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_html_renderer.py`, `tests/unit/test_kept_sections_p83.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_template_layout.py`
@@ -956,28 +960,28 @@ _What the proposal review screen shows (P3.4, served by the web API since_
 
 ### `app/rendering/template_renderer.py`
 
-**Layer:** Rendering · **Stage:** 9 Render · **Lines:** 304
+**Layer:** Rendering · **Stage:** 9 Render · **Lines:** 310
 
 - class **`TemplateRenderer`** ([app/rendering/template_renderer.py:23](../app/rendering/template_renderer.py#L23)) — Standard single-column, ATS-safe DOCX renderer with support for ResumeDocument.
   - `render_ats_default()` :28 — Render the ATS template (P2.1): A4, single column, Arial,
   - `_add_header()` :66
   - `_add_summary()` :98
   - `_add_experience()` :104
-  - `_add_skills()` :133
-  - `_add_education()` :144
-  - `_add_projects()` :159
-  - `_add_certifications()` :182
-  - `_add_other()` :188 — A kept section (P8.3): its own heading, each line as written.
-  - `_add_achievements()` :199
-  - `_add_interests()` :204
-  - `_set_document_defaults()` :211 — A4, the template's margins and font, instead of python-docx's
-  - `_content_width()` :233
-  - `_add_section_heading()` :237 — A section label in the accent color with a rule underneath —
-  - `_role_dates()` :252
-  - `_add_meta_line()` :255 — 'Company · Location' in italic grey under a title line.
-  - `_add_bullets()` :264
-  - `_add_title_dates_line()` :269 — Title (bold) on the left, date range right-aligned on the same
-  - `_add_bottom_border()` :291 — Adds a single bottom border to a paragraph via raw OOXML — the
+  - `_add_skills()` :139
+  - `_add_education()` :150
+  - `_add_projects()` :165
+  - `_add_certifications()` :188
+  - `_add_other()` :194 — A kept section (P8.3): its own heading, each line as written.
+  - `_add_achievements()` :205
+  - `_add_interests()` :210
+  - `_set_document_defaults()` :217 — A4, the template's margins and font, instead of python-docx's
+  - `_content_width()` :239
+  - `_add_section_heading()` :243 — A section label in the accent color with a rule underneath —
+  - `_role_dates()` :258
+  - `_add_meta_line()` :261 — 'Company · Location' in italic grey under a title line.
+  - `_add_bullets()` :270
+  - `_add_title_dates_line()` :275 — Title (bold) on the left, date range right-aligned on the same
+  - `_add_bottom_border()` :297 — Adds a single bottom border to a paragraph via raw OOXML — the
 - **Imports:** `domain/resume_document.py`, `rendering/layout.py`
 - **Imported by:** `services/tailor.py`
 - **Tested by:** `tests/unit/test_ats_round_trip.py`, `tests/unit/test_docx_renderer.py`, `tests/unit/test_kept_sections_p83.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_template_layout.py`, `tests/unit/test_template_renderer_standalone.py`
@@ -1109,7 +1113,7 @@ _Content coverage (P8.2): does every line of the uploaded resume reach the_
 
 ### `app/validation/output.py`
 
-**Layer:** Validation · **Stage:** 8 Validate · **Lines:** 147
+**Layer:** Validation · **Stage:** 8 Validate · **Lines:** 150
 
 - class **`OutputQAValidator`** ([app/validation/output.py:7](../app/validation/output.py#L7))
   - `validate_docx()` :8

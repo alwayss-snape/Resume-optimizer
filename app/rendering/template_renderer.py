@@ -117,6 +117,12 @@ class TemplateRenderer:
             meta = " · ".join(v for v in (company if heading != company else "", exp.location) if v)
             if meta:
                 self._add_meta_line(doc, meta)
+            for line in exp.details:  # "40 hours per week | Salary: ..." as written (P8.5)
+                dp = doc.add_paragraph()
+                dp.paragraph_format.space_after = Pt(2)
+                drun = dp.add_run(line)
+                drun.font.size = Pt(9.5)
+                drun.font.color.rgb = META_COLOR
             # Earlier roles at the same company (promotions).
             for role in roles[1:]:
                 self._add_title_dates_line(doc, role.title, self._role_dates(role), content_width, bold=False)
