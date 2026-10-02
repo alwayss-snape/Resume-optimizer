@@ -385,6 +385,15 @@ class ResumeNormalizer:
     # for resumes that separate title from dates with " | " rather than ",".
     _TRIM_CHARS = " \t,|()-–—"
 
+    @classmethod
+    def _trim(cls, text: str) -> str:
+        """Strip separators left around removed dates, keeping a closing
+        bracket that closes an opening one ("Course (ALC)", P8.8)."""
+        text = text.strip(cls._TRIM_CHARS)
+        if text.count("(") > text.count(")"):
+            text += ")"
+        return text
+
     # Where a new "Label:" starts inside a skills line, e.g. the gap before
     # "Frameworks:" in "Languages: Python, SQL<tab>Frameworks: Pandas". A single
     # capitalised word right before the colon, so "SQL Frameworks:" splits
@@ -426,12 +435,60 @@ class ResumeNormalizer:
 
     _DEGREE_RE = re.compile(
         r"\b(?:B\.?\s?(?:Tech|Ed|E|Sc|S|A|Com)|M\.?\s?(?:Tech|Ed|E|Sc|S|A|Com)|Bachelor|Master|Ph\.?\s?D|MBA|BBA|BCA|MCA"
-        r"|Diploma|Certificate|Associate(?:'s)? (?:of|in|degree))\b", re.IGNORECASE)
+        r"|Diploma|Certificate|Associate(?:'s)? (?:of|in|degree)"
+        # P8.8: law, medicine, arts, nursing, public administration, and a few
+        # non-English degree names
+        r"|J\.?\s?D|LL\.?\s?[BM]|M\.?\s?D|BFA|MFA|BSN|MSN|MPA|MPH|MAcc|MSc|BSc|BEng|MEng|GED|High School"
+        r"|Grado|Licenciatura|Diplom|Doctorate|Doctor of)(?![A-Za-z])", re.IGNORECASE)
+
+    def _split_education_line(self, text: str) -> Optional[Tuple[str, str, Optional[str]]]:
+        """'B.S. Biology, University of Texas at Austin, 2016' -> (degree,
+        institution, dates) when one line names both a degree and a school
+        (P8.8: two such lines were merged into one entry). Honours after the
+        degree stay with it ("J.D., cum laude"); anything after the date
+        ("GPA 3.7/4.0", "— 78%") is appended to the degree as written."""
+        extra = None
+        tail = re.search(r"\s[—–]\s(\S.{0,20})$", text)
+        if tail and re.search(r"\d", tail.group(1)):
+            text, extra = text[:tail.start()], tail.group(1).strip()
+        parts = self._split_respecting_parens(text, ",")
+        if len(parts) < 2:
+            return None
+        is_date = lambda p: bool(self.DATE_RANGE_ANY_RE.search(p) or re.fullmatch(
+            r"(?:(?:expected|anticipated|graduated|class of)\s+)?" + self._DATE, p, re.IGNORECASE))
+        is_degree = lambda p: bool(self._DEGREE_RE.search(p)) and (
+            not self._INSTITUTION_RE.search(p) or bool(re.search(r"\b(?:diploma|ged)\b", p, re.IGNORECASE)))
+        is_school = lambda p: bool(self._INSTITUTION_RE.search(p) or re.search(
+            r"\b(?:school|law center|polytechnic|conservatory)\b", p, re.IGNORECASE))
+        degree_at = next((i for i, p in enumerate(parts) if is_degree(p)), None)
+        if degree_at is None:
+            return None
+        date_at = next((i for i, p in enumerate(parts) if i != degree_at and is_date(p)), None)
+        stop = date_at if date_at is not None else len(parts)
+        before = [p for p in parts[:degree_at]]
+        after = parts[degree_at + 1:stop]
+        if before and all(is_school(p) or not is_date(p) for p in before) and not after:
+            institution, degree = ", ".join(before), parts[degree_at]  # "Georgetown University, J.D., 2017"
+        else:
+            honours = []
+            while after and not is_school(after[0]) and len(after) > 1:
+                honours.append(after.pop(0))  # "cum laude"
+            if not after:
+                return None
+            degree = ", ".join([parts[degree_at], *honours])
+            institution = ", ".join(after)
+        rest = parts[stop + 1:] if date_at is not None else []
+        if extra:
+            rest.append(extra)
+        if rest:
+            degree = f"{degree}, {', '.join(rest)}"
+        return degree, institution, (parts[date_at] if date_at is not None else None)
     _INSTITUTION_RE = re.compile(r"\b(?:University|Institute|College|School|Academy|IIT|NIT)\b", re.IGNORECASE)
 
     def _looks_like_degree(self, text: str) -> bool:
         """'B.Tech in Computer Science' yes; 'State University' no."""
-        return bool(self._DEGREE_RE.search(text)) and not self._INSTITUTION_RE.search(text)
+        return bool(self._DEGREE_RE.search(text)) and (
+            not self._INSTITUTION_RE.search(text) or bool(re.search(r"\b(?:diploma|ged)\b", text, re.IGNORECASE)))
 
     @staticmethod
     def _split_middle_dot(text: str) -> Tuple[str, Optional[str]]:
@@ -505,7 +562,7 @@ class ResumeNormalizer:
         if m:
             return m, m.group(1).strip(), m.group(2).strip()
         m = self.SINGLE_DATE_RE.search(text)
-        if m and text[:m.start()].strip(self._TRIM_CHARS):
+        if m and self._trim(text[:m.start()]):
             return m, m.group(1).strip(), None
         return None, None, None
 
@@ -517,7 +574,7 @@ class ResumeNormalizer:
 
     def _strip_date_range(self, text: str) -> str:
         m, _, _ = self._trailing_dates(text)
-        return text[:m.start()].strip(self._TRIM_CHARS) if m else text.strip()
+        return self._trim(text[:m.start()]) if m else text.strip()
 
     def _parse_title_and_dates(self, text: str) -> Tuple[str, Optional[str], Optional[str]]:
         """'Data Scientist II | August 2024 - Present' ->
@@ -526,7 +583,7 @@ class ResumeNormalizer:
         m, start, end = self._trailing_dates(text)
         if not m:
             return text.strip(), None, None
-        return text[:m.start()].strip(self._TRIM_CHARS), start, end
+        return self._trim(text[:m.start()]), start, end
 
     # A list piece that is a date or an expiry, not an item of its own:
     # "Certified Public Accountant (CPA), New York, 2021" is one entry.
@@ -758,7 +815,7 @@ class ResumeNormalizer:
                         m = self.DATE_RANGE_ANY_RE.search(left)
                         if m:
                             start, end = m.group(1).strip(), m.group(2).strip()
-                            title = left[:m.start()].strip(self._TRIM_CHARS)
+                            title = self._trim(left[:m.start()])
                             extras = left[m.end():].strip(self._TRIM_CHARS + "|·") or None
                         else:
                             title = left.strip()
@@ -931,53 +988,74 @@ class ResumeNormalizer:
 
             # Education section
             elif current_kind == "education":
-                has_date = bool(self.DATE_PATTERN.search(text))
-                if "\t" in text:
-                    left, right_col = [p.strip() for p in text.split("\t", 1)]
-                else:
-                    left, right_col = self._split_middle_dot(text)
-
-                body = self._strip_date_range(left)
-                dates = right_col if (right_col and self.DATE_PATTERN.search(right_col)) else (
-                    self._extract_date_range(left) if has_date else None
-                )
-                dash_parts = [p.strip() for p in re.split(r"\s+—\s+|\s+-\s+", body) if p.strip()]
-
-                if current_edu is None or (current_edu.institution and current_edu.degree):
-                    edu_counter += 1
-                    edu_id = f"edu_{edu_counter:03d}"
-                    if has_date and len(dash_parts) >= 2:
-                        # Combined single line: "<Degree> — <Institution> (<dates>)"
-                        current_edu = Education(
-                            id=edu_id, degree=dash_parts[0], institution=dash_parts[1],
-                            location=right_col if right_col and right_col != dates else None,
-                            dates=dates,
-                        )
-                    elif has_date and self._looks_like_degree(body):
-                        # "B.Tech in X<tab>2016 – 2020", institution on the next line
-                        current_edu = Education(id=edu_id, institution="", degree=body, dates=dates,
-                                                location=right_col if right_col and right_col != dates else None)
-                    elif has_date:
-                        current_edu = Education(id=edu_id, institution=body, degree="", dates=dates,
-                                                location=right_col if right_col and right_col != dates else None)
+                # "Advanced Leader Course (ALC), 2019; B.S. Business (in progress), UMGC"
+                # holds two entries (P8.8).
+                entries = ([e for e in self._split_respecting_parens(text, ";")] if ";" in text and "\t" not in text
+                           else [text])
+                for text in entries:
+                    label = self._LABEL_RE.match(text)
+                    if (label and current_edu is not None and (current_edu.degree or current_edu.institution)
+                            and not self._DEGREE_RE.search(label.group(1))):
+                        # "Relevant Coursework: ..." belongs to the entry above.
+                        current_edu.details.append(re.sub(r"\s+", " ", text))
+                        continue
+                    complete = self._split_education_line(text) if "\t" not in text else None
+                    if complete:
+                        # "M.Ed. Curriculum, Texas State University, 2019": a whole
+                        # entry on one line, never merged with the next (P8.8).
+                        edu_counter += 1
+                        degree, institution, edu_dates = complete
+                        current_edu = Education(id=f"edu_{edu_counter:03d}", degree=degree, institution=institution,
+                                                dates=edu_dates)
+                        education_list.append(current_edu)
+                        continue
+                    has_date = bool(self.DATE_PATTERN.search(text))
+                    if "\t" in text:
+                        left, right_col = [p.strip() for p in text.split("\t", 1)]
                     else:
-                        # No date on this line yet — treat as the institution
-                        # (+ location) line; a following line may complete it
-                        # with the degree (+ dates).
-                        current_edu = Education(id=edu_id, institution=body, degree="", location=right_col, dates=None)
-                    education_list.append(current_edu)
-                elif not current_edu.institution:
-                    current_edu.institution = body
-                    if right_col and not current_edu.location and right_col != dates:
-                        current_edu.location = right_col
-                elif not current_edu.degree:
-                    current_edu.degree = body
-                    if dates:
-                        current_edu.dates = dates
-                    if right_col and not current_edu.location and right_col != dates:
-                        current_edu.location = right_col  # a place, never the date column
-                else:
-                    current_edu.degree = f"{current_edu.degree}; {body}".strip("; ")
+                        left, right_col = self._split_middle_dot(text)
+
+                    body = self._strip_date_range(left)
+                    dates = right_col if (right_col and self.DATE_PATTERN.search(right_col)) else (
+                        self._extract_date_range(left) if has_date else None
+                    )
+                    dash_parts = [p.strip() for p in re.split(r"\s+—\s+|\s+-\s+", body) if p.strip()]
+
+                    if current_edu is None or (current_edu.institution and current_edu.degree):
+                        edu_counter += 1
+                        edu_id = f"edu_{edu_counter:03d}"
+                        if has_date and len(dash_parts) >= 2:
+                            # Combined single line: "<Degree> — <Institution> (<dates>)"
+                            current_edu = Education(
+                                id=edu_id, degree=dash_parts[0], institution=dash_parts[1],
+                                location=right_col if right_col and right_col != dates else None,
+                                dates=dates,
+                            )
+                        elif has_date and self._looks_like_degree(body):
+                            # "B.Tech in X<tab>2016 – 2020", institution on the next line
+                            current_edu = Education(id=edu_id, institution="", degree=body, dates=dates,
+                                                    location=right_col if right_col and right_col != dates else None)
+                        elif has_date:
+                            current_edu = Education(id=edu_id, institution=body, degree="", dates=dates,
+                                                    location=right_col if right_col and right_col != dates else None)
+                        else:
+                            # No date on this line yet — treat as the institution
+                            # (+ location) line; a following line may complete it
+                            # with the degree (+ dates).
+                            current_edu = Education(id=edu_id, institution=body, degree="", location=right_col, dates=None)
+                        education_list.append(current_edu)
+                    elif not current_edu.institution:
+                        current_edu.institution = body
+                        if right_col and not current_edu.location and right_col != dates:
+                            current_edu.location = right_col
+                    elif not current_edu.degree:
+                        current_edu.degree = body
+                        if dates:
+                            current_edu.dates = dates
+                        if right_col and not current_edu.location and right_col != dates:
+                            current_edu.location = right_col  # a place, never the date column
+                    else:
+                        current_edu.degree = f"{current_edu.degree}; {body}".strip("; ")
 
                 ev_id = f"ev_{ev_counter:04d}"
                 ev_counter += 1
@@ -1067,6 +1145,13 @@ class ResumeNormalizer:
             links=self._merge_links(candidate_links, raw_doc.links),
             details=candidate_details,
         )
+
+        # Newest degree first when every entry has a year (P8.8).
+        years = [max((int(y) for y in re.findall(r"(?:19|20)\d{2}", e.dates or "")), default=None)
+                 for e in education_list]
+        if len(education_list) > 1 and None not in years:
+            order = sorted(range(len(education_list)), key=lambda i: -years[i])
+            education_list = [education_list[i] for i in order]
 
         resume = Resume(
             candidate=candidate,

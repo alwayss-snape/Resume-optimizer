@@ -20,15 +20,10 @@ from app.eval.harness import PERSONA_MANIFEST, is_content_failure, load_cases, r
 PERSONAS = [c for c in load_cases(include_private=False, include_personas=True) if c.suite == "persona"]
 
 # Persona -> why it still fails. Remove an entry when the case passes.
-CONTENT_XFAIL = {
-    'teacher': 'two degrees merged (P8.8)',
-    'lawyer': 'two degrees merged (P8.8)',
-    'academic': 'two degrees merged (P8.8)',
-    'executive': 'two degrees merged (P8.8)',
-}
+CONTENT_XFAIL = {}
 # Until Stage K, scoring and page checks fail for most personas too.
-FULL_XFAIL = {name: 'content (see CONTENT_XFAIL), scoring (Stage K) or page target (P8.16)'
-              for name in [*CONTENT_XFAIL, 'newgrad', 'eu_cv', 'spanish', 'nurse', 'sales', 'lawyer', 'academic',
+FULL_XFAIL = {name: 'scoring (Stage K), page target (P8.16) or round-trip quirks (P8.26)'
+              for name in ['teacher', 'eu_cv', 'spanish', 'nurse', 'sales', 'lawyer', 'academic',
                            'executive', 'gap', 'veteran', 'eu_en', 'india', 'federal', 'nurse-pdf', 'sales-pdf']}
 
 _RESULTS = {}

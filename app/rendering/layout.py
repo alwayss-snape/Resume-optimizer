@@ -74,6 +74,9 @@ def format_date(value: Optional[str]) -> str:
     text = (value or "").strip()
     if not text:
         return ""
+    qualifier = re.match(r"^(expected|anticipated|graduating|graduated|class of)\s+", text, re.IGNORECASE)
+    if qualifier:  # "Expected May 2026" keeps its word
+        return f"{qualifier.group(1).capitalize()} {format_date(text[qualifier.end():])}"
     if is_ongoing(text):
         return "Present"
     lowered = text.lower()

@@ -18,6 +18,8 @@ _MONTHS = {m: i for i, m in enumerate(
 PRESENT_WORDS = ("present", "current", "currently", "now", "today", "ongoing", "till date", "to date",
                  "till now", "date", "heute", "actualidad", "presente", "actual", "aujourd'hui")
 _PRESENT = set(PRESENT_WORDS)
+_MONTH_NAMES = {"january", "february", "march", "april", "may", "june", "july", "august", "september",
+                "october", "november", "december"}
 # Seasons -> the month they start in ("Summer 2021" -> Jun 2021).
 SEASONS = {"spring": 3, "summer": 6, "fall": 9, "autumn": 9, "winter": 12}
 
@@ -46,9 +48,10 @@ def parse_month(value: Optional[str], *, is_end: bool, today: date) -> Optional[
         year = 2000 + int(short.group(1))
         if year > today.year + 1:
             year -= 100
-    month_m = re.search(r"\b([a-z]{3})[a-z]*\.?", text)
-    if month_m and month_m.group(1) in _MONTHS:
-        return year, _MONTHS[month_m.group(1)]
+    month = next((_MONTHS[w[:3]] for w in re.findall(r"[a-z]+", text) if w[:3] in _MONTHS
+                  and (len(w) == 3 or w in _MONTH_NAMES or w[:4] == "sept")), None)
+    if month:  # the first month word, not the first word ("Expected May 2026")
+        return year, month
     season = re.search(r"\b(spring|summer|fall|autumn|winter)\b", text)
     if season:
         return year, SEASONS[season.group(1)]

@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**55 app modules · 56 test files · 103 classes · 904 functions/methods · 18,132 lines of Python** · source hash `dc04434bf7738527`
+**55 app modules · 57 test files · 103 classes · 911 functions/methods · 18,273 lines of Python** · source hash `0f5cf4b266ac956f`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -143,6 +143,7 @@ tests/
     test_dates_p86.py                            P8.6: date formats from outside the US tech norm.
     test_docx_parser.py                          test_docx_parser_sample(), test_docx_parser_file_not_found()
     test_docx_renderer.py                        test_docx_patcher_preserve_mode(), test_template_renderer_ats_mode(), …
+    test_education_p88.py                        P8.8: one-line education entries stay separate, details stay with their
     test_env.py                                  test_environment_baseline()
     test_eval_harness.py                         Evaluation harness (P4.1).
     test_experience.py                           P2.3: years of experience (overlaps merged) -> 1 or 2 target pages.
@@ -217,17 +218,17 @@ Spanning all stages: `app/api/main.py`, `app/api/routes.py`, `app/cli.py`, `app/
 
 ### `app/analysis/experience.py`
 
-**Layer:** Analysis · **Stage:** 2 Normalize, 7 Rewrite · **Lines:** 122
+**Layer:** Analysis · **Stage:** 2 Normalize, 7 Rewrite · **Lines:** 125
 
 _Years of experience from role date ranges (P1.5), and the page target_
 
-- function **`is_ongoing()`** ([app/analysis/experience.py:25](../app/analysis/experience.py#L25)) — 'Present' / 'Current' / 'Till Date' / ... : the role hasn't ended.
-- function **`parse_month()`** ([app/analysis/experience.py:30](../app/analysis/experience.py#L30)) — 'August 2024' / 'Aug. 2024' / '08/2024' / '31/08/2024' / '2024-08' /
-- function **`future_dates()`** ([app/analysis/experience.py:64](../app/analysis/experience.py#L64)) — Roles whose start date is after this month (P8.6): usually a typo or a
-- function **`role_intervals()`** ([app/analysis/experience.py:79](../app/analysis/experience.py#L79)) — Each dated role as [start, end] in absolute months (year*12 + month).
-- function **`years_of_experience()`** ([app/analysis/experience.py:96](../app/analysis/experience.py#L96)) — Total months covered by any role (overlaps merged), in years.
-- function **`years_phrase()`** ([app/analysis/experience.py:108](../app/analysis/experience.py#L108)) — How a resume states it: '4+ years', '1 year', or None under 1 year.
-- function **`target_pages()`** ([app/analysis/experience.py:120](../app/analysis/experience.py#L120)) — How many A4 pages the tailored resume should fill.
+- function **`is_ongoing()`** ([app/analysis/experience.py:27](../app/analysis/experience.py#L27)) — 'Present' / 'Current' / 'Till Date' / ... : the role hasn't ended.
+- function **`parse_month()`** ([app/analysis/experience.py:32](../app/analysis/experience.py#L32)) — 'August 2024' / 'Aug. 2024' / '08/2024' / '31/08/2024' / '2024-08' /
+- function **`future_dates()`** ([app/analysis/experience.py:67](../app/analysis/experience.py#L67)) — Roles whose start date is after this month (P8.6): usually a typo or a
+- function **`role_intervals()`** ([app/analysis/experience.py:82](../app/analysis/experience.py#L82)) — Each dated role as [start, end] in absolute months (year*12 + month).
+- function **`years_of_experience()`** ([app/analysis/experience.py:99](../app/analysis/experience.py#L99)) — Total months covered by any role (overlaps merged), in years.
+- function **`years_phrase()`** ([app/analysis/experience.py:111](../app/analysis/experience.py#L111)) — How a resume states it: '4+ years', '1 year', or None under 1 year.
+- function **`target_pages()`** ([app/analysis/experience.py:123](../app/analysis/experience.py#L123)) — How many A4 pages the tailored resume should fill.
 - **Imports:** `domain/resume.py`
 - **Imported by:** `analysis/summary_writer.py`, `eval/harness.py`, `rendering/layout.py`, `rendering/page_fit.py`, `services/tailor.py`, `validation/content_lint.py`
 - **Tested by:** `tests/unit/test_dates_p86.py`, `tests/unit/test_experience.py`, `tests/unit/test_summary_writer.py`
@@ -307,7 +308,7 @@ _Keyword-level match rate, the headline score (P1.2)._
 
 ### `app/analysis/resume_normalizer.py`
 
-**Layer:** Analysis · **Stage:** 2 Normalize · **Lines:** 1088
+**Layer:** Analysis · **Stage:** 2 Normalize · **Lines:** 1173
 
 - class **`ResumeNormalizer`** ([app/analysis/resume_normalizer.py:9](../app/analysis/resume_normalizer.py#L9))
   - `find_phone()` :62 — The first phone number in a line, as written, or None.
@@ -330,24 +331,26 @@ _Keyword-level match rate, the headline score (P1.2)._
   - `_split_company_location()` :344 — 'Banner Medical Center, Phoenix, AZ' -> ('Banner Medical Center',
   - `_split_comma_job()` :360 — 'Shift Supervisor, Starbucks, Atlanta GA' -> (title, company,
   - `_next_is_meta_line()` :376 — The ATS template prints 'Company · Location' under the title line.
-  - `_split_skill_line()` :396 — 'Languages: Python, SQL<tab>Frameworks: Pandas, and XGBoost' ->
-  - `_skill_items()` :417
-  - `_looks_like_degree()` :432 — 'B.Tech in Computer Science' yes; 'State University' no.
-  - `_split_middle_dot()` :437 — 'Acme Corp · Pune, India' -> ('Acme Corp', 'Pune, India'), the
-  - `_is_dated_line()` :446 — A job title/company line carrying a date range or year. A date
-  - `_experience_line_kind()` :459 — 'dated' (title and/or company with dates), 'header_line' (a short
-  - `_add_role()` :478 — Record a role; the first one also fills the entry's title/dates.
-  - `_merge_links()` :488 — Profile links from the file's hyperlinks and from URLs written in
-  - `_trailing_dates()` :502 — (match, start, end) for a trailing date range or single date.
-  - `_extract_date_range()` :512
-  - `_strip_date_range()` :518
-  - `_parse_title_and_dates()` :522 — 'Data Scientist II | August 2024 - Present' ->
-  - `_split_list_items()` :537 — Items of a certification / award line. ';' always separates
-  - `_split_respecting_parens()` :556 — Split on sep_chars, but never inside ( ) or [ ] groups — so
-  - `normalize()` :579
+  - `_trim()` :389 — Strip separators left around removed dates, keeping a closing
+  - `_split_skill_line()` :405 — 'Languages: Python, SQL<tab>Frameworks: Pandas, and XGBoost' ->
+  - `_skill_items()` :426
+  - `_split_education_line()` :444 — 'B.S. Biology, University of Texas at Austin, 2016' -> (degree,
+  - `_looks_like_degree()` :488 — 'B.Tech in Computer Science' yes; 'State University' no.
+  - `_split_middle_dot()` :494 — 'Acme Corp · Pune, India' -> ('Acme Corp', 'Pune, India'), the
+  - `_is_dated_line()` :503 — A job title/company line carrying a date range or year. A date
+  - `_experience_line_kind()` :516 — 'dated' (title and/or company with dates), 'header_line' (a short
+  - `_add_role()` :535 — Record a role; the first one also fills the entry's title/dates.
+  - `_merge_links()` :545 — Profile links from the file's hyperlinks and from URLs written in
+  - `_trailing_dates()` :559 — (match, start, end) for a trailing date range or single date.
+  - `_extract_date_range()` :569
+  - `_strip_date_range()` :575
+  - `_parse_title_and_dates()` :579 — 'Data Scientist II | August 2024 - Present' ->
+  - `_split_list_items()` :594 — Items of a certification / award line. ';' always separates
+  - `_split_respecting_parens()` :613 — Split on sep_chars, but never inside ( ) or [ ] groups — so
+  - `normalize()` :636
 - **Imports:** `domain/evidence.py`, `domain/resume.py`, `domain/resume_document.py`, `ingestion/docx.py`
 - **Imported by:** `analysis/structure_extractor.py`, `eval/golden.py`, `services/tailor.py`, `validation/output.py`
-- **Tested by:** `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_ats_round_trip.py`, `tests/unit/test_contact_p84.py`, `tests/unit/test_dates_p86.py`, `tests/unit/test_job_lines_p85.py`, `tests/unit/test_kept_sections_p83.py`, `tests/unit/test_layouts_p87.py`, `tests/unit/test_parser_regressions_p42.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_structure_extractor.py`, `tests/unit/test_tailor_resume_flow.py`
+- **Tested by:** `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_ats_round_trip.py`, `tests/unit/test_contact_p84.py`, `tests/unit/test_dates_p86.py`, `tests/unit/test_education_p88.py`, `tests/unit/test_job_lines_p85.py`, `tests/unit/test_kept_sections_p83.py`, `tests/unit/test_layouts_p87.py`, `tests/unit/test_parser_regressions_p42.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_structure_extractor.py`, `tests/unit/test_tailor_resume_flow.py`
 
 ### `app/analysis/rewriter.py`
 
@@ -764,7 +767,7 @@ _LLM-as-judge for the evaluation harness (P4.3)._
   - `parse()` :138
 - **Imports:** `rendering/document_map.py`
 - **Imported by:** `analysis/resume_normalizer.py`, `analysis/structure_extractor.py`, `eval/golden.py`, `ingestion/pdf.py`, `services/tailor.py`, `validation/output.py`
-- **Tested by:** `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_ats_round_trip.py`, `tests/unit/test_docx_parser.py`, `tests/unit/test_docx_renderer.py`, `tests/unit/test_job_lines_p85.py`, `tests/unit/test_kept_sections_p83.py`, `tests/unit/test_layouts_p87.py`, `tests/unit/test_parser_regressions_p42.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_pdf_parser.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_structure_extractor.py`, `tests/unit/test_tailor_resume_flow.py`
+- **Tested by:** `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_ats_round_trip.py`, `tests/unit/test_docx_parser.py`, `tests/unit/test_docx_renderer.py`, `tests/unit/test_education_p88.py`, `tests/unit/test_job_lines_p85.py`, `tests/unit/test_kept_sections_p83.py`, `tests/unit/test_layouts_p87.py`, `tests/unit/test_parser_regressions_p42.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_pdf_parser.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_structure_extractor.py`, `tests/unit/test_tailor_resume_flow.py`
 
 ### `app/ingestion/ocr.py`
 
@@ -891,7 +894,7 @@ _LLM-as-judge for the evaluation harness (P4.3)._
 
 ### `app/rendering/layout.py`
 
-**Layer:** Rendering · **Stage:** 9 Render · **Lines:** 138
+**Layer:** Rendering · **Stage:** 9 Render · **Lines:** 141
 
 _Shared layout rules for the ATS template (P2.1)._
 
@@ -899,11 +902,11 @@ _Shared layout rules for the ATS template (P2.1)._
 - function **`other_section()`** ([app/rendering/layout.py:53](../app/rendering/layout.py#L53)) — The kept section an "other:<id>" order entry names, or None.
 - function **`ordered_sections()`** ([app/rendering/layout.py:59](../app/rendering/layout.py#L59)) — `order` plus any kept section it doesn't list yet (an order saved
 - function **`format_date()`** ([app/rendering/layout.py:71](../app/rendering/layout.py#L71)) — 'August 2024' / 'Aug. 2024' / '08/2024' -> 'Aug 2024'; 'Current' ->
-- function **`date_range()`** ([app/rendering/layout.py:96](../app/rendering/layout.py#L96)) — 'Jan 2022 – Present'; one side only when the other is missing.
-- function **`format_date_text()`** ([app/rendering/layout.py:101](../app/rendering/layout.py#L101)) — A free-text range such as an education's '2016 - 2020' or
-- function **`contact_parts()`** ([app/rendering/layout.py:111](../app/rendering/layout.py#L111)) — email | phone | City, Country | linkedin | github | other links.
-- function **`display_skills()`** ([app/rendering/layout.py:119](../app/rendering/layout.py#L119)) — At most `max_categories` lines: the first ones as they are (JD-relevant
-- function **`output_basename()`** ([app/rendering/layout.py:133](../app/rendering/layout.py#L133)) — First_Last_Resume_<Company>, using only file-name-safe characters.
+- function **`date_range()`** ([app/rendering/layout.py:99](../app/rendering/layout.py#L99)) — 'Jan 2022 – Present'; one side only when the other is missing.
+- function **`format_date_text()`** ([app/rendering/layout.py:104](../app/rendering/layout.py#L104)) — A free-text range such as an education's '2016 - 2020' or
+- function **`contact_parts()`** ([app/rendering/layout.py:114](../app/rendering/layout.py#L114)) — email | phone | City, Country | linkedin | github | other links.
+- function **`display_skills()`** ([app/rendering/layout.py:122](../app/rendering/layout.py#L122)) — At most `max_categories` lines: the first ones as they are (JD-relevant
+- function **`output_basename()`** ([app/rendering/layout.py:136](../app/rendering/layout.py#L136)) — First_Last_Resume_<Company>, using only file-name-safe characters.
 - **Imports:** `analysis/experience.py`, `domain/resume.py`, `domain/resume_document.py`
 - **Imported by:** `eval/harness.py`, `rendering/html_renderer.py`, `rendering/template_renderer.py`, `services/tailor.py`, `validation/output.py`
 - **Tested by:** `tests/unit/test_dates_p86.py`, `tests/unit/test_kept_sections_p83.py`, `tests/unit/test_template_layout.py`
