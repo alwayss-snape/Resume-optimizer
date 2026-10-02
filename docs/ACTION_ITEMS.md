@@ -21,8 +21,8 @@ JD-aligned rewrites, a Novoresume-style ATS layout that fits the right length, a
 | 5: Web UI for public hosting | 7 | 6 | 0 | 1 |
 | 6: UI redesign | 6 | 6 | 0 | 0 |
 | 7: Owner feedback on the flow | 2 | 2 | 0 | 0 |
-| 8: Cross-domain robustness and user control | 26 | 0 | 0 | 26 |
-| **Total** | **82** | **53** | **0** | **27** |
+| 8: Cross-domain robustness and user control | 26 | 1 | 0 | 25 |
+| **Total** | **82** | **54** | **0** | **26** |
 
 Phase 1's two open items (P1.15, P1.16) are ➖, moved into P8.9 and P8.18, so its row no longer adds up to 16.
 
@@ -228,7 +228,7 @@ the end of each stage.
 
 | ID | Action | Files | Resolves | Status | Notes |
 |---|---|---|---|---|---|
-| P8.1 | **Persona eval cases:** turn the user-testing personas into `data/eval/cases/` pairs with `expected.json` (nurse, teacher, electrician, lawyer, EU CV, India, Spanish, designer, academic, federal, retail, sales, warehouse, accountant, veteran, executive), generated from `make_personas.py` in the existing case layout. Cases start on an `xfail` list and flip to pass as items land, so every later item shows its effect in `pytest -m eval` | `scripts/make_eval_cases.py`, `data/eval/cases/`, `tests/integration/test_eval_cases.py` | root cause | ⬜ | Stage H |
+| P8.1 | **Persona eval cases:** turn the user-testing personas into `data/eval/cases/` pairs with `expected.json` (nurse, teacher, electrician, lawyer, EU CV, India, Spanish, designer, academic, federal, retail, sales, warehouse, accountant, veteran, executive), generated from `make_personas.py` in the existing case layout. Cases start on an `xfail` list and flip to pass as items land, so every later item shows its effect in `pytest -m eval` | `scripts/make_eval_cases.py`, `data/eval/cases/`, `tests/integration/test_eval_cases.py` | root cause | ✅ | 2026-10-02: `scripts/make_persona_cases.py` copies 22 personas from the user test (20 DOCX, 2 PDF) into `data/eval/personas/<name>/` with an `expected.json` of what the file really says: contact (incl. phone), each job's title / company / dates / bullet count, education count, and `must_keep` phrases that must reach the rendered file. The harness gains a `suite` per case (fixture / generated / persona / private), phone, `job_details` and `must_keep` checks, and `is_content_failure()`. `tests/integration/test_persona_cases.py` (`-m eval`, ~75 s) runs each persona offline twice: content checks only, and every check. Baseline: all 22 fail content (strict xfails naming the item meant to fix each), e.g. nurse 4 jobs instead of 2 and no phone, teacher 0 jobs, German / Spanish CVs keep only the name and email. Each later item removes entries; Stage H's gate is an empty `CONTENT_XFAIL` |
 | P8.2 | **Content coverage check:** compare the output against the **source** lines, not the parse. Report the share kept and the lines lost; lost lines fail the run loudly instead of "success" | `validation/output.py` (`round_trip` compares with the parsed `Resume` today), `services/tailor.py` | U1, U34 | ⬜ | Stage H |
 | P8.3 | **Keep unknown sections:** `Resume.other_sections` (original heading + lines, verbatim) rendered under that heading. Wider English heading vocabulary: journey, licences, publications, volunteer, languages, references, training, rotations, bar admissions, grants, teaching, memberships, military, clearance, personal details. "Academic Appointments" is not Education; licence lines aren't split on commas; rotations, training and board roles aren't jobs | `domain/resume.py`, `resume_normalizer.py` (`SECTION_KEYWORDS`, unknown-section catch-all), `rendering/*` | U1, U9, U17 | ⬜ | Stage H |
 | P8.4 | **Contact:** phone numbers with US parentheses and international groupings (+33, +49, +34, +91); links with any top-level domain (portfolio sites) | `resume_normalizer.py` (`PHONE_RE`, `URL_RE`) | U3, U12 | ⬜ | Stage H |

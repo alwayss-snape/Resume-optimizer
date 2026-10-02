@@ -1,0 +1,33 @@
+{
+  "name": "Jordan Kim",
+  "phone": "312-555-0166",
+  "jobs": 3,
+  "job_details": [
+    {
+      "title": "Senior Account Executive",
+      "company": "CloudMetrics Inc.",
+      "start": "Jan 2021",
+      "end": "Present",
+      "bullets": 3
+    },
+    {
+      "title": "Account Executive",
+      "company": "PayStream",
+      "start": "Mar 2018",
+      "end": "Dec 2020",
+      "bullets": 2
+    },
+    {
+      "title": "Sales Development Representative",
+      "company": "PayStream",
+      "start": "Jun 2016",
+      "end": "Feb 2018",
+      "bullets": 1
+    }
+  ],
+  "education": 1,
+  "must_keep": [
+    "largest deal in company history",
+    "linkedin.com/in/jordankim"
+  ]
+}

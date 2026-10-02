@@ -1,0 +1,20 @@
+{
+  "name": "SGT Marcus Reyes (Ret.)",
+  "phone": "210-555-0190",
+  "jobs": 1,
+  "job_details": [
+    {
+      "title": "Logistics NCOIC (92Y Unit Supply Specialist)",
+      "company": "U.S. Army",
+      "start": "2014",
+      "end": "2024",
+      "bullets": 3
+    }
+  ],
+  "must_keep": [
+    "Security Clearance: Active Secret",
+    "Army Commendation Medal (2)",
+    "Advanced Leader Course (ALC)",
+    "B.S. Business Administration (in progress)"
+  ]
+}

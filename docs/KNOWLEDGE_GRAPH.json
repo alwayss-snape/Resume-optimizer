@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "0e86c4d71ca5dbeb",
+  "source_hash": "7e7dae0649562f68",
   "stats": {
-    "files": 133,
-    "python_files": 110,
+    "files": 135,
+    "python_files": 112,
     "app_modules": 54,
-    "test_files": 48,
+    "test_files": 49,
     "classes": 100,
-    "functions": 832,
-    "lines_of_python": 16528
+    "functions": 843,
+    "lines_of_python": 16984
   },
   "axes": {
     "x": "location (path)",
@@ -1789,45 +1789,45 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 462,
+      "lines": 522,
       "doc": "Run evaluation cases through the pipeline and collect metrics (P4.1).",
       "classes": [
         {
           "name": "Case",
-          "line": 35,
+          "line": 37,
           "doc": "",
           "methods": []
         },
         {
           "name": "OfflineLLM",
-          "line": 44,
+          "line": 48,
           "doc": "Stands in for LLMClient when no model should be called: every",
           "methods": [
             {
               "name": "is_available",
-              "line": 51,
+              "line": 55,
               "doc": ""
             },
             {
               "name": "get_usage_summary",
-              "line": 54,
+              "line": 58,
               "doc": ""
             }
           ]
         },
         {
           "name": "_RetryCounter",
-          "line": 60,
+          "line": 64,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
-              "line": 61,
+              "line": 65,
               "doc": ""
             },
             {
               "name": "emit",
-              "line": 65,
+              "line": 69,
               "doc": ""
             }
           ]
@@ -1836,87 +1836,107 @@
       "functions": [
         {
           "name": "load_cases",
-          "line": 70,
+          "line": 74,
           "doc": ""
         },
         {
           "name": "keyword_coverage",
-          "line": 88,
+          "line": 94,
           "doc": "Share of the JD's keywords found verbatim (whole term, any case) in"
         },
         {
           "name": "run_case",
-          "line": 97,
+          "line": 103,
           "doc": ""
         },
         {
           "name": "_tailor_metrics",
-          "line": 185,
+          "line": 192,
           "doc": ""
         },
         {
           "name": "attainable_coverage",
-          "line": 225,
+          "line": 232,
           "doc": "Of the JD keywords written verbatim somewhere in the resume, the share"
         },
         {
           "name": "_norm_number",
-          "line": 244,
+          "line": 251,
           "doc": ""
         },
         {
           "name": "fabricated_numbers",
-          "line": 249,
+          "line": 256,
           "doc": "Numbers (with their units) in the tailored resume that the original"
         },
         {
           "name": "stuffing",
-          "line": 259,
+          "line": 266,
           "doc": "Signs of keyword stuffing: tailoring pushed the rate above the target"
         },
         {
           "name": "_docx_text",
-          "line": 269,
+          "line": 276,
           "doc": ""
         },
         {
+          "name": "is_content_failure",
+          "line": 291,
+          "doc": ""
+        },
+        {
+          "name": "_same_text",
+          "line": 295,
+          "doc": ""
+        },
+        {
+          "name": "check_job_details",
+          "line": 300,
+          "doc": "Each job's title, company, dates and bullet count as the file states"
+        },
+        {
+          "name": "check_must_keep",
+          "line": 320,
+          "doc": "Source phrases that must survive into the rendered file."
+        },
+        {
           "name": "check_expected",
-          "line": 278,
+          "line": 329,
           "doc": "Compare a run with the case's expected.json; one message per miss."
         },
         {
           "name": "_judge",
-          "line": 335,
+          "line": 395,
           "doc": "Judge one tailored resume (P4.3) and record what the judge cost."
         },
         {
           "name": "replay_case",
-          "line": 346,
+          "line": 406,
           "doc": "Judge the tailored output a previous run saved in replay_dir/<case>/"
         },
         {
           "name": "run",
-          "line": 366,
+          "line": 426,
           "doc": ""
         },
         {
           "name": "_flatten",
-          "line": 386,
+          "line": 446,
           "doc": ""
         },
         {
           "name": "compare",
-          "line": 403,
+          "line": 463,
           "doc": "Human-readable differences per case between a report and a baseline."
         },
         {
           "name": "_judge_summary",
-          "line": 431,
+          "line": 491,
           "doc": ""
         },
         {
           "name": "summary_lines",
-          "line": 437,
+          "line": 497,
           "doc": ""
         }
       ]
@@ -3536,6 +3556,27 @@
       ]
     },
     {
+      "id": "scripts/make_persona_cases.py",
+      "type": "python",
+      "layer": "Tooling",
+      "stages": [],
+      "lines": 315,
+      "doc": "Turn the 2026-10-02 user-testing personas into eval cases (P8.1).",
+      "classes": [],
+      "functions": [
+        {
+          "name": "job",
+          "line": 25,
+          "doc": "One job as the file states it. Fields left as None aren't checked."
+        },
+        {
+          "name": "main",
+          "line": 292,
+          "doc": ""
+        }
+      ]
+    },
+    {
       "id": "scripts/update_docs.py",
       "type": "python",
       "layer": "Tooling",
@@ -3813,6 +3854,42 @@
         {
           "name": "test_parse_matches_golden",
           "line": 26,
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "tests/integration/test_persona_cases.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 81,
+      "doc": "P8.1: the cross-domain user-testing personas as eval cases (offline, no LLM).",
+      "classes": [],
+      "functions": [
+        {
+          "name": "_failures",
+          "line": 53,
+          "doc": ""
+        },
+        {
+          "name": "_params",
+          "line": 62,
+          "doc": ""
+        },
+        {
+          "name": "test_persona_cases_exist",
+          "line": 67,
+          "doc": ""
+        },
+        {
+          "name": "test_persona_content",
+          "line": 74,
+          "doc": ""
+        },
+        {
+          "name": "test_persona_full",
+          "line": 80,
           "doc": ""
         }
       ]
@@ -7891,6 +7968,11 @@
     {
       "from": "app/eval/harness.py",
       "to": "tests/integration/test_eval_cases.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/eval/harness.py",
+      "to": "tests/integration/test_persona_cases.py",
       "type": "tested_by"
     },
     {

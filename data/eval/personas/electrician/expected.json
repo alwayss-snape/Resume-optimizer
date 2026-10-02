@@ -1,0 +1,27 @@
+{
+  "name": "DEREK O'BRIEN",
+  "phone": "216-555-0110",
+  "jobs": 2,
+  "job_details": [
+    {
+      "title": "Journeyman Electrician",
+      "company": "Lakeshore Electric LLC",
+      "start": "2017",
+      "end": "Current",
+      "bullets": 3
+    },
+    {
+      "title": "Apprentice Electrician",
+      "company": "IBEW Local 38",
+      "start": "2013",
+      "end": "2017",
+      "bullets": 1
+    }
+  ],
+  "must_keep": [
+    "Ohio Journeyman Electrician License",
+    "OSHA 30",
+    "Valid Ohio driver's license",
+    "IBEW/NECA 5-year apprenticeship program"
+  ]
+}

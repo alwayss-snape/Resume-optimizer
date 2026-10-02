@@ -1,0 +1,26 @@
+{
+  "name": "Aaliyah Brooks",
+  "phone": "(404) 555-0188",
+  "jobs": 2,
+  "job_details": [
+    {
+      "title": "Shift Supervisor",
+      "company": "Starbucks",
+      "start": "2021",
+      "end": "Present",
+      "bullets": 3
+    },
+    {
+      "title": "Sales Associate",
+      "company": "Target",
+      "start": "2019",
+      "end": "2021",
+      "bullets": 1
+    }
+  ],
+  "education": 1,
+  "must_keep": [
+    "cash reconciliation",
+    "conflict resolution"
+  ]
+}

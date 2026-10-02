@@ -1,0 +1,27 @@
+{
+  "name": "王小明 (Wang Xiaoming)",
+  "phone": "+91 98765 43210",
+  "jobs": 2,
+  "job_details": [
+    {
+      "title": "Senior Software Engineer",
+      "company": "Infosys Ltd",
+      "start": "July 2018",
+      "end": "Till Date",
+      "bullets": 1
+    },
+    {
+      "title": "Software Engineer",
+      "company": "TCS",
+      "start": "June 2015",
+      "end": "June 2018",
+      "bullets": 1
+    }
+  ],
+  "education": 1,
+  "must_keep": [
+    "To obtain a challenging position",
+    "Father's Name: Wang Wei",
+    "I hereby declare"
+  ]
+}

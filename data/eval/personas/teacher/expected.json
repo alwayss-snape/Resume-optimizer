@@ -1,0 +1,27 @@
+{
+  "name": "Priya Raman",
+  "phone": "512-555-0199",
+  "jobs": 2,
+  "job_details": [
+    {
+      "title": "8th Grade Science Teacher",
+      "company": "Round Rock ISD",
+      "start": "Aug 2016",
+      "end": "Jun 2024",
+      "bullets": 4
+    },
+    {
+      "title": "Curriculum Writer (contract)",
+      "company": "Texas Education Agency",
+      "start": "Summer 2021",
+      "bullets": 1
+    }
+  ],
+  "education": 2,
+  "must_keep": [
+    "priyaraman.design",
+    "ATD Instructional Design Certificate",
+    "Articulate Rise 360",
+    "STAAR science pass rate"
+  ]
+}

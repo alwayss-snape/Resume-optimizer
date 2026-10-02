@@ -1,0 +1,26 @@
+{
+  "name": "Rebecca Liu, CPA",
+  "phone": "646-555-0177",
+  "jobs": 2,
+  "job_details": [
+    {
+      "title": "Senior Accountant",
+      "company": "Brightline Media",
+      "start": "07/2022",
+      "end": "Present",
+      "bullets": 3
+    },
+    {
+      "title": "Audit Associate",
+      "company": "KPMG LLP",
+      "start": "09/2019",
+      "end": "06/2022",
+      "bullets": 1
+    }
+  ],
+  "education": 1,
+  "must_keep": [
+    "Certified Public Accountant (CPA), New York, 2021",
+    "BlackLine"
+  ]
+}

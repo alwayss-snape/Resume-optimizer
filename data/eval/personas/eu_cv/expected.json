@@ -1,0 +1,16 @@
+{
+  "name": "José Müller-Øberg",
+  "email": "jose.mueller@example.de",
+  "phone": "+49 30 12345678",
+  "must_keep": [
+    "Berufserfahrung",
+    "Projektmanager, Siemens AG, München",
+    "Leitung von IT-Projekten mit Budgets bis 2 Mio. €",
+    "Einführung von SAP S/4HANA in 3 Werken",
+    "Berater, Accenture GmbH, Berlin",
+    "Technische Universität München",
+    "Deutsch (Muttersprache)",
+    "SAP S/4HANA, Jira, Scrum, MS Project",
+    "Geburtsdatum: 14.03.1990"
+  ]
+}

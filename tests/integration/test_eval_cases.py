@@ -11,7 +11,7 @@ import pytest
 
 from app.eval.harness import GENERATED_MANIFEST, fabricated_numbers, load_cases, run, stuffing
 
-GENERATED = [c for c in load_cases(include_private=False) if c.expected]
+GENERATED = [c for c in load_cases(include_private=False) if c.suite == "generated"]
 
 
 def test_generated_cases_exist():

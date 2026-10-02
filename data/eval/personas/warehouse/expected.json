@@ -1,0 +1,27 @@
+{
+  "name": "Tyrone Jackson",
+  "phone": "901-555-0123",
+  "jobs": 2,
+  "job_details": [
+    {
+      "title": "Warehouse Associate",
+      "company": "FedEx Ground Hub",
+      "start": "2019",
+      "end": "present",
+      "bullets": 3
+    },
+    {
+      "title": "Delivery Driver (part-time, concurrent)",
+      "company": "DoorDash",
+      "start": "2020",
+      "end": "present",
+      "bullets": 1
+    }
+  ],
+  "education": 1,
+  "must_keep": [
+    "CDL Class A (2022)",
+    "HAZMAT endorsement",
+    "Forklift Operator Certification (OSHA)"
+  ]
+}

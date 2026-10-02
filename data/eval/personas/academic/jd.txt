@@ -1,0 +1,9 @@
+Senior Scientist, Soil Microbiome (R&D)
+Pivot AgBio is hiring a Senior Scientist to lead soil microbiome discovery.
+Requirements:
+- PhD in Microbiology, Ecology, or related field with 5+ years of postdoctoral or industry experience
+- Track record of peer-reviewed publications in microbial ecology
+- Expertise in metagenomics, 16S rRNA amplicon sequencing and bioinformatics (Python, R, QIIME2)
+- Experience managing research teams and securing grant funding
+- Strong scientific communication skills
+Preferred: experience with greenhouse or field trials; industry R&D experience

@@ -1,0 +1,22 @@
+{
+  "name": "Angela Martin",
+  "phone": "703-555-0129",
+  "jobs": 1,
+  "job_details": [
+    {
+      "title": "Management and Program Analyst (GS-0343-12)",
+      "company": "U.S. Department of Agriculture",
+      "start": "10/2019",
+      "end": "Present",
+      "bullets": 2
+    }
+  ],
+  "education": 1,
+  "must_keep": [
+    "40 hours per week",
+    "Salary: $94,199 per year",
+    "Supervisor: John Doe",
+    "Highest Grade: GS-12 Step 4",
+    "1234 Elm St"
+  ]
+}

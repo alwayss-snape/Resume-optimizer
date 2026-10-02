@@ -1,0 +1,31 @@
+{
+  "name": "Maria Gonzalez, RN, BSN",
+  "email": "maria.gonzalez.rn@example.com",
+  "phone": "(602) 555-0147",
+  "jobs": 2,
+  "job_details": [
+    {
+      "title": "Registered Nurse - Step-Down Unit",
+      "company": "Banner University Medical Center",
+      "start": "03/2021",
+      "end": "Present",
+      "bullets": 4
+    },
+    {
+      "title": "Registered Nurse - Medical-Surgical",
+      "company": "St. Joseph's Hospital",
+      "start": "06/2019",
+      "end": "02/2021",
+      "bullets": 2
+    }
+  ],
+  "education": 1,
+  "must_keep": [
+    "License #RN123456",
+    "PALS",
+    "Mayo Clinic Hospital (120 hrs)",
+    "Phoenix Children's (90 hrs)",
+    "English (native), Spanish (fluent)",
+    "Circle the City"
+  ]
+}

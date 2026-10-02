@@ -1,0 +1,30 @@
+{
+  "name": "Samuel Adeyemi, Esq.",
+  "phone": "202-555-0135",
+  "jobs": 2,
+  "job_details": [
+    {
+      "title": "Associate",
+      "company": "Hale & Morgan LLP",
+      "start": "Sep 2018",
+      "end": "Present",
+      "bullets": 3
+    },
+    {
+      "title": "Judicial Law Clerk",
+      "company": "Hon. Ellen Park",
+      "start": "Aug 2017",
+      "end": "Aug 2018",
+      "bullets": 1
+    }
+  ],
+  "education": 2,
+  "must_keep": [
+    "District of Columbia Bar, 2018",
+    "New York State Bar, 2017",
+    "Arbitration Clauses After Epic Systems",
+    "Discovery of Ephemeral Messaging",
+    "Available upon request",
+    "bench memoranda"
+  ]
+}

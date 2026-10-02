@@ -1,0 +1,29 @@
+{
+  "name": "Zoë Dubois",
+  "email": "zoe.dubois@example.fr",
+  "phone": "+33 6 12 34 56 78",
+  "jobs": 2,
+  "job_details": [
+    {
+      "title": "Supply Chain Analyst",
+      "company": "Groupe SEB",
+      "start": "01/09/2019",
+      "end": "31/08/2023",
+      "bullets": 1
+    },
+    {
+      "title": "Logistics Intern",
+      "company": "Danone",
+      "start": "03/2018",
+      "end": "08/2018",
+      "bullets": 1
+    }
+  ],
+  "education": 1,
+  "must_keep": [
+    "Date of birth: 02/11/1992",
+    "Nationality: French",
+    "French (native), English (C1), German (B1)",
+    "Trail running"
+  ]
+}

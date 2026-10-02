@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**54 app modules · 48 test files · 100 classes · 832 functions/methods · 16,528 lines of Python** · source hash `0e86c4d71ca5dbeb`
+**54 app modules · 49 test files · 100 classes · 843 functions/methods · 16,984 lines of Python** · source hash `7e7dae0649562f68`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -109,6 +109,7 @@ scripts/
   create_sample_pdf.py                           Generate sample PDF resume fixture using PyMuPDF.
   install_hooks.sh
   make_eval_cases.py                             Generate the anonymized evaluation cases (P4.2).
+  make_persona_cases.py                          Turn the 2026-10-02 user-testing personas into eval cases (P8.1).
   update_docs.py                                 Regenerate the repo's living docs: the knowledge graph and the change …
 tests/
   conftest.py                                    Test-wide isolation from the developer's .env.
@@ -126,6 +127,7 @@ tests/
     test_end_to_end.py                           test_integration_docx_pipeline(), test_integration_pdf_pipeline(), tes…
     test_eval_cases.py                           P4.2: every generated anonymized case must reproduce its expected.json
     test_parse_golden.py                         Parse a resume and compare it, field by field, with a hand-checked gol…
+    test_persona_cases.py                        P8.1: the cross-domain user-testing personas as eval cases (offline, n…
     test_preserve_rewrite_end_to_end.py          test_approved_rewrite_appears_in_all_outputs()
   unit/
     test_api.py                                  Web API (P5.1): the full flow through HTTP, plus the shared form helpe…
@@ -664,37 +666,41 @@ _Canonical projection of a parsed resume, compared against hand-checked_
 
 ### `app/eval/harness.py`
 
-**Layer:** Root · **Stage:** all · **Lines:** 462
+**Layer:** Root · **Stage:** all · **Lines:** 522
 
 _Run evaluation cases through the pipeline and collect metrics (P4.1)._
 
-- class **`Case`** ([app/eval/harness.py:35](../app/eval/harness.py#L35))
-- class **`OfflineLLM`** ([app/eval/harness.py:44](../app/eval/harness.py#L44)) — Stands in for LLMClient when no model should be called: every
-  - `is_available()` :51
-  - `get_usage_summary()` :54
-- class **`_RetryCounter`** ([app/eval/harness.py:60](../app/eval/harness.py#L60))
-  - `__init__()` :61
-  - `emit()` :65
-- function **`load_cases()`** ([app/eval/harness.py:70](../app/eval/harness.py#L70))
-- function **`keyword_coverage()`** ([app/eval/harness.py:88](../app/eval/harness.py#L88)) — Share of the JD's keywords found verbatim (whole term, any case) in
-- function **`run_case()`** ([app/eval/harness.py:97](../app/eval/harness.py#L97))
-- function **`_tailor_metrics()`** ([app/eval/harness.py:185](../app/eval/harness.py#L185))
-- function **`attainable_coverage()`** ([app/eval/harness.py:225](../app/eval/harness.py#L225)) — Of the JD keywords written verbatim somewhere in the resume, the share
-- function **`_norm_number()`** ([app/eval/harness.py:244](../app/eval/harness.py#L244))
-- function **`fabricated_numbers()`** ([app/eval/harness.py:249](../app/eval/harness.py#L249)) — Numbers (with their units) in the tailored resume that the original
-- function **`stuffing()`** ([app/eval/harness.py:259](../app/eval/harness.py#L259)) — Signs of keyword stuffing: tailoring pushed the rate above the target
-- function **`_docx_text()`** ([app/eval/harness.py:269](../app/eval/harness.py#L269))
-- function **`check_expected()`** ([app/eval/harness.py:278](../app/eval/harness.py#L278)) — Compare a run with the case's expected.json; one message per miss.
-- function **`_judge()`** ([app/eval/harness.py:335](../app/eval/harness.py#L335)) — Judge one tailored resume (P4.3) and record what the judge cost.
-- function **`replay_case()`** ([app/eval/harness.py:346](../app/eval/harness.py#L346)) — Judge the tailored output a previous run saved in replay_dir/<case>/
-- function **`run()`** ([app/eval/harness.py:366](../app/eval/harness.py#L366))
-- function **`_flatten()`** ([app/eval/harness.py:386](../app/eval/harness.py#L386))
-- function **`compare()`** ([app/eval/harness.py:403](../app/eval/harness.py#L403)) — Human-readable differences per case between a report and a baseline.
-- function **`_judge_summary()`** ([app/eval/harness.py:431](../app/eval/harness.py#L431))
-- function **`summary_lines()`** ([app/eval/harness.py:437](../app/eval/harness.py#L437))
+- class **`Case`** ([app/eval/harness.py:37](../app/eval/harness.py#L37))
+- class **`OfflineLLM`** ([app/eval/harness.py:48](../app/eval/harness.py#L48)) — Stands in for LLMClient when no model should be called: every
+  - `is_available()` :55
+  - `get_usage_summary()` :58
+- class **`_RetryCounter`** ([app/eval/harness.py:64](../app/eval/harness.py#L64))
+  - `__init__()` :65
+  - `emit()` :69
+- function **`load_cases()`** ([app/eval/harness.py:74](../app/eval/harness.py#L74))
+- function **`keyword_coverage()`** ([app/eval/harness.py:94](../app/eval/harness.py#L94)) — Share of the JD's keywords found verbatim (whole term, any case) in
+- function **`run_case()`** ([app/eval/harness.py:103](../app/eval/harness.py#L103))
+- function **`_tailor_metrics()`** ([app/eval/harness.py:192](../app/eval/harness.py#L192))
+- function **`attainable_coverage()`** ([app/eval/harness.py:232](../app/eval/harness.py#L232)) — Of the JD keywords written verbatim somewhere in the resume, the share
+- function **`_norm_number()`** ([app/eval/harness.py:251](../app/eval/harness.py#L251))
+- function **`fabricated_numbers()`** ([app/eval/harness.py:256](../app/eval/harness.py#L256)) — Numbers (with their units) in the tailored resume that the original
+- function **`stuffing()`** ([app/eval/harness.py:266](../app/eval/harness.py#L266)) — Signs of keyword stuffing: tailoring pushed the rate above the target
+- function **`_docx_text()`** ([app/eval/harness.py:276](../app/eval/harness.py#L276))
+- function **`is_content_failure()`** ([app/eval/harness.py:291](../app/eval/harness.py#L291))
+- function **`_same_text()`** ([app/eval/harness.py:295](../app/eval/harness.py#L295))
+- function **`check_job_details()`** ([app/eval/harness.py:300](../app/eval/harness.py#L300)) — Each job's title, company, dates and bullet count as the file states
+- function **`check_must_keep()`** ([app/eval/harness.py:320](../app/eval/harness.py#L320)) — Source phrases that must survive into the rendered file.
+- function **`check_expected()`** ([app/eval/harness.py:329](../app/eval/harness.py#L329)) — Compare a run with the case's expected.json; one message per miss.
+- function **`_judge()`** ([app/eval/harness.py:395](../app/eval/harness.py#L395)) — Judge one tailored resume (P4.3) and record what the judge cost.
+- function **`replay_case()`** ([app/eval/harness.py:406](../app/eval/harness.py#L406)) — Judge the tailored output a previous run saved in replay_dir/<case>/
+- function **`run()`** ([app/eval/harness.py:426](../app/eval/harness.py#L426))
+- function **`_flatten()`** ([app/eval/harness.py:446](../app/eval/harness.py#L446))
+- function **`compare()`** ([app/eval/harness.py:463](../app/eval/harness.py#L463)) — Human-readable differences per case between a report and a baseline.
+- function **`_judge_summary()`** ([app/eval/harness.py:491](../app/eval/harness.py#L491))
+- function **`summary_lines()`** ([app/eval/harness.py:497](../app/eval/harness.py#L497))
 - **Imports:** `analysis/experience.py`, `analysis/jd_analyzer.py`, `analysis/keyword_match.py`, `domain/report.py`, `eval/golden.py`, `eval/judge.py`, `llm/client.py`, `rendering/layout.py`, `services/tailor.py`
 - **Imported by:** `eval/__main__.py`
-- **Tested by:** `tests/integration/test_eval_cases.py`, `tests/unit/test_cli_parity.py`, `tests/unit/test_eval_harness.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_judge.py`, `tests/unit/test_profile_store.py`
+- **Tested by:** `tests/integration/test_eval_cases.py`, `tests/integration/test_persona_cases.py`, `tests/unit/test_cli_parity.py`, `tests/unit/test_eval_harness.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_judge.py`, `tests/unit/test_profile_store.py`
 
 ### `app/eval/judge.py`
 

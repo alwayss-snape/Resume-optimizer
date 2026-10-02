@@ -1,0 +1,134 @@
+[
+  {
+    "name": "nurse",
+    "resume": "data/eval/personas/nurse/resume.docx",
+    "jd": "data/eval/personas/nurse/jd.txt",
+    "expected": "data/eval/personas/nurse/expected.json"
+  },
+  {
+    "name": "nurse-pdf",
+    "resume": "data/eval/personas/nurse-pdf/resume.pdf",
+    "jd": "data/eval/personas/nurse-pdf/jd.txt",
+    "expected": "data/eval/personas/nurse-pdf/expected.json"
+  },
+  {
+    "name": "teacher",
+    "resume": "data/eval/personas/teacher/resume.docx",
+    "jd": "data/eval/personas/teacher/jd.txt",
+    "expected": "data/eval/personas/teacher/expected.json"
+  },
+  {
+    "name": "electrician",
+    "resume": "data/eval/personas/electrician/resume.docx",
+    "jd": "data/eval/personas/electrician/jd.txt",
+    "expected": "data/eval/personas/electrician/expected.json"
+  },
+  {
+    "name": "warehouse",
+    "resume": "data/eval/personas/warehouse/resume.docx",
+    "jd": "data/eval/personas/warehouse/jd.txt",
+    "expected": "data/eval/personas/warehouse/expected.json"
+  },
+  {
+    "name": "retail",
+    "resume": "data/eval/personas/retail/resume.docx",
+    "jd": "data/eval/personas/retail/jd.txt",
+    "expected": "data/eval/personas/retail/expected.json"
+  },
+  {
+    "name": "sales",
+    "resume": "data/eval/personas/sales/resume.docx",
+    "jd": "data/eval/personas/sales/jd.txt",
+    "expected": "data/eval/personas/sales/expected.json"
+  },
+  {
+    "name": "sales-pdf",
+    "resume": "data/eval/personas/sales-pdf/resume.pdf",
+    "jd": "data/eval/personas/sales-pdf/jd.txt",
+    "expected": "data/eval/personas/sales-pdf/expected.json"
+  },
+  {
+    "name": "accountant",
+    "resume": "data/eval/personas/accountant/resume.docx",
+    "jd": "data/eval/personas/accountant/jd.txt",
+    "expected": "data/eval/personas/accountant/expected.json"
+  },
+  {
+    "name": "lawyer",
+    "resume": "data/eval/personas/lawyer/resume.docx",
+    "jd": "data/eval/personas/lawyer/jd.txt",
+    "expected": "data/eval/personas/lawyer/expected.json"
+  },
+  {
+    "name": "academic",
+    "resume": "data/eval/personas/academic/resume.docx",
+    "jd": "data/eval/personas/academic/jd.txt",
+    "expected": "data/eval/personas/academic/expected.json"
+  },
+  {
+    "name": "designer",
+    "resume": "data/eval/personas/designer/resume.docx",
+    "jd": "data/eval/personas/designer/jd.txt",
+    "expected": "data/eval/personas/designer/expected.json"
+  },
+  {
+    "name": "executive",
+    "resume": "data/eval/personas/executive/resume.docx",
+    "jd": "data/eval/personas/executive/jd.txt",
+    "expected": "data/eval/personas/executive/expected.json"
+  },
+  {
+    "name": "newgrad",
+    "resume": "data/eval/personas/newgrad/resume.docx",
+    "jd": "data/eval/personas/newgrad/jd.txt",
+    "expected": "data/eval/personas/newgrad/expected.json"
+  },
+  {
+    "name": "gap",
+    "resume": "data/eval/personas/gap/resume.docx",
+    "jd": "data/eval/personas/gap/jd.txt",
+    "expected": "data/eval/personas/gap/expected.json"
+  },
+  {
+    "name": "veteran",
+    "resume": "data/eval/personas/veteran/resume.docx",
+    "jd": "data/eval/personas/veteran/jd.txt",
+    "expected": "data/eval/personas/veteran/expected.json"
+  },
+  {
+    "name": "eu_cv",
+    "resume": "data/eval/personas/eu_cv/resume.docx",
+    "jd": "data/eval/personas/eu_cv/jd.txt",
+    "expected": "data/eval/personas/eu_cv/expected.json"
+  },
+  {
+    "name": "eu_en",
+    "resume": "data/eval/personas/eu_en/resume.docx",
+    "jd": "data/eval/personas/eu_en/jd.txt",
+    "expected": "data/eval/personas/eu_en/expected.json"
+  },
+  {
+    "name": "spanish",
+    "resume": "data/eval/personas/spanish/resume.docx",
+    "jd": "data/eval/personas/spanish/jd.txt",
+    "expected": "data/eval/personas/spanish/expected.json"
+  },
+  {
+    "name": "india",
+    "resume": "data/eval/personas/india/resume.docx",
+    "jd": "data/eval/personas/india/jd.txt",
+    "expected": "data/eval/personas/india/expected.json"
+  },
+  {
+    "name": "federal",
+    "resume": "data/eval/personas/federal/resume.docx",
+    "jd": "data/eval/personas/federal/jd.txt",
+    "expected": "data/eval/personas/federal/expected.json"
+  },
+  {
+    "name": "textbox",
+    "resume": "data/eval/personas/textbox/resume.docx",
+    "jd": "data/eval/personas/textbox/jd.txt",
+    "expected": "data/eval/personas/textbox/expected.json"
+  }
+]

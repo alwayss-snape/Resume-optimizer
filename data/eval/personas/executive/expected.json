@@ -1,0 +1,62 @@
+{
+  "name": "Robert J. Whitfield",
+  "phone": "214-555-0101",
+  "jobs": 7,
+  "job_details": [
+    {
+      "title": "Chief Operating Officer",
+      "company": "Atlas Industrial Group",
+      "start": "2018",
+      "end": "Present",
+      "bullets": 4
+    },
+    {
+      "title": "SVP, Global Supply Chain",
+      "company": "Meridian Consumer Products",
+      "start": "2013",
+      "end": "2018",
+      "bullets": 4
+    },
+    {
+      "title": "VP Manufacturing",
+      "company": "Meridian Consumer Products",
+      "start": "2009",
+      "end": "2013",
+      "bullets": 4
+    },
+    {
+      "title": "Plant Director",
+      "company": "Kessler Foods",
+      "start": "2005",
+      "end": "2009",
+      "bullets": 4
+    },
+    {
+      "title": "Operations Manager",
+      "company": "Kessler Foods",
+      "start": "2001",
+      "end": "2005",
+      "bullets": 4
+    },
+    {
+      "title": "Production Supervisor",
+      "company": "General Mills",
+      "start": "1998",
+      "end": "2001",
+      "bullets": 4
+    },
+    {
+      "title": "Industrial Engineer",
+      "company": "General Mills",
+      "start": "1996",
+      "end": "1998",
+      "bullets": 4
+    }
+  ],
+  "education": 2,
+  "must_keep": [
+    "Board Member, Dallas Regional Chamber",
+    "Kellogg School of Management",
+    "Purdue University"
+  ]
+}

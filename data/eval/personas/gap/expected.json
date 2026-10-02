@@ -1,0 +1,38 @@
+{
+  "name": "Nicole Fischer",
+  "phone": "303-555-0155",
+  "jobs": 4,
+  "job_details": [
+    {
+      "title": "Freelance Content Marketer",
+      "company": "Self-employed",
+      "start": "2023",
+      "end": "Present",
+      "bullets": 1
+    },
+    {
+      "start": "2021",
+      "end": "2023",
+      "bullets": 1
+    },
+    {
+      "title": "Marketing Manager",
+      "company": "Summit Outdoor Co.",
+      "start": "Mar 2016",
+      "end": "Feb 2021",
+      "bullets": 2
+    },
+    {
+      "title": "Adjunct Instructor (concurrent)",
+      "company": "Community College of Denver",
+      "start": "2018",
+      "end": "2020",
+      "bullets": 1
+    }
+  ],
+  "education": 1,
+  "must_keep": [
+    "Career Break",
+    "Family Caregiver"
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "email": "maria.gonzalez.rn@example.com",
+  "phone": "(602) 555-0147",
+  "jobs": 2,
+  "job_details": [
+    {
+      "start": "03/2021",
+      "end": "Present",
+      "bullets": 4
+    },
+    {
+      "start": "06/2019",
+      "end": "02/2021",
+      "bullets": 2
+    }
+  ],
+  "must_keep": [
+    "License #RN123456",
+    "Mayo Clinic Hospital (120 hrs)",
+    "Circle the City"
+  ]
+}

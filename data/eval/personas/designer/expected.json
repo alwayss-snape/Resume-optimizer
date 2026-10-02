@@ -1,0 +1,27 @@
+{
+  "name": "Lena Park",
+  "email": "lena@example.com",
+  "jobs": 2,
+  "job_details": [
+    {
+      "title": "Product Designer",
+      "company": "Hopper",
+      "start": "2020",
+      "end": "Present",
+      "bullets": 2
+    },
+    {
+      "title": "Visual Designer",
+      "company": "Wieden+Kennedy",
+      "start": "2017",
+      "end": "2020",
+      "bullets": 1
+    }
+  ],
+  "education": 1,
+  "must_keep": [
+    "lenapark.design",
+    "dribbble.com/lenapark",
+    "Design systems"
+  ]
+}

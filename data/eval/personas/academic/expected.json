@@ -1,0 +1,31 @@
+{
+  "name": "Dr. Hannah Okafor",
+  "email": "h.okafor@example.edu",
+  "jobs": 2,
+  "job_details": [
+    {
+      "title": "Assistant Professor of Biology",
+      "company": "Midwestern State University",
+      "start": "2019",
+      "end": "Present",
+      "bullets": 2
+    },
+    {
+      "title": "Postdoctoral Research Fellow",
+      "company": "University of Wisconsin–Madison",
+      "start": "2016",
+      "end": "2019",
+      "bullets": 1
+    }
+  ],
+  "education": 2,
+  "must_keep": [
+    "Microbial ecology, soil metagenomics",
+    "NSF CAREER Award",
+    "Soil microbial response to warming experiment 45",
+    "ASM Microbe 2023",
+    "Reviewer for ISME Journal",
+    "American Society for Microbiology",
+    "ORCID 0000-0002-1234-5678"
+  ]
+}
