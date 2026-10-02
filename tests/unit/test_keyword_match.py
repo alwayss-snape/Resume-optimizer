@@ -95,3 +95,14 @@ def test_tokens_ignore_verb_forms_but_keep_short_stems():
     assert tokens("string spring used") == ["string", "spring", "used"]
 
 
+
+
+def test_hyphenated_terms_and_ing_fields_after_verb_folding():
+    """P7.2 review: stemming must not break "AWS-certified" or turn
+    "Marketing" into "market"."""
+    report = KeywordMatcher().match(
+        _job(["AWS", "cloud", "Marketing", "Accounting", "Mentor"]),
+        _resume(["AWS-certified engineer building cloud-native apps", "Grew market share across 40 key accounts",
+                 "Mentored two analysts"]))
+    assert {k: r.found for k, r in _rows(report).items()} == {"AWS": True, "cloud": True, "Marketing": False,
+                                                           "Accounting": False, "Mentor": True}

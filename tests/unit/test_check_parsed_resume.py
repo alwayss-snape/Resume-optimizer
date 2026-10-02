@@ -103,3 +103,7 @@ def test_a_missed_job_can_be_added_and_a_misread_one_removed():
     with pytest.raises(ValueError, match="start date"):
         service.apply_parse_corrections(parsed, {"added_jobs": [
             {"company": "Northwind", "title": "Analyst", "current": True, "description": "Built dashboards"}]})
+
+    every = [e.id for e in parsed[1].resume.experience]
+    with pytest.raises(ValueError, match="at least one job"):
+        service.apply_parse_corrections(parsed, {"removed_jobs": every})

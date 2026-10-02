@@ -26,9 +26,10 @@ export function Review() {
   const { run, settings, updateRun, advance } = useApp();
   const drafted = run.drafted!;
   // Sent here from the results page to add job keywords: open at that section instead of the top.
-  const [jumpToGaps] = useState(() => run.jumpTo === "gaps");
-  const heading = useFocusHeading(!jumpToGaps);
+  const [jump] = useState(() => run.jumpTo);
+  const heading = useFocusHeading(!jump);
   const gapsHeading = useRef<HTMLHeadingElement>(null);
+  const additionBox = useRef<HTMLDetailsElement>(null);
   const review: ReviewState = run.review ?? initialReview(drafted);
   // Functional updates on the latest stored state: one action may make
   // several changes in a row (save an edit, then accept the card).
@@ -49,12 +50,14 @@ export function Review() {
     if (!run.review) updateRun({ review: initialReview(drafted) });
   }, [run.review, drafted, updateRun]);
   useEffect(() => {
-    if (!jumpToGaps) return;
+    if (!jump) return;
     updateRun({ jumpTo: null });
-    const target = gapsHeading.current ?? heading.current;
-    target?.scrollIntoView?.({ block: "start" });
+    if (jump === "addition" && additionBox.current) additionBox.current.open = true;
+    const target = jump === "gaps" && gapsHeading.current ? gapsHeading.current
+      : additionBox.current?.querySelector("summary") ?? heading.current;
+    target?.scrollIntoView?.({ block: "center" });
     target?.focus({ preventScroll: true });
-  }, [jumpToGaps, updateRun, heading]);
+  }, [jump, updateRun, heading]);
 
   const groups = useMemo(() => groupProposals(drafted.proposals), [drafted.proposals]);
   const selectionKey = JSON.stringify(selection(drafted.proposals, review));
@@ -278,7 +281,7 @@ export function Review() {
           )}
 
           <section aria-label="Add more" className="mt-6 flex flex-col gap-4">
-            <details className="group rounded-[3px] border border-dashed border-field bg-panel">
+            <details ref={additionBox} className="group rounded-[3px] border border-dashed border-field bg-panel">
               <summary className="flex min-h-15 cursor-pointer list-none items-center gap-2.5 px-5 text-sm font-medium hover:text-pencil [&::-webkit-details-marker]:hidden">
                 <Icon name="close" size={16} className="rotate-45 text-pencil transition-transform group-open:rotate-0" />
                 Add anything else in your own words

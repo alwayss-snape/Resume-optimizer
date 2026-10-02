@@ -58,9 +58,10 @@ function SignOffLine({ value, unit, label }: { value: string | number; unit?: st
 const byImportance = (a: KeywordRow, b: KeywordRow) => Number(b.required) - Number(a.required) || b.weight - a.weight;
 
 /** Before -> after on the rule; then what moved it, or what would. */
-function ScoreReveal({ result, beforeRows, onAddKeywords }: {
+function ScoreReveal({ result, beforeRows, asked, onAddKeywords }: {
   result: TailorResult;
   beforeRows: KeywordRow[];
+  asked: boolean; // review has tick boxes for some of these
   onAddKeywords: () => void;
 }) {
   const before = result.initial_alignment_score;
@@ -129,7 +130,9 @@ function ScoreReveal({ result, beforeRows, onAddKeywords }: {
             </ul>
           </div>
           <div>
-            <Button onClick={onAddKeywords}>Add the ones you have <Icon name="arrow-right" size={16} /></Button>
+            <Button onClick={onAddKeywords}>
+              {asked ? "Add the ones you have" : "Add the ones you have, in your own words"} <Icon name="arrow-right" size={16} />
+            </Button>
           </div>
         </div>
       )}
@@ -162,6 +165,7 @@ export function Results() {
   }, [tab, log, result.files.changes]);
 
   const rows = result.keyword_match?.rows ?? [];
+  const asked = (run.drafted?.gap_questions.length ?? 0) > 0;
   const applied = result.applied; // what the server really put in the files
   const issues = result.content_lint?.issues ?? [];
   const fileWarnings = [...result.docx_warnings.map((w) => `DOCX: ${w}`), ...result.pdf_warnings.map((w) => `PDF: ${w}`)];
@@ -212,8 +216,8 @@ export function Results() {
           {result.addition_note && <p className="m-0 text-sm text-muted">Your addition was included: {result.addition_note}</p>}
         </div>
         <motion.div style={{ y: drift }}>
-          <ScoreReveal result={result} beforeRows={run.drafted?.keyword_match?.rows ?? []}
-            onAddKeywords={() => { updateRun({ jumpTo: "gaps" }); goTo("review"); }} />
+          <ScoreReveal result={result} beforeRows={run.drafted?.keyword_match?.rows ?? []} asked={asked}
+            onAddKeywords={() => { updateRun({ jumpTo: asked ? "gaps" : "addition" }); goTo("review"); }} />
         </motion.div>
       </section>
 

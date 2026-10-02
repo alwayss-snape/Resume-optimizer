@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "fd822216d9fe9ccf",
+  "source_hash": "0e86c4d71ca5dbeb",
   "stats": {
     "files": 133,
     "python_files": 110,
     "app_modules": 54,
     "test_files": 48,
     "classes": 100,
-    "functions": 831,
-    "lines_of_python": 16500
+    "functions": 832,
+    "lines_of_python": 16528
   },
   "axes": {
     "x": "location (path)",
@@ -455,27 +455,27 @@
       "stages": [
         "5 Score"
       ],
-      "lines": 180,
+      "lines": 191,
       "doc": "Keyword-level match rate, the headline score (P1.2).",
       "classes": [
         {
           "name": "KeywordMatcher",
-          "line": 109,
+          "line": 120,
           "doc": "",
           "methods": [
             {
               "name": "_find",
-              "line": 110,
+              "line": 121,
               "doc": ""
             },
             {
               "name": "_title_credit",
-              "line": 133,
+              "line": 144,
               "doc": ""
             },
             {
               "name": "match",
-              "line": 143,
+              "line": 154,
               "doc": ""
             }
           ]
@@ -484,27 +484,27 @@
       "functions": [
         {
           "name": "_stem",
-          "line": 44,
+          "line": 49,
           "doc": "Plural- and verb-form-insensitive: \"communicate\", \"communicated\" and"
         },
         {
           "name": "_alias",
-          "line": 60,
+          "line": 67,
           "doc": ""
         },
         {
           "name": "tokens",
-          "line": 67,
-          "doc": "Lowercased, alias-canonical, plural-insensitive tokens."
+          "line": 77,
+          "doc": "Lowercased, alias-canonical, plural- and verb-form-insensitive tokens."
         },
         {
           "name": "_contains_seq",
-          "line": 72,
+          "line": 83,
           "doc": ""
         },
         {
           "name": "resume_sections",
-          "line": 77,
+          "line": 88,
           "doc": "(label, text) for every part of the resume a recruiter or ATS reads."
         }
       ]
@@ -3020,7 +3020,7 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 1136,
+      "lines": 1138,
       "doc": "",
       "classes": [
         {
@@ -3140,22 +3140,22 @@
             },
             {
               "name": "analyze_only",
-              "line": 488,
+              "line": 490,
               "doc": ""
             },
             {
               "name": "generate_proposals",
-              "line": 514,
+              "line": 516,
               "doc": "Generate rewrite proposals without applying them, plus questions"
             },
             {
               "name": "incorporate_user_addition",
-              "line": 583,
+              "line": 585,
               "doc": "Fold a user-supplied free-text addition (a project, an"
             },
             {
               "name": "tailor_resume",
-              "line": 662,
+              "line": 664,
               "doc": ""
             }
           ]
@@ -3169,7 +3169,7 @@
         },
         {
           "name": "_merge_usage",
-          "line": 1127,
+          "line": 1129,
           "doc": "Combine two LLMClient.get_usage_summary() dicts into one."
         }
       ]
@@ -4065,7 +4065,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 105,
+      "lines": 109,
       "doc": "P3.5: \"Check parsed resume\" step: corrections applied by the service",
       "classes": [],
       "functions": [
@@ -4706,7 +4706,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 97,
+      "lines": 108,
       "doc": "Keyword-level match rate as the headline score (P1.2).",
       "classes": [],
       "functions": [
@@ -4769,6 +4769,11 @@
           "name": "test_tokens_ignore_verb_forms_but_keep_short_stems",
           "line": 90,
           "doc": ""
+        },
+        {
+          "name": "test_hyphenated_terms_and_ing_fields_after_verb_folding",
+          "line": 100,
+          "doc": "P7.2 review: stemming must not break \"AWS-certified\" or turn"
         }
       ]
     },

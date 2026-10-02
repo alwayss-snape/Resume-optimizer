@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**54 app modules · 48 test files · 100 classes · 831 functions/methods · 16,500 lines of Python** · source hash `fd822216d9fe9ccf`
+**54 app modules · 48 test files · 100 classes · 832 functions/methods · 16,528 lines of Python** · source hash `0e86c4d71ca5dbeb`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -262,19 +262,19 @@ _Suggest-and-confirm gaps (P3.1): ask, never assume._
 
 ### `app/analysis/keyword_match.py`
 
-**Layer:** Analysis · **Stage:** 5 Score · **Lines:** 180
+**Layer:** Analysis · **Stage:** 5 Score · **Lines:** 191
 
 _Keyword-level match rate, the headline score (P1.2)._
 
-- class **`KeywordMatcher`** ([app/analysis/keyword_match.py:109](../app/analysis/keyword_match.py#L109))
-  - `_find()` :110
-  - `_title_credit()` :133
-  - `match()` :143
-- function **`_stem()`** ([app/analysis/keyword_match.py:44](../app/analysis/keyword_match.py#L44)) — Plural- and verb-form-insensitive: "communicate", "communicated" and
-- function **`_alias()`** ([app/analysis/keyword_match.py:60](../app/analysis/keyword_match.py#L60))
-- function **`tokens()`** ([app/analysis/keyword_match.py:67](../app/analysis/keyword_match.py#L67)) — Lowercased, alias-canonical, plural-insensitive tokens.
-- function **`_contains_seq()`** ([app/analysis/keyword_match.py:72](../app/analysis/keyword_match.py#L72))
-- function **`resume_sections()`** ([app/analysis/keyword_match.py:77](../app/analysis/keyword_match.py#L77)) — (label, text) for every part of the resume a recruiter or ATS reads.
+- class **`KeywordMatcher`** ([app/analysis/keyword_match.py:120](../app/analysis/keyword_match.py#L120))
+  - `_find()` :121
+  - `_title_credit()` :144
+  - `match()` :154
+- function **`_stem()`** ([app/analysis/keyword_match.py:49](../app/analysis/keyword_match.py#L49)) — Plural- and verb-form-insensitive: "communicate", "communicated" and
+- function **`_alias()`** ([app/analysis/keyword_match.py:67](../app/analysis/keyword_match.py#L67))
+- function **`tokens()`** ([app/analysis/keyword_match.py:77](../app/analysis/keyword_match.py#L77)) — Lowercased, alias-canonical, plural- and verb-form-insensitive tokens.
+- function **`_contains_seq()`** ([app/analysis/keyword_match.py:83](../app/analysis/keyword_match.py#L83))
+- function **`resume_sections()`** ([app/analysis/keyword_match.py:88](../app/analysis/keyword_match.py#L88)) — (label, text) for every part of the resume a recruiter or ATS reads.
 - **Imports:** `analysis/terminology.py`, `domain/job.py`, `domain/report.py`, `domain/resume.py`
 - **Imported by:** `analysis/gap_questions.py`, `analysis/skills_tailor.py`, `analysis/tailor_planner.py`, `eval/harness.py`, `services/tailor.py`
 - **Tested by:** `tests/unit/test_gap_questions.py`, `tests/unit/test_keyword_match.py`, `tests/unit/test_parser_regressions_p42.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`
@@ -986,7 +986,7 @@ _Local profile of facts the user has confirmed (P3.2)._
 
 ### `app/services/tailor.py`
 
-**Layer:** Services · **Stage:** all · **Lines:** 1136
+**Layer:** Services · **Stage:** all · **Lines:** 1138
 
 - class **`TailorService`** ([app/services/tailor.py:55](../app/services/tailor.py#L55))
   - `__init__()` :56
@@ -1011,12 +1011,12 @@ _Local profile of facts the user has confirmed (P3.2)._
   - `_copy_parsed()` :374 — Deep copies, so a parse kept in UI session state is never mutated.
   - `preview_keyword_match()` :379 — Match rate if these proposals were applied (P3.4 "recalculate"):
   - `apply_parse_corrections()` :402 — Apply the user's fixes from the "Check parsed resume" step (P3.5).
-  - `analyze_only()` :488
-  - `generate_proposals()` :514 — Generate rewrite proposals without applying them, plus questions
-  - `incorporate_user_addition()` :583 — Fold a user-supplied free-text addition (a project, an
-  - `tailor_resume()` :662
+  - `analyze_only()` :490
+  - `generate_proposals()` :516 — Generate rewrite proposals without applying them, plus questions
+  - `incorporate_user_addition()` :585 — Fold a user-supplied free-text addition (a project, an
+  - `tailor_resume()` :664
 - function **`_progress()`** ([app/services/tailor.py:44](../app/services/tailor.py#L44)) — A progress reporter that can never break a run (P3.6).
-- function **`_merge_usage()`** ([app/services/tailor.py:1127](../app/services/tailor.py#L1127)) — Combine two LLMClient.get_usage_summary() dicts into one.
+- function **`_merge_usage()`** ([app/services/tailor.py:1129](../app/services/tailor.py#L1129)) — Combine two LLMClient.get_usage_summary() dicts into one.
 - **Imports:** `analysis/experience.py`, `analysis/gap_questions.py`, `analysis/jd_analyzer.py`, `analysis/keyword_match.py`, `analysis/matcher.py`, `analysis/resume_normalizer.py`, `analysis/rewriter.py`, `analysis/scoring.py`, `analysis/semantic_matcher.py`, `analysis/skills_tailor.py`, `analysis/structure_extractor.py`, `analysis/summary_writer.py`, `analysis/tailor_planner.py`, `domain/evidence.py`, `domain/job.py`, `domain/report.py`, `domain/resume.py`, `domain/resume_document.py`, `domain/tailoring.py`, `ingestion/docx.py`, `ingestion/pdf.py`, `llm/client.py`, `rendering/docx_patcher.py`, `rendering/html_renderer.py`, `rendering/layout.py`, `rendering/page_fit.py`, `rendering/pdf_converter.py`, `rendering/template_renderer.py`, `services/profile_store.py`, `services/run_manager.py`, `validation/content_lint.py`, `validation/factual.py`, `validation/output.py`, `validation/safety.py`, `validation/structural.py`
 - **Imported by:** `api/main.py`, `cli.py`, `eval/harness.py`
 - **Tested by:** `tests/integration/test_end_to_end.py`, `tests/unit/test_api.py`, `tests/unit/test_check_parsed_resume.py`, `tests/unit/test_cli.py`, `tests/unit/test_cli_parity.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_new_role.py`, `tests/unit/test_profile_store.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_review_view.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_tailor_resume_flow.py`, `tests/unit/test_tailor_service_addition.py`

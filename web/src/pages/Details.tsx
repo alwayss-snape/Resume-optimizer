@@ -11,6 +11,9 @@ import { useApp } from "../lib/store";
 import type { Details as DetailsData, JobDetails, Role } from "../lib/types";
 import { useFocusHeading } from "../lib/useFocusHeading";
 
+// The server's limit on bullets for a new job (TailorService.MAX_NEW_ROLE_BULLETS).
+const MAX_NEW_JOB_LINES = 6;
+
 /** Step 2 (P3.5): confirm or fix what was read from the file before any
  *  rewriting. Bullets are reviewed in the next step. */
 export function Details() {
@@ -22,8 +25,8 @@ export function Details() {
   const [added, setAdded] = useState<{ key: number; job: NewJob }[]>([]);
   const [removed, setRemoved] = useState<string[]>([]);
   const nextKey = useRef(0);
-  const addedRefs = useRef(new Map<number, HTMLElement>());
-  const focusAdded = useRef<number | null>(null);
+  // Where focus goes after a job card appears or goes away (a CSS selector).
+  const focusNext = useRef<string | null>(null);
   const [progress, setProgress] = useState<string[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const progressHeading = useRef<HTMLHeadingElement>(null);
@@ -38,20 +41,29 @@ export function Details() {
   useEffect(() => {
     if (error) errorRef.current?.focus();
   }, [error]);
-  // A new job card takes focus on its first field.
+  // A new card focuses its first field; Remove focuses Undo and back; a
+  // deleted new card hands focus to "Add a job".
   useEffect(() => {
-    if (focusAdded.current === null) return;
-    addedRefs.current.get(focusAdded.current)?.querySelector("input")?.focus();
-    focusAdded.current = null;
-  }, [added]);
+    if (focusNext.current === null) return;
+    document.querySelector<HTMLElement>(focusNext.current)?.focus();
+    focusNext.current = null;
+  }, [added, removed]);
 
   const addJob = () => {
     const key = nextKey.current++;
-    focusAdded.current = key;
+    focusNext.current = `[data-job="new-${key}"] input`;
     setAdded((a) => [...a, { key, job: EMPTY_JOB }]);
   };
+  const dropAdded = (key: number) => {
+    focusNext.current = "[data-job='add']";
+    setAdded((a) => a.filter((x) => x.key !== key));
+  };
   const setAddedJob = (key: number, job: NewJob) => setAdded((a) => a.map((x) => (x.key === key ? { ...x, job } : x)));
-  const toggleRemoved = (id: string) => setRemoved((r) => (r.includes(id) ? r.filter((x) => x !== id) : [...r, id]));
+  const toggleRemoved = (id: string) => {
+    const undoing = removed.includes(id);
+    focusNext.current = `[data-job="${undoing ? "remove" : "undo"}-${id}"]`;
+    setRemoved((r) => (undoing ? r.filter((x) => x !== id) : [...r, id]));
+  };
 
   const setCandidate = (field: keyof DetailsData["candidate"], value: string) =>
     setForm((f) => ({ ...f, candidate: { ...f.candidate, [field]: value } }));
@@ -64,8 +76,10 @@ export function Details() {
   const submit = async () => {
     setError(null);
     const newJobs = added.filter((a) => anyJobField(a.job));
-    for (const [n, a] of newJobs.entries()) {
-      const problem = newJobProblem(a.job, "remove it");
+    for (const [n, a] of added.entries()) { // numbered as the cards are
+      const lines = a.job.description.split("\n").filter((l) => l.trim()).length;
+      const problem = newJobProblem(a.job, "remove it")
+        ?? (lines > MAX_NEW_JOB_LINES ? `Keep it to ${MAX_NEW_JOB_LINES} lines (one per bullet point); it has ${lines}.` : null);
       if (problem) {
         setError(`New job ${n + 1}: ${problem}`);
         return;
@@ -159,7 +173,8 @@ export function Details() {
             <span className="text-sm text-muted">
               <del className="mark-del">Job {i + 1}{job.company ? `: ${job.company}` : ""}</del> won't be on your resume.
             </span>
-            <Button variant="ghost" onClick={() => toggleRemoved(job.id)}>Undo</Button>
+            <Button variant="ghost" data-job={`undo-${job.id}`} aria-label={`Undo removing job ${i + 1}`}
+              onClick={() => toggleRemoved(job.id)}>Undo</Button>
           </div>
         ) : (
           <fieldset key={job.id} className="sheet flex flex-col gap-4 rounded-[3px] p-6">
@@ -170,7 +185,7 @@ export function Details() {
                 <span className="tabular text-[13px] text-muted">
                   {job.bullets} bullet{job.bullets === 1 ? "" : "s"}{job.groups ? ` in ${job.groups} sub-sections` : ""}
                 </span>
-                <Button variant="ghost" aria-label={`Remove job ${i + 1}${job.company ? `, ${job.company}` : ""}`}
+                <Button variant="ghost" data-job={`remove-${job.id}`} aria-label={`Remove job ${i + 1}${job.company ? `, ${job.company}` : ""}`}
                   onClick={() => toggleRemoved(job.id)}>Remove</Button>
               </span>
             </div>
@@ -191,21 +206,21 @@ export function Details() {
           </fieldset>
         ))}
         {added.map(({ key, job }, n) => (
-          <fieldset key={key} ref={(el) => { if (el) addedRefs.current.set(key, el); else addedRefs.current.delete(key); }}
-            className="sheet flex flex-col gap-4 rounded-[3px] p-6">
+          <fieldset key={key} data-job={`new-${key}`} className="sheet flex flex-col gap-4 rounded-[3px] p-6">
             <legend className="sr-only">New job {n + 1}</legend>
             <div className="flex flex-wrap items-center justify-between gap-2">
               <span className="text-[15px] font-semibold">New job {n + 1}</span>
               <Button variant="ghost" aria-label={`Remove new job ${n + 1}`}
-                onClick={() => setAdded((a) => a.filter((x) => x.key !== key))}>Remove</Button>
+                onClick={() => dropAdded(key)}>Remove</Button>
             </div>
             <p className="m-0 text-[13px] text-muted">
-              Your lines become its bullet points as written; the next step suggests tailored wording you can accept or reject.
+              Up to {MAX_NEW_JOB_LINES} lines; each becomes a bullet point as written, and the next step suggests tailored
+              wording you can accept or reject.
             </p>
             <AddJobForm value={job} onChange={(j) => setAddedJob(key, j)} />
           </fieldset>
         ))}
-        <button type="button" onClick={addJob}
+        <button type="button" data-job="add" onClick={addJob}
           className="flex min-h-15 items-center gap-2.5 rounded-[3px] border border-dashed border-field bg-panel px-5 text-left text-sm font-medium transition-colors hover:border-pencil hover:text-pencil">
           <Icon name="close" size={16} className="rotate-45 text-pencil" />
           {form.experience.length || added.length ? "Add a job we missed" : "Add a job"}

@@ -41,10 +41,17 @@ _TERM_SUFFIXES = {"compliant", "certified", "based", "driven", "native", "enable
                   "focused", "first", "backed", "centric", "savvy"}
 
 
+# Fields named by an -ing word: "marketing" is not "market", "accounting" not "account".
+_ING_NOUNS = {"marketing", "accounting", "networking", "engineering", "banking", "staffing", "consulting",
+              "advertising", "manufacturing", "publishing", "housing", "clothing", "catering", "wedding"}
+
+
 def _stem(token: str) -> str:
     """Plural- and verb-form-insensitive: "communicate", "communicated" and
     "communicating" all read "communicat". Stems shorter than four letters
     are left alone, so "string", "spring" and "used" keep their meaning."""
+    if token in _ING_NOUNS:
+        return token
     if len(token) > 3 and token.endswith("ies"):
         token = token[:-3] + "y"
     elif len(token) > 3 and token.endswith("s") and not token.endswith("ss"):
@@ -64,9 +71,13 @@ def _alias(text: str) -> str:
     return value
 
 
+_TERM_SUFFIX_STEMS = {_stem(s) for s in _TERM_SUFFIXES}
+
+
 def tokens(text: str) -> List[str]:
-    """Lowercased, alias-canonical, plural-insensitive tokens."""
-    return [_stem(t) for t in _TOKEN_RE.findall(_alias(text))]
+    """Lowercased, alias-canonical, plural- and verb-form-insensitive tokens.
+    Each part of a hyphenated word is stemmed on its own ("AWS-certified")."""
+    return ["-".join(_stem(p) for p in t.split("-")) for t in _TOKEN_RE.findall(_alias(text))]
 
 
 def _contains_seq(haystack: List[str], needle: List[str]) -> bool:
@@ -117,7 +128,7 @@ class KeywordMatcher:
             token_set = set(toks)
             # "HIPAA-compliant" contains HIPAA: also look at hyphenated
             # tokens split into their parts (dots and slashes stay: Node.js, A/B).
-            split = [p for t in toks for p in (t.split("-") if t.rsplit("-", 1)[-1] in _TERM_SUFFIXES else [t]) if p]
+            split = [p for t in toks for p in (t.split("-") if t.rsplit("-", 1)[-1] in _TERM_SUFFIX_STEMS else [t]) if p]
             hit = any(_contains_seq(toks, alt) or _contains_seq(split, alt) for alt in alternatives)
             # A multi-word term also counts when all its words appear in one
             # sentence ("recommendation systems" vs "systems for recommendation").

@@ -463,6 +463,8 @@ class TailorService:
                         ev.text = new_context + ev.text[len(old_context):]
 
         removed = set(corrections.get("removed_jobs") or [])
+        if resume.experience and set(by_id) <= removed and not corrections.get("added_jobs"):
+            raise ValueError("Keep at least one job, or add the right one.")
         if removed & set(by_id):
             gone = {b.id for e in resume.experience if e.id in removed for b in e.bullets}
             resume.experience = [e for e in resume.experience if e.id not in removed]

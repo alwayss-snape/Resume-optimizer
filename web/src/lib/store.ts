@@ -30,7 +30,8 @@ export interface Run {
   review: ReviewState | null; // decisions on the drafted proposals, kept across Back
   results: TailorResult | null;
   resultsVersion: number; // changes per tailoring run, so previews reload
-  jumpTo: "gaps" | null; // Review opens at "What the job asks for" (from the results page)
+  // Review opens at "What the job asks for", or at "Add anything else" when nothing is asked (from Results).
+  jumpTo: "gaps" | "addition" | null;
 }
 
 export const EMPTY_RUN: Run = {

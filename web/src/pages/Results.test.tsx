@@ -124,8 +124,20 @@ test("a flat match names what's missing and leads to where it can be added", asy
   expect(screen.getByText(/the match didn't/)).toBeInTheDocument();
   const missing = screen.getByText("Still missing (2)").parentElement!;
   expect(within(missing).getAllByRole("listitem").map((li) => li.textContent)).toEqual(["Airflow · required", "teamwork"]);
-  await user.click(screen.getByRole("button", { name: /Add the ones you have/ }));
+  // Nothing was asked in review, so the own-words box is where they go.
+  await user.click(screen.getByRole("button", { name: "Add the ones you have, in your own words" }));
   expect(useApp.getState().step).toBe("review");
+  expect(useApp.getState().run.jumpTo).toBe("addition");
+});
+
+test("with questions asked in review, the button goes to them", async () => {
+  const user = userEvent.setup();
+  const drafted = { ...DRAFTED, gap_questions: [{ id: "q1", requirement: "Airflow", priority: "required" as const,
+    keywords: ["Airflow"], question: "", saved_keywords: [], saved_answer: "" }] };
+  useApp.setState({ step: "results", reached: 3, run: { ...EMPTY_RUN, drafted, review: initialReview(drafted),
+    results: { ...RESULT, alignment_score: 48.2, initial_alignment_score: 48.2 }, resultsVersion: 3 } });
+  render(<Results />);
+  await user.click(screen.getByRole("button", { name: "Add the ones you have" }));
   expect(useApp.getState().run.jumpTo).toBe("gaps");
 });
 

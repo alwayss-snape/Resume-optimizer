@@ -161,20 +161,35 @@ test("details: a missed job is added, a misread one removed, and both are sent",
   await fillUpload(user);
   await user.click(screen.getByRole("button", { name: /Read my resume/ }));
   await screen.findByRole("heading", { name: "Check your details" });
+  // Remove and Undo keep focus on the control that replaced the one clicked.
+  await user.click(screen.getByRole("button", { name: "Remove job 1, Northwind" }));
+  expect(screen.getByRole("button", { name: "Undo removing job 1" })).toHaveFocus();
+  await user.click(screen.getByRole("button", { name: "Undo removing job 1" }));
+  expect(screen.getByRole("button", { name: "Remove job 1, Northwind" })).toHaveFocus();
   await user.click(screen.getByRole("button", { name: "Remove job 2, Contoso" }));
   expect(screen.getByText(/won't be on your resume/)).toBeInTheDocument();
+  // A blank card is skipped but still numbered as shown; deleting one hands focus back to "Add".
   await user.click(screen.getByRole("button", { name: "Add a job we missed" }));
-  expect(screen.getByLabelText("Company *")).toHaveFocus();
-  await user.type(screen.getByLabelText("Company *"), "Acme");
+  await user.click(screen.getByRole("button", { name: "Add a job we missed" }));
+  await user.click(screen.getByRole("button", { name: "Remove new job 2" }));
+  expect(screen.getByRole("button", { name: "Add a job we missed" })).toHaveFocus();
+  await user.click(screen.getByRole("button", { name: "Add a job we missed" }));
+  expect(screen.getAllByLabelText("Company *")[1]).toHaveFocus();
+  await user.type(screen.getAllByLabelText("Company *")[1], "Acme");
   // Incomplete: explained, nothing sent.
   await user.click(screen.getByRole("button", { name: /draft rewrites/ }));
-  expect(screen.getByRole("alert")).toHaveTextContent(/New job 1: To add the job, fill in: job title.*Or remove it/);
+  expect(screen.getByRole("alert")).toHaveTextContent(/New job 2: To add the job, fill in: job title.*Or remove it/);
+  await user.click(screen.getByRole("button", { name: "Remove new job 1" }));
   expect(calls.some((c) => c.url === "/api/proposals")).toBe(false);
   await user.type(screen.getByLabelText("Job title *"), "Engineer");
   await user.selectOptions(screen.getByLabelText("Start *: month"), "03");
   await user.selectOptions(screen.getByLabelText("Start *: year"), "2019");
   await user.selectOptions(screen.getByLabelText("End *: month"), "12");
   await user.selectOptions(screen.getByLabelText("End *: year"), "2021");
+  await user.type(screen.getByLabelText(/What did you do there/), "a{Enter}b{Enter}c{Enter}d{Enter}e{Enter}f{Enter}g");
+  await user.click(screen.getByRole("button", { name: /draft rewrites/ }));
+  expect(screen.getByRole("alert")).toHaveTextContent("New job 1: Keep it to 6 lines (one per bullet point); it has 7.");
+  await user.clear(screen.getByLabelText(/What did you do there/));
   await user.type(screen.getByLabelText(/What did you do there/), "Built the billing service");
   await user.click(screen.getByRole("button", { name: /draft rewrites/ }));
   await screen.findByRole("heading", { name: "Review changes" });
