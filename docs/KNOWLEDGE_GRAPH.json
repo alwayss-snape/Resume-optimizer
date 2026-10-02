@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "source_hash": "4cb95d2f65c2f28b",
+  "source_hash": "fb0bc9b48b0e2911",
   "stats": {
     "files": 148,
     "python_files": 125,
@@ -8,7 +8,7 @@
     "test_files": 60,
     "classes": 105,
     "functions": 972,
-    "lines_of_python": 19569
+    "lines_of_python": 19570
   },
   "axes": {
     "x": "location (path)",
@@ -3112,7 +3112,9 @@
       "id": "app/services/arrange.py",
       "type": "python",
       "layer": "Services",
-      "stages": [],
+      "stages": [
+        "9 Render"
+      ],
       "lines": 205,
       "doc": "Arrange and edit before download (P8.13\u2013P8.16).",
       "classes": [
@@ -3938,118 +3940,118 @@
       "type": "python",
       "layer": "Tooling",
       "stages": [],
-      "lines": 736,
+      "lines": 737,
       "doc": "Regenerate the repo's living docs: the knowledge graph and the change log.",
       "classes": [],
       "functions": [
         {
           "name": "git",
-          "line": 134,
+          "line": 135,
           "doc": ""
         },
         {
           "name": "layer_of",
-          "line": 141,
+          "line": 142,
           "doc": ""
         },
         {
           "name": "module_name",
-          "line": 148,
+          "line": 149,
           "doc": ""
         },
         {
           "name": "first_line",
-          "line": 155,
+          "line": 156,
           "doc": ""
         },
         {
           "name": "list_files",
-          "line": 164,
+          "line": 165,
           "doc": "Tracked + new (not ignored) files, restricted to the project map."
         },
         {
           "name": "parse_python",
-          "line": 182,
+          "line": 183,
           "doc": ""
         },
         {
           "name": "symbols_of",
-          "line": 210,
+          "line": 211,
           "doc": ""
         },
         {
           "name": "settings_fields",
-          "line": 223,
+          "line": 224,
           "doc": ""
         },
         {
           "name": "build_graph",
-          "line": 242,
+          "line": 243,
           "doc": ""
         },
         {
           "name": "render_graph_md",
-          "line": 316,
+          "line": 317,
           "doc": ""
         },
         {
           "name": "write_graph",
-          "line": 514,
+          "line": 515,
           "doc": ""
         },
         {
           "name": "commit_info",
-          "line": 557,
+          "line": 558,
           "doc": ""
         },
         {
           "name": "changed_files",
-          "line": 568,
+          "line": 569,
           "doc": ""
         },
         {
           "name": "is_major",
-          "line": 581,
+          "line": 582,
           "doc": ""
         },
         {
           "name": "blob",
-          "line": 590,
+          "line": 591,
           "doc": ""
         },
         {
           "name": "structure_delta",
-          "line": 595,
+          "line": 596,
           "doc": ""
         },
         {
           "name": "render_entry",
-          "line": 618,
+          "line": 619,
           "doc": ""
         },
         {
           "name": "_split_entries",
-          "line": 661,
+          "line": 662,
           "doc": ""
         },
         {
           "name": "_join",
-          "line": 673,
+          "line": 674,
           "doc": ""
         },
         {
           "name": "log_entry",
-          "line": 677,
+          "line": 678,
           "doc": ""
         },
         {
           "name": "backfill",
-          "line": 695,
+          "line": 696,
           "doc": ""
         },
         {
           "name": "main",
-          "line": 712,
+          "line": 713,
           "doc": ""
         }
       ]

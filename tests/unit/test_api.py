@@ -324,3 +324,25 @@ def test_an_added_job_comes_back_as_an_ordinary_one(client):
 
     r = client.post("/api/proposals", json={"corrections": {**details, "added_jobs": [{**job, "start_date": ""}]}})
     assert _events(r)[-1] == ("error", {"message": "A new job needs a start date."})
+
+
+def test_arrange_after_tailoring(client):
+    """P8.13: the result carries what the Arrange screen edits; a layout
+    re-renders the files with no LLM call; arranging before generating is
+    refused."""
+    assert client.post("/api/arrange", json={"layout": {}}).status_code in (404, 409)  # no session yet
+    _parse(client)
+    result = _draft(client)[-1][1]
+    final = _events(client.post("/api/tailor", json={"selection": [{"id": p["id"]} for p in result["proposals"]]}))[-1][1]
+    arrangement = final["arrangement"]
+    assert arrangement and arrangement["sections"] and arrangement["layout"]["section_order"]
+    jobs = next(s for s in arrangement["sections"] if s["key"] == "experience")
+    job = jobs["entries"][0]
+    layout = dict(arrangement["layout"])
+    layout["bullet_order"] = {**layout["bullet_order"], job["id"]: [b["id"] for b in reversed(job["bullets"])]}
+    layout["hidden_sections"] = ["summary"]
+    r = client.post("/api/arrange", json={"layout": layout})
+    assert r.status_code == 200, r.text
+    out = r.json()
+    assert out["files"]["docx"] and out["arrangement"]["layout"]["hidden_sections"] == ["summary"]
+    assert client.post("/api/arrange", json={"layout": {**layout, "page_target": 9}}).status_code == 422

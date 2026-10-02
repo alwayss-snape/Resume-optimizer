@@ -83,15 +83,20 @@ class PageFitter:
         self.measure = measure
 
     def fit(self, document: ResumeDocument, docx_path: str, out_dir: str, target_pages: int,
-            relevance: Dict[str, float], trim_candidates: Optional[set] = None) -> FitResult:
+            relevance: Dict[str, float], trim_candidates: Optional[set] = None,
+            pinned: Optional[set] = None, trim: bool = True) -> FitResult:
+        """`pinned`: bullet ids, project ids and "interests" the user kept on
+        purpose (P8.16); they are never trimmed. `trim=False` ("don't trim")
+        renders once and reports the length."""
         resume = document.resume
         trim_candidates = trim_candidates or set()
+        pinned = pinned or set()
         steps = [
-            lambda need: self._drop_interests(resume),
-            lambda need: self._trim_bullets(resume, need, relevance, trim_candidates),
-            lambda need: self._drop_sections(resume, need, relevance),
+            lambda need: self._drop_interests(resume) if "interests" not in pinned else (0.0, []),
+            lambda need: self._trim_bullets(resume, need, relevance, trim_candidates, pinned),
+            lambda need: self._drop_sections(resume, need, relevance, pinned),
             lambda need: self._compact(document),
-        ]
+        ] if trim else []
         result = FitResult(pdf_path=None, pages=None, target_pages=target_pages, renders=0)
         step = 0
         while True:
@@ -116,10 +121,10 @@ class PageFitter:
                     step += 1
             if saved == 0.0:
                 break  # every step is used up
-        if not result.fits:
+        if not result.fits and trim:
             result.notes.append(
                 f"Still {result.pages} pages after trimming (target {target_pages}); "
-                "consider shortening it by hand.")
+                "you can remove or shorten content in Arrange, or choose a longer page target.")
         return result
 
     # -- trim steps: each returns (estimated points saved, notes) ------------
@@ -132,8 +137,11 @@ class PageFitter:
         return HEADING_PT + LINE_PT, ["Removed the Interests section to fit the page target."]
 
     @staticmethod
-    def _trim_bullets(resume: Resume, need: float, relevance: Dict[str, float], trim_candidates: set):
-        """Least relevant bullets first, within the per-role minimums."""
+    def _trim_bullets(resume: Resume, need: float, relevance: Dict[str, float], trim_candidates: set,
+                      pinned: Optional[set] = None):
+        """Least relevant bullets first, within the per-role minimums; never
+        a pinned one."""
+        pinned = pinned or set()
         owners = []  # (section, minimum bullets, is current role)
         for i, exp in enumerate(resume.experience):
             current = _is_current(exp, i)
@@ -143,6 +151,8 @@ class PageFitter:
         candidates = []
         for section, _minimum, current in owners:
             for bullet in section.bullets:
+                if bullet.id in pinned:
+                    continue
                 candidates.append((bullet.id not in trim_candidates, current, relevance.get(bullet.id, 0.0),
                                    section, bullet))
         candidates.sort(key=lambda c: c[:3])
@@ -158,12 +168,15 @@ class PageFitter:
             alone = bool(group) and sum(1 for b in section.bullets if b.group == group) == 1
             section.bullets.remove(bullet)
             saved += bullet_height(bullet.text) + (SUBHEADING_PT if alone else 0.0)
-            notes.append(f"Removed a less relevant bullet to fit the page: \"{_short(bullet.text)}\"")
+            notes.append(f"Removed a less relevant bullet from {_owner_label(section)} to fit the page: "
+                         f"\"{_short(bullet.text)}\"")
         return saved, notes
 
     @staticmethod
-    def _drop_sections(resume: Resume, need: float, relevance: Dict[str, float]):
-        """Least relevant job sub-section or project, as a whole."""
+    def _drop_sections(resume: Resume, need: float, relevance: Dict[str, float], pinned: Optional[set] = None):
+        """Least relevant job sub-section or project, as a whole; never one
+        holding a pinned bullet, nor a pinned project."""
+        pinned = pinned or set()
         options = []  # (mean relevance, height, label, remove)
         for i, exp in enumerate(resume.experience):
             minimum = MIN_BULLETS_CURRENT_ROLE if _is_current(exp, i) else MIN_BULLETS_OTHER
@@ -171,13 +184,17 @@ class PageFitter:
                 if not group or len(exp.bullets) - len(bullets) < minimum:
                     continue
                 ids = {b.id for b in bullets}
+                if ids & pinned:
+                    continue
                 options.append((
                     sum(relevance.get(b.id, 0.0) for b in bullets) / len(bullets),
                     SUBHEADING_PT + sum(bullet_height(b.text) for b in bullets),
-                    f"the \"{group}\" sub-section",
+                    f"the \"{group}\" sub-section of {_owner_label(exp)}",
                     lambda exp=exp, ids=ids: setattr(exp, "bullets", [b for b in exp.bullets if b.id not in ids]),
                 ))
         for project in resume.projects:
+            if project.id in pinned or {b.id for b in project.bullets} & pinned:
+                continue
             mean = (sum(relevance.get(b.id, 0.0) for b in project.bullets) / len(project.bullets)
                     if project.bullets else 0.0)
             options.append((
@@ -208,6 +225,17 @@ def _is_current(exp, index: int) -> bool:
     bullet minimum."""
     roles = exp.all_roles()
     return index == 0 or bool(roles and is_ongoing(roles[0].end_date))
+
+
+def _owner_label(section) -> str:
+    """"Lakeshore Electric (Journeyman Electrician)" or a project's name, so
+    a trim note says where it came from (P8.16)."""
+    if hasattr(section, "company"):
+        roles = section.all_roles()
+        title = roles[0].title if roles else ""
+        name = section.company or title or "a job"
+        return f"{name} ({title})" if section.company and title else name
+    return f"the \"{section.name}\" project"
 
 
 def _short(text: str, limit: int = 70) -> str:

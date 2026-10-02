@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**56 app modules · 60 test files · 105 classes · 972 functions/methods · 19,569 lines of Python** · source hash `4cb95d2f65c2f28b`
+**56 app modules · 60 test files · 105 classes · 972 functions/methods · 19,570 lines of Python** · source hash `fb0bc9b48b0e2911`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -201,7 +201,7 @@ Rows = layer (what kind of code), columns = pipeline stage (when it runs during 
 | **Validation** | · | · | `safety` | · | · | · | · | `content_lint`<br>`coverage`<br>`factual`<br>`output`<br>`structural` | · | · |
 | **Rendering** | `document_map` | · | · | · | · | · | `review_view` | · | `document_map`<br>`docx_patcher`<br>`html_renderer`<br>`layout`<br>`page_fit`<br>`pdf_converter`<br>`template_renderer` | · |
 | **Domain models** | · | `evidence`<br>`resume`<br>`resume_document` | `job` | `evidence`<br>`report` | `report` | `tailoring` | · | · | `resume_document` | · |
-| **Services** | · | · | · | · | · | · | `profile_store` | · | · | `run_manager` |
+| **Services** | · | · | · | · | · | · | `profile_store` | · | `arrange` | `run_manager` |
 | **Web API** | · | · | · | · | · | · | `forms` | · | · | `forms`<br>`sessions` |
 
 Spanning all stages: `app/api/main.py`, `app/api/routes.py`, `app/cli.py`, `app/eval/harness.py`, `app/services/tailor.py`
@@ -1011,7 +1011,7 @@ _What the proposal review screen shows (P3.4, served by the web API since_
 
 ### `app/services/arrange.py`
 
-**Layer:** Services · **Stage:** — · **Lines:** 205
+**Layer:** Services · **Stage:** 9 Render · **Lines:** 205
 
 _Arrange and edit before download (P8.13–P8.16)._
 
@@ -1439,4 +1439,4 @@ From `app/config/settings.py`; each can be overridden by the env var of the same
 
 **Not in `STAGE_MAP`** (add them in `scripts/update_docs.py`):
 
-- `app/services/arrange.py`
+- none

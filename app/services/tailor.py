@@ -1,3 +1,4 @@
+import copy
 import os
 import re
 import shutil
@@ -33,6 +34,8 @@ from app.rendering.layout import output_basename, section_order_for
 from app.rendering.page_fit import PageFitter
 from app.rendering.pdf_converter import PdfConverter
 from app.rendering.template_renderer import TemplateRenderer
+from app.services.arrange import Layout, apply_layout, default_layout, notes_for, trimmed_items
+from app.services.arrange import section_order as arranged_order
 from app.services.profile_store import ProfileStore
 from app.services.run_manager import RunManager
 from app.validation.content_lint import lint as content_lint
@@ -365,7 +368,8 @@ class TailorService:
     COVERAGE_PREFIX = "Content coverage:"
 
     @staticmethod
-    def _coverage(raw_doc, resume_doc: ResumeDocument, original: Resume, before_fit: Resume, docx_path: str):
+    def _coverage(raw_doc, resume_doc: ResumeDocument, original: Resume, before_fit: Resume, docx_path: str,
+                  extra_removed: str = ""):
         """Content coverage of the rendered DOCX against the uploaded file (P8.2)."""
         final = resume_doc.resume
         original_text = {b.source_location_id: b.text for s in [*original.experience, *original.projects]
@@ -384,7 +388,8 @@ class TailorService:
                    *[t for p in before_fit.projects if p not in final.projects
                      for t in [p.name, *(b.text for b in p.bullets)]],
                    # a job sub-section page-fit removed takes its heading along
-                   *{b.group for e in before_fit.experience for b in e.bullets if b.group} - final_groups]
+                   *{b.group for e in before_fit.experience for b in e.bullets if b.group} - final_groups,
+                   extra_removed]
         return content_coverage(raw_doc.blocks, docx_text(docx_path), heading_texts=resume_doc.section_headings,
                                 reworded_blocks=reworded, trimmed_blocks=trimmed, removed_text="\n".join(removed),
                                 ignore_words=list(original.skills))
@@ -952,10 +957,13 @@ class TailorService:
 
         # Most relevant bullets first within each sub-heading (P1.3). Only the
         # template can move bullets; an in-place DOCX patch keeps the order.
-        if mode != "PRESERVE" or is_pdf:
+        # Never silently (P8.14): only when the user accepted changes, and the
+        # Arrange step shows it ("sorted by job relevance") and can undo it.
+        if (mode != "PRESERVE" or is_pdf) and approved_proposals:
             reordered = self._apply_bullet_order(resume, plan.bullet_order)
             if reordered:
-                _append_progress(f"Reordered bullets by JD relevance in {reordered} role(s)")
+                _append_progress(f"Sorted bullets by job relevance in {reordered} role(s); "
+                                 "change or restore the order in Arrange")
 
         # Fold in any free-text content the candidate typed in the UI (a
         # project, an achievement, a skill) as one more polished, evidence-
@@ -1012,10 +1020,12 @@ class TailorService:
             # it fits the page target (P2.4). This also produces the PDF.
             page_target = target_pages(resume)
             before_fit = copy.deepcopy(resume)
+            full_doc = resume_doc.model_copy(deep=True)  # for Arrange (P8.13): nothing trimmed yet
+            relevance = self._fit_relevance(resume, plan)
+            trim_candidates = {a.source_id for a in plan.actions if a.trim_candidate}
             fit = PageFitter(self._render_template).fit(
                 resume_doc, docx_output_path, output_dir, page_target,
-                relevance=self._fit_relevance(resume, plan),
-                trim_candidates={a.source_id for a in plan.actions if a.trim_candidate},
+                relevance=relevance, trim_candidates=trim_candidates,
             )
             _append_progress(f"DOCX reconstructed via template renderer at {docx_output_path} "
                              f"({fit.pages or '?'} page(s), target {page_target}, {fit.renders} render(s))")
@@ -1186,7 +1196,28 @@ class TailorService:
         if pdf_res and has_critical(pdf_warnings):
             success = False
 
+        applied = {
+            "bullets": sum(1 for p in approved_proposals if getattr(p, "kind", "bullet") == "bullet"
+                           and _prop_text(p).strip() != (getattr(p, "original_text", "") or "").strip()),
+            "bullets_edited": sum(1 for p in approved_proposals if getattr(p, "kind", "bullet") == "bullet"
+                                  and getattr(p, "user_edited", False)),
+            "summary": any(getattr(p, "kind", "") == "summary" for p in approved_proposals),
+            "skills": any(getattr(p, "kind", "") == "skills" for p in approved_proposals),
+            "rejected": rejected_count,
+            "strict_withheld": strict_withheld,
+        }
+        arrange_state = None
+        if fit:
+            layout = default_layout(full_doc.resume, full_doc.presentation.section_order)
+            arrange_state = {
+                "full_doc": full_doc, "original": original_resume, "raw_doc": raw_doc, "job_desc": job_desc,
+                "relevance": relevance, "trim_candidates": trim_candidates, "initial_score": initial_score,
+                "applied": applied, "changes_md": report_md_path, "default_layout": layout,
+                "trimmed": trimmed_items(before_fit, resume),
+            }
+
         return {
+            "arrange": arrange_state,
             "docx": docx_output_path,
             "pdf": pdf_output_path if pdf_res else "",
             "html": html_output_path,
@@ -1206,17 +1237,112 @@ class TailorService:
             "success": success,
             "coverage": coverage.as_dict() if coverage else None,
             # What really went into the files (P5.5), for an honest summary.
-            "applied": {
-                "bullets": sum(1 for p in approved_proposals if getattr(p, "kind", "bullet") == "bullet"
-                               and _prop_text(p).strip() != (getattr(p, "original_text", "") or "").strip()),
-                "bullets_edited": sum(1 for p in approved_proposals if getattr(p, "kind", "bullet") == "bullet"
-                                      and getattr(p, "user_edited", False)),
-                "summary": any(getattr(p, "kind", "") == "summary" for p in approved_proposals),
-                "skills": any(getattr(p, "kind", "") == "skills" for p in approved_proposals),
-                "rejected": rejected_count,
-                "strict_withheld": strict_withheld,
-            },
+            "applied": applied,
         }
+
+    def arrange(self, state: Dict, layout: "Layout", output_dir: str,
+                progress: Optional[Callable[[str], None]] = None) -> Dict:
+        """Re-render the tailored resume as the user arranged it (P8.13–P8.16):
+        section and entry order, bullet order within each job, hidden
+        sections, removed or restored bullets, their own wording, the page
+        target. No LLM call. Runs page-fit (unless "don't trim"), the ATS
+        round-trip and the content coverage check like a tailoring run."""
+        step = _progress(progress)
+        full_doc, original, raw_doc, job_desc = state["full_doc"], state["original"], state["raw_doc"], state["job_desc"]
+        resume = apply_layout(full_doc.resume, layout)
+        doc = full_doc.model_copy(deep=True)
+        doc.resume = resume
+        doc.presentation.section_order = arranged_order(layout, resume)
+        doc.presentation.compact = False
+        # The user's removals and edits are theirs, not losses (P8.2).
+        full = full_doc.resume
+        removed_ids = set(layout.removed_bullets)
+        doc.user_changed_blocks = list(full_doc.user_changed_blocks) + [
+            b.source_location_id for o in [*full.experience, *full.projects] for b in o.bullets
+            if b.source_location_id and (b.id in removed_ids or (layout.edits.get(b.id) or "").strip())]
+        hidden_text = _hidden_text(full, layout)
+
+        base_name = output_basename(resume, job_desc.company) or "tailored_resume"
+        docx_path = os.path.join(output_dir, f"{base_name}.docx")
+        html_path = os.path.join(output_dir, f"{base_name}.html")
+        page_target = layout.page_target or target_pages(resume)
+        before_fit = copy.deepcopy(resume)
+        step("Rendering your arrangement")
+        fit = PageFitter(self._render_template).fit(
+            doc, docx_path, output_dir, page_target, relevance=state["relevance"],
+            trim_candidates=state["trim_candidates"], pinned=set(layout.pinned), trim=layout.trim)
+        warnings: List[str] = list(fit.notes)
+        if not layout.trim and fit.pages and fit.pages > page_target:
+            warnings.append(f"{fit.pages} pages (not trimmed, as you chose).")
+        try:
+            self.html_renderer.write_html(doc, html_path)
+        except Exception:
+            pass
+        step("Checking the files read back")
+        docx_warnings = self.qa_validator.validate_docx(docx_path, expected_candidate_name=resume.candidate.name)
+        docx_warnings += self.qa_validator.round_trip(docx_path, resume)
+        pdf_warnings: List[str] = []
+        if fit.pdf_path:
+            pdf_warnings = self.qa_validator.validate_pdf(fit.pdf_path, expected_candidate_name=resume.candidate.name)
+            pdf_warnings += self.qa_validator.round_trip(fit.pdf_path, resume)
+        coverage = self._coverage(raw_doc, doc, original, before_fit, docx_path, extra_removed=hidden_text)
+        if coverage.lost:
+            shown = "; ".join(f"\"{line[:70]}\"" for line in coverage.lost[:5])
+            warnings.append(f"{self.COVERAGE_PREFIX} {len(coverage.lost)} line(s) from your resume are missing "
+                            f"from the output: {shown}")
+        notes = notes_for(layout, full, original)
+        warnings = notes + warnings + docx_warnings + pdf_warnings
+        keyword_report = self.keyword_matcher.match(job_desc, resume)
+        try:
+            with open(state["changes_md"], "a", encoding="utf-8") as f:
+                f.write("\n## Arranged by you\n\n")
+                f.write(f"- Section order: {', '.join(doc.presentation.section_order)}\n")
+                for label, items in (("Hidden", layout.hidden_sections), ("Bullets removed", layout.removed_bullets),
+                                     ("Kept in (never trimmed)", layout.pinned), ("Your own wording", list(layout.edits))):
+                    if items:
+                        f.write(f"- {label}: {', '.join(items)}\n")
+                for w in warnings:
+                    f.write(f"- {w}\n")
+        except Exception:
+            pass
+        critical = any(OutputQAValidator.ROUND_TRIP_PREFIX in w for w in docx_warnings + pdf_warnings)
+        state["trimmed"] = trimmed_items(before_fit, resume)
+        return {
+            "docx": docx_path, "pdf": fit.pdf_path or "", "html": html_path, "changes_md": state["changes_md"],
+            "target_pages": page_target, "content_lint": content_lint(resume),
+            "alignment_score": f"{keyword_report.rate:.1f}",
+            "initial_alignment_score": f"{state['initial_score']:.1f}", "keyword_match": keyword_report,
+            "warnings": warnings, "docx_warnings": docx_warnings, "pdf_warnings": pdf_warnings,
+            "success": not coverage.lost and not critical, "coverage": coverage.as_dict(),
+            "applied": state["applied"], "addition_note": None, "pages": fit.pages, "arrange": state,
+        }
+
+
+def _hidden_text(full: Resume, layout) -> str:
+    """Text of the sections the user hid, so coverage counts it as their choice."""
+    parts: List[str] = [k for k in layout.hidden_sections if not k.startswith("other:")]  # "Interests: ..."
+    hidden = set(layout.hidden_sections)
+    if "summary" in hidden and full.summary:
+        parts.append(full.summary)
+    for key in ("certifications",):
+        if key in hidden:
+            parts += [" ".join(v for v in c.values() if v) for c in full.certifications]
+    for key in ("achievements", "interests"):
+        if key in hidden:
+            parts += list(getattr(full, key))
+    if "skills" in hidden:
+        parts += [f"{c}: {', '.join(v)}" for c, v in full.skills.items()]
+    if "education" in hidden:
+        parts += [f"{e.degree} {e.institution} {e.dates or ''} {' '.join(e.details)}" for e in full.education]
+    for key in ("experience", "projects"):
+        if key in hidden:
+            for o in getattr(full, key):
+                parts.append(" ".join([getattr(o, "company", "") or getattr(o, "name", ""), getattr(o, "title", "") or "",
+                                       getattr(o, "location", "") or "", *(b.text for b in o.bullets), *getattr(o, "details", [])]))
+    for sec in full.other_sections:
+        if f"other:{sec.id}" in hidden:
+            parts += [sec.heading, *(l.text for l in sec.lines)]
+    return "\n".join(parts)
 
 
 def _merge_usage(first: Dict, second: Dict) -> Dict:

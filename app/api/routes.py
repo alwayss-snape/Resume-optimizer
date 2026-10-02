@@ -25,6 +25,8 @@ from starlette.concurrency import run_in_threadpool
 from app.api import forms
 from app.api.sessions import Session, remove_path
 from app.rendering.pdf_converter import pdf_page_images
+from app.services.arrange import Layout
+from app.services.arrange import view as arrange_view
 from app.rendering.review_view import PROPOSAL_STATES, diff_spans, gap_table, proposal_state, score_breakdown
 
 logger = logging.getLogger(__name__)
@@ -411,30 +413,76 @@ def tailor(request: Request, body: TailorIn, session: Session = Depends(current_
             job_desc=session.data.get("job_description"), gap_answers=answers, new_role=new_role,
             gap_questions=questions, remember_answers=body.remember_answers, progress=progress,
         )
+        session.data["arrange"] = results.pop("arrange", None)
+        session.data.pop("layout", None)  # a new run starts from its own arrangement
         session.data["results"] = results
-        pdf = results.get("pdf")
-        try:
-            pages = len(pdf_page_images(pdf, zoom=0.2)) if pdf and os.path.exists(pdf) else 0
-        except Exception:
-            pages = 0
-        return {
-            "success": bool(results.get("success")),
-            "alignment_score": float(results["alignment_score"]),
-            "initial_alignment_score": float(results.get("initial_alignment_score") or 0),
-            "keyword_match": _match_out(results.get("keyword_match")),
-            "content_lint": results.get("content_lint"),
-            "addition_note": results.get("addition_note"),
-            "warnings": results.get("warnings") or [],
-            "docx_warnings": results.get("docx_warnings") or [],
-            "pdf_warnings": results.get("pdf_warnings") or [],
-            "target_pages": results.get("target_pages"),
-            "applied": results.get("applied"),
-            "pages": pages,
-            "files": {kind: bool(results.get(key)) and os.path.exists(results[key])
-                      for kind, key in FILE_KINDS.items()},
-        }
+        return _results_out(session, results)
 
     return _stream(session, work)
+
+
+def _results_out(session: Session, results: Dict) -> Dict:
+    """What the Results (and Arrange) screen gets after a run."""
+    pdf = results.get("pdf")
+    try:
+        pages = len(pdf_page_images(pdf, zoom=0.2)) if pdf and os.path.exists(pdf) else 0
+    except Exception:
+        pages = 0
+    state = session.data.get("arrange")
+    return {
+        "success": bool(results.get("success")),
+        "alignment_score": float(results["alignment_score"]),
+        "initial_alignment_score": float(results.get("initial_alignment_score") or 0),
+        "keyword_match": _match_out(results.get("keyword_match")),
+        "content_lint": results.get("content_lint"),
+        "addition_note": results.get("addition_note"),
+        "warnings": results.get("warnings") or [],
+        "docx_warnings": results.get("docx_warnings") or [],
+        "pdf_warnings": results.get("pdf_warnings") or [],
+        "target_pages": results.get("target_pages"),
+        "applied": results.get("applied"),
+        "coverage": results.get("coverage"),
+        "pages": pages,
+        "files": {kind: bool(results.get(key)) and os.path.exists(results[key])
+                  for kind, key in FILE_KINDS.items()},
+        # P8.13: what the Arrange screen edits; None for "keep my layout".
+        "arrangement": arrange_view(state["full_doc"].resume, state["original"],
+                                    session.data.get("layout") or state["default_layout"], state["trimmed"])
+        if state else None,
+    }
+
+
+class ArrangeIn(BaseModel):
+    layout: Layout
+
+
+MAX_EDIT_CHARS = 600
+
+
+@router.post("/arrange")
+def arrange(request: Request, body: ArrangeIn, session: Session = Depends(current_session)) -> Dict:
+    """Re-render the tailored resume as the user arranged it (P8.13). No LLM
+    call, so no rate limit; one render (or a few, to fit the page)."""
+    state = session.data.get("arrange")
+    if not state or not session.data.get("output_dir"):
+        raise HTTPException(409, "Generate your resume first, then arrange it.")
+    layout = body.layout
+    if layout.page_target not in (None, 1, 2, 3):
+        raise HTTPException(422, "Choose 1, 2 or 3 pages.")
+    if any(len(t) > MAX_EDIT_CHARS for t in layout.edits.values()):
+        raise HTTPException(422, f"Keep each bullet under {MAX_EDIT_CHARS} characters.")
+    _claim(session)
+    try:
+        results = _service(request, session).arrange(state, layout, session.data["output_dir"])
+        session.data["arrange"] = results.pop("arrange")
+        session.data["layout"] = layout
+        session.data["results"] = results
+        return _results_out(session, results)
+    finally:
+        if session.reset_pending:
+            session.reset_pending = False
+            session.reset()
+        session.busy.release()
 
 
 FILE_KINDS = {"docx": "docx", "pdf": "pdf", "changes": "changes_md"}
