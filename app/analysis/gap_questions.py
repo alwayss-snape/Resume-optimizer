@@ -103,8 +103,9 @@ def partly_shown(keyword: str, resume_tokens: List[str], education_text: str = "
             alt_tokens = prefix + alt_tokens  # "OSHA 10 or 30": the second option is "OSHA 30"
         if alt_tokens and _contains_seq(resume_tokens, alt_tokens):
             return True
-    words = tokens(keyword)
-    if len(words) > 1 and words[0] in vocab and all(t in _GENERIC_TAIL for t in words[1:]):
+    written = re.findall(r"[^\W_]+", keyword.lower())  # before aliasing: "CRM", not its expansion
+    if len(written) > 1 and all(w.rstrip("s") in _GENERIC_TAIL for w in written[1:]) and \
+            _contains_seq(resume_tokens, tokens(written[0])):
         return True
     if kind != "education":
         return False

@@ -76,7 +76,8 @@ class JDAnalyzer:
     # slashed / hyphenated parts (Node.js, CI/CD, scikit-learn). A trailing
     # sentence period is not captured because [./-] must be followed by an
     # alphanumeric character.
-    KEYWORD_TOKEN_RE = re.compile(r"[A-Za-z][A-Za-z0-9]*(?:[+#]+|(?:[./-][A-Za-z0-9]+)+)?")
+    # Any script's letters (P8.17: "Enfermería" was cut to "Enfermer").
+    KEYWORD_TOKEN_RE = re.compile(r"[^\W\d_][^\W_]*(?:[+#]+|(?:[./-][^\W_]+)+)?")
     # Capitalised words that start clauses or are generic, never skills.
     KEYWORD_NOISE = {
         "we", "you", "our", "your", "the", "a", "an", "and", "or", "in", "on", "at", "to", "of", "for",
@@ -395,7 +396,7 @@ class JDAnalyzer:
             certifications = self._verbatim_list(llm.certifications, jd_text)
         seniority = seniority or self._seniority(title)
 
-        company_words = {w.lower() for w in re.findall(r"[A-Za-z]+", company or "")}
+        company_words = {w.lower() for w in re.findall(r"[^\W\d_]+", company or "")}
         keywords = hard_skills + [c for c in certifications if c not in hard_skills]
         # Deterministic terms from the requirement lines only (not the intro,
         # where team names and title codes live) fill gaps in the LLM's

@@ -24,6 +24,25 @@ ALIAS_MAP: Dict[str, List[str]] = {
     "terraform": ["tf"],
     "artificial intelligence": ["ai"],
     "deep learning": ["dl"],
+    # P8.17: acronyms outside tech, so "GAAP" and "Generally Accepted
+    # Accounting Principles" are one keyword.
+    "generally accepted accounting principles": ["gaap"],
+    "lockout/tagout": ["loto", "lockout tagout", "lock out tag out"],
+    "electronic health record": ["ehr"],
+    "electronic medical record": ["emr"],
+    "certified public accountant": ["cpa"],
+    "project management professional": ["pmp"],
+    "basic life support": ["bls"],
+    "advanced cardiac life support": ["acls"],
+    "pediatric advanced life support": ["pals"],
+    "commercial driver's license": ["cdl", "commercial drivers license"],
+    "customer relationship management": ["crm"],
+    "enterprise resource planning": ["erp"],
+    "key performance indicator": ["kpi"],
+    "standard operating procedure": ["sop"],
+    "service level agreement": ["sla"],
+    "quality assurance": ["qa"],
+    "national fire protection association": ["nfpa"],
 }
 
 # Acronym map for expansion (kept for phrases that are acronym-only, e.g. "NLP" on its own).

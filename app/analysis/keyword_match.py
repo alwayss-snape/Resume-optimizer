@@ -28,7 +28,8 @@ IMPLIES: Dict[str, List[str]] = {
     "gpt": ["llm"],
 }
 _ALIASES = flat_alias_to_canonical()
-_TOKEN_RE = re.compile(r"[a-z0-9+#]+(?:[./-][a-z0-9+#]+)*")
+# Letters of any script, digits, + and # (P8.17: accented words were cut short).
+_TOKEN_RE = re.compile(r"(?:[^\W_]|[+#])+(?:[./-](?:[^\W_]|[+#])+)*")
 # Words in a job title that say nothing about the role itself.
 _TITLE_NOISE = {"i", "ii", "iii", "iv", "l1", "l2", "l3", "l4", "l5", "sr", "jr", "senior", "junior", "lead",
                 "staff", "principal", "the", "a", "an", "of", "and", "or", "for", "in", "at", "to", "with"}
@@ -117,12 +118,122 @@ def resume_sections(resume: Resume) -> List[Tuple[str, str]]:
     return [(label, text) for label, text in parts if text and text.strip()]
 
 
+# "Generally Accepted Accounting Principles (GAAP)" in the JD or the resume
+# defines an acronym for this run (P8.17).
+_DEFINITION_RE = re.compile(r"((?:[A-Z][\w'’-]*[\s/-]+(?:(?:of|and|for|the|&)[\s]+)?){1,7}[A-Z][\w'’-]*)\s*\(([A-Z][A-Za-z0-9&/-]{1,7})\)")
+# A degree on the resume covers a lower one the JD asks for.
+_DEGREE_KEYWORD_RE = re.compile(r"(?i:degree|bachelor|master|diploma|\bged\b|ph\.?\s?d|doctorate|associate's)")
+# "Salesforce CRM" is shown by "Salesforce": a product name and a generic tail.
+_GENERIC_TAIL = {"crm", "platform", "suite", "software", "tool", "system", "studio", "cloud", "program"}
+_US_STATES = {"alabama", "alaska", "arizona", "arkansas", "california", "colorado", "connecticut", "delaware",
+              "florida", "georgia", "hawaii", "idaho", "illinois", "indiana", "iowa", "kansas", "kentucky",
+              "louisiana", "maine", "maryland", "massachusetts", "michigan", "minnesota", "mississippi", "missouri",
+              "montana", "nebraska", "nevada", "new hampshire", "new jersey", "new mexico", "new york",
+              "north carolina", "north dakota", "ohio", "oklahoma", "oregon", "pennsylvania", "rhode island",
+              "south carolina", "south dakota", "tennessee", "texas", "utah", "vermont", "virginia", "washington",
+              "west virginia", "wisconsin", "wyoming", "dc", "d.c."}
+
+
+def is_place(keyword: str, jd_text: str = "") -> bool:
+    """A location the JD names, not a skill (P8.17: "Arizona" and "DC" were
+    scored as hard skills)."""
+    k = keyword.strip().lower()
+    if k in _US_STATES:
+        return True
+    from app.analysis.resume_normalizer import ResumeNormalizer
+    if k in ResumeNormalizer._COUNTRIES:
+        return True
+    if not jd_text or len(keyword.split()) > 3 or not keyword[:1].isupper() or keyword.isupper():
+        return False
+    for m in re.finditer(re.escape(keyword.strip()) + r",\s*([A-Z]{2}\b|[A-Z][a-z]+(?:\s[A-Z][a-z]+)?)", jd_text):
+        after = m.group(1)
+        if after in ResumeNormalizer._US_STATES or after.lower() in _US_STATES \
+                or after.lower() in ResumeNormalizer._COUNTRIES:
+            return True  # "Phoenix, AZ", "Lyon, France"
+    return False
+
+
+def definitions(*texts: str) -> Dict[str, str]:
+    """acronym -> expansion (both lowercase), from "Full Name (ACR)" in texts."""
+    out: Dict[str, str] = {}
+    for text in texts:
+        for long, short in _DEFINITION_RE.findall(text or ""):
+            words = [w for w in re.split(r"[\s/-]+", long) if w]
+            initials = "".join(w[0] for w in words if w.lower() not in {"of", "and", "for", "the", "&"}).lower()
+            if initials.endswith(short.lower().replace("&", "").replace("/", "")[:len(initials)]) or \
+                    short.lower().replace("/", "").replace("&", "") in initials:
+                # keep only the words that spell the acronym (the regex may grab a few before)
+                need = len(short.replace("&", "").replace("/", ""))
+                content = [w for w in words if w.lower() not in {"of", "and", "for", "the", "&"}]
+                keep = content[-need:] if need <= len(content) else content
+                start = words.index(keep[0]) if keep else 0
+                out[short.lower()] = " ".join(words[start:]).lower()
+    return out
+
+
+def alternatives_of(keyword: str) -> List[List[str]]:
+    """Token sequences that count as the keyword: "OSHA 10 or 30" -> OSHA 10,
+    OSHA 30; "NetSuite or Oracle ERP" -> NetSuite, Oracle ERP (P8.17)."""
+    parts = [p for p in re.split(r"\s+or\s+", keyword, flags=re.IGNORECASE) if p.strip()]
+    if len(parts) < 2:
+        return [tokens(keyword)]
+    prefix = [t for t in tokens(parts[0]) if not t.isdigit()]
+    out = []
+    for p in parts:
+        toks = tokens(p)
+        if toks and all(t.isdigit() for t in toks):
+            toks = prefix + toks
+        if toks:
+            out.append(toks)
+    return out
+
+
 class KeywordMatcher:
+    def __init__(self):
+        self._defs: Dict[str, str] = {}
+        self._education_level = -1
+
+    def _slash_parts(self, keyword: str) -> List[str]:
+        """"Compact/NLC", "English/Spanish": words joined by a slash, each
+        counted (not "A/B", "CI/CD", "TCP/IP", "S/4HANA")."""
+        if "/" not in keyword or " " in keyword.strip():
+            return []
+        parts = keyword.split("/")
+        if len(parts) == 2 and all(len(p) >= 3 and p[:1].isalpha() for p in parts) and keyword.lower() != "lockout/tagout":
+            return parts
+        return []
+
+    def _found_with_credit(self, keyword: str, kind: str, sections) -> Tuple[List[str], float]:
+        where = self._find(keyword, sections)
+        if where:
+            return where, 1.0
+        parts = self._slash_parts(keyword)
+        if parts:
+            hits = [self._find(p, sections) for p in parts]
+            found = [h for h in hits if h]
+            if found:
+                return sorted({w for h in found for w in h}), round(len(found) / len(parts), 2)
+        if kind == "education" and _DEGREE_KEYWORD_RE.search(keyword):
+            from app.analysis.gap_questions import _degree_level
+            asked = _degree_level(keyword)
+            if asked >= 0 and self._education_level >= asked:
+                return ["education"], 1.0
+        written = re.findall(r"[^\W_]+", keyword.lower())  # before aliasing: "CRM", not its expansion
+        if len(written) > 1 and all(w.rstrip("s") in _GENERIC_TAIL for w in written[1:]):
+            where = self._find(written[0], sections)
+            if where:
+                return where, 1.0
+        return [], 0.0
+
     def _find(self, keyword: str, sections: List[Tuple[str, List[str]]]) -> List[str]:
         needle = tokens(keyword)
         if not needle:
             return []
-        alternatives = [needle] + [tokens(t) for t in IMPLIES.get(" ".join(needle), [])]
+        alternatives = alternatives_of(keyword) + [tokens(t) for t in IMPLIES.get(" ".join(needle), [])]
+        key = " ".join(needle)
+        if key in self._defs:  # an acronym the texts define
+            alternatives.append(tokens(self._defs[key]))
+        alternatives += [tokens(short) for short, long in self._defs.items() if " ".join(tokens(long)) == key]
         where: List[str] = []
         for label, toks in sections:
             token_set = set(toks)
@@ -152,7 +263,11 @@ class KeywordMatcher:
         return len(found) / len(title_tokens), where
 
     def match(self, job: JobDescription, resume: Resume) -> KeywordMatchReport:
-        sections = [(label, tokens(text)) for label, text in resume_sections(resume)]
+        raw_sections = resume_sections(resume)
+        sections = [(label, tokens(text)) for label, text in raw_sections]
+        self._defs = definitions(job.raw_text or "", *(text for _, text in raw_sections))
+        from app.analysis.gap_questions import _degree_level
+        self._education_level = _degree_level(" ".join(f"{e.degree} {e.institution}" for e in resume.education))
         required_text = " \n".join(r.text for r in job.requirements if r.priority == "required")
         rows: List[KeywordRow] = []
         seen = set()
@@ -162,13 +277,14 @@ class KeywordMatcher:
             if not key or key in seen:
                 return
             seen.add(key)
+            if kind == "hard" and is_place(keyword, job.raw_text or ""):
+                return  # a location the JD names, not a skill
             in_required = _contains_seq(tokens(required_text), tokens(keyword)) if required_text else True
             weight = KIND_WEIGHTS[kind] * (REQUIRED_MULTIPLIER if in_required else 1.0)
-            where = self._find(keyword, sections)
+            where, credit = self._found_with_credit(keyword, kind, sections)
             jd_count = len([1 for i in range(len(jd_tokens)) if jd_tokens[i:i + len(tokens(keyword))] == tokens(keyword)])
             rows.append(KeywordRow(keyword=keyword, kind=kind, required=in_required, weight=weight,
-                                   found=bool(where), credit=1.0 if where else 0.0, where=where,
-                                   jd_count=jd_count))
+                                   found=credit >= 0.5, credit=credit, where=where, jd_count=jd_count))
 
         jd_tokens = tokens(job.raw_text or "")
         certs = {c.lower() for c in job.certifications}

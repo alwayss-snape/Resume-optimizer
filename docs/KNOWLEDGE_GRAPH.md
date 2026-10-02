@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**56 app modules · 60 test files · 105 classes · 972 functions/methods · 19,579 lines of Python** · source hash `f069d725ffd7259b`
+**56 app modules · 61 test files · 105 classes · 981 functions/methods · 19,753 lines of Python** · source hash `f06d51ce40361649`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -162,6 +162,7 @@ tests/
     test_layouts_p87.py                          P8.7: text boxes, a name in a separated page header, "·" bullets.
     test_llm_client.py                           SampleSchema
     test_matcher.py                              test_evidence_matcher_exact_and_alias(), test_one_generic_word_cannot_…
+    test_matching_p817.py                        P8.17: a fairer match for non-tech resumes.
     test_new_role.py                             P3.3: add a job that isn't on the resume yet.
     test_page_fit.py                             P2.4: the page-fit loop trims in a fixed order, keeps minimums, reports
     test_parser_regressions_p42.py               Regression tests from the independent review of P4.2: inputs outside t…
@@ -240,7 +241,7 @@ _Years of experience from role date ranges (P1.5), and the page target_
 
 ### `app/analysis/gap_questions.py`
 
-**Layer:** Analysis · **Stage:** 6 Plan · **Lines:** 162
+**Layer:** Analysis · **Stage:** 6 Plan · **Lines:** 163
 
 _Suggest-and-confirm gaps (P3.1): ask, never assume._
 
@@ -249,33 +250,33 @@ _Suggest-and-confirm gaps (P3.1): ask, never assume._
 - function **`_degree_level()`** ([app/analysis/gap_questions.py:62](../app/analysis/gap_questions.py#L62))
 - function **`infer_kind()`** ([app/analysis/gap_questions.py:77](../app/analysis/gap_questions.py#L77)) — The keyword's kind when the JD analysis couldn't tell (offline it
 - function **`partly_shown()`** ([app/analysis/gap_questions.py:91](../app/analysis/gap_questions.py#L91)) — The resume already shows this, or one of its alternatives (P8.12):
-- function **`_wording()`** ([app/analysis/gap_questions.py:115](../app/analysis/gap_questions.py#L115)) — (question, tick label) for what is being asked.
-- function **`build_questions()`** ([app/analysis/gap_questions.py:129](../app/analysis/gap_questions.py#L129))
+- function **`_wording()`** ([app/analysis/gap_questions.py:116](../app/analysis/gap_questions.py#L116)) — (question, tick label) for what is being asked.
+- function **`build_questions()`** ([app/analysis/gap_questions.py:130](../app/analysis/gap_questions.py#L130))
 - **Imports:** `analysis/keyword_match.py`, `domain/job.py`, `domain/report.py`
-- **Imported by:** `cli.py`, `services/tailor.py`
+- **Imported by:** `analysis/keyword_match.py`, `cli.py`, `services/tailor.py`
 - **Tested by:** `tests/unit/test_api.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_profile_store.py`
 
 ### `app/analysis/jd_analyzer.py`
 
-**Layer:** Analysis · **Stage:** 3 JD analysis · **Lines:** 429
+**Layer:** Analysis · **Stage:** 3 JD analysis · **Lines:** 430
 
 - class **`JDAnalyzer`** ([app/analysis/jd_analyzer.py:11](../app/analysis/jd_analyzer.py#L11)) — Extract only text that is visibly present in the supplied job description.
   - `__init__()` :65
-  - `extract_keywords_from_text()` :93 — Stopgap keyword extraction: keep only technical-looking terms,
-  - `_category()` :147
-  - `_clean_line()` :160 — Strip a bullet marker, including private-use glyphs pasted from Word/PDF.
-  - `_is_heading()` :165 — A section heading: the known patterns, an ALL-CAPS short line
-  - `_is_requirement()` :182
-  - `_reflow_lines()` :191 — Undo hard line-wrapping from pasted JDs (job boards/PDFs often wrap
-  - `_verbatim()` :229 — The JD's own spelling of `value` if it occurs in the JD (case- and
-  - `_verbatim_list()` :239
-  - `_contains_term()` :250 — Whole-term containment: "A/B" is in "A/B testing", "ML" is not in "MLflow".
-  - `count_occurrences()` :255 — Whole-term, case-insensitive count ("R" doesn't match "React").
-  - `_heuristic_title_company()` :261
-  - `_seniority()` :282
-  - `_years()` :289
-  - `_llm_analyze()` :297 — One structured call: metadata, requirement lines by index, skills.
-  - `analyze()` :325
+  - `extract_keywords_from_text()` :94 — Stopgap keyword extraction: keep only technical-looking terms,
+  - `_category()` :148
+  - `_clean_line()` :161 — Strip a bullet marker, including private-use glyphs pasted from Word/PDF.
+  - `_is_heading()` :166 — A section heading: the known patterns, an ALL-CAPS short line
+  - `_is_requirement()` :183
+  - `_reflow_lines()` :192 — Undo hard line-wrapping from pasted JDs (job boards/PDFs often wrap
+  - `_verbatim()` :230 — The JD's own spelling of `value` if it occurs in the JD (case- and
+  - `_verbatim_list()` :240
+  - `_contains_term()` :251 — Whole-term containment: "A/B" is in "A/B testing", "ML" is not in "MLflow".
+  - `count_occurrences()` :256 — Whole-term, case-insensitive count ("R" doesn't match "React").
+  - `_heuristic_title_company()` :262
+  - `_seniority()` :283
+  - `_years()` :290
+  - `_llm_analyze()` :298 — One structured call: metadata, requirement lines by index, skills.
+  - `analyze()` :326
 - **Imports:** `analysis/terminology.py`, `domain/job.py`, `llm/client.py`, `llm/schemas.py`
 - **Imported by:** `eval/harness.py`, `services/tailor.py`
 - **Tested by:** `tests/unit/test_jd_analyzer.py`, `tests/unit/test_jd_analyzer_llm.py`, `tests/unit/test_jd_analyzer_v2.py`, `tests/unit/test_parser_regressions_p42.py`
@@ -283,22 +284,28 @@ _Suggest-and-confirm gaps (P3.1): ask, never assume._
 
 ### `app/analysis/keyword_match.py`
 
-**Layer:** Analysis · **Stage:** 5 Score · **Lines:** 191
+**Layer:** Analysis · **Stage:** 5 Score · **Lines:** 307
 
 _Keyword-level match rate, the headline score (P1.2)._
 
-- class **`KeywordMatcher`** ([app/analysis/keyword_match.py:120](../app/analysis/keyword_match.py#L120))
-  - `_find()` :121
-  - `_title_credit()` :144
-  - `match()` :154
-- function **`_stem()`** ([app/analysis/keyword_match.py:49](../app/analysis/keyword_match.py#L49)) — Plural- and verb-form-insensitive: "communicate", "communicated" and
-- function **`_alias()`** ([app/analysis/keyword_match.py:67](../app/analysis/keyword_match.py#L67))
-- function **`tokens()`** ([app/analysis/keyword_match.py:77](../app/analysis/keyword_match.py#L77)) — Lowercased, alias-canonical, plural- and verb-form-insensitive tokens.
-- function **`_contains_seq()`** ([app/analysis/keyword_match.py:83](../app/analysis/keyword_match.py#L83))
-- function **`resume_sections()`** ([app/analysis/keyword_match.py:88](../app/analysis/keyword_match.py#L88)) — (label, text) for every part of the resume a recruiter or ATS reads.
-- **Imports:** `analysis/terminology.py`, `domain/job.py`, `domain/report.py`, `domain/resume.py`
+- class **`KeywordMatcher`** ([app/analysis/keyword_match.py:191](../app/analysis/keyword_match.py#L191))
+  - `__init__()` :192
+  - `_slash_parts()` :196 — "Compact/NLC", "English/Spanish": words joined by a slash, each
+  - `_found_with_credit()` :206
+  - `_find()` :228
+  - `_title_credit()` :255
+  - `match()` :265
+- function **`_stem()`** ([app/analysis/keyword_match.py:50](../app/analysis/keyword_match.py#L50)) — Plural- and verb-form-insensitive: "communicate", "communicated" and
+- function **`_alias()`** ([app/analysis/keyword_match.py:68](../app/analysis/keyword_match.py#L68))
+- function **`tokens()`** ([app/analysis/keyword_match.py:78](../app/analysis/keyword_match.py#L78)) — Lowercased, alias-canonical, plural- and verb-form-insensitive tokens.
+- function **`_contains_seq()`** ([app/analysis/keyword_match.py:84](../app/analysis/keyword_match.py#L84))
+- function **`resume_sections()`** ([app/analysis/keyword_match.py:89](../app/analysis/keyword_match.py#L89)) — (label, text) for every part of the resume a recruiter or ATS reads.
+- function **`is_place()`** ([app/analysis/keyword_match.py:137](../app/analysis/keyword_match.py#L137)) — A location the JD names, not a skill (P8.17: "Arizona" and "DC" were
+- function **`definitions()`** ([app/analysis/keyword_match.py:156](../app/analysis/keyword_match.py#L156)) — acronym -> expansion (both lowercase), from "Full Name (ACR)" in texts.
+- function **`alternatives_of()`** ([app/analysis/keyword_match.py:174](../app/analysis/keyword_match.py#L174)) — Token sequences that count as the keyword: "OSHA 10 or 30" -> OSHA 10,
+- **Imports:** `analysis/gap_questions.py`, `analysis/resume_normalizer.py`, `analysis/terminology.py`, `domain/job.py`, `domain/report.py`, `domain/resume.py`
 - **Imported by:** `analysis/gap_questions.py`, `analysis/skills_tailor.py`, `analysis/tailor_planner.py`, `eval/harness.py`, `services/tailor.py`
-- **Tested by:** `tests/unit/test_gap_questions.py`, `tests/unit/test_keyword_match.py`, `tests/unit/test_parser_regressions_p42.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`
+- **Tested by:** `tests/unit/test_gap_questions.py`, `tests/unit/test_keyword_match.py`, `tests/unit/test_matching_p817.py`, `tests/unit/test_parser_regressions_p42.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`
 
 ### `app/analysis/matcher.py`
 
@@ -360,7 +367,7 @@ _Keyword-level match rate, the headline score (P1.2)._
   - `_split_respecting_parens()` :670 — Split on sep_chars, but never inside ( ) or [ ] groups — so
   - `normalize()` :693
 - **Imports:** `domain/evidence.py`, `domain/resume.py`, `domain/resume_document.py`, `ingestion/docx.py`
-- **Imported by:** `analysis/structure_extractor.py`, `eval/golden.py`, `services/tailor.py`, `validation/output.py`
+- **Imported by:** `analysis/keyword_match.py`, `analysis/structure_extractor.py`, `eval/golden.py`, `services/tailor.py`, `validation/output.py`
 - **Tested by:** `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_ats_round_trip.py`, `tests/unit/test_contact_p84.py`, `tests/unit/test_dates_p86.py`, `tests/unit/test_education_p88.py`, `tests/unit/test_job_lines_p85.py`, `tests/unit/test_kept_sections_p83.py`, `tests/unit/test_layouts_p87.py`, `tests/unit/test_parser_regressions_p42.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_stage_h_review.py`, `tests/unit/test_structure_extractor.py`, `tests/unit/test_tailor_resume_flow.py`
 
 ### `app/analysis/rewriter.py`
@@ -478,10 +485,10 @@ _Tailored professional summary (P1.5)._
 
 ### `app/analysis/terminology.py`
 
-**Layer:** Analysis · **Stage:** 4 Match · **Lines:** 87
+**Layer:** Analysis · **Stage:** 4 Match · **Lines:** 106
 
-- function **`flat_alias_to_canonical()`** ([app/analysis/terminology.py:32](../app/analysis/terminology.py#L32)) — Build a flat alias->canonical map (e.g. 'k8s' -> 'kubernetes') for
-- function **`normalize_phrase()`** ([app/analysis/terminology.py:42](../app/analysis/terminology.py#L42)) — Normalize a phrase to its canonical lowercased form and expand common acronyms.
+- function **`flat_alias_to_canonical()`** ([app/analysis/terminology.py:51](../app/analysis/terminology.py#L51)) — Build a flat alias->canonical map (e.g. 'k8s' -> 'kubernetes') for
+- function **`normalize_phrase()`** ([app/analysis/terminology.py:61](../app/analysis/terminology.py#L61)) — Normalize a phrase to its canonical lowercased form and expand common acronyms.
 - **Imported by:** `analysis/jd_analyzer.py`, `analysis/keyword_match.py`, `analysis/matcher.py`, `validation/factual.py`
 
 ### `app/api/__init__.py`
@@ -622,7 +629,7 @@ _Per-visitor state for the web API (P5.1)._
 - class **`Requirement`** ([app/domain/job.py:4](../app/domain/job.py#L4))
 - class **`JobDescription`** ([app/domain/job.py:28](../app/domain/job.py#L28))
 - **Imported by:** `analysis/gap_questions.py`, `analysis/jd_analyzer.py`, `analysis/keyword_match.py`, `analysis/matcher.py`, `analysis/rewriter.py`, `analysis/scoring.py`, `analysis/semantic_matcher.py`, `analysis/summary_writer.py`, `analysis/tailor_planner.py`, `cli.py`, `services/tailor.py`
-- **Tested by:** `tests/unit/test_gap_questions.py`, `tests/unit/test_jd_analyzer.py`, `tests/unit/test_keyword_match.py`, `tests/unit/test_matcher.py`, `tests/unit/test_new_role.py`, `tests/unit/test_parser_regressions_p42.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_review_view.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_scoring.py`, `tests/unit/test_semantic_matcher.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_tailor_planner.py`, `tests/unit/test_tailor_service_addition.py`
+- **Tested by:** `tests/unit/test_gap_questions.py`, `tests/unit/test_jd_analyzer.py`, `tests/unit/test_keyword_match.py`, `tests/unit/test_matcher.py`, `tests/unit/test_matching_p817.py`, `tests/unit/test_new_role.py`, `tests/unit/test_parser_regressions_p42.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_review_view.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_scoring.py`, `tests/unit/test_semantic_matcher.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_tailor_planner.py`, `tests/unit/test_tailor_service_addition.py`
 
 ### `app/domain/report.py`
 
@@ -654,7 +661,7 @@ _Per-visitor state for the web API (P5.1)._
 - class **`OtherSection`** ([app/domain/resume.py:98](../app/domain/resume.py#L98)) — A section the resume model has no fields for (Publications, Bar
 - class **`Resume`** ([app/domain/resume.py:110](../app/domain/resume.py#L110))
 - **Imported by:** `analysis/experience.py`, `analysis/keyword_match.py`, `analysis/resume_normalizer.py`, `analysis/rewriter.py`, `analysis/skills_tailor.py`, `analysis/structure_extractor.py`, `analysis/summary_writer.py`, `analysis/tailor_planner.py`, `domain/resume_document.py`, `eval/golden.py`, `rendering/html_renderer.py`, `rendering/layout.py`, `rendering/page_fit.py`, `services/arrange.py`, `services/tailor.py`, `validation/content_lint.py`, `validation/structural.py`
-- **Tested by:** `tests/unit/test_ats_round_trip.py`, `tests/unit/test_check_parsed_resume.py`, `tests/unit/test_content_lint.py`, `tests/unit/test_dates_p86.py`, `tests/unit/test_docx_renderer.py`, `tests/unit/test_experience.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_html_renderer.py`, `tests/unit/test_keyword_match.py`, `tests/unit/test_new_role.py`, `tests/unit/test_page_fit.py`, `tests/unit/test_parser_regressions_p42.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_resume_document.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_review_view.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_tailor_planner.py`, `tests/unit/test_tailor_service_addition.py`, `tests/unit/test_template_layout.py`, `tests/unit/test_template_renderer_standalone.py`
+- **Tested by:** `tests/unit/test_ats_round_trip.py`, `tests/unit/test_check_parsed_resume.py`, `tests/unit/test_content_lint.py`, `tests/unit/test_dates_p86.py`, `tests/unit/test_docx_renderer.py`, `tests/unit/test_experience.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_html_renderer.py`, `tests/unit/test_keyword_match.py`, `tests/unit/test_matching_p817.py`, `tests/unit/test_new_role.py`, `tests/unit/test_page_fit.py`, `tests/unit/test_parser_regressions_p42.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_resume_document.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_review_view.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_tailor_planner.py`, `tests/unit/test_tailor_service_addition.py`, `tests/unit/test_template_layout.py`, `tests/unit/test_template_renderer_standalone.py`
 
 ### `app/domain/resume_document.py`
 
@@ -1274,6 +1281,8 @@ flowchart LR
   analysis_jd_analyzer --> analysis_terminology
   analysis_jd_analyzer --> llm_client
   analysis_jd_analyzer --> llm_schemas
+  analysis_keyword_match --> analysis_gap_questions
+  analysis_keyword_match --> analysis_resume_normalizer
   analysis_keyword_match --> analysis_terminology
   analysis_matcher --> analysis_terminology
   analysis_matcher --> llm_client
