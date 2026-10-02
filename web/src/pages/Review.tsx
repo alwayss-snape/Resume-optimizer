@@ -336,7 +336,7 @@ export function Review() {
       </div>
 
       {/* phones: the rate and the main action stay in reach */}
-      <div className="sticky bottom-0 z-20 border-t border-line bg-bg/95 backdrop-blur-sm lg:hidden">
+      <div className="sticky bottom-0 z-20 border-t border-line bg-bg lg:hidden">
         <div className="mx-auto flex max-w-[1320px] items-center justify-between gap-4 px-4 py-3">
           <span aria-hidden="true" className="flex flex-col leading-tight">
             <span className="tabular font-display text-2xl font-bold tracking-[-0.03em]">{rate.toFixed(0)}<span className="text-sm text-pencil">%</span></span>
@@ -346,7 +346,7 @@ export function Review() {
         </div>
       </div>
 
-      <div aria-hidden="true" className="sticky bottom-0 hidden border-t border-line bg-bg/95 backdrop-blur-sm lg:block">
+      <div aria-hidden="true" className="sticky bottom-0 hidden border-t border-line bg-bg lg:block">
         <div className="mx-auto flex max-w-[1320px] gap-6 px-8 py-3 text-[13px] text-muted">
           {[["A", "Accept"], ["R", "Reject"], ["E", "Edit"], ["↑ ↓", "Next / previous"]].map(([k, l]) => (
             <span key={k}><kbd className="mr-1.5 rounded-[3px] border border-field bg-panel px-2 py-0.5 font-sans text-ink shadow-[0_1px_0_var(--field)]">{k}</kbd>{l}</span>

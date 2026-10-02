@@ -1,0 +1,661 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-02T12:53:15.804103+00:00",
+  "title": "Design System: Tailor · Resume Studio",
+  "extensions": {
+    "colorMeta": {
+      "desk": {
+        "role": "neutral",
+        "displayName": "Desk",
+        "canonical": "oklch(97% 0.004 100)",
+        "tonalRamp": [
+          "oklch(15% 0.004 100)",
+          "oklch(27% 0.004 100)",
+          "oklch(39% 0.004 100)",
+          "oklch(51% 0.004 100)",
+          "oklch(63% 0.004 100)",
+          "oklch(75% 0.004 100)",
+          "oklch(86% 0.004 100)",
+          "oklch(95% 0.004 100)"
+        ]
+      },
+      "sheet": {
+        "role": "neutral",
+        "displayName": "Sheet",
+        "canonical": "oklch(100% 0 0)",
+        "tonalRamp": [
+          "oklch(15% 0.003 100)",
+          "oklch(27% 0.003 100)",
+          "oklch(39% 0.003 100)",
+          "oklch(51% 0.003 100)",
+          "oklch(63% 0.003 100)",
+          "oklch(75% 0.003 100)",
+          "oklch(86% 0.003 100)",
+          "oklch(95% 0.003 100)"
+        ]
+      },
+      "sheet-2": {
+        "role": "neutral",
+        "displayName": "Sheet 2",
+        "canonical": "oklch(95.5% 0.005 100)",
+        "tonalRamp": [
+          "oklch(15% 0.005 100)",
+          "oklch(27% 0.005 100)",
+          "oklch(39% 0.005 100)",
+          "oklch(51% 0.005 100)",
+          "oklch(63% 0.005 100)",
+          "oklch(75% 0.005 100)",
+          "oklch(86% 0.005 100)",
+          "oklch(95% 0.005 100)"
+        ]
+      },
+      "hairline": {
+        "role": "neutral",
+        "displayName": "Hairline",
+        "canonical": "oklch(91% 0.006 100)",
+        "tonalRamp": [
+          "oklch(15% 0.006 100)",
+          "oklch(27% 0.006 100)",
+          "oklch(39% 0.006 100)",
+          "oklch(51% 0.006 100)",
+          "oklch(63% 0.006 100)",
+          "oklch(75% 0.006 100)",
+          "oklch(86% 0.006 100)",
+          "oklch(95% 0.006 100)"
+        ]
+      },
+      "hairline-strong": {
+        "role": "neutral",
+        "displayName": "Hairline Strong",
+        "canonical": "oklch(83% 0.008 100)",
+        "tonalRamp": [
+          "oklch(15% 0.008 100)",
+          "oklch(27% 0.008 100)",
+          "oklch(39% 0.008 100)",
+          "oklch(51% 0.008 100)",
+          "oklch(63% 0.008 100)",
+          "oklch(75% 0.008 100)",
+          "oklch(86% 0.008 100)",
+          "oklch(95% 0.008 100)"
+        ]
+      },
+      "field-edge": {
+        "role": "neutral",
+        "displayName": "Field Edge",
+        "canonical": "oklch(62% 0.012 275)",
+        "tonalRamp": [
+          "oklch(15% 0.012 275)",
+          "oklch(27% 0.012 275)",
+          "oklch(39% 0.012 275)",
+          "oklch(51% 0.012 275)",
+          "oklch(63% 0.012 275)",
+          "oklch(75% 0.012 275)",
+          "oklch(86% 0.012 275)",
+          "oklch(95% 0.012 275)"
+        ]
+      },
+      "graphite-ink": {
+        "role": "neutral",
+        "displayName": "Graphite Ink",
+        "canonical": "oklch(22% 0.008 285)",
+        "tonalRamp": [
+          "oklch(15% 0.008 285)",
+          "oklch(27% 0.008 285)",
+          "oklch(39% 0.008 285)",
+          "oklch(51% 0.008 285)",
+          "oklch(63% 0.008 285)",
+          "oklch(75% 0.008 285)",
+          "oklch(86% 0.008 285)",
+          "oklch(95% 0.008 285)"
+        ]
+      },
+      "muted-graphite": {
+        "role": "neutral",
+        "displayName": "Muted Graphite",
+        "canonical": "oklch(50% 0.012 280)",
+        "tonalRamp": [
+          "oklch(15% 0.012 280)",
+          "oklch(27% 0.012 280)",
+          "oklch(39% 0.012 280)",
+          "oklch(51% 0.012 280)",
+          "oklch(63% 0.012 280)",
+          "oklch(75% 0.012 280)",
+          "oklch(86% 0.012 280)",
+          "oklch(95% 0.012 280)"
+        ]
+      },
+      "blue-pencil": {
+        "role": "primary",
+        "displayName": "Blue Pencil",
+        "canonical": "oklch(53% 0.18 264)",
+        "tonalRamp": [
+          "oklch(15% 0.17 264)",
+          "oklch(27% 0.17 264)",
+          "oklch(39% 0.17 264)",
+          "oklch(51% 0.17 264)",
+          "oklch(63% 0.17 264)",
+          "oklch(75% 0.17 264)",
+          "oklch(86% 0.17 264)",
+          "oklch(95% 0.17 264)"
+        ],
+        "cssVar": "--pencil"
+      },
+      "blue-pencil-deep": {
+        "role": "primary",
+        "displayName": "Blue Pencil Deep",
+        "canonical": "oklch(46% 0.17 264)",
+        "tonalRamp": [
+          "oklch(15% 0.17 264)",
+          "oklch(27% 0.17 264)",
+          "oklch(39% 0.17 264)",
+          "oklch(51% 0.17 264)",
+          "oklch(63% 0.17 264)",
+          "oklch(75% 0.17 264)",
+          "oklch(86% 0.17 264)",
+          "oklch(95% 0.17 264)"
+        ]
+      },
+      "on-pencil": {
+        "role": "primary",
+        "displayName": "On Pencil",
+        "canonical": "oklch(100% 0 0)",
+        "tonalRamp": [
+          "oklch(15% 0.0 264)",
+          "oklch(27% 0.0 264)",
+          "oklch(39% 0.0 264)",
+          "oklch(51% 0.0 264)",
+          "oklch(63% 0.0 264)",
+          "oklch(75% 0.0 264)",
+          "oklch(86% 0.0 264)",
+          "oklch(95% 0.0 264)"
+        ]
+      },
+      "proof-red": {
+        "role": "secondary",
+        "displayName": "Proof Red",
+        "canonical": "oklch(52% 0.17 29)",
+        "tonalRamp": [
+          "oklch(15% 0.16 29)",
+          "oklch(27% 0.16 29)",
+          "oklch(39% 0.16 29)",
+          "oklch(51% 0.16 29)",
+          "oklch(63% 0.16 29)",
+          "oklch(75% 0.16 29)",
+          "oklch(86% 0.16 29)",
+          "oklch(95% 0.16 29)"
+        ]
+      },
+      "highlighter": {
+        "role": "secondary",
+        "displayName": "Highlighter Yellow",
+        "canonical": "oklch(87% 0.16 98)",
+        "tonalRamp": [
+          "oklch(15% 0.15 98)",
+          "oklch(27% 0.15 98)",
+          "oklch(39% 0.15 98)",
+          "oklch(51% 0.15 98)",
+          "oklch(63% 0.15 98)",
+          "oklch(75% 0.15 98)",
+          "oklch(86% 0.15 98)",
+          "oklch(95% 0.15 98)"
+        ]
+      },
+      "danger": {
+        "role": "tertiary",
+        "displayName": "Danger",
+        "canonical": "oklch(49% 0.17 27)",
+        "tonalRamp": [
+          "oklch(15% 0.16 27)",
+          "oklch(27% 0.16 27)",
+          "oklch(39% 0.16 27)",
+          "oklch(51% 0.16 27)",
+          "oklch(63% 0.16 27)",
+          "oklch(75% 0.16 27)",
+          "oklch(86% 0.16 27)",
+          "oklch(95% 0.16 27)"
+        ]
+      },
+      "success": {
+        "role": "tertiary",
+        "displayName": "Success",
+        "canonical": "oklch(51% 0.11 155)",
+        "tonalRamp": [
+          "oklch(15% 0.1 155)",
+          "oklch(27% 0.1 155)",
+          "oklch(39% 0.1 155)",
+          "oklch(51% 0.1 155)",
+          "oklch(63% 0.1 155)",
+          "oklch(75% 0.1 155)",
+          "oklch(86% 0.1 155)",
+          "oklch(95% 0.1 155)"
+        ]
+      },
+      "success-line": {
+        "role": "tertiary",
+        "displayName": "Success Line",
+        "canonical": "oklch(77% 0.07 155)",
+        "tonalRamp": [
+          "oklch(15% 0.07 155)",
+          "oklch(27% 0.07 155)",
+          "oklch(39% 0.07 155)",
+          "oklch(51% 0.07 155)",
+          "oklch(63% 0.07 155)",
+          "oklch(75% 0.07 155)",
+          "oklch(86% 0.07 155)",
+          "oklch(95% 0.07 155)"
+        ]
+      },
+      "warning": {
+        "role": "tertiary",
+        "displayName": "Warning",
+        "canonical": "oklch(50% 0.11 75)",
+        "tonalRamp": [
+          "oklch(15% 0.1 75)",
+          "oklch(27% 0.1 75)",
+          "oklch(39% 0.1 75)",
+          "oklch(51% 0.1 75)",
+          "oklch(63% 0.1 75)",
+          "oklch(75% 0.1 75)",
+          "oklch(86% 0.1 75)",
+          "oklch(95% 0.1 75)"
+        ]
+      },
+      "paper": {
+        "role": "neutral",
+        "displayName": "Document Paper (both themes)",
+        "canonical": "oklch(100% 0 0)",
+        "tonalRamp": [
+          "oklch(15% 0.0 100)",
+          "oklch(27% 0.0 100)",
+          "oklch(39% 0.0 100)",
+          "oklch(51% 0.0 100)",
+          "oklch(63% 0.0 100)",
+          "oklch(75% 0.0 100)",
+          "oklch(86% 0.0 100)",
+          "oklch(95% 0.0 100)"
+        ]
+      },
+      "lamp-desk": {
+        "role": "neutral",
+        "displayName": "Lamp Desk (dark bg)",
+        "canonical": "oklch(20% 0.008 280)",
+        "tonalRamp": [
+          "oklch(15% 0.008 280)",
+          "oklch(27% 0.008 280)",
+          "oklch(39% 0.008 280)",
+          "oklch(51% 0.008 280)",
+          "oklch(63% 0.008 280)",
+          "oklch(75% 0.008 280)",
+          "oklch(86% 0.008 280)",
+          "oklch(95% 0.008 280)"
+        ]
+      },
+      "lamp-sheet": {
+        "role": "neutral",
+        "displayName": "Lamp Sheet (dark panel)",
+        "canonical": "oklch(24% 0.01 280)",
+        "tonalRamp": [
+          "oklch(15% 0.01 280)",
+          "oklch(27% 0.01 280)",
+          "oklch(39% 0.01 280)",
+          "oklch(51% 0.01 280)",
+          "oklch(63% 0.01 280)",
+          "oklch(75% 0.01 280)",
+          "oklch(86% 0.01 280)",
+          "oklch(95% 0.01 280)"
+        ]
+      },
+      "lamp-sheet-2": {
+        "role": "neutral",
+        "displayName": "Lamp Sheet 2",
+        "canonical": "oklch(28% 0.014 280)",
+        "tonalRamp": [
+          "oklch(15% 0.014 280)",
+          "oklch(27% 0.014 280)",
+          "oklch(39% 0.014 280)",
+          "oklch(51% 0.014 280)",
+          "oklch(63% 0.014 280)",
+          "oklch(75% 0.014 280)",
+          "oklch(86% 0.014 280)",
+          "oklch(95% 0.014 280)"
+        ]
+      },
+      "lamp-ink": {
+        "role": "neutral",
+        "displayName": "Lamp Ink",
+        "canonical": "oklch(94% 0.004 285)",
+        "tonalRamp": [
+          "oklch(15% 0.004 285)",
+          "oklch(27% 0.004 285)",
+          "oklch(39% 0.004 285)",
+          "oklch(51% 0.004 285)",
+          "oklch(63% 0.004 285)",
+          "oklch(75% 0.004 285)",
+          "oklch(86% 0.004 285)",
+          "oklch(95% 0.004 285)"
+        ]
+      },
+      "lamp-muted": {
+        "role": "neutral",
+        "displayName": "Lamp Muted",
+        "canonical": "oklch(72% 0.01 280)",
+        "tonalRamp": [
+          "oklch(15% 0.01 280)",
+          "oklch(27% 0.01 280)",
+          "oklch(39% 0.01 280)",
+          "oklch(51% 0.01 280)",
+          "oklch(63% 0.01 280)",
+          "oklch(75% 0.01 280)",
+          "oklch(86% 0.01 280)",
+          "oklch(95% 0.01 280)"
+        ]
+      },
+      "lamp-pencil": {
+        "role": "primary",
+        "displayName": "Lamp Pencil",
+        "canonical": "oklch(75% 0.12 268)",
+        "tonalRamp": [
+          "oklch(15% 0.12 268)",
+          "oklch(27% 0.12 268)",
+          "oklch(39% 0.12 268)",
+          "oklch(51% 0.12 268)",
+          "oklch(63% 0.12 268)",
+          "oklch(75% 0.12 268)",
+          "oklch(86% 0.12 268)",
+          "oklch(95% 0.12 268)"
+        ]
+      },
+      "lamp-proof-red": {
+        "role": "secondary",
+        "displayName": "Lamp Proof Red",
+        "canonical": "oklch(73% 0.14 28)",
+        "tonalRamp": [
+          "oklch(15% 0.14 28)",
+          "oklch(27% 0.14 28)",
+          "oklch(39% 0.14 28)",
+          "oklch(51% 0.14 28)",
+          "oklch(63% 0.14 28)",
+          "oklch(75% 0.14 28)",
+          "oklch(86% 0.14 28)",
+          "oklch(95% 0.14 28)"
+        ]
+      },
+      "lamp-highlighter": {
+        "role": "secondary",
+        "displayName": "Lamp Highlighter",
+        "canonical": "oklch(41% 0.04 98)",
+        "tonalRamp": [
+          "oklch(15% 0.04 98)",
+          "oklch(27% 0.04 98)",
+          "oklch(39% 0.04 98)",
+          "oklch(51% 0.04 98)",
+          "oklch(63% 0.04 98)",
+          "oklch(75% 0.04 98)",
+          "oklch(86% 0.04 98)",
+          "oklch(95% 0.04 98)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "One page heading per screen; 42px mobile to 62px desktop."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Section heads, 32-40px."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Sub-sections and panel titles, 22-24px."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Interface prose at 15px; lead copy 17-18px."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Sentence-case labels, badges, legends, counts."
+      },
+      "proof": {
+        "displayName": "Proof",
+        "purpose": "Resume and marked-up proof text."
+      },
+      "margin-note": {
+        "displayName": "Margin Note",
+        "purpose": "Italic serif reason beside a change."
+      },
+      "figure": {
+        "displayName": "Figure",
+        "purpose": "Keyword-match figure in blue pencil, tabular."
+      }
+    },
+    "shadows": [
+      {
+        "name": "sheet",
+        "value": "inset 0 1px 0 rgb(255 255 255 / 0.95), 0 1px 0.5px #d3d3cb, 1px 2.5px 1px -0.5px #e1e1da, 2px 4px 1.5px -1.5px #e1e1da, 0 12px 28px -12px rgb(27 27 31 / 0.22)",
+        "cssVar": "--sheet-shadow",
+        "purpose": "Every resting UI sheet (light theme)."
+      },
+      {
+        "name": "sheet-lift",
+        "value": "inset 0 1px 0 rgb(255 255 255 / 0.95), 0 1px 0.5px #d3d3cb, 1px 2.5px 1px -0.5px #e1e1da, 2px 4px 1.5px -1.5px #e1e1da, 0 26px 48px -18px rgb(27 27 31 / 0.32)",
+        "cssVar": "--sheet-shadow-lift",
+        "purpose": "A sheet under the pointer or holding focus (light theme)."
+      },
+      {
+        "name": "sheet-lamp",
+        "value": "inset 0 1px 0 rgb(255 255 255 / 0.06), 0 1px 0.5px #0d0e11, 1px 2.5px 1px -0.5px #2a2c34, 2px 4px 1.5px -1.5px #0d0e11, 0 12px 32px -12px rgb(0 0 0 / 0.6)",
+        "purpose": "Resting sheet in dark theme."
+      },
+      {
+        "name": "sheet-lift-lamp",
+        "value": "inset 0 1px 0 rgb(255 255 255 / 0.06), 0 1px 0.5px #0d0e11, 1px 2.5px 1px -0.5px #2a2c34, 2px 4px 1.5px -1.5px #0d0e11, 0 26px 50px -16px rgb(0 0 0 / 0.72)",
+        "purpose": "Lifted sheet in dark theme."
+      },
+      {
+        "name": "button-press",
+        "value": "0 1px 2px rgb(27 27 31 / 0.12)",
+        "purpose": "Primary buttons only."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-out-expo",
+        "value": "cubic-bezier(0.22, 1, 0.36, 1)",
+        "purpose": "Marks drawing, needle travel, count-up, entrance rises."
+      },
+      {
+        "name": "mark-draw",
+        "value": "0.55s",
+        "purpose": "Strike sweep on the landing proof; swipe fill 0.6s."
+      },
+      {
+        "name": "needle",
+        "value": "0.9s",
+        "purpose": "Score needle and figure count-up."
+      },
+      {
+        "name": "control",
+        "value": "150ms",
+        "purpose": "Button and field colour transitions."
+      },
+      {
+        "name": "sheet-lift",
+        "value": "200ms",
+        "purpose": "Card lift on hover/focus (shadow, 2px rise)."
+      },
+      {
+        "name": "pencil-run",
+        "value": "1.6s cubic-bezier(0.45, 0, 0.25, 1) infinite",
+        "purpose": "Progress stroke; static and faint under reduced motion."
+      },
+      {
+        "name": "hero-tilt-spring",
+        "value": "stiffness 70, damping 18, mass 0.6",
+        "purpose": "Landing proof sheet tilting toward the cursor; 1700px perspective."
+      },
+      {
+        "name": "focus-ring",
+        "value": "outline: 2px solid var(--pencil); outline-offset: 3px",
+        "purpose": "Global :focus-visible."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "sm",
+        "value": "640px"
+      },
+      {
+        "name": "md",
+        "value": "768px"
+      },
+      {
+        "name": "lg",
+        "value": "1024px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The one blue-pencil action per decision area.",
+      "html": "<button class=\"ds-btn-primary\">Tailor my resume</button>",
+      "css": ".ds-btn-primary { font-family: 'Schibsted Grotesk Variable', 'Schibsted Grotesk', system-ui, sans-serif; display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0 18px; border: 0; border-radius: 4px; background: var(--pencil, #2f62d8); color: var(--on-pencil, #ffffff); font-size: 14px; font-weight: 600; box-shadow: 0 1px 2px rgb(27 27 31 / 0.12); cursor: pointer; transition: background-color 150ms; } .ds-btn-primary:hover { background: var(--pencil-hover, #2550b8); } .ds-btn-primary:focus-visible { outline: 2px solid var(--pencil, #2f62d8); outline-offset: 3px; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Every other action: Reject, Edit, Cancel, Just check my match.",
+      "html": "<button class=\"ds-btn-secondary\">Just check my match</button>",
+      "css": ".ds-btn-secondary { font-family: 'Schibsted Grotesk Variable', 'Schibsted Grotesk', system-ui, sans-serif; display: inline-flex; align-items: center; height: 44px; padding: 0 18px; border: 1px solid var(--field, #85868e); border-radius: 4px; background: var(--panel, #ffffff); color: var(--ink, #1b1b1f); font-size: 14px; font-weight: 500; cursor: pointer; transition: color 150ms, border-color 150ms; } .ds-btn-secondary:hover { border-color: var(--pencil, #2f62d8); color: var(--pencil, #2f62d8); } .ds-btn-secondary:focus-visible { outline: 2px solid var(--pencil, #2f62d8); outline-offset: 3px; }"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Low-stakes escapes such as Use the proposal.",
+      "html": "<button class=\"ds-btn-ghost\">Use the proposal</button>",
+      "css": ".ds-btn-ghost { font-family: 'Schibsted Grotesk Variable', 'Schibsted Grotesk', system-ui, sans-serif; height: 44px; padding: 0 18px; border: 0; border-radius: 4px; background: transparent; color: var(--muted, #5f6068); font-size: 14px; text-underline-offset: 4px; cursor: pointer; transition: color 150ms; } .ds-btn-ghost:hover { color: var(--ink, #1b1b1f); text-decoration: underline; } .ds-btn-ghost:focus-visible { outline: 2px solid var(--pencil, #2f62d8); outline-offset: 3px; }"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Labelled input with a 3:1 Field Edge boundary.",
+      "html": "<label class=\"ds-field\"><span class=\"ds-field-label\">Job title</span><input class=\"ds-field-input\" placeholder=\"Product designer\" /></label>",
+      "css": ".ds-field { font-family: 'Schibsted Grotesk Variable', 'Schibsted Grotesk', system-ui, sans-serif; display: flex; flex-direction: column; gap: 6px; } .ds-field-label { font-size: 14px; font-weight: 500; color: var(--ink, #1b1b1f); } .ds-field-input { height: 44px; padding: 0 14px; border: 1px solid var(--field, #85868e); border-radius: 3px; background: var(--panel, #ffffff); color: var(--ink, #1b1b1f); font: inherit; font-size: 15px; transition: border-color 150ms; } .ds-field-input::placeholder { color: var(--muted, #5f6068); } .ds-field-input:hover { border-color: var(--ink, #1b1b1f); } .ds-field-input:focus-visible { border-color: var(--pencil, #2f62d8); outline: 2px solid var(--pencil, #2f62d8); outline-offset: 3px; }"
+    },
+    {
+      "name": "Keyword Chips",
+      "kind": "chip",
+      "refersTo": "chip-found",
+      "description": "Found keywords solid with a check; missing ones dashed with an empty ring.",
+      "html": "<ul class=\"ds-chips\"><li class=\"ds-chip ds-chip-found\"><svg width=\"13\" height=\"13\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.4\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M20 6 9 17l-5-5\"/></svg>SQL</li><li class=\"ds-chip ds-chip-missing\"><span class=\"ds-ring\"></span>Tableau<span class=\"ds-req\">· required</span></li></ul>",
+      "css": ".ds-chips { font-family: 'Schibsted Grotesk Variable', 'Schibsted Grotesk', system-ui, sans-serif; display: flex; flex-wrap: wrap; gap: 8px; list-style: none; margin: 0; padding: 0; } .ds-chip { display: flex; align-items: center; gap: 6px; padding: 4px 10px; border: 1px solid; border-radius: 3px; font-size: 13px; } .ds-chip-found { border-color: var(--success-line, #8fc4a5); color: var(--success, #1e7a4c); } .ds-chip-missing { border-style: dashed; border-color: var(--field, #85868e); color: var(--ink, #1b1b1f); } .ds-ring { width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid var(--field, #85868e); } .ds-req { font-size: 12px; font-weight: 600; color: var(--muted, #5f6068); }"
+    },
+    {
+      "name": "Proposal Card",
+      "kind": "card",
+      "refersTo": "proposal-card",
+      "description": "A proof sheet for one rewrite: marked-up serif text, margin note, accept/reject/edit.",
+      "html": "<article class=\"ds-card\" tabindex=\"0\"><div class=\"ds-card-head\"><span>Bullet 2</span><span class=\"ds-badge\">Passes the fact check</span></div><div class=\"ds-card-body\"><p class=\"ds-proof\"><del class=\"ds-del\">Helped with</del> <ins class=\"ds-ins\">Led</ins> the migration of reporting to <strong class=\"ds-hl\">SQL</strong> dashboards.</p><p class=\"ds-note\">Why: stronger verb, same facts.</p></div><div class=\"ds-card-actions\"><button class=\"ds-mini-primary\">Accepted</button><button class=\"ds-mini\">Reject</button><button class=\"ds-mini\">Edit</button></div></article>",
+      "css": ".ds-card { font-family: 'Schibsted Grotesk Variable', 'Schibsted Grotesk', system-ui, sans-serif; display: flex; flex-direction: column; gap: 16px; padding: 24px; border: 1px solid color-mix(in srgb, var(--line, #e2e2dd) 55%, transparent); border-radius: 3px; background: linear-gradient(to top, rgb(27 27 31 / 0.035), transparent 14px) var(--panel, #ffffff); color: var(--ink, #1b1b1f); box-shadow: var(--sheet-shadow, inset 0 1px 0 rgb(255 255 255 / 0.95), 0 1px 0.5px #d3d3cb, 1px 2.5px 1px -0.5px #e1e1da, 2px 4px 1.5px -1.5px #e1e1da, 0 12px 28px -12px rgb(27 27 31 / 0.22)); transition: box-shadow 200ms, translate 200ms, border-color 200ms; } .ds-card:hover, .ds-card:focus-visible { box-shadow: var(--sheet-shadow-lift, inset 0 1px 0 rgb(255 255 255 / 0.95), 0 1px 0.5px #d3d3cb, 1px 2.5px 1px -0.5px #e1e1da, 2px 4px 1.5px -1.5px #e1e1da, 0 26px 48px -18px rgb(27 27 31 / 0.32)); translate: 0 -2px; } .ds-card:focus-visible { border-color: var(--pencil, #2f62d8); outline: 2px solid var(--pencil, #2f62d8); outline-offset: 2px; } .ds-card-head { display: flex; justify-content: space-between; font-size: 14px; font-weight: 600; } .ds-badge { padding: 2px 8px; border: 1px solid var(--success-line, #8fc4a5); border-radius: 3px; color: var(--success, #1e7a4c); font-size: 12px; font-weight: 500; } .ds-card-body { display: grid; grid-template-columns: minmax(0,1fr) 200px; gap: 12px 32px; } .ds-proof { font-family: 'Source Serif 4 Variable', 'Source Serif 4', Georgia, serif; margin: 0; font-size: 17px; line-height: 1.8; } .ds-del { color: var(--strike, #bf3328); text-decoration: line-through; text-decoration-thickness: 1.5px; } .ds-ins { color: var(--pencil, #2f62d8); text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 0.2em; } .ds-hl { font-weight: 600; background-image: linear-gradient(100deg, transparent 0.2em, rgb(242 212 61 / 0.55) 0.3em, rgb(242 212 61 / 0.55) calc(100% - 0.3em), transparent calc(100% - 0.2em)); background-size: 100% 72%; background-position: 0 70%; background-repeat: no-repeat; padding-inline: 0.12em; } .ds-note { font-family: 'Source Serif 4 Variable', 'Source Serif 4', Georgia, serif; margin: 0; padding-left: 16px; border-left: 1px solid var(--line, #e2e2dd); font-size: 14px; font-style: italic; line-height: 1.625; color: var(--muted, #5f6068); } .ds-card-actions { display: flex; gap: 10px; padding-top: 16px; border-top: 1px solid var(--line, #e2e2dd); } .ds-mini, .ds-mini-primary { height: 44px; padding: 0 18px; border-radius: 4px; font: inherit; font-size: 14px; cursor: pointer; } .ds-mini { border: 1px solid var(--field, #85868e); background: var(--panel, #ffffff); color: var(--ink, #1b1b1f); } .ds-mini:hover { border-color: var(--pencil, #2f62d8); color: var(--pencil, #2f62d8); } .ds-mini-primary { border: 0; background: var(--pencil, #2f62d8); color: var(--on-pencil, #ffffff); font-weight: 600; } .ds-mini-primary:hover { background: var(--pencil-hover, #2550b8); }"
+    },
+    {
+      "name": "Stepper",
+      "kind": "nav",
+      "refersTo": "step-marker-current",
+      "description": "Where you are in the flow: done, current, ahead.",
+      "html": "<ol class=\"ds-steps\"><li class=\"ds-step\"><span class=\"ds-dot ds-done\"><svg width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.4\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M20 6 9 17l-5-5\"/></svg></span>Upload</li><li class=\"ds-rule ds-rule-on\"></li><li class=\"ds-step ds-current\"><span class=\"ds-dot ds-now\">2</span>Details</li><li class=\"ds-rule\"></li><li class=\"ds-step\"><span class=\"ds-dot\">3</span>Review</li></ol>",
+      "css": ".ds-steps { font-family: 'Schibsted Grotesk Variable', 'Schibsted Grotesk', system-ui, sans-serif; display: flex; align-items: center; gap: 12px; list-style: none; margin: 0; padding: 0; font-size: 14px; color: var(--muted, #5f6068); } .ds-step { display: flex; align-items: center; gap: 8px; min-height: 44px; } .ds-current { font-weight: 600; color: var(--ink, #1b1b1f); } .ds-dot { display: flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--field, #85868e); font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; } .ds-done { border: 0; background: var(--pencil-soft, rgb(47 98 216 / 0.09)); color: var(--pencil, #2f62d8); } .ds-now { border: 0; background: var(--pencil, #2f62d8); color: var(--on-pencil, #ffffff); } .ds-rule { width: 24px; height: 1px; background: var(--line-strong, #c9c9c3); } .ds-rule-on { background: var(--pencil, #2f62d8); }"
+    },
+    {
+      "name": "Score Rule",
+      "kind": "custom",
+      "refersTo": "",
+      "description": "The match rate as an editor's rule with a target band and a pencil needle; never a gauge.",
+      "html": "<div class=\"ds-score\"><div class=\"ds-score-top\"><span class=\"ds-fig\">78<small>%</small></span><span class=\"ds-delta\">+12.0 pts</span></div><div class=\"ds-rule-track\"><span class=\"ds-band\" style=\"left:75%;width:10%\"></span><span class=\"ds-base\"></span><span class=\"ds-ghost\" style=\"left:66%\"></span><span class=\"ds-needle\" style=\"left:78%\"></span></div><div class=\"ds-ends\"><span>0</span><span>100</span></div></div>",
+      "css": ".ds-score { font-family: 'Schibsted Grotesk Variable', 'Schibsted Grotesk', system-ui, sans-serif; display: flex; flex-direction: column; gap: 16px; width: 320px; } .ds-score-top { display: flex; align-items: flex-end; justify-content: space-between; } .ds-fig { font-size: 60px; font-weight: 700; line-height: 1; letter-spacing: -0.04em; font-variant-numeric: tabular-nums; color: var(--pencil, #2f62d8); } .ds-fig small { font-size: 0.45em; } .ds-delta { margin-bottom: 6px; padding: 2px 8px; border: 1px solid var(--success-line, #8fc4a5); border-radius: 3px; color: var(--success, #1e7a4c); font-size: 13px; font-weight: 600; } .ds-rule-track { position: relative; height: 36px; } .ds-band { position: absolute; top: 4px; bottom: 12px; border-radius: 2px; background: rgb(30 122 76 / 0.15); box-shadow: inset 0 0 0 1px var(--success-line, #8fc4a5); } .ds-base { position: absolute; left: 0; right: 0; bottom: 12px; height: 1px; background: var(--field, #85868e); } .ds-ghost { position: absolute; top: 0; bottom: 12px; width: 2px; translate: -50% 0; background: var(--line-strong, #c9c9c3); } .ds-needle { position: absolute; top: 0; bottom: 4px; width: 3px; translate: -50% 0; border-radius: 9999px; background: var(--pencil, #2f62d8); transition: left 0.9s cubic-bezier(0.22, 1, 0.36, 1); } .ds-ends { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted, #5f6068); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Editor's Proof",
+    "overview": "Every screen is a copy editor's proof sheet turned into a working interface. White bond-paper sheets rest on a pale desk; graphite ink carries the words; one blue pencil does every action, every insertion and every focus ring; proof red strikes removed words and nothing else; a highlighter swipe lands behind job keywords the resume already matches. The marks are functional, not ornamental: each one says what changed, and the user can keep or reverse it.\n\nDepth is physical. The desk, the sheets and the marks sit on separate planes, and the sheet that matters most is the brightest and highest. Sheets have a real paper edge and a soft contact shadow; they lift slightly when they take focus. Type is a newsroom pairing: a grotesk for the interface, a text serif for anything that is the resume itself, so documents read as documents and margin notes read as an editor's hand. Dark mode is the same proof under a desk lamp at night: the desk and the UI sheets go graphite, but document paper stays white.\n\nThe system rejects the SaaS \"AI resume builder\" look (colour gradients, sparkles, gauges, rounded glossy cards, glass) and the dark luxury look it replaces.",
+    "keyCharacteristics": [
+      "One action colour (blue pencil); red only ever means \"removed\".",
+      "Square-cornered paper with real edges and contact shadows, not rounded cards.",
+      "Grotesk for UI, serif for document and proof text, serif italic for margin notes.",
+      "Marks never rely on colour alone: struck, underlined, swiped or dashed.",
+      "Light and dark both designed; every text pair meets WCAG AA (4.5:1), every control boundary 3:1."
+    ],
+    "rules": [
+      {
+        "name": "The One Pencil Rule",
+        "body": "Blue pencil is the single action colour. If a second hue is doing an action, it is wrong.",
+        "section": "colors"
+      },
+      {
+        "name": "The Red Means Removed Rule",
+        "body": "Proof red strikes removed words and nothing else. Errors use danger with an icon and words; missing keywords use an empty marker in ink, never red.",
+        "section": "colors"
+      },
+      {
+        "name": "The Yellow Means Matched Rule",
+        "body": "The highlighter swipe sits only behind job keywords the resume already contains, with graphite text on it. A missing keyword gets a dashed or dotted treatment, never yellow; inserted or removed words are never stacked on the swipe.",
+        "section": "colors"
+      },
+      {
+        "name": "The White Paper Rule",
+        "body": "Document paper stays white in both themes, with its marks at their light-theme values; only the desk and UI sheets go dark.",
+        "section": "colors"
+      },
+      {
+        "name": "The Document Reads As A Document Rule",
+        "body": "Resume words are always set in the serif; interface words never are, except the margin note.",
+        "section": "typography"
+      },
+      {
+        "name": "The Sentence Case Rule",
+        "body": "Interface labels are sentence case at normal tracking. No uppercase tracked kickers or eyebrows above headings.",
+        "section": "typography"
+      },
+      {
+        "name": "The Tabular Figures Rule",
+        "body": "Every number that counts or compares (scores, step numbers, counts, timers) uses tabular numerals.",
+        "section": "typography"
+      },
+      {
+        "name": "The One Light Rule",
+        "body": "Shadows all fall down and to the right from one light. The most important sheet is the brightest and highest.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Real Edge Rule",
+        "body": "Elevation is a paper edge plus a contact shadow, never a blurred glow or a coloured shadow.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do use blue pencil (#2f62d8, lamp #8faeff) for every action, insertion, caret and focus ring, and for nothing decorative.",
+      "Do show every change as a mark that survives without colour: strike for removed, underline or caret for inserted, swipe for matched, dashed for \"not in\".",
+      "Do set resume and proof text in Source Serif 4 at 17px with 1.8 leading, and the reason for a change as a serif-italic margin note.",
+      "Do put working content on square-cornered sheets (3px) with the Sheet shadow, and lift them with Sheet Lift on hover and focus.",
+      "Do keep document paper white in dark mode; only the desk and UI sheets go dark.",
+      "Do give every motion a still state under prefers-reduced-motion: drawn marks appear at once, the needle sits in place, the running stroke turns static.",
+      "Do use tabular numerals for every score, count and timer."
+    ],
+    "donts": [
+      "Don't use proof red for errors, warnings, missing keywords or a falling score; errors use danger with an icon and words, never a strike.",
+      "Don't highlight a missing keyword yellow, or put blue or red text on the yellow swipe.",
+      "Don't use decorative colour gradients, sparkles, glow, glass or blurred translucent panels; the only gradients are the paper's own tonal falloff, the highlighter swipe and the hero's ink field.",
+      "Don't round cards past 4px or float them as glossy SaaS tiles.",
+      "Don't draw the score as a gauge, ring or dial; it is a rule with a needle.",
+      "Don't put uppercase tracked kickers or eyebrows above headings, or show icons inside coloured tiles; marks are drawn strokes.",
+      "Don't bring back the dark luxury look: dark mode is a desk lamp on paper, not a black-and-gold surface."
+    ]
+  }
+}

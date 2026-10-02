@@ -1,6 +1,6 @@
 # Project Overview — Resume-optimizer
 
-_Start here. Last reviewed: 2026-10-01 (branch `fb_ksh`). Hand-maintained — update it when capabilities or open
+_Start here. Last reviewed: 2026-10-02 (branch `fb_ksh`). Hand-maintained — update it when capabilities or open
 issues change. For "where is X in the code" see [KNOWLEDGE_GRAPH.md](KNOWLEDGE_GRAPH.md); for "what changed when"
 see [CHANGE_LOG.md](CHANGE_LOG.md)._
 
@@ -59,7 +59,7 @@ Semantic matching uses a local embedding model (`all-MiniLM-L6-v2`).
 | Strict Factual Mode | ⚠️ Cosmetic | See issue 4 |
 | DOCX / PDF / HTML output | ✅ Works | Re-parsed after rendering to prove it reads back intact (ATS round-trip, P2.5). ATS template (P2.1): A4, Arial, standard headings, section order by experience, "Jan 2022 – Present" dates; files named `First_Last_Resume_<Company>`. Auto page-fit to 1 page (< 8 years) or 2, trimming the least relevant content and reporting it (P2.3–P2.4). PDF and page-fit need LibreOffice installed |
 | Web API | ✅ Works | FastAPI (P5.1): one endpoint per step, SSE progress, per-visitor sessions with expiry, upload checks, rate limit. Public-hosting hardening is P5.7 |
-| Web UI (`web/`) | ✅ Works | React app (P5.2): Succession-look design tokens (dark + light), app shell with stepper and settings, landing page with the upload form (P5.2); upload → check details → drafting with live progress, and the match report, wired to the API (P5.3); the review screen with live match rate and generation (P5.4); the results screen with downloads, preview and change log (P5.5). Replaced Streamlit (P5.6, after a parity check on the real resume) |
+| Web UI (`web/`) | ✅ Works | React app (P5.2–P5.6) redesigned in Phase 6 as **Editor's Proof** (`DESIGN.md`): bright paper on a light desk with a matching dark mode that follows the system, blue pencil as the one action colour, proof marks for every change (struck, inserted, highlighted keywords, reasons in the margin), a landing hero of 3D proof sheets with self-drawing marks over a WebGL ink field, a score rule instead of a gauge, WCAG 2.2 AA. Flow unchanged: upload → check details → review → results, plus the match report |
 | CLI | ✅ Works | `analyze`, `propose` (editable review file) and `tailor --proposals` with the UI's features: edits, gap answers, additions, a new job, strict mode; live progress (P3.6) |
 | Tests | ✅ 375 passing | `pytest -q` (~50-80 s); the full offline eval of 8 anonymized cases runs with `pytest -m eval` |
 | Evaluation set | ✅ Works | 11 anonymized resume + JD cases with expected facts; `python -m app.eval run --tailor --check` (P4.1, P4.2); LLM-as-judge from another model family, rubric + position-swapped pairwise, `--judge` / `--replay` (P4.3) |
@@ -80,12 +80,15 @@ and unused prompts (P0.8, P1.10) are all fixed. What remains:
 3. **Summary years:** the summary states years computed from role dates ("4+ years"), which can differ from a figure written in the resume ("3.6 years"); the judge flags that as a mismatch. Decide whether to keep the computed figure.
 4. **User's source resume** has "LinkedIn | Email | Leetcode" placeholder text with no hyperlinks (to fix in their
    own file).
+5. **Rewrites can borrow the job's wording** (P1.15): a fact-checked rewrite added "batch pipeline", which appears only in
+   the JD. **Report status vs keywords** (P1.16): a requirement can read "not shown" while all its keywords are found.
 
 ## Repo map (docs)
 
 | File | Purpose | Maintained |
 |---|---|---|
 | `docs/PROJECT_OVERVIEW.md` | This file: what/status/issues/next | By hand |
+| `PRODUCT.md` / `DESIGN.md` | Product context and the built design system (Impeccable; `.impeccable/` holds the direction contract) | By hand / Impeccable |
 | `docs/ACTION_ITEMS.md` | Improvement roadmap with live status per item (P0–P4) | By hand, every change |
 | `docs/KNOWLEDGE_GRAPH.md` / `.json` | Where everything is: tree, layer × stage matrix, module cards, deps | Auto (pre-commit) |
 | `docs/CHANGE_LOG.md` | Timestamped log of major commits | Auto (post-commit) |

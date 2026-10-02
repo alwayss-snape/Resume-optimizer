@@ -77,8 +77,8 @@ export function ScoreDial({ value, before, band, label = "Keyword match", size =
     <div className="flex w-full flex-col gap-4">
       <div role="img" aria-label={`${label}: ${value.toFixed(1)}%${before != null ? `, was ${before.toFixed(1)}%` : ""}`}
         className="flex items-end justify-between gap-3">
-        <span aria-hidden="true" className={`tabular font-display font-bold leading-none tracking-[-0.04em] ${size === "lg" ? "text-[76px]" : "text-[60px]"}`}>
-          <CountUp value={value} from={before ?? 0} /><span className="text-[0.45em] text-pencil">%</span>
+        <span aria-hidden="true" className={`tabular font-display font-bold leading-none tracking-[-0.04em] text-pencil ${size === "lg" ? "text-[76px]" : "text-[60px]"}`}>
+          <CountUp value={value} from={before ?? 0} /><span className="text-[0.45em]">%</span>
         </span>
         {delta != null && Math.abs(delta) >= 0.05 && (
           <span aria-hidden="true" className={`mb-1.5 rounded-[3px] border px-2 py-0.5 text-[13px] font-semibold ${

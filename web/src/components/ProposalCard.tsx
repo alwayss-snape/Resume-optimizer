@@ -110,7 +110,11 @@ export const ProposalCard = forwardRef<HTMLElement, {
         className="flex flex-col gap-3 rounded-[3px] border border-dashed border-field bg-bg p-4 outline-offset-2 sm:flex-row sm:items-center sm:gap-4 sm:px-6">
         <span className="shrink-0 text-[13px] font-semibold text-muted">{label}</span>
         <p className="m-0 flex-1 break-words font-serif text-[16px] leading-relaxed text-ink">{p.original}</p>
-        <span className="text-[13px] text-muted">Rejected: your original is kept</span>
+        <span className="flex items-center gap-2 text-[13px] text-muted">
+          {/* an editor's "stet": let it stand */}
+          <span aria-hidden="true" className="font-serif text-[15px] italic text-pencil underline decoration-dotted decoration-2 underline-offset-4">stet</span>
+          Rejected: your original is kept
+        </span>
         <Button variant="ghost" onClick={() => decideAndFocus("accept")} className="text-pencil hover:text-pencil-hover">Undo</Button>
       </article>
     );

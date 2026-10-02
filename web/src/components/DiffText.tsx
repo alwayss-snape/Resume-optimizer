@@ -78,10 +78,48 @@ function quietPunctuation(pieces: ProofPiece[]): ProofPiece[] {
   return out;
 }
 
+type Run = { kind: "same" | "del" | "ins" | "break"; words: { text: string; keyword: boolean }[] };
+
+/** Consecutive words with the same mark become one run, so a removal or an
+ *  insertion reads as one continuous mark, not one per word. */
+function runs(pieces: { text: string; kind: "same" | "del" | "ins"; keyword: boolean }[]): Run[] {
+  const out: Run[] = [];
+  for (const p of pieces) {
+    const kind = p.text === "\n" ? "break" : p.kind;
+    const last = out[out.length - 1];
+    if (last && last.kind === kind && kind !== "same" && kind !== "break") last.words.push(p);
+    else out.push({ kind, words: [p] });
+  }
+  return out;
+}
+
+/** A job keyword: bold with the highlighter swipe, in ink (never coloured text on yellow). Inside a removal it
+ *  stays bold only, since struck red text on yellow would fail contrast. */
+function Word({ text, keyword, removed }: { text: string; keyword: boolean; removed?: boolean }) {
+  if (!keyword) return <>{text}</>;
+  return <strong className={removed ? "font-semibold" : "mark-hl font-semibold text-ink"}>{text}</strong>;
+}
+
+function Marked({ list }: { list: Run[] }) {
+  return (
+    <>
+      {list.map((run, i) => {
+        if (run.kind === "break") return <br key={i} />;
+        const space = i > 0 && list[i - 1].kind !== "break" ? " " : "";
+        const words = run.words.map((w, x) => (
+          <span key={x}>{x > 0 ? " " : ""}<Word text={w.text} keyword={w.keyword} removed={run.kind === "del"} /></span>
+        ));
+        if (run.kind === "del") return <span key={i}>{space}<del className="mark-del">{words}</del></span>;
+        if (run.kind === "ins") return <span key={i}>{space}<ins className="mark-ins">{words}</ins></span>;
+        return <span key={i}>{space}{words}</span>;
+      })}
+    </>
+  );
+}
+
 /** One side of a word diff, or the merged proof. Removed words are struck
- *  (<del>), added words underlined (<ins>), JD keywords bold (<strong>) with a
- *  highlighter swipe when unchanged. Marks never rely on colour alone. React
- *  escapes the text. */
+ *  (<del>), added words underlined (<ins>), job keywords bold with the
+ *  highlighter swipe. Marks never rely on colour alone. React escapes the text. */
 export function DiffText({ spans, side, proposed }: {
   spans: DiffSpan[];
   side: "original" | "proposed" | "proof";
@@ -92,14 +130,7 @@ export function DiffText({ spans, side, proposed }: {
     if (pieces) {
       return (
         <p className="m-0 break-words font-serif text-[17px] leading-[1.8] text-ink">
-          {pieces.map((piece, i) => {
-            if (piece.text === "\n") return <br key={i} />;
-            let node: React.ReactNode = piece.text;
-            if (piece.keyword) node = <strong className={`font-semibold ${piece.kind === "same" ? "mark-hl" : ""}`}>{node}</strong>;
-            if (piece.kind === "del") node = <del className="mark-del">{node}</del>;
-            if (piece.kind === "ins") node = <ins className="mark-ins">{node}</ins>;
-            return <span key={i}>{i > 0 && pieces[i - 1].text !== "\n" ? " " : ""}{node}</span>;
-          })}
+          <Marked list={runs(pieces)} />
         </p>
       );
     }
@@ -116,25 +147,11 @@ export function DiffText({ spans, side, proposed }: {
       </div>
     );
   }
+  const changedKind = side === "original" ? "del" : "ins";
+  const pieces = spans.map((sp) => ({ text: sp.text, kind: sp.changed ? changedKind : "same", keyword: Boolean(sp.keyword) } as const));
   return (
-    <p className={`m-0 whitespace-pre-line break-words font-serif text-[16px] leading-[1.7] ${side === "original" ? "text-muted" : "text-ink"}`}>
-      {spans.map((s, i) => {
-        if (s.text === "\n") return "\n";
-        let node: React.ReactNode = s.text;
-        if (s.keyword) node = <strong className="font-semibold text-ink">{node}</strong>;
-        if (s.changed) {
-          node = side === "original"
-            ? <del className="mark-del">{node}</del>
-            : <ins className="mark-ins">{node}</ins>;
-        }
-        const next = spans[i + 1];
-        return (
-          <span key={i}>
-            {node}
-            {next && next.text !== "\n" && s.text !== "\n" ? " " : ""}
-          </span>
-        );
-      })}
+    <p className={`m-0 break-words font-serif text-[16px] leading-[1.7] ${side === "original" ? "text-muted" : "text-ink"}`}>
+      <Marked list={runs(pieces)} />
     </p>
   );
 }

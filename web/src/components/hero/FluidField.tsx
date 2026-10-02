@@ -35,7 +35,7 @@ void main() {
   float t = u_time * 0.035;
   vec2 q = vec2(fbm(p + t), fbm(p + vec2(5.2, 1.3) - t));
   vec2 r = vec2(fbm(p + 3.0 * q + vec2(1.7, 9.2) + t * 1.3), fbm(p + 3.0 * q + vec2(8.3, 2.8) - t));
-  float ink = smoothstep(0.42, 0.95, fbm(p + 3.0 * r)) * (0.55 + 0.45 * length(q));
+  float ink = smoothstep(0.36, 0.92, fbm(p + 3.0 * r)) * (0.55 + 0.45 * length(q));
   ink = clamp(ink + pull * 0.12, 0.0, 1.0);
   gl_FragColor = vec4(mix(u_bg, u_ink, ink * u_strength), 1.0);
 }`;
@@ -84,7 +84,7 @@ export function FluidField({ pointer, className = "" }: { pointer: PointerRef; c
       const dark = document.documentElement.dataset.theme === "dark";
       gl.uniform3fv(uBg, rgb(css.getPropertyValue("--bg") || "#f6f6f3"));
       gl.uniform3fv(uInk, rgb(css.getPropertyValue("--pencil") || "#2f62d8"));
-      gl.uniform1f(uStrength, dark ? 0.3 : 0.16);
+      gl.uniform1f(uStrength, dark ? 0.3 : 0.42);
     };
 
     // Half resolution is plenty for soft ink, and cheap.

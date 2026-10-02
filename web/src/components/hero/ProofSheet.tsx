@@ -111,9 +111,9 @@ export function ProofSheet({ tiltX, tiltY }: { tiltX: MotionValue<number>; tiltY
         <div className="absolute inset-x-[8%] bottom-[2%] h-[22%] rounded-[50%] bg-black/25 blur-2xl [transform:translateZ(-90px)] dark:bg-black/60" />
 
         {/* the job description, underneath */}
-        <div className="absolute left-0 top-[1.4em] flex h-[27em] w-[22em] flex-col gap-[0.8em] border border-[#e2e2dd] bg-white p-[1.6em] font-serif text-[#1b1b1f] shadow-[0_2px_6px_rgb(0_0_0/0.08),0_24px_48px_-20px_rgb(0_0_0/0.3)] [transform:translateZ(-70px)_rotateZ(-5deg)]">
-          <span className="font-sans text-[0.78em] font-semibold uppercase tracking-[0.08em] text-[#5f6068]">Job description</span>
-          <span className="text-[1.35em] font-semibold leading-tight">Data Analyst</span>
+        {/* one light source: the tailored resume is the brightest sheet; the job ad sits back, out of the lamp */}
+        <div className="absolute left-0 top-[1.4em] flex h-[27em] w-[22em] flex-col gap-[0.8em] bg-[#efefea] p-[1.6em] font-serif text-[#1b1b1f] shadow-[inset_0_1px_0_rgb(255_255_255/0.7),0_1px_0.5px_#cbcbc3,1px_2.5px_1px_-0.5px_#d9d9d2,0_24px_48px_-20px_rgb(0_0_0/0.3)] [transform:translateZ(-70px)_rotateZ(-5deg)] dark:bg-[#c9c9c3] dark:shadow-[0_1px_0_#9a9a94,0_24px_48px_-20px_rgb(0_0_0/0.6)]">
+          <span className="text-[1.35em] font-semibold leading-tight">Job ad: Data Analyst</span>
           <span className="text-[0.95em] leading-[1.7]">
             You will build dashboards in <Hl on={at(3)}>SQL</Hl> and <Hl on={at(3)}>Tableau</Hl> for the sales team.
           </span>
@@ -128,7 +128,7 @@ export function ProofSheet({ tiltX, tiltY }: { tiltX: MotionValue<number>; tiltY
         </div>
 
         {/* the resume, on top */}
-        <div className="absolute right-0 top-0 flex w-[29em] flex-col gap-[0.75em] border border-[#e2e2dd] bg-white px-[2em] pb-[1.6em] pt-[1.8em] font-serif text-[#1b1b1f] shadow-[0_2px_6px_rgb(0_0_0/0.08),0_30px_60px_-24px_rgb(0_0_0/0.35)] [transform:rotateZ(1.5deg)]">
+        <div className="absolute right-0 top-0 flex w-[29em] flex-col gap-[0.75em] bg-white px-[2em] pb-[1.6em] pt-[1.8em] font-serif text-[#1b1b1f] bg-[linear-gradient(to_top,rgb(27_27_31/0.04),transparent_1.2em)] shadow-[inset_0_1px_0_#ffffff,0_1px_0.5px_#cfcfc7,1px_2.5px_1px_-0.5px_#ddddd6,2px_4px_1.5px_-1.5px_#ddddd6,0_30px_60px_-24px_rgb(0_0_0/0.35)] [transform:rotateZ(1.5deg)]">
           <span className="absolute right-[1.2em] top-[1.1em] rounded-[0.25em] border border-[#85868e] px-[0.5em] py-[0.1em] font-sans text-[0.75em] font-semibold text-[#5f6068]">Example</span>
           <span className="text-[1.6em] font-semibold leading-none tracking-[-0.01em]">Alex Morgan</span>
           <span className="font-sans text-[0.82em] text-[#5f6068]">Data Analyst · Lisbon</span>
@@ -137,16 +137,16 @@ export function ProofSheet({ tiltX, tiltY }: { tiltX: MotionValue<number>; tiltY
             <span className="font-semibold">Analyst, Northwind Traders</span>
             <span className="font-sans text-[0.85em] text-[#5f6068]">2021 – now</span>
           </span>
-          <ul className="flex flex-col gap-[0.15em] text-[0.95em] leading-[2.1]">
-            <li className="relative pl-[1em] before:absolute before:left-0 before:content-['•']">
+          <ul className="flex flex-col gap-[0.15em] text-[0.95em] leading-[2.4] sm:leading-[2.1]">
+            <li className="relative pl-[1.25em] before:absolute before:left-0 before:content-['•']">
               <Ins on={at(2)} word="Built" /><Del on={at(1)}>Was responsible for building</Del> weekly sales dashboards
               in <Hl on={at(3)}>SQL</Hl> and <Hl on={at(3)}>Tableau</Hl>.
             </li>
-            <li className="relative pl-[1em] before:absolute before:left-0 before:content-['•']">
+            <li className="relative pl-[1.25em] before:absolute before:left-0 before:content-['•']">
               <Ins on={at(6)} word="Partnered with marketing on" /><Del on={at(5)}>Worked with the marketing team on</Del>{" "}
               <Hl on={at(7)}>A/B tests</Hl> of the checkout page.
             </li>
-            <li className="relative pl-[1em] before:absolute before:left-0 before:content-['•']">
+            <li className="relative pl-[1.25em] before:absolute before:left-0 before:content-['•']">
               Cleaned and documented the regional sales data.
             </li>
           </ul>
@@ -154,7 +154,7 @@ export function ProofSheet({ tiltX, tiltY }: { tiltX: MotionValue<number>; tiltY
           <span className="mt-[0.5em] border-b border-[#1b1b1f] pb-[0.2em] font-sans text-[0.78em] font-semibold uppercase tracking-[0.08em]">Education</span>
           <span className="flex flex-col gap-[0.5em]"><Bar w="64%" /><Bar w="46%" /></span>
           <span className="mt-[0.8em] flex flex-wrap items-center gap-[0.45em] border-t border-dashed border-[#c9c9c3] pt-[0.8em] font-sans text-[0.78em]">
-            <span className="font-semibold text-[#5f6068]">Job keywords</span>
+            <span className="basis-full font-semibold text-[#5f6068] sm:basis-auto">Job keywords</span>
             <Chip on={at(3)} found>SQL</Chip>
             <Chip on={at(3)} found>Tableau</Chip>
             <Chip on={at(7)} found>A/B tests</Chip>

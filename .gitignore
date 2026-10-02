@@ -43,3 +43,6 @@ data/profile/
 
 # Impeccable decision-page session logs
 .impeccable/questions/
+
+# Impeccable review captures (regenerated per review round)
+.impeccable/review/

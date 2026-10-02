@@ -24,17 +24,15 @@ function Download({ kind, label, primary, onError }: {
 }) {
   const [busy, setBusy] = useState(false);
   return (
-    <button type="button" disabled={busy} aria-busy={busy}
+    <Button variant={primary ? "primary" : "secondary"} size="lg" disabled={busy} aria-busy={busy}
       onClick={() => {
         setBusy(true);
         downloadFile(kind).catch((e) => onError(friendlyError(e))).finally(() => setBusy(false));
-      }}
-      className={`inline-flex h-12 items-center justify-center gap-2.5 rounded-[4px] px-6 text-[15px] font-semibold transition-colors disabled:opacity-60 ${
-        primary ? "bg-pencil text-on-pencil shadow-[0_1px_2px_rgb(27_27_31/0.12)] hover:bg-pencil-hover" : "border border-field bg-panel text-ink hover:border-pencil hover:text-pencil"}`}>
+      }}>
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round"
         strokeLinejoin="round" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14" /></svg>
       {label}
-    </button>
+    </Button>
   );
 }
 
@@ -44,15 +42,15 @@ function pair(before: number, after: number): [string, string] {
   return hidden ? [before.toFixed(1), after.toFixed(1)] : [String(Math.round(before)), String(Math.round(after))];
 }
 
-function StatTile({ value, unit, label }: { value: string | number; unit?: string; label: string }) {
+/** One line of the proof sign-off: the figure, then what it counts. */
+function SignOffLine({ value, unit, label }: { value: string | number; unit?: string; label: string }) {
   return (
-    <div className="flex flex-col gap-2 bg-panel p-5 md:p-6">
-      <span className="tabular font-display text-[40px] font-bold leading-none tracking-[-0.04em]">
-        {value}
-        {unit && <span className="text-lg font-semibold tracking-normal text-muted"> {unit}</span>}
+    <li className="flex items-baseline gap-3 border-t border-line py-3 first:border-t-0 sm:[&:nth-child(2)]:border-t-0">
+      <span className="tabular min-w-[4.5rem] shrink-0 font-serif text-xl font-semibold">
+        {value}{unit && <span className="text-[15px] font-normal text-muted"> {unit}</span>}
       </span>
-      <span className="text-[13px] leading-snug text-muted">{label}</span>
-    </div>
+      <span className="text-sm text-muted">{label}</span>
+    </li>
   );
 }
 
@@ -82,7 +80,7 @@ function ScoreReveal({ result }: { result: TailorResult }) {
           </svg>
           <div className="flex flex-col items-end gap-1">
             <span className="text-[13px] font-semibold text-pencil">After</span>
-            <span className="tabular font-display text-5xl font-bold leading-[0.9] tracking-[-0.04em] sm:text-7xl">
+            <span className="tabular font-display text-5xl font-bold leading-[0.9] tracking-[-0.04em] text-pencil sm:text-7xl">
               {Number.isInteger(Number(a)) ? <CountUp value={Number(a)} from={Number(b)} /> : a}<span className="text-[0.45em] text-pencil">%</span>
             </span>
           </div>
@@ -177,15 +175,26 @@ export function Results() {
         <motion.div style={{ y: drift }}><ScoreReveal result={result} /></motion.div>
       </section>
 
-      <section aria-label="Summary" className="grid grid-cols-2 gap-px overflow-hidden rounded-[3px] border border-line bg-line shadow-sheet md:grid-cols-4">
-        <StatTile value={rows.filter((r) => r.found).length} unit={`of ${rows.length}`} label="Job keywords now on your resume" />
-        <StatTile value={applied?.bullets ?? "—"}
+      <section aria-label="Summary" className="sheet flex flex-col gap-2 rounded-[3px] px-6 py-5 md:flex-row md:items-start md:gap-10 md:px-8">
+        <div className="flex shrink-0 items-center gap-2.5 md:w-44 md:flex-col md:items-start md:pt-3">
+          {/* the editor's sign-off, drawn in pencil */}
+          <svg aria-hidden="true" viewBox="0 0 40 24" className={`h-6 w-10 ${fileWarnings.length ? "text-warning" : "text-pencil"}`}>
+            <path d="M3 13.5 12 21 37 3" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          <span className="font-serif text-[15px] italic text-muted">
+            {fileWarnings.length ? "Read back, with warnings: see File checks" : "Checked: the files read back cleanly"}
+          </span>
+        </div>
+        <ul className="m-0 grid flex-1 p-0 sm:grid-cols-2 sm:gap-x-10">
+        <SignOffLine value={rows.filter((r) => r.found).length} unit={`of ${rows.length}`} label="Job keywords now on your resume" />
+        <SignOffLine value={applied?.bullets ?? "—"}
           label={applied?.bullets_edited
             ? `Bullets rewritten (${applied.bullets_edited} in your own words, the rest fact-checked)`
             : "Bullets rewritten, all fact-checked"} />
-        <StatTile value={result.pages || "—"} unit={result.pages === 1 ? "page" : result.pages ? "pages" : undefined}
+        <SignOffLine value={result.pages || "—"} unit={result.pages === 1 ? "page" : result.pages ? "pages" : undefined}
           label={run.template === "keep" ? "Your own layout" : "A4, ATS template"} />
-        <StatTile value={issues.length} label={issues.length === 1 ? "Content suggestion to consider" : "Content suggestions to consider"} />
+        <SignOffLine value={issues.length} label={issues.length === 1 ? "Content suggestion to consider" : "Content suggestions to consider"} />
+        </ul>
       </section>
 
       <section className="flex flex-col gap-6">
