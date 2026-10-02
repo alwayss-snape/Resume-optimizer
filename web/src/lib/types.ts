@@ -130,6 +130,7 @@ export interface LlmStatus {
 }
 
 export interface ProposalsResult {
+  details?: Details; // what the server holds after the corrections (added jobs included)
   proposals: Proposal[];
   gap_questions: GapQuestion[];
   keyword_match: KeywordMatch | null;

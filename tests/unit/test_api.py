@@ -308,3 +308,19 @@ def test_drafting_again_keeps_earlier_corrections(client):
     assert session.data["parse_corrected"] is True
     _draft(client, {"candidate": {**details["candidate"], "headline": "Data Engineer"}, "experience": []})
     assert session.data["parse_corrected"] is True
+
+
+def test_an_added_job_comes_back_as_an_ordinary_one(client):
+    """Drafting returns the corrected details, so the form shows an added job
+    with an id (sending it again would add it twice); an incomplete one is a
+    plain error."""
+    details = _parse(client)["details"]
+    job = {"company": "Northwind", "title": "Data Analyst", "location": "", "current": True,
+           "start_date": "March 2019", "end_date": "Present", "description": "Built churn dashboards"}
+    events = _draft(client, {**details, "added_jobs": [job]})
+    back = events[-1][1]["details"]["experience"]
+    added = [e for e in back if e["company"] == "Northwind"]
+    assert len(back) == len(details["experience"]) + 1 and added[0]["bullets"] == 1 and added[0]["id"]
+
+    r = client.post("/api/proposals", json={"corrections": {**details, "added_jobs": [{**job, "start_date": ""}]}})
+    assert _events(r)[-1] == ("error", {"message": "A new job needs a start date."})

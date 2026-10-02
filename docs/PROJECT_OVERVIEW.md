@@ -48,9 +48,9 @@ Semantic matching uses a local embedding model (`all-MiniLM-L6-v2`).
 | DOCX parsing (incl. table layouts) | ✅ Works | Paragraphs and tables in document order, hyperlinks, page-header contact (P1.9) |
 | PDF parsing | ✅ Works | Layout-aware (font size, bold, indent, right columns; P1.11). Several roles per company and project sub-sections inside a job (P1.12). The user's resume matches its golden file. Text PDFs only; `ocr.py` is a stub path. PDF input always uses the ATS template |
 | JD requirement extraction | ✅ Works | One structured LLM call (title, company, seniority, years, whole-line requirements with priority, skills), every value checked against the JD; deterministic fallback (P1.1) |
-| Matching + score | ✅ Works | Headline = keyword match rate with a matched/missing table (P1.2); requirement-level evidence score kept as secondary |
+| Matching + score | ✅ Works | Headline = keyword match rate with a matched/missing table (P1.2), plural- and verb-form-insensitive (P7.2); requirement-level evidence score kept as secondary. Results names the keywords still missing and links to where they can be confirmed (P7.2) |
 | Tailor content | ✅ Works | All relevant job and project bullets (one call per role), summary, skills order; nothing invented, dropped details flagged (P1.3–P1.7, P1.14) |
-| Check parsed resume in UI | ✅ Works | Edit name, headline, contact, links, companies, roles and dates before tailoring (P3.5) |
+| Check parsed resume in UI | ✅ Works | Edit name, headline, contact, links, companies, roles and dates before tailoring (P3.5); add a job the file was missing or remove a misread one, before drafting so it's tailored and scored too (P7.1) |
 | Review / edit proposals in UI | ✅ Works | Side-by-side diff with JD keywords highlighted, status badge, edit box, accept/reject all, match rate recalculated on demand, keyword gap table and score breakdown (P3.4) |
 | Gap questions for missing JD keywords | ✅ Works | Suggest-and-confirm: only ticked skills and the user's own answers are added (P3.1); confirmed answers are saved locally and pre-filled for the next JD (P3.2) |
 | Content checks on the result | ✅ Works | Bullets per role, length, pronouns, buzzwords, tense, dates, share of bullets with numbers (P2.6); advice only |
@@ -61,7 +61,7 @@ Semantic matching uses a local embedding model (`all-MiniLM-L6-v2`).
 | Web API | ✅ Works | FastAPI (P5.1): one endpoint per step, SSE progress, per-visitor sessions with expiry, upload checks, rate limit. Public-hosting hardening is P5.7 |
 | Web UI (`web/`) | ✅ Works | React app (P5.2–P5.6) redesigned in Phase 6 as **Editor's Proof** (`DESIGN.md`): bright paper on a light desk with a matching dark mode that follows the system, blue pencil as the one action colour, proof marks for every change (struck, inserted, highlighted keywords, reasons in the margin), a landing hero of 3D proof sheets with self-drawing marks over a WebGL ink field, a score rule instead of a gauge, WCAG 2.2 AA. Flow unchanged: upload → check details → review → results, plus the match report |
 | CLI | ✅ Works | `analyze`, `propose` (editable review file) and `tailor --proposals` with the UI's features: edits, gap answers, additions, a new job, strict mode; live progress (P3.6) |
-| Tests | ✅ 375 passing | `pytest -q` (~50-80 s); the full offline eval of 8 anonymized cases runs with `pytest -m eval` |
+| Tests | ✅ 383 backend + 67 front-end passing | `pytest -q` (~50-80 s); the full offline eval of 8 anonymized cases runs with `pytest -m eval` |
 | Evaluation set | ✅ Works | 11 anonymized resume + JD cases with expected facts; `python -m app.eval run --tailor --check` (P4.1, P4.2); LLM-as-judge from another model family, rubric + position-swapped pairwise, `--judge` / `--replay` (P4.3) |
 | Multiple JDs / history / cover letter | ❌ Not built | — |
 

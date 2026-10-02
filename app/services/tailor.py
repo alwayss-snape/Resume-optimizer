@@ -244,6 +244,28 @@ class TailorService:
             raise ValueError("Describe at least one thing you did in the new job.")
         return company, title, start, end
 
+    @classmethod
+    def _new_experience(cls, role_data: Dict, description_text: str) -> Experience:
+        """An empty job from the "add a job" fields, validated."""
+        company, title, start, end = cls.validate_new_role(role_data, description_text)
+        return Experience(id=f"exp_user_{uuid4().hex[:6]}", company=company, title=title,
+                          location=(role_data.get("location") or "").strip() or None,
+                          start_date=start, end_date=end, roles=[Role(title=title, start_date=start, end_date=end)])
+
+    @staticmethod
+    def _insert_by_date(resume: Resume, exp: Experience) -> None:
+        """Place a job in date order: current jobs first, then most recent start."""
+        today = date.today()
+
+        def sort_key(e: Experience):
+            first = (e.all_roles() or [Role(title="")])[0]
+            ongoing = is_ongoing(first.end_date)
+            started = parse_month(first.start_date, is_end=False, today=today) or (0, 0)
+            return (not ongoing, (-started[0], -started[1]))
+        new_key = sort_key(exp)
+        position = next((i for i, e in enumerate(resume.experience) if sort_key(e) > new_key), len(resume.experience))
+        resume.experience.insert(position, exp)
+
     def add_new_role(self, resume: Resume, evidence_list: List, job_desc: JobDescription,
                      role_data: Dict, description_text: str) -> Tuple[Resume, List, List[str]]:
         """Add a job the resume doesn't have yet (P3.3). Each chunk of the
@@ -252,11 +274,8 @@ class TailorService:
         polish adds anything, the user's own wording is used. The job goes
         in date order (current jobs first, then most recent start).
         Mutates `resume`; returns (resume, evidence_list, notes)."""
-        company, title, start, end = self.validate_new_role(role_data, description_text)
-        today = date.today()
-        exp = Experience(id=f"exp_user_{uuid4().hex[:6]}", company=company, title=title,
-                         location=(role_data.get("location") or "").strip() or None,
-                         start_date=start, end_date=end, roles=[Role(title=title, start_date=start, end_date=end)])
+        exp = self._new_experience(role_data, description_text)
+        company, title, start, end = exp.company, exp.title, exp.start_date, exp.end_date
 
         notes = []
         chunks = self._split_description(description_text)
@@ -278,14 +297,7 @@ class TailorService:
             evidence_list.append(Evidence(id=f"ev_user_{uuid4().hex[:6]}", source_type="experience",
                                           source_id=bullet.id, text=f"{company}: {text}"))
 
-        def sort_key(e: Experience):
-            first = (e.all_roles() or [Role(title="")])[0]
-            ongoing = is_ongoing(first.end_date)
-            started = parse_month(first.start_date, is_end=False, today=today) or (0, 0)
-            return (not ongoing, (-started[0], -started[1]))
-        new_key = sort_key(exp)
-        position = next((i for i, e in enumerate(resume.experience) if sort_key(e) > new_key), len(resume.experience))
-        resume.experience.insert(position, exp)
+        self._insert_by_date(resume, exp)
         dates = " – ".join(v for v in (start, end) if v)
         notes.insert(0, f"Added a new job: {title} at {company}" + (f" ({dates})" if dates else "")
                      + f" with {len(exp.bullets)} bullet(s) from your description.")
@@ -392,8 +404,12 @@ class TailorService:
 
         `corrections` = {"candidate": {name, headline, email, phone, location,
         links: [...]}, "experience": [{id, company, location, roles: [{title,
-        start_date, end_date}, ...]}]}. Only header/structure fields change;
-        bullet text is never touched here. Returns (parsed, changed)."""
+        start_date, end_date}, ...]}], "removed_jobs": [id, ...], "added_jobs":
+        [{company, title, location, current, start_date, end_date, description}]}.
+        Existing bullet text is never touched here; an added job's bullets are
+        the user's own lines, verbatim, so the draft step can tailor them like
+        any other. Raises ValueError (user-facing) for an incomplete added job.
+        Returns (parsed, changed)."""
         raw_doc, resume_doc, evidence_list = self._copy_parsed(parsed)
         resume = resume_doc.resume
         changed: List[str] = []
@@ -445,6 +461,25 @@ class TailorService:
                 for ev in evidence_list:
                     if ev.source_id in bullet_ids and ev.text.startswith(old_context):
                         ev.text = new_context + ev.text[len(old_context):]
+
+        removed = set(corrections.get("removed_jobs") or [])
+        if removed & set(by_id):
+            gone = {b.id for e in resume.experience if e.id in removed for b in e.bullets}
+            resume.experience = [e for e in resume.experience if e.id not in removed]
+            evidence_list = [ev for ev in evidence_list if ev.source_id not in gone]
+            changed.extend(f"{i}.removed" for i in sorted(removed & set(by_id)))
+
+        # Validate every added job before changing anything.
+        added = [(job, self._new_experience(job, job.get("description", "")))
+                 for job in corrections.get("added_jobs") or []]
+        for job, exp in added:
+            lines = self._split_description(job.get("description", ""))[:self.MAX_NEW_ROLE_BULLETS]
+            for n, line in enumerate(lines, start=1):
+                exp.bullets.append(ResumeBullet(id=f"{exp.id}_b{n:02d}", text=line))
+                evidence_list.append(Evidence(id=f"ev_user_{uuid4().hex[:6]}", source_type="experience",
+                                              source_id=f"{exp.id}_b{n:02d}", text=f"{exp.company}: {line}"))
+            self._insert_by_date(resume, exp)
+            changed.append(f"{exp.id}.added")
 
         if changed:
             resume_doc.record_revision("Parsed resume corrected by the user", changed, actor="user")

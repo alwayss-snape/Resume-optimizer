@@ -25,7 +25,10 @@ import { useFocusHeading } from "../lib/useFocusHeading";
 export function Review() {
   const { run, settings, updateRun, advance } = useApp();
   const drafted = run.drafted!;
-  const heading = useFocusHeading();
+  // Sent here from the results page to add job keywords: open at that section instead of the top.
+  const [jumpToGaps] = useState(() => run.jumpTo === "gaps");
+  const heading = useFocusHeading(!jumpToGaps);
+  const gapsHeading = useRef<HTMLHeadingElement>(null);
   const review: ReviewState = run.review ?? initialReview(drafted);
   // Functional updates on the latest stored state: one action may make
   // several changes in a row (save an edit, then accept the card).
@@ -45,6 +48,13 @@ export function Review() {
   useEffect(() => {
     if (!run.review) updateRun({ review: initialReview(drafted) });
   }, [run.review, drafted, updateRun]);
+  useEffect(() => {
+    if (!jumpToGaps) return;
+    updateRun({ jumpTo: null });
+    const target = gapsHeading.current ?? heading.current;
+    target?.scrollIntoView?.({ block: "start" });
+    target?.focus({ preventScroll: true });
+  }, [jumpToGaps, updateRun, heading]);
 
   const groups = useMemo(() => groupProposals(drafted.proposals), [drafted.proposals]);
   const selectionKey = JSON.stringify(selection(drafted.proposals, review));
@@ -240,7 +250,7 @@ export function Review() {
           {drafted.gap_questions.length > 0 && (
             <section aria-labelledby="gaps-title" className="mt-8 flex flex-col gap-4">
               <div className="flex flex-col gap-1">
-                <h2 id="gaps-title" className="font-display text-2xl font-bold tracking-[-0.025em]">What the job asks for</h2>
+                <h2 id="gaps-title" ref={gapsHeading} tabIndex={-1} className="scroll-mt-6 font-display text-2xl font-bold tracking-[-0.025em] outline-none">What the job asks for</h2>
                 <span className="text-sm text-muted">Not on your resume yet. Only what you confirm is added.</span>
               </div>
               {drafted.gap_questions.map((q) => (

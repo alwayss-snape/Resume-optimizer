@@ -5,6 +5,7 @@ import { initialReview } from "../lib/review";
 import { EMPTY_RUN, useApp } from "../lib/store";
 import type { TailorResult } from "../lib/types";
 import { DRAFTED, MATCH } from "../test/fixtures";
+import type { KeywordMatch } from "../lib/types";
 import { Results } from "./Results";
 
 const RESULT: TailorResult = {
@@ -30,7 +31,7 @@ test("before and after, downloads, stats and page previews", () => {
   expect(screen.getByRole("img", { name: /48.2% before, 78.4% after/ })).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "Download PDF" })).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "Download DOCX" })).toBeInTheDocument();
-  expect(screen.getByText("Job keywords now on your resume").previousSibling).toHaveTextContent("1 of 3");
+  expect(screen.getByText("Job keywords on your resume").previousSibling).toHaveTextContent("1 of 3");
   expect(screen.getByText(/Bullets rewritten/).previousSibling).toHaveTextContent("4"); // the server's count
   const pages = screen.getAllByRole("img", { name: /Page \d of your tailored resume/ });
   expect(pages.map((p) => p.getAttribute("src"))).toEqual(["/api/preview/1?v=3", "/api/preview/2?v=3"]);
@@ -115,4 +116,22 @@ test("Back to review returns to the review step", async () => {
 test("own-wording bullets aren't called fact-checked", () => {
   show({ applied: { ...RESULT.applied!, bullets: 3, bullets_edited: 1 } });
   expect(screen.getByText(/1 in your own words, the rest fact-checked/)).toBeInTheDocument();
+});
+
+test("a flat match names what's missing and leads to where it can be added", async () => {
+  const user = userEvent.setup();
+  show({ alignment_score: 48.2, initial_alignment_score: 48.2 });
+  expect(screen.getByText(/the match didn't/)).toBeInTheDocument();
+  const missing = screen.getByText("Still missing (2)").parentElement!;
+  expect(within(missing).getAllByRole("listitem").map((li) => li.textContent)).toEqual(["Airflow · required", "teamwork"]);
+  await user.click(screen.getByRole("button", { name: /Add the ones you have/ }));
+  expect(useApp.getState().step).toBe("review");
+  expect(useApp.getState().run.jumpTo).toBe("gaps");
+});
+
+test("keywords gained by tailoring are named", () => {
+  const after: KeywordMatch = { ...MATCH, rows: MATCH.rows.map((r) => (r.keyword === "Airflow" ? { ...r, found: true } : r)) };
+  show({ keyword_match: after });
+  expect(screen.getByText("Now on your resume:").parentElement).toHaveTextContent("Now on your resume: Airflow");
+  expect(screen.getByText("Still missing (1)")).toBeInTheDocument();
 });

@@ -76,3 +76,30 @@ def test_a_dated_role_without_a_title_is_kept():
     exp = fixed[1].resume.experience[0]
     assert (exp.start_date, exp.end_date) == ("Jan 2020", "Dec 2021")
     assert not changed
+
+
+def test_a_missed_job_can_be_added_and_a_misread_one_removed():
+    """A job the parser missed is added in date order with the user's own
+    lines as bullets and evidence; a misread one goes with its evidence."""
+    import pytest
+    service = _service()
+    parsed = service.parse_resume(REPLICA)
+    before = [e.id for e in parsed[1].resume.experience]
+    gone = {b.id for b in parsed[1].resume.experience[-1].bullets}
+    fix = {"removed_jobs": [before[-1]], "added_jobs": [{
+        "company": "Northwind", "title": "Data Analyst", "location": "Pune, India", "current": False,
+        "start_date": "Jan 2020", "end_date": "Jun 2021",
+        "description": "- Built churn dashboards in Tableau\n- Automated weekly reports in Python"}]}
+    (_, doc, evidence), changed = service.apply_parse_corrections(parsed, fix)
+    exps = doc.resume.experience
+    assert changed and before[-1] not in [e.id for e in exps]
+    added = next(e for e in exps if e.company == "Northwind")
+    assert [b.text for b in added.bullets] == ["Built churn dashboards in Tableau", "Automated weekly reports in Python"]
+    assert any(ev.text == "Northwind: Built churn dashboards in Tableau" for ev in evidence)
+    assert not any(ev.source_id in gone for ev in evidence)
+    # Older than the jobs read from the file, so it goes last.
+    assert exps[-1] is added
+
+    with pytest.raises(ValueError, match="start date"):
+        service.apply_parse_corrections(parsed, {"added_jobs": [
+            {"company": "Northwind", "title": "Analyst", "current": True, "description": "Built dashboards"}]})

@@ -1,6 +1,6 @@
 // What the review screen keeps (P5.4) and how it becomes API requests.
 // Plain functions so the rules are tested apart from the UI.
-import type { Selection, TailorRequest } from "./api";
+import type { AddedJob, Selection, TailorRequest } from "./api";
 import type { Proposal, ProposalsResult } from "./types";
 
 export type Decision = "accept" | "reject";
@@ -66,16 +66,28 @@ export const anyJobField = (j: NewJob) =>
 
 /** Problems with the "add a job" form, as the server would report them;
  *  null when it's empty or complete. */
-export function newJobProblem(j: NewJob): string | null {
+export function newJobProblem(j: NewJob, otherwise = "clear the job fields"): string | null {
   if (!anyJobField(j)) return null;
   const missing = [
     ["company", j.company.trim()], ["job title", j.title.trim()], ["start date", j.start],
     ['end date (or tick "I currently work here")', j.end || j.current], ["what you did there", j.description.trim()],
   ].filter(([, ok]) => !ok).map(([label]) => label);
-  if (missing.length) return `To add the job, fill in: ${missing.join(", ")}. Or clear the job fields.`;
+  if (missing.length) return `To add the job, fill in: ${missing.join(", ")}. Or ${otherwise}.`;
   if (!j.current && j.end < j.start) return "The new job's end date is before its start date.";
   return null;
 }
+
+const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September",
+  "October", "November", "December"];
+
+/** "2023-05" -> "May 2023", the way dates read on a resume. */
+export const monthLabel = (ym: string) => (ym ? `${MONTH_NAMES[Number(ym.slice(5, 7)) - 1]} ${ym.slice(0, 4)}` : "");
+
+/** A job added on the "check details" step, as the server's corrections take it. */
+export const addedJob = (j: NewJob): AddedJob => ({
+  company: j.company.trim(), title: j.title.trim(), location: j.location.trim(), current: j.current,
+  start_date: monthLabel(j.start), end_date: j.current ? "Present" : monthLabel(j.end), description: j.description,
+});
 
 export function tailorRequest(proposals: Proposal[], review: ReviewState, options: {
   keepLayout: boolean;

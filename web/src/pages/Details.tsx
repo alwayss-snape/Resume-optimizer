@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from "react";
+import { AddJobForm } from "../components/AddJobForm";
 import { Button } from "../components/Button";
 import { TextArea, TextField } from "../components/Field";
 import { Icon } from "../components/Icon";
 import { ProgressPanel } from "../components/ProgressPanel";
-import { draftProposals, friendlyError } from "../lib/api";
+import { type Corrections, draftProposals, friendlyError } from "../lib/api";
 import { beginStep, isAbort } from "../lib/inflight";
+import { EMPTY_JOB, type NewJob, addedJob, anyJobField, newJobProblem } from "../lib/review";
 import { useApp } from "../lib/store";
 import type { Details as DetailsData, JobDetails, Role } from "../lib/types";
 import { useFocusHeading } from "../lib/useFocusHeading";
@@ -16,6 +18,12 @@ export function Details() {
   const heading = useFocusHeading();
   const [form, setForm] = useState<DetailsData>(() => structuredClone(run.details!));
   const [links, setLinks] = useState(() => run.details!.candidate.links.join("\n"));
+  // Jobs the file was missing (added here) or that were misread (removed).
+  const [added, setAdded] = useState<{ key: number; job: NewJob }[]>([]);
+  const [removed, setRemoved] = useState<string[]>([]);
+  const nextKey = useRef(0);
+  const addedRefs = useRef(new Map<number, HTMLElement>());
+  const focusAdded = useRef<number | null>(null);
   const [progress, setProgress] = useState<string[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const progressHeading = useRef<HTMLHeadingElement>(null);
@@ -30,6 +38,20 @@ export function Details() {
   useEffect(() => {
     if (error) errorRef.current?.focus();
   }, [error]);
+  // A new job card takes focus on its first field.
+  useEffect(() => {
+    if (focusAdded.current === null) return;
+    addedRefs.current.get(focusAdded.current)?.querySelector("input")?.focus();
+    focusAdded.current = null;
+  }, [added]);
+
+  const addJob = () => {
+    const key = nextKey.current++;
+    focusAdded.current = key;
+    setAdded((a) => [...a, { key, job: EMPTY_JOB }]);
+  };
+  const setAddedJob = (key: number, job: NewJob) => setAdded((a) => a.map((x) => (x.key === key ? { ...x, job } : x)));
+  const toggleRemoved = (id: string) => setRemoved((r) => (r.includes(id) ? r.filter((x) => x !== id) : [...r, id]));
 
   const setCandidate = (field: keyof DetailsData["candidate"], value: string) =>
     setForm((f) => ({ ...f, candidate: { ...f.candidate, [field]: value } }));
@@ -41,16 +63,34 @@ export function Details() {
 
   const submit = async () => {
     setError(null);
+    const newJobs = added.filter((a) => anyJobField(a.job));
+    for (const [n, a] of newJobs.entries()) {
+      const problem = newJobProblem(a.job, "remove it");
+      if (problem) {
+        setError(`New job ${n + 1}: ${problem}`);
+        return;
+      }
+    }
+    if (removed.length === form.experience.length && form.experience.length > 0 && newJobs.length === 0) {
+      setError("Keep at least one job, or add the right one.");
+      return;
+    }
     setProgress([]);
-    const corrections = { ...form, candidate: { ...form.candidate, links: links.split("\n").map((l) => l.trim()).filter(Boolean) } };
+    const fixed: Corrections = { ...form, candidate: { ...form.candidate, links: links.split("\n").map((l) => l.trim()).filter(Boolean) } };
     // Unchanged: send nothing, so the server keeps exactly what it read.
-    const changed = JSON.stringify(corrections) !== JSON.stringify(run.details);
+    const changed = JSON.stringify(fixed) !== JSON.stringify(run.details) || removed.length > 0 || newJobs.length > 0;
+    const corrections: Corrections = {
+      ...fixed, experience: fixed.experience.filter((e) => !removed.includes(e.id)),
+      ...(removed.length ? { removed_jobs: removed } : {}),
+      ...(newJobs.length ? { added_jobs: newJobs.map((a) => addedJob(a.job)) } : {}),
+    };
     const step = beginStep();
     try {
       const drafted = await draftProposals(changed ? corrections : null,
         (m) => step.isCurrent() && setProgress((p) => [...(p ?? []), m]), step.signal);
       if (!step.isCurrent()) return; // the user left this run
-      updateRun({ details: corrections, drafted, results: null, review: null });
+      // The server's own read-back, so added jobs come back as ordinary ones.
+      updateRun({ details: drafted.details ?? fixed, drafted, results: null, review: null });
       advance("review");
     } catch (e) {
       if (isAbort(e) || !step.isCurrent()) return;
@@ -114,13 +154,24 @@ export function Details() {
       <section aria-labelledby="jobs" className="flex flex-col gap-5">
         <h2 id="jobs" className="mt-2 font-display text-[22px] font-bold tracking-[-0.02em]">Experience</h2>
         {form.experience.length === 0 && <p className="text-sm text-muted">No jobs were found in your resume.</p>}
-        {form.experience.map((job, i) => (
+        {form.experience.map((job, i) => removed.includes(job.id) ? (
+          <div key={job.id} className="flex flex-wrap items-center justify-between gap-3 rounded-[3px] border border-dashed border-field px-6 py-3">
+            <span className="text-sm text-muted">
+              <del className="mark-del">Job {i + 1}{job.company ? `: ${job.company}` : ""}</del> won't be on your resume.
+            </span>
+            <Button variant="ghost" onClick={() => toggleRemoved(job.id)}>Undo</Button>
+          </div>
+        ) : (
           <fieldset key={job.id} className="sheet flex flex-col gap-4 rounded-[3px] p-6">
             <legend className="sr-only">Job {i + 1}</legend>
-            <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <span className="text-[15px] font-semibold">Job {i + 1}</span>
-              <span className="tabular text-[13px] text-muted">
-                {job.bullets} bullet{job.bullets === 1 ? "" : "s"}{job.groups ? ` in ${job.groups} sub-sections` : ""}
+              <span className="flex items-center gap-3">
+                <span className="tabular text-[13px] text-muted">
+                  {job.bullets} bullet{job.bullets === 1 ? "" : "s"}{job.groups ? ` in ${job.groups} sub-sections` : ""}
+                </span>
+                <Button variant="ghost" aria-label={`Remove job ${i + 1}${job.company ? `, ${job.company}` : ""}`}
+                  onClick={() => toggleRemoved(job.id)}>Remove</Button>
               </span>
             </div>
             <div className="grid gap-4 md:grid-cols-2">
@@ -139,6 +190,26 @@ export function Details() {
             ))}
           </fieldset>
         ))}
+        {added.map(({ key, job }, n) => (
+          <fieldset key={key} ref={(el) => { if (el) addedRefs.current.set(key, el); else addedRefs.current.delete(key); }}
+            className="sheet flex flex-col gap-4 rounded-[3px] p-6">
+            <legend className="sr-only">New job {n + 1}</legend>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <span className="text-[15px] font-semibold">New job {n + 1}</span>
+              <Button variant="ghost" aria-label={`Remove new job ${n + 1}`}
+                onClick={() => setAdded((a) => a.filter((x) => x.key !== key))}>Remove</Button>
+            </div>
+            <p className="m-0 text-[13px] text-muted">
+              Your lines become its bullet points as written; the next step suggests tailored wording you can accept or reject.
+            </p>
+            <AddJobForm value={job} onChange={(j) => setAddedJob(key, j)} />
+          </fieldset>
+        ))}
+        <button type="button" onClick={addJob}
+          className="flex min-h-15 items-center gap-2.5 rounded-[3px] border border-dashed border-field bg-panel px-5 text-left text-sm font-medium transition-colors hover:border-pencil hover:text-pencil">
+          <Icon name="close" size={16} className="rotate-45 text-pencil" />
+          {form.experience.length || added.length ? "Add a job we missed" : "Add a job"}
+        </button>
       </section>
 
       <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center">

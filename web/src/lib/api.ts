@@ -142,7 +142,19 @@ export async function streamStep<T>(path: string, body: unknown, onProgress: (me
   }
 }
 
-export const draftProposals = (corrections: Details | null, onProgress: (m: string) => void, signal?: AbortSignal) =>
+/** The "check details" form: fixed fields plus jobs removed or added. */
+export interface AddedJob {
+  company: string;
+  title: string;
+  location: string;
+  current: boolean;
+  start_date: string;
+  end_date: string;
+  description: string;
+}
+export type Corrections = Details & { removed_jobs?: string[]; added_jobs?: AddedJob[] };
+
+export const draftProposals = (corrections: Corrections | null, onProgress: (m: string) => void, signal?: AbortSignal) =>
   streamStep<ProposalsResult>("/api/proposals", { corrections }, onProgress, signal);
 
 export interface Selection {

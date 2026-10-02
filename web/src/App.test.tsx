@@ -150,6 +150,41 @@ test("an untouched details form sends no corrections", async () => {
   expect(JSON.parse(String(calls.find((c) => c.url === "/api/proposals")!.init!.body))).toEqual({ corrections: null });
 });
 
+test("details: a missed job is added, a misread one removed, and both are sent", async () => {
+  const calls = stubApi({
+    "/api/config": () => jsonResponse(CONFIG),
+    "/api/parse": () => jsonResponse({ details: DETAILS, parse_issues: [] }),
+    "/api/proposals": () => sseResponse([["result", DRAFTED]]),
+  });
+  const user = userEvent.setup();
+  render(<App />);
+  await fillUpload(user);
+  await user.click(screen.getByRole("button", { name: /Read my resume/ }));
+  await screen.findByRole("heading", { name: "Check your details" });
+  await user.click(screen.getByRole("button", { name: "Remove job 2, Contoso" }));
+  expect(screen.getByText(/won't be on your resume/)).toBeInTheDocument();
+  await user.click(screen.getByRole("button", { name: "Add a job we missed" }));
+  expect(screen.getByLabelText("Company *")).toHaveFocus();
+  await user.type(screen.getByLabelText("Company *"), "Acme");
+  // Incomplete: explained, nothing sent.
+  await user.click(screen.getByRole("button", { name: /draft rewrites/ }));
+  expect(screen.getByRole("alert")).toHaveTextContent(/New job 1: To add the job, fill in: job title.*Or remove it/);
+  expect(calls.some((c) => c.url === "/api/proposals")).toBe(false);
+  await user.type(screen.getByLabelText("Job title *"), "Engineer");
+  await user.selectOptions(screen.getByLabelText("Start *: month"), "03");
+  await user.selectOptions(screen.getByLabelText("Start *: year"), "2019");
+  await user.selectOptions(screen.getByLabelText("End *: month"), "12");
+  await user.selectOptions(screen.getByLabelText("End *: year"), "2021");
+  await user.type(screen.getByLabelText(/What did you do there/), "Built the billing service");
+  await user.click(screen.getByRole("button", { name: /draft rewrites/ }));
+  await screen.findByRole("heading", { name: "Review changes" });
+  const { corrections } = JSON.parse(String(calls.find((c) => c.url === "/api/proposals")!.init!.body));
+  expect(corrections.removed_jobs).toEqual(["exp_2"]);
+  expect(corrections.experience.map((e: { id: string }) => e.id)).toEqual(["exp_1"]);
+  expect(corrections.added_jobs).toEqual([{ company: "Acme", title: "Engineer", location: "", current: false,
+    start_date: "March 2019", end_date: "December 2021", description: "Built the billing service" }]);
+});
+
 test("report tabs move with the arrow keys", async () => {
   stubApi({ "/api/config": () => jsonResponse(CONFIG), "/api/analyze": () => jsonResponse(REPORT) });
   const user = userEvent.setup();

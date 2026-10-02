@@ -84,6 +84,14 @@ def test_soft_skills_count_less():
 
 
 def test_tokens_normalise_case_alias_and_plural():
-    assert tokens("Feature Stores for ML") == ["feature", "store", "for", "machine", "learning"]
+    assert tokens("Feature Stores for ML") == ["featur", "stor", "for", "machin", "learn"]
+
+
+def test_tokens_ignore_verb_forms_but_keep_short_stems():
+    # "Communicate" in a JD is met by "Communicated" on the resume.
+    assert tokens("communicate") == tokens("Communicated") == tokens("communicating")
+    assert tokens("mentored") == tokens("Mentor")
+    # Stripping these would leave fewer than four letters, so they stay whole.
+    assert tokens("string spring used") == ["string", "spring", "used"]
 
 

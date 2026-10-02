@@ -39,8 +39,9 @@ router = APIRouter(prefix="/api")
 # Request bodies
 # ---------------------------------------------------------------------------
 class ProposalsIn(BaseModel):
-    # The "check details" form: {"candidate": {...}, "experience": [...]},
-    # as TailorService.apply_parse_corrections takes it. None = no changes.
+    # The "check details" form: {"candidate": {...}, "experience": [...],
+    # "removed_jobs": [...], "added_jobs": [...]}, as
+    # TailorService.apply_parse_corrections takes it. None = no changes.
     corrections: Optional[Dict] = None
 
 
@@ -331,7 +332,10 @@ def proposals(request: Request, body: ProposalsIn, session: Session = Depends(cu
     def work(progress):
         parsed, changed = session.data["parsed"], False
         if body.corrections:
-            parsed, changed = service.apply_parse_corrections(parsed, body.corrections)
+            try:
+                parsed, changed = service.apply_parse_corrections(parsed, body.corrections)
+            except ValueError as e:  # an added job is incomplete
+                raise HTTPException(422, str(e))
         # Drafting again after going back: fixes applied the first time count too.
         changed = changed or bool(session.data.get("parse_corrected"))
         generated = service.generate_proposals(session.data["resume_path"], session.data["jd_text"],
@@ -350,6 +354,8 @@ def proposals(request: Request, body: ProposalsIn, session: Session = Depends(cu
         status = generated.get("llm_status") or {}
         provider = status.get("provider") or forms.current_provider()
         return {
+            # What the server now holds, so going back shows added jobs as ordinary ones.
+            "details": _details(parsed[1].resume),
             "proposals": [_proposal_out(p, keywords, sections) for p in generated["proposals"]],
             "gap_questions": [q.model_dump() for q in questions],
             "keyword_match": _match_out(report),

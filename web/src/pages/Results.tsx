@@ -6,7 +6,7 @@ import { MiniMarkdown } from "../components/MiniMarkdown";
 import { CountUp, ScoreRule, verdict } from "../components/ScoreDial";
 import { downloadFile, fileUrl, friendlyError, getChangeLog, previewUrl } from "../lib/api";
 import { useApp } from "../lib/store";
-import type { TailorResult } from "../lib/types";
+import type { KeywordRow, TailorResult } from "../lib/types";
 import { useFocusHeading } from "../lib/useFocusHeading";
 
 const CHECK_LABELS: Record<string, string> = {
@@ -54,14 +54,26 @@ function SignOffLine({ value, unit, label }: { value: string | number; unit?: st
   );
 }
 
-/** Before -> after on the rule, and a plain reason when the rate didn't move. */
-function ScoreReveal({ result }: { result: TailorResult }) {
+/** Required first, then the heaviest: the keywords most worth adding. */
+const byImportance = (a: KeywordRow, b: KeywordRow) => Number(b.required) - Number(a.required) || b.weight - a.weight;
+
+/** Before -> after on the rule; then what moved it, or what would. */
+function ScoreReveal({ result, beforeRows, onAddKeywords }: {
+  result: TailorResult;
+  beforeRows: KeywordRow[];
+  onAddKeywords: () => void;
+}) {
   const before = result.initial_alignment_score;
   const after = result.alignment_score;
   const band = result.keyword_match?.target_band ?? [75, 85];
   const v = verdict(after, band);
   const [b, a] = pair(before, after);
   const flat = Math.abs(after - before) < 0.5;
+  const rows = result.keyword_match?.rows ?? [];
+  const foundBefore = new Set(beforeRows.filter((r) => r.found).map((r) => r.keyword));
+  const gained = beforeRows.length ? rows.filter((r) => r.found && !foundBefore.has(r.keyword)) : [];
+  const missing = rows.filter((r) => !r.found).sort(byImportance);
+  const shown = missing.slice(0, 8);
   return (
     <div className="sheet flex flex-col gap-6 rounded-[3px] p-6 md:p-8">
       <div role="img" aria-label={`Keyword match: ${before.toFixed(1)}% before, ${after.toFixed(1)}% after tailoring. ${v.text}`}
@@ -88,11 +100,38 @@ function ScoreReveal({ result }: { result: TailorResult }) {
         <ScoreRule value={after} before={before} band={band} />
         <span aria-hidden="true" className={`text-sm ${v.tone === "good" ? "font-medium text-success" : "text-muted"}`}>{v.text}</span>
       </div>
-      {flat && (
-        <p className="m-0 border-t border-line pt-4 font-serif text-[15px] italic leading-relaxed text-muted">
-          The wording changed, but the match didn't move: rewrites only use words already on your resume. To add a job
-          keyword you really have, go back to review and tick it under "What the job asks for".
+      {gained.length > 0 && (
+        <p className="m-0 border-t border-line pt-4 text-sm leading-relaxed">
+          <span className="text-muted">Now on your resume: </span>
+          {gained.map((r, i) => (
+            <span key={r.keyword}>{i > 0 && ", "}<ins className="mark-ins">{r.keyword}</ins></span>
+          ))}
         </p>
+      )}
+      {missing.length > 0 && (
+        <div className="flex flex-col gap-3 border-t border-line pt-4">
+          <p className="m-0 font-serif text-[15px] italic leading-relaxed text-muted">
+            {flat
+              ? "The wording changed, but the match didn't: rewrites only reword what's already on your resume, so it moves when you add a job keyword you really have."
+              : "To go further, add the job keywords you really have."}
+          </p>
+          <div>
+            <span className="text-[13px] font-semibold">Still missing ({missing.length})</span>
+            <ul className="m-0 mt-2 flex flex-wrap gap-1.5 p-0">
+              {shown.map((r) => (
+                <li key={r.keyword} className="list-none rounded-[3px] border border-dashed border-field px-2.5 py-1 text-xs">
+                  {r.keyword}{r.required ? <span className="text-muted"> · required</span> : null}
+                </li>
+              ))}
+              {missing.length > shown.length && (
+                <li className="list-none px-1 py-1 text-xs text-muted">+{missing.length - shown.length} more</li>
+              )}
+            </ul>
+          </div>
+          <div>
+            <Button onClick={onAddKeywords}>Add the ones you have <Icon name="arrow-right" size={16} /></Button>
+          </div>
+        </div>
       )}
     </div>
   );
@@ -103,7 +142,7 @@ type Tab = (typeof TABS)[number];
 
 /** Step 4: the finished files, how the match moved, and what changed. */
 export function Results() {
-  const { run, goTo } = useApp();
+  const { run, goTo, updateRun } = useApp();
   const result = run.results!;
   const heading = useFocusHeading();
   const [tab, setTab] = useState<Tab>("Preview");
@@ -172,7 +211,10 @@ export function Results() {
           )}
           {result.addition_note && <p className="m-0 text-sm text-muted">Your addition was included: {result.addition_note}</p>}
         </div>
-        <motion.div style={{ y: drift }}><ScoreReveal result={result} /></motion.div>
+        <motion.div style={{ y: drift }}>
+          <ScoreReveal result={result} beforeRows={run.drafted?.keyword_match?.rows ?? []}
+            onAddKeywords={() => { updateRun({ jumpTo: "gaps" }); goTo("review"); }} />
+        </motion.div>
       </section>
 
       <section aria-label="Summary" className="sheet flex flex-col gap-2 rounded-[3px] px-6 py-5 md:flex-row md:items-start md:gap-10 md:px-8">
@@ -186,7 +228,7 @@ export function Results() {
           </span>
         </div>
         <ul className="m-0 grid flex-1 p-0 sm:grid-cols-2 sm:gap-x-10">
-        <SignOffLine value={rows.filter((r) => r.found).length} unit={`of ${rows.length}`} label="Job keywords now on your resume" />
+        <SignOffLine value={rows.filter((r) => r.found).length} unit={`of ${rows.length}`} label="Job keywords on your resume" />
         <SignOffLine value={applied?.bullets ?? "—"}
           label={applied?.bullets_edited
             ? `Bullets rewritten (${applied.bullets_edited} in your own words, the rest fact-checked)`

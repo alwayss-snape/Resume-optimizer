@@ -30,11 +30,12 @@ export interface Run {
   review: ReviewState | null; // decisions on the drafted proposals, kept across Back
   results: TailorResult | null;
   resultsVersion: number; // changes per tailoring run, so previews reload
+  jumpTo: "gaps" | null; // Review opens at "What the job asks for" (from the results page)
 }
 
 export const EMPTY_RUN: Run = {
   intent: "tailor", file: null, jdText: "", template: "ats", details: null, parseIssues: [],
-  report: null, drafted: null, review: null, results: null, resultsVersion: 0,
+  report: null, drafted: null, review: null, results: null, resultsVersion: 0, jumpTo: null,
 };
 export type Theme = "dark" | "light" | "system";
 

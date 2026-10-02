@@ -42,9 +42,17 @@ _TERM_SUFFIXES = {"compliant", "certified", "based", "driven", "native", "enable
 
 
 def _stem(token: str) -> str:
+    """Plural- and verb-form-insensitive: "communicate", "communicated" and
+    "communicating" all read "communicat". Stems shorter than four letters
+    are left alone, so "string", "spring" and "used" keep their meaning."""
     if len(token) > 3 and token.endswith("ies"):
-        return token[:-3] + "y"
-    if len(token) > 3 and token.endswith("s") and not token.endswith("ss"):
+        token = token[:-3] + "y"
+    elif len(token) > 3 and token.endswith("s") and not token.endswith("ss"):
+        token = token[:-1]
+    for suffix in ("ing", "ed"):
+        if token.endswith(suffix) and len(token) - len(suffix) >= 4:
+            return token[:-len(suffix)]
+    if len(token) > 4 and token.endswith("e") and not token.endswith("ee"):
         return token[:-1]
     return token
 
