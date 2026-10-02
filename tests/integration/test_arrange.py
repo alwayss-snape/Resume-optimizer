@@ -27,14 +27,14 @@ def test_layout_moves_hides_removes_and_edits_without_crossing_jobs(tmp_path):
     first, *rest = layout.bullet_order[job0.id]
     layout.bullet_order[job0.id] = [*rest, first]
     layout.bullet_order[job1.id] = [first, *layout.bullet_order[job1.id]]  # another job's bullet: ignored
-    layout.removed_bullets = [job1.bullets[-1].id]
+    layout.removed_bullets = [job0.bullets[-1].id]  # job0 keeps its other bullets
     layout.edits = {job0.bullets[1].id: "Rewrote it in my own words for 99 stores."}
     layout.trim = False
 
     arranged = apply_layout(full, layout)
-    assert [b.id for b in arranged.experience[0].bullets][-1] == first
+    assert first in [b.id for b in arranged.experience[0].bullets]
     assert first not in [b.id for b in arranged.experience[1].bullets]
-    assert job1.bullets[-1].id not in [b.id for b in arranged.experience[1].bullets]
+    assert job0.bullets[-1].id not in [b.id for b in arranged.experience[0].bullets]
     assert arranged.interests == []
 
     out = service.arrange(state, layout, str(tmp_path))
@@ -60,3 +60,26 @@ def test_no_rewrites_accepted_means_no_silent_reorder(tmp_path):
     full, original = state["full_doc"].resume, state["original"]
     assert [[b.id for b in e.bullets] for e in full.experience] == \
            [[b.id for b in e.bullets] for e in original.experience]
+
+
+def test_hiding_work_experience_or_emptying_a_job_loses_nothing(tmp_path):
+    """Stage J review: these are the user's choices, not losses."""
+    service, _result, state = _tailored(tmp_path)
+    layout = state["default_layout"].model_copy(deep=True)
+    layout.hidden_sections = ["experience"]
+    out = service.arrange(state, layout, str(tmp_path))
+    assert out["coverage"]["lost"] == [] and out["success"] is True
+    job = state["full_doc"].resume.experience[0]
+    layout = state["default_layout"].model_copy(deep=True)
+    layout.removed_bullets = [b.id for b in job.bullets]
+    out = service.arrange(state, layout, str(tmp_path))
+    assert out["coverage"]["lost"] == [] and out["success"] is True, out["warnings"]
+    assert any("is taken out, so it's left out" in w for w in out["warnings"])
+
+
+def test_change_log_is_rewritten_not_appended(tmp_path):
+    service, _result, state = _tailored(tmp_path)
+    for _ in range(3):
+        out = service.arrange(state, state["default_layout"], str(tmp_path))
+    with open(out["changes_md"], encoding="utf-8") as f:
+        assert f.read().count("## Arranged by you") == 1

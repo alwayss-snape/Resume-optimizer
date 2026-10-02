@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "f06d51ce40361649",
+  "source_hash": "6d52b021c6673b5c",
   "stats": {
     "files": 149,
     "python_files": 126,
     "app_modules": 56,
     "test_files": 61,
     "classes": 105,
-    "functions": 981,
-    "lines_of_python": 19753
+    "functions": 985,
+    "lines_of_python": 19828
   },
   "axes": {
     "x": "location (path)",
@@ -1316,7 +1316,7 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 530,
+      "lines": 542,
       "doc": "HTTP endpoints, one per step of the review flow (P5.1).",
       "classes": [
         {
@@ -1380,7 +1380,7 @@
         },
         {
           "name": "ArrangeIn",
-          "line": 455,
+          "line": 458,
           "doc": "",
           "methods": []
         }
@@ -1498,32 +1498,32 @@
         },
         {
           "name": "_results_out",
-          "line": 424,
+          "line": 426,
           "doc": "What the Results (and Arrange) screen gets after a run."
         },
         {
           "name": "arrange",
-          "line": 463,
+          "line": 466,
           "doc": "Re-render the tailored resume as the user arranged it (P8.13). No LLM"
         },
         {
           "name": "_result_path",
-          "line": 493,
+          "line": 505,
           "doc": ""
         },
         {
           "name": "download",
-          "line": 501,
+          "line": 513,
           "doc": ""
         },
         {
           "name": "preview",
-          "line": 509,
+          "line": 521,
           "doc": "One page of the tailored PDF as a PNG (Chrome blocks embedded PDFs)."
         },
         {
           "name": "reset",
-          "line": 518,
+          "line": 530,
           "doc": "Start over: delete this visitor's files and state. If a step is still"
         }
       ]
@@ -3145,7 +3145,7 @@
       "stages": [
         "9 Render"
       ],
-      "lines": 205,
+      "lines": 227,
       "doc": "Arrange and edit before download (P8.13\u2013P8.16).",
       "classes": [
         {
@@ -3177,33 +3177,43 @@
           "doc": "A copy of `full` arranged as `layout` says. Unknown ids are ignored;"
         },
         {
+          "name": "_had_bullets",
+          "line": 97,
+          "doc": ""
+        },
+        {
+          "name": "emptied",
+          "line": 101,
+          "doc": "Jobs and projects the user took every bullet out of."
+        },
+        {
           "name": "section_order",
-          "line": 93,
+          "line": 107,
           "doc": "The render order: the user's order, then anything it doesn't list."
         },
         {
           "name": "notes_for",
-          "line": 101,
+          "line": 115,
           "doc": "Things worth pointing out about the user's arrangement. Advice only."
         },
         {
           "name": "_today",
-          "line": 123,
+          "line": 143,
           "doc": ""
         },
         {
           "name": "_all_text",
-          "line": 128,
+          "line": 148,
           "doc": ""
         },
         {
           "name": "view",
-          "line": 135,
+          "line": 155,
           "doc": "What the Arrange screen shows: every section with its entries and"
         },
         {
           "name": "trimmed_items",
-          "line": 190,
+          "line": 212,
           "doc": "What page-fit removed: bullets (with their job), projects, Interests."
         }
       ]
@@ -3343,7 +3353,7 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 1357,
+      "lines": 1375,
       "doc": "",
       "classes": [
         {
@@ -3502,12 +3512,12 @@
         },
         {
           "name": "_hidden_text",
-          "line": 1321,
+          "line": 1339,
           "doc": "Text of the sections the user hid, so coverage counts it as their choice."
         },
         {
           "name": "_merge_usage",
-          "line": 1348,
+          "line": 1366,
           "doc": "Combine two LLMClient.get_usage_summary() dicts into one."
         }
       ]
@@ -4174,7 +4184,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 62,
+      "lines": 85,
       "doc": "P8.13\u2013P8.16: arrange and edit after tailoring, with no LLM call.",
       "classes": [],
       "functions": [
@@ -4197,6 +4207,16 @@
           "name": "test_no_rewrites_accepted_means_no_silent_reorder",
           "line": 57,
           "doc": "P8.14: the file's order stays when nothing was accepted."
+        },
+        {
+          "name": "test_hiding_work_experience_or_emptying_a_job_loses_nothing",
+          "line": 65,
+          "doc": "Stage J review: these are the user's choices, not losses."
+        },
+        {
+          "name": "test_change_log_is_rewritten_not_appended",
+          "line": 80,
+          "doc": ""
         }
       ]
     },

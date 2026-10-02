@@ -51,3 +51,29 @@ test("edit keeps the user's wording and shows the file's text", async () => {
   expect(screen.getByText("Said my way")).toBeInTheDocument();
   expect(screen.getByText("your words")).toBeInTheDocument();
 });
+
+test("Stage J review: focus stays, undo settles, leaving sends the change, a bullet drag never moves a section", async () => {
+  const fetchMock = vi.fn(async () => new Response(JSON.stringify(RESULT)));
+  vi.stubGlobal("fetch", fetchMock);
+  const user = userEvent.setup();
+  const { unmount } = render(<Arrange result={RESULT} onResult={() => undefined} onBack={() => undefined} />);
+  const down = screen.getByRole("button", { name: 'Move "One" down' });
+  down.focus();
+  await user.keyboard("{Enter}");
+  expect(document.activeElement?.getAttribute("data-move")).toMatch(/^b1:/);
+
+  await user.click(screen.getByRole("button", { name: "Undo" }));
+  expect(screen.getByRole("status")).toHaveTextContent(/Up to date/);
+
+  await user.click(screen.getByRole("checkbox", { name: /Summary/ }));
+  unmount(); // left within the pause
+  await act(async () => { await Promise.resolve(); });
+  expect(fetchMock).toHaveBeenCalledTimes(1);
+});
+
+test("section moves skip sections the screen doesn't show", async () => {
+  const { moveSection } = await import("../lib/arrange");
+  const l = moveSection({ ...ARRANGEMENT.layout, section_order: ["summary", "skills", "projects", "experience"] },
+    "summary", 1, ["summary", "experience"]);
+  expect(l.section_order.indexOf("experience")).toBeLessThan(l.section_order.indexOf("summary"));
+});

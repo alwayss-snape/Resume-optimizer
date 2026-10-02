@@ -42,9 +42,20 @@ export function orderedBullets(entry: ArrangeEntry, layout: Layout) {
   return [...entry.bullets].sort((x, y) => (rank.get(x.id) ?? 99) - (rank.get(y.id) ?? 99));
 }
 
-export function moveSection(layout: Layout, key: string, delta: number): Layout {
+/** Moves a section past its neighbour among the shown ones (empty sections
+ *  the screen doesn't list never absorb a click). */
+export function moveSection(layout: Layout, key: string, delta: number, shown?: string[]): Layout {
   const l = clone(layout);
-  l.section_order = moveId(l.section_order, key, delta);
+  const visible = shown ?? l.section_order;
+  const at = visible.indexOf(key);
+  const neighbour = visible[at + delta];
+  if (at < 0 || !neighbour) return l;
+  const order = l.section_order.includes(key) ? [...l.section_order] : [...l.section_order, key];
+  if (!order.includes(neighbour)) order.push(neighbour);
+  const without = order.filter((k) => k !== key);
+  const n = without.indexOf(neighbour);
+  without.splice(delta < 0 ? n : n + 1, 0, key);
+  l.section_order = without;
   return l;
 }
 

@@ -11,16 +11,16 @@ import { useFocusHeading } from "../lib/useFocusHeading";
 
 const UPDATE_DELAY_MS = 900;
 
-function MoveButtons({ label, first, last, onMove }: {
-  label: string; first: boolean; last: boolean; onMove: (delta: number) => void;
+function MoveButtons({ id, label, first, last, onMove }: {
+  id: string; label: string; first: boolean; last: boolean; onMove: (delta: number) => void;
 }) {
   return (
     <span className="flex shrink-0 gap-1">
-      <button type="button" aria-label={`Move ${label} up`} disabled={first} onClick={() => onMove(-1)}
+      <button type="button" data-move={`${id}:up`} aria-label={`Move ${label} up`} disabled={first} onClick={() => onMove(-1)}
         className="grid size-11 place-items-center rounded-[4px] border border-field text-ink hover:border-pencil hover:text-pencil disabled:cursor-not-allowed disabled:opacity-40">
         <Icon name="arrow-right" size={16} className="-rotate-90" />
       </button>
-      <button type="button" aria-label={`Move ${label} down`} disabled={last} onClick={() => onMove(1)}
+      <button type="button" data-move={`${id}:down`} aria-label={`Move ${label} down`} disabled={last} onClick={() => onMove(1)}
         className="grid size-11 place-items-center rounded-[4px] border border-field text-ink hover:border-pencil hover:text-pencil disabled:cursor-not-allowed disabled:opacity-40">
         <Icon name="arrow-right" size={16} className="rotate-90" />
       </button>
@@ -30,11 +30,17 @@ function MoveButtons({ label, first, last, onMove }: {
 
 const short = (t: string, n = 48) => (t.length > n ? `${t.slice(0, n).trimEnd()}…` : t);
 
+/** After a move React re-orders the DOM and the pressed button loses focus;
+ *  the Arrange screen puts it back (Stage J review). */
+let focusAfterMove: { id: string; dir: "up" | "down" } | null = null;
+const rememberMove = (id: string, delta: number) => { focusAfterMove = { id, dir: delta < 0 ? "up" : "down" }; };
+
 /** One bullet: its text in the document serif, struck when taken out. */
-function BulletRow({ bullet, entry, index, count, layout, onChange, onAnnounce, drag }: {
+function BulletRow({ bullet, entry, index, count, layout, onChange, onAnnounce, drag, trimmed }: {
   bullet: ArrangeBullet; entry: ArrangeEntry; index: number; count: number; layout: Layout;
   onChange: (l: Layout) => void; onAnnounce: (m: string) => void;
-  drag: { start: (e: DragEvent, id: string) => void; drop: (e: DragEvent, id: string) => void };
+  drag: { start: (e: DragEvent, id: string) => void; drop: (e: DragEvent, id: string) => void; end: () => void };
+  trimmed?: boolean;
 }) {
   const removed = layout.removed_bullets.includes(bullet.id);
   const edit = layout.edits[bullet.id];
@@ -47,8 +53,9 @@ function BulletRow({ bullet, entry, index, count, layout, onChange, onAnnounce, 
   }, [editing]);
   const label = `"${short(text, 40)}"`;
   return (
-    <li draggable={!editing} onDragStart={(e) => drag.start(e, bullet.id)} onDragOver={(e) => e.preventDefault()}
-      onDrop={(e) => drag.drop(e, bullet.id)}
+    <li draggable={!editing} onDragStart={(e) => { e.stopPropagation(); drag.start(e, bullet.id); }}
+      onDragOver={(e) => e.preventDefault()} onDragEnd={(e) => { e.stopPropagation(); drag.end(); }}
+      onDrop={(e) => { e.stopPropagation(); drag.drop(e, bullet.id); }}
       className={`flex flex-col gap-2 border-t border-line py-3 first:border-t-0 ${removed ? "opacity-80" : ""}`}>
       <div className="flex items-start gap-3">
         <span aria-hidden="true" className="mt-1 cursor-grab select-none text-muted">⋮⋮</span>
@@ -74,13 +81,14 @@ function BulletRow({ bullet, entry, index, count, layout, onChange, onAnnounce, 
           <p className={`m-0 min-w-0 flex-1 font-serif text-[16px] leading-relaxed ${removed ? "mark-del" : ""}`}>
             {text}
             {edit !== undefined && <span className="ml-2 font-sans text-xs text-pencil">your words</span>}
+            {trimmed && !removed && <span className="ml-2 font-sans text-xs text-muted">trimmed to fit · not in the file</span>}
           </p>
         )}
       </div>
       {!editing && (
         <div className="flex flex-wrap items-center gap-2 pl-7">
-          {!removed && <MoveButtons label={label} first={index === 0} last={index === count - 1}
-            onMove={(d) => { onChange(moveBullet(layout, entry, bullet.id, d)); onAnnounce(`Moved ${label} ${d < 0 ? "up" : "down"}.`); }} />}
+          {!removed && <MoveButtons id={bullet.id} label={label} first={index === 0} last={index === count - 1}
+            onMove={(d) => { rememberMove(bullet.id, d); onChange(moveBullet(layout, entry, bullet.id, d)); onAnnounce(`Moved ${label} ${d < 0 ? "up" : "down"}.`); }} />}
           {!removed && <Button onClick={() => { setDraft(text); setEditing(true); }}>Edit</Button>}
           <Button variant="ghost" onClick={() => {
             onChange(toggleBullet(layout, bullet.id));
@@ -92,9 +100,9 @@ function BulletRow({ bullet, entry, index, count, layout, onChange, onAnnounce, 
   );
 }
 
-function EntryBlock({ section, entry, index, count, layout, arrangement, onChange, onAnnounce }: {
+function EntryBlock({ section, entry, index, count, layout, arrangement, trimmedIds, onChange, onAnnounce }: {
   section: ArrangeSection; entry: ArrangeEntry; index: number; count: number; layout: Layout; arrangement: Arrangement;
-  onChange: (l: Layout) => void; onAnnounce: (m: string) => void;
+  trimmedIds: Set<string>; onChange: (l: Layout) => void; onAnnounce: (m: string) => void;
 }) {
   const bullets = orderedBullets(entry, layout);
   const dragged = useRef<string | null>(null);
@@ -105,6 +113,7 @@ function EntryBlock({ section, entry, index, count, layout, arrangement, onChang
       if (dragged.current) onChange(dropBullet(layout, entry, dragged.current, id)); // own bullets only
       dragged.current = null;
     },
+    end: () => { dragged.current = null; },
   };
   const moved = reordered(entry, layout, arrangement);
   return (
@@ -115,14 +124,14 @@ function EntryBlock({ section, entry, index, count, layout, arrangement, onChang
           {entry.subtitle && <p className="m-0 text-sm text-muted">{entry.subtitle}</p>}
           {moved && <p className="m-0 mt-1 text-xs text-muted">Bullets sorted by job relevance or by you, not as in your file.</p>}
         </div>
-        {count > 1 && <MoveButtons label={`"${short(entry.title)}"`} first={index === 0} last={index === count - 1}
-          onMove={(d) => { onChange(moveEntry(layout, section, entry.id, d)); onAnnounce(`Moved "${short(entry.title)}" ${d < 0 ? "up" : "down"}.`); }} />}
+        {count > 1 && <MoveButtons id={entry.id} label={`"${short(entry.title)}"`} first={index === 0} last={index === count - 1}
+          onMove={(d) => { rememberMove(entry.id, d); onChange(moveEntry(layout, section, entry.id, d)); onAnnounce(`Moved "${short(entry.title)}" ${d < 0 ? "up" : "down"}.`); }} />}
       </div>
       {bullets.length > 0 && (
         <ul className="m-0 flex flex-col p-0" aria-label={`Bullets of ${entry.title}`}>
           {bullets.map((b, i) => (
             <BulletRow key={b.id} bullet={b} entry={entry} index={i} count={bullets.length} layout={layout}
-              onChange={onChange} onAnnounce={onAnnounce} drag={drag} />
+              onChange={onChange} onAnnounce={onAnnounce} drag={drag} trimmed={trimmedIds.has(b.id)} />
           ))}
         </ul>
       )}
@@ -138,7 +147,7 @@ export function Arrange({ result, onResult, onBack }: {
 }) {
   const arrangement = result.arrangement!;
   const heading = useFocusHeading();
-  const [aiVersion] = useState<Layout>(arrangement.layout);
+  const [aiVersion] = useState<Layout>(arrangement.default_layout ?? arrangement.layout);
   const [layout, setLayout] = useState<Layout>(arrangement.layout);
   const [history, setHistory] = useState<Layout[]>([]);
   const [status, setStatus] = useState<"idle" | "waiting" | "updating" | "error">("idle");
@@ -149,6 +158,8 @@ export function Arrange({ result, onResult, onBack }: {
   const inFlight = useRef(false);
   const latest = useRef<Layout>(layout);
   const sectionDrag = useRef<string | null>(null);
+  const onResultRef = useRef(onResult);
+  onResultRef.current = onResult;
 
   const change = (next: Layout) => {
     if (sameLayout(next, layout)) return;
@@ -180,15 +191,37 @@ export function Arrange({ result, onResult, onBack }: {
 
   useEffect(() => {
     latest.current = layout;
-    if (sameLayout(layout, sent.current)) return;
+    if (sameLayout(layout, sent.current)) {
+      if (!inFlight.current) setStatus("idle"); // e.g. undone back to what the files already show
+      return;
+    }
     setStatus("waiting");
     const timer = window.setTimeout(() => void send(), UPDATE_DELAY_MS);
     return () => window.clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [layout]);
 
+  // Leaving during the pause still applies the last change (Stage J review).
+  useEffect(() => () => {
+    if (!inFlight.current && !sameLayout(latest.current, sent.current)) {
+      arrangeResume(latest.current).then((r) => onResultRef.current(r)).catch(() => undefined);
+    }
+  }, []);
+
+  // Keep focus on the moved item's button (or its other one at an end).
+  useEffect(() => {
+    if (!focusAfterMove) return;
+    const { id, dir } = focusAfterMove;
+    focusAfterMove = null;
+    const esc = (v: string) => (typeof CSS !== "undefined" && typeof CSS.escape === "function" ? CSS.escape(v) : v.replace(/"/g, '\\"'));
+    const btn = document.querySelector<HTMLButtonElement>(`[data-move="${esc(id)}:${dir}"]`);
+    const other = document.querySelector<HTMLButtonElement>(`[data-move="${esc(id)}:${dir === "up" ? "down" : "up"}"]`);
+    (btn && !btn.disabled ? btn : other)?.focus();
+  }, [layout]);
+
   const sections = orderedSections(arrangement, layout);
   const trimmed = result.arrangement?.trimmed ?? arrangement.trimmed;
+  const trimmedIds = new Set(trimmed.filter((t) => !layout.pinned.includes(t.id)).map((t) => t.id));
   const notes = result.warnings.filter((w) => /newest first|isn't elsewhere|pages \(not trimmed|Removed .* to fit|Still \d+ pages/.test(w));
   const target = layout.trim ? (layout.page_target ?? 0) : -1;
 
@@ -235,7 +268,7 @@ export function Arrange({ result, onResult, onBack }: {
           <fieldset className="sheet flex flex-col gap-3 rounded-[3px] p-5 md:p-6">
             <legend className="float-left mb-2 text-[15px] font-bold">Page length</legend>
             <div className="clear-both flex flex-wrap gap-2.5">
-              {([[0, "Automatic"], [1, "1 page"], [2, "2 pages"], [-1, "Don't trim"]] as const).map(([value, label]) => (
+              {([[0, "Automatic"], [1, "1 page"], [2, "2 pages"], [3, "3 pages"], [-1, "Don't trim"]] as const).map(([value, label]) => (
                 <label key={value} className={`flex min-h-11 cursor-pointer items-center gap-2 rounded-[3px] border px-4 text-sm font-medium has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-pencil ${
                   target === value ? "border-pencil bg-pencil-soft" : "border-field hover:border-ink"}`}>
                   <input type="radio" name="page-length" className="size-4" checked={target === value}
@@ -246,6 +279,7 @@ export function Arrange({ result, onResult, onBack }: {
             </div>
             <p className="m-0 text-xs text-muted">
               Automatic fits 1 page under 8 years of experience and 2 from 8 years. Don't trim keeps everything, however long.
+              Lines you keep or reword are never trimmed; to make room, something less relevant may be.
             </p>
           </fieldset>
 
@@ -259,7 +293,10 @@ export function Arrange({ result, onResult, onBack }: {
                       {item.owner_label && <span className="block text-xs text-muted">{item.owner_label}</span>}
                       <span className="font-serif text-[15px] leading-relaxed">{item.kind === "interests" ? `Interests: ${item.text}` : item.text}</span>
                     </span>
-                    <Button className="shrink-0" onClick={() => { change(keepTrimmed(layout, item)); setAnnounce("It will stay in."); }}>Keep it</Button>
+                    <Button className="shrink-0" disabled={layout.pinned.includes(item.id)}
+                      onClick={() => { change(keepTrimmed(layout, item)); setAnnounce("It will stay in; something less relevant may be trimmed instead."); }}>
+                      {layout.pinned.includes(item.id) ? "Kept" : "Keep it"}
+                    </Button>
                   </li>
                 ))}
               </ul>
@@ -272,7 +309,7 @@ export function Arrange({ result, onResult, onBack }: {
               const entries = orderedEntries(section, layout);
               return (
                 <li key={section.key} draggable onDragStart={(e) => { sectionDrag.current = section.key; e.dataTransfer.effectAllowed = "move"; }}
-                  onDragOver={(e) => e.preventDefault()}
+                  onDragOver={(e) => e.preventDefault()} onDragEnd={() => { sectionDrag.current = null; }}
                   onDrop={(e) => {
                     e.preventDefault();
                     if (sectionDrag.current) change({ ...layout, section_order: placeBefore(layout.section_order, sectionDrag.current, section.key) });
@@ -285,8 +322,12 @@ export function Arrange({ result, onResult, onBack }: {
                       {hidden && <span className="ml-2 text-sm font-normal">· hidden</span>}
                     </h2>
                     <span className="flex items-center gap-2">
-                      <MoveButtons label={section.title} first={i === 0} last={i === sections.length - 1}
-                        onMove={(d) => { change(moveSection(layout, section.key, d)); setAnnounce(`Moved ${section.title} ${d < 0 ? "up" : "down"}.`); }} />
+                      <MoveButtons id={section.key} label={section.title} first={i === 0} last={i === sections.length - 1}
+                        onMove={(d) => {
+                          rememberMove(section.key, d);
+                          change(moveSection(layout, section.key, d, sections.map((x) => x.key)));
+                          setAnnounce(`Moved ${section.title} ${d < 0 ? "up" : "down"}.`);
+                        }} />
                       <label className="flex min-h-11 cursor-pointer items-center gap-2 px-2 text-sm">
                         <input type="checkbox" className="size-4" checked={!hidden}
                           onChange={() => { change(toggleSection(layout, section.key)); setAnnounce(`${section.title} ${hidden ? "shown" : "hidden"}.`); }} />
@@ -298,7 +339,8 @@ export function Arrange({ result, onResult, onBack }: {
                     <ul className="m-0 mt-4 flex flex-col gap-3 p-0">
                       {entries.map((entry, j) => (
                         <EntryBlock key={entry.id} section={section} entry={entry} index={j} count={entries.length}
-                          layout={layout} arrangement={arrangement} onChange={change} onAnnounce={setAnnounce} />
+                          layout={layout} arrangement={arrangement} trimmedIds={trimmedIds} onChange={change}
+                          onAnnounce={setAnnounce} />
                       ))}
                     </ul>
                   )}

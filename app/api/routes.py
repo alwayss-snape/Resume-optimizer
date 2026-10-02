@@ -401,6 +401,8 @@ def tailor(request: Request, body: TailorIn, session: Session = Depends(current_
 
     def work(progress):
         session.data.pop("results", None)  # downloads stop pointing at the old files first
+        session.data.pop("arrange", None)  # and Arrange at the old run (Stage J review)
+        session.data.pop("layout", None)
         remove_path(session.data.pop("output_dir", None))
         output_dir = session.data["output_dir"] = tempfile.mkdtemp(prefix="tailor_")
         results = service.tailor_resume(
@@ -447,7 +449,8 @@ def _results_out(session: Session, results: Dict) -> Dict:
                   for kind, key in FILE_KINDS.items()},
         # P8.13: what the Arrange screen edits; None for "keep my layout".
         "arrangement": arrange_view(state["full_doc"].resume, state["original"],
-                                    session.data.get("layout") or state["default_layout"], state["trimmed"])
+                                    session.data.get("layout") or state["default_layout"], state["trimmed"],
+                                    default=state["default_layout"])
         if state else None,
     }
 
@@ -471,9 +474,18 @@ def arrange(request: Request, body: ArrangeIn, session: Session = Depends(curren
         raise HTTPException(422, "Choose 1, 2 or 3 pages.")
     if any(len(t) > MAX_EDIT_CHARS for t in layout.edits.values()):
         raise HTTPException(422, f"Keep each bullet under {MAX_EDIT_CHARS} characters.")
+    if sum(len(v) for v in (layout.section_order, layout.hidden_sections, layout.removed_bullets, layout.pinned,
+                             layout.edits)) > 5000 or sum(len(v) for v in layout.bullet_order.values()) > 5000:
+        raise HTTPException(422, "That arrangement is too large.")
     _claim(session)
     try:
-        results = _service(request, session).arrange(state, layout, session.data["output_dir"])
+        try:
+            results = _service(request, session).arrange(state, layout, session.data["output_dir"])
+        except HTTPException:
+            raise
+        except Exception:
+            logger.exception("Arrange failed")
+            raise HTTPException(500, "Couldn't update your files. Please try again.")
         session.data["arrange"] = results.pop("arrange")
         session.data["layout"] = layout
         session.data["results"] = results

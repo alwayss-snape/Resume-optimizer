@@ -221,6 +221,8 @@ export interface TrimmedItem {
 export interface Arrangement {
   sections: ArrangeSection[];
   layout: Layout;
+  /** The layout tailoring produced ("Reset to the tailored version"). */
+  default_layout?: Layout;
   source_order: { bullets: Record<string, string[]>; experience: string[]; projects: string[]; education: string[] };
   trimmed: TrimmedItem[];
 }

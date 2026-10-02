@@ -75,6 +75,10 @@ def apply_layout(full: Resume, layout: Layout) -> Resume:
             text = (layout.edits.get(b.id) or "").strip()
             if text:
                 b.text = text
+    # A job or project whose every bullet the user took out is left out
+    # whole: a title with nothing under it doesn't read back (Stage J review).
+    resume.experience = [e for e in resume.experience if e.bullets or not _had_bullets(full, e.id)]
+    resume.projects = [p for p in resume.projects if p.bullets or not _had_bullets(full, p.id)]
     resume.experience = _ordered(resume.experience, layout.entry_order.get("experience", []))
     resume.projects = _ordered(resume.projects, layout.entry_order.get("projects", []))
     resume.education = _ordered(resume.education, layout.entry_order.get("education", []))
@@ -88,6 +92,16 @@ def apply_layout(full: Resume, layout: Layout) -> Resume:
         resume.skills = {}
     resume.other_sections = [s for s in resume.other_sections if f"other:{s.id}" not in hidden]
     return resume
+
+
+def _had_bullets(full: Resume, owner_id: str) -> bool:
+    return any(o.id == owner_id and o.bullets for o in _owners(full))
+
+
+def emptied(full: Resume, layout: Layout) -> List[str]:
+    """Jobs and projects the user took every bullet out of."""
+    removed = set(layout.removed_bullets)
+    return [o.id for o in _owners(full) if o.bullets and all(b.id in removed for b in o.bullets)]
 
 
 def section_order(layout: Layout, resume: Resume) -> List[str]:
@@ -111,9 +125,15 @@ def notes_for(layout: Layout, full: Resume, original: Resume) -> List[str]:
     starts = [start(e) for e in order]
     if any(a < b for a, b in zip(starts, starts[1:]) if a != (0, 0) and b != (0, 0)):
         notes.append("Your jobs are no longer newest first; most recruiters expect that order.")
-    known_numbers = set(re.findall(r"\d[\d,.]*%?", " ".join(_all_text(original))))
+    numbers = lambda text: {n.rstrip(",.") for n in re.findall(r"\d[\d,.]*%?", text or "")}
+    known_numbers = numbers(" ".join(_all_text(original)))
+    owners = {o.id: o for o in _owners(full)}
+    for owner_id in emptied(full, layout):
+        o = owners[owner_id]
+        name = getattr(o, "company", None) or getattr(o, "name", "") or "an entry"
+        notes.append(f"Every bullet of {name} is taken out, so it's left out of the file. Put a bullet back to show it.")
     for bid, text in layout.edits.items():
-        new = sorted(set(re.findall(r"\d[\d,.]*%?", text or "")) - known_numbers)
+        new = sorted(numbers(text) - known_numbers)
         if new:
             notes.append(f"Your edit adds {', '.join(new)}, which isn't elsewhere in your resume: make sure it's "
                          "right before you send it.")
@@ -132,7 +152,7 @@ def _all_text(resume: Resume) -> List[str]:
     return out
 
 
-def view(full: Resume, original: Resume, layout: Layout, trimmed: List[Dict], section_titles=None) -> Dict:
+def view(full: Resume, original: Resume, layout: Layout, trimmed: List[Dict], default: Optional[Layout] = None) -> Dict:
     """What the Arrange screen shows: every section with its entries and
     bullets (ids, text, the AI's text and the file's text), the original
     order for "Restore my original order", and what page-fit trimmed."""
@@ -179,6 +199,8 @@ def view(full: Resume, original: Resume, layout: Layout, trimmed: List[Dict], se
     return {
         "sections": sections,
         "layout": layout.model_dump(),
+        # The layout tailoring produced, for "Reset to the tailored version".
+        "default_layout": (default or layout).model_dump(),
         "source_order": {"bullets": source_order,
                          "experience": [e.id for e in original.experience if e.id in {x.id for x in full.experience}],
                          "projects": [p.id for p in original.projects if p.id in {x.id for x in full.projects}],

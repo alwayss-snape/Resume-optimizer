@@ -34,7 +34,7 @@ from app.rendering.layout import output_basename, section_order_for
 from app.rendering.page_fit import PageFitter
 from app.rendering.pdf_converter import PdfConverter
 from app.rendering.template_renderer import TemplateRenderer
-from app.services.arrange import Layout, apply_layout, default_layout, notes_for, trimmed_items
+from app.services.arrange import Layout, apply_layout, default_layout, emptied, notes_for, trimmed_items
 from app.services.arrange import section_order as arranged_order
 from app.services.profile_store import ProfileStore
 from app.services.run_manager import RunManager
@@ -1257,10 +1257,21 @@ class TailorService:
         # The user's removals and edits are theirs, not losses (P8.2).
         full = full_doc.resume
         removed_ids = set(layout.removed_bullets)
-        doc.user_changed_blocks = list(full_doc.user_changed_blocks) + [
-            b.source_location_id for o in [*full.experience, *full.projects] for b in o.bullets
-            if b.source_location_id and (b.id in removed_ids or (layout.edits.get(b.id) or "").strip())]
-        hidden_text = _hidden_text(full, layout)
+        hidden = set(layout.hidden_sections)
+        gone_owners = set(emptied(full, layout))
+        changed = list(full_doc.user_changed_blocks)
+        for key in ("experience", "projects"):
+            for o in getattr(full, key):
+                whole = key in hidden or o.id in gone_owners  # the whole entry is out, header lines too
+                if whole:
+                    changed += getattr(o, "source_blocks", [])
+                changed += [b.source_location_id for b in o.bullets if b.source_location_id and (
+                    whole or b.id in removed_ids or (layout.edits.get(b.id) or "").strip())]
+        doc.user_changed_blocks = changed
+        # Sub-headings the user emptied go with their bullets.
+        kept_groups = {b.group for e in resume.experience for b in e.bullets if b.group}
+        hidden_text = "\n".join([_hidden_text(full, layout),
+                                 *({b.group for e in full.experience for b in e.bullets if b.group} - kept_groups)])
 
         base_name = output_basename(resume, job_desc.company) or "tailored_resume"
         docx_path = os.path.join(output_dir, f"{base_name}.docx")
@@ -1270,7 +1281,9 @@ class TailorService:
         step("Rendering your arrangement")
         fit = PageFitter(self._render_template).fit(
             doc, docx_path, output_dir, page_target, relevance=state["relevance"],
-            trim_candidates=state["trim_candidates"], pinned=set(layout.pinned), trim=layout.trim)
+            trim_candidates=state["trim_candidates"],
+            pinned=set(layout.pinned) | {b for b, t in layout.edits.items() if (t or "").strip()},  # your words stay
+            trim=layout.trim)
         warnings: List[str] = list(fit.notes)
         if not layout.trim and fit.pages and fit.pages > page_target:
             warnings.append(f"{fit.pages} pages (not trimmed, as you chose).")
@@ -1294,7 +1307,12 @@ class TailorService:
         warnings = notes + warnings + docx_warnings + pdf_warnings
         keyword_report = self.keyword_matcher.match(job_desc, resume)
         try:
-            with open(state["changes_md"], "a", encoding="utf-8") as f:
+            # The tailoring log plus this arrangement only, rewritten each time.
+            if "changes_base" not in state:
+                with open(state["changes_md"], encoding="utf-8") as f:
+                    state["changes_base"] = f.read()
+            with open(state["changes_md"], "w", encoding="utf-8") as f:
+                f.write(state["changes_base"])
                 f.write("\n## Arranged by you\n\n")
                 f.write(f"- Section order: {', '.join(doc.presentation.section_order)}\n")
                 for label, items in (("Hidden", layout.hidden_sections), ("Bullets removed", layout.removed_bullets),

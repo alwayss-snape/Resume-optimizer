@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**56 app modules · 61 test files · 105 classes · 981 functions/methods · 19,753 lines of Python** · source hash `f06d51ce40361649`
+**56 app modules · 61 test files · 105 classes · 985 functions/methods · 19,828 lines of Python** · source hash `6d52b021c6673b5c`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -527,7 +527,7 @@ _The web app (P5.1): `uvicorn app.api.main:app`._
 
 ### `app/api/routes.py`
 
-**Layer:** Web API · **Stage:** all · **Lines:** 530
+**Layer:** Web API · **Stage:** all · **Lines:** 542
 
 _HTTP endpoints, one per step of the review flow (P5.1)._
 
@@ -541,7 +541,7 @@ _HTTP endpoints, one per step of the review flow (P5.1)._
 - class **`RateLimiter`** ([app/api/routes.py:93](../app/api/routes.py#L93)) — At most `limit` calls per `window` seconds per key (visitor IP).
   - `__init__()` :96
   - `check()` :101
-- class **`ArrangeIn`** ([app/api/routes.py:455](../app/api/routes.py#L455))
+- class **`ArrangeIn`** ([app/api/routes.py:458](../app/api/routes.py#L458))
 - function **`rate_limited()`** ([app/api/routes.py:112](../app/api/routes.py#L112))
 - function **`current_session()`** ([app/api/routes.py:116](../app/api/routes.py#L116))
 - function **`_require()`** ([app/api/routes.py:123](../app/api/routes.py#L123))
@@ -564,12 +564,12 @@ _HTTP endpoints, one per step of the review flow (P5.1)._
 - function **`proposals()`** ([app/api/routes.py:328](../app/api/routes.py#L328)) — Step 2: apply the user's fixes, then draft rewrites and gap
 - function **`match_preview()`** ([app/api/routes.py:377](../app/api/routes.py#L377)) — The match rate if the selected (and edited) proposals were applied.
 - function **`tailor()`** ([app/api/routes.py:387](../app/api/routes.py#L387)) — Step 3: apply the review and generate the files. Streams progress.
-- function **`_results_out()`** ([app/api/routes.py:424](../app/api/routes.py#L424)) — What the Results (and Arrange) screen gets after a run.
-- function **`arrange()`** ([app/api/routes.py:463](../app/api/routes.py#L463)) — Re-render the tailored resume as the user arranged it (P8.13). No LLM
-- function **`_result_path()`** ([app/api/routes.py:493](../app/api/routes.py#L493))
-- function **`download()`** ([app/api/routes.py:501](../app/api/routes.py#L501))
-- function **`preview()`** ([app/api/routes.py:509](../app/api/routes.py#L509)) — One page of the tailored PDF as a PNG (Chrome blocks embedded PDFs).
-- function **`reset()`** ([app/api/routes.py:518](../app/api/routes.py#L518)) — Start over: delete this visitor's files and state. If a step is still
+- function **`_results_out()`** ([app/api/routes.py:426](../app/api/routes.py#L426)) — What the Results (and Arrange) screen gets after a run.
+- function **`arrange()`** ([app/api/routes.py:466](../app/api/routes.py#L466)) — Re-render the tailored resume as the user arranged it (P8.13). No LLM
+- function **`_result_path()`** ([app/api/routes.py:505](../app/api/routes.py#L505))
+- function **`download()`** ([app/api/routes.py:513](../app/api/routes.py#L513))
+- function **`preview()`** ([app/api/routes.py:521](../app/api/routes.py#L521)) — One page of the tailored PDF as a PNG (Chrome blocks embedded PDFs).
+- function **`reset()`** ([app/api/routes.py:530](../app/api/routes.py#L530)) — Start over: delete this visitor's files and state. If a step is still
 - **Imports:** `api/__init__.py`, `api/sessions.py`, `rendering/pdf_converter.py`, `rendering/review_view.py`, `services/arrange.py`
 - **Imported by:** `api/main.py`
 - **Tested by:** `tests/unit/test_api.py`
@@ -1018,7 +1018,7 @@ _What the proposal review screen shows (P3.4, served by the web API since_
 
 ### `app/services/arrange.py`
 
-**Layer:** Services · **Stage:** 9 Render · **Lines:** 205
+**Layer:** Services · **Stage:** 9 Render · **Lines:** 227
 
 _Arrange and edit before download (P8.13–P8.16)._
 
@@ -1027,12 +1027,14 @@ _Arrange and edit before download (P8.13–P8.16)._
 - function **`default_layout()`** ([app/services/arrange.py:49](../app/services/arrange.py#L49)) — The layout tailoring produced: everything shown, in its current order.
 - function **`_ordered()`** ([app/services/arrange.py:59](../app/services/arrange.py#L59)) — Items in `order`; any not listed keep their place after the listed ones.
 - function **`apply_layout()`** ([app/services/arrange.py:65](../app/services/arrange.py#L65)) — A copy of `full` arranged as `layout` says. Unknown ids are ignored;
-- function **`section_order()`** ([app/services/arrange.py:93](../app/services/arrange.py#L93)) — The render order: the user's order, then anything it doesn't list.
-- function **`notes_for()`** ([app/services/arrange.py:101](../app/services/arrange.py#L101)) — Things worth pointing out about the user's arrangement. Advice only.
-- function **`_today()`** ([app/services/arrange.py:123](../app/services/arrange.py#L123))
-- function **`_all_text()`** ([app/services/arrange.py:128](../app/services/arrange.py#L128))
-- function **`view()`** ([app/services/arrange.py:135](../app/services/arrange.py#L135)) — What the Arrange screen shows: every section with its entries and
-- function **`trimmed_items()`** ([app/services/arrange.py:190](../app/services/arrange.py#L190)) — What page-fit removed: bullets (with their job), projects, Interests.
+- function **`_had_bullets()`** ([app/services/arrange.py:97](../app/services/arrange.py#L97))
+- function **`emptied()`** ([app/services/arrange.py:101](../app/services/arrange.py#L101)) — Jobs and projects the user took every bullet out of.
+- function **`section_order()`** ([app/services/arrange.py:107](../app/services/arrange.py#L107)) — The render order: the user's order, then anything it doesn't list.
+- function **`notes_for()`** ([app/services/arrange.py:115](../app/services/arrange.py#L115)) — Things worth pointing out about the user's arrangement. Advice only.
+- function **`_today()`** ([app/services/arrange.py:143](../app/services/arrange.py#L143))
+- function **`_all_text()`** ([app/services/arrange.py:148](../app/services/arrange.py#L148))
+- function **`view()`** ([app/services/arrange.py:155](../app/services/arrange.py#L155)) — What the Arrange screen shows: every section with its entries and
+- function **`trimmed_items()`** ([app/services/arrange.py:212](../app/services/arrange.py#L212)) — What page-fit removed: bullets (with their job), projects, Interests.
 - **Imports:** `analysis/experience.py`, `domain/resume.py`, `rendering/layout.py`
 - **Imported by:** `api/routes.py`, `services/tailor.py`
 - **Tested by:** `tests/integration/test_arrange.py`
@@ -1073,7 +1075,7 @@ _Local profile of facts the user has confirmed (P3.2)._
 
 ### `app/services/tailor.py`
 
-**Layer:** Services · **Stage:** all · **Lines:** 1357
+**Layer:** Services · **Stage:** all · **Lines:** 1375
 
 - class **`TailorService`** ([app/services/tailor.py:59](../app/services/tailor.py#L59))
   - `__init__()` :60
@@ -1105,8 +1107,8 @@ _Local profile of facts the user has confirmed (P3.2)._
   - `tailor_resume()` :736
   - `arrange()` :1243 — Re-render the tailored resume as the user arranged it (P8.13–P8.16):
 - function **`_progress()`** ([app/services/tailor.py:48](../app/services/tailor.py#L48)) — A progress reporter that can never break a run (P3.6).
-- function **`_hidden_text()`** ([app/services/tailor.py:1321](../app/services/tailor.py#L1321)) — Text of the sections the user hid, so coverage counts it as their choice.
-- function **`_merge_usage()`** ([app/services/tailor.py:1348](../app/services/tailor.py#L1348)) — Combine two LLMClient.get_usage_summary() dicts into one.
+- function **`_hidden_text()`** ([app/services/tailor.py:1339](../app/services/tailor.py#L1339)) — Text of the sections the user hid, so coverage counts it as their choice.
+- function **`_merge_usage()`** ([app/services/tailor.py:1366](../app/services/tailor.py#L1366)) — Combine two LLMClient.get_usage_summary() dicts into one.
 - **Imports:** `analysis/experience.py`, `analysis/gap_questions.py`, `analysis/jd_analyzer.py`, `analysis/keyword_match.py`, `analysis/matcher.py`, `analysis/resume_normalizer.py`, `analysis/rewriter.py`, `analysis/scoring.py`, `analysis/semantic_matcher.py`, `analysis/skills_tailor.py`, `analysis/structure_extractor.py`, `analysis/summary_writer.py`, `analysis/tailor_planner.py`, `domain/evidence.py`, `domain/job.py`, `domain/report.py`, `domain/resume.py`, `domain/resume_document.py`, `domain/tailoring.py`, `ingestion/docx.py`, `ingestion/pdf.py`, `llm/client.py`, `rendering/docx_patcher.py`, `rendering/html_renderer.py`, `rendering/layout.py`, `rendering/page_fit.py`, `rendering/pdf_converter.py`, `rendering/template_renderer.py`, `services/arrange.py`, `services/profile_store.py`, `services/run_manager.py`, `validation/content_lint.py`, `validation/coverage.py`, `validation/factual.py`, `validation/output.py`, `validation/safety.py`, `validation/structural.py`
 - **Imported by:** `api/main.py`, `cli.py`, `eval/harness.py`
 - **Tested by:** `tests/integration/test_arrange.py`, `tests/integration/test_coverage_tailor.py`, `tests/integration/test_end_to_end.py`, `tests/unit/test_api.py`, `tests/unit/test_check_parsed_resume.py`, `tests/unit/test_cli.py`, `tests/unit/test_cli_parity.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_new_role.py`, `tests/unit/test_profile_store.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_review_view.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_tailor_resume_flow.py`, `tests/unit/test_tailor_service_addition.py`
