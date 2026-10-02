@@ -198,7 +198,7 @@ test("review: live match follows decisions; generate sends them and opens result
     expect(JSON.parse(String(previews.at(-1)!.init!.body))).toEqual({ selection: [] });
   }, { timeout: 2000 });
 
-  await user.click(screen.getByRole("checkbox", { name: "I have used Airflow" }));
+  await user.click(screen.getByRole("checkbox", { name: "Airflow" }));
   await user.click(screen.getAllByRole("button", { name: "Generate my resume" })[0]);
   expect(await screen.findByRole("heading", { name: "Your resume is ready." })).toBeInTheDocument();
   const body = JSON.parse(String(calls.find((c) => c.url === "/api/tailor")!.init!.body));
@@ -252,7 +252,7 @@ test("review: text typed but not saved is still sent when generating", async () 
   const user = userEvent.setup();
   await toReview(user);
   await user.click(screen.getByRole("button", { name: "Edit" }));
-  const box = screen.getByLabelText("YOUR VERSION");
+  const box = screen.getByLabelText("Your version");
   await user.clear(box);
   await user.type(box, "Shipped forecasting dashboards in Python");
   await user.click(screen.getAllByRole("button", { name: "Generate my resume" })[0]);

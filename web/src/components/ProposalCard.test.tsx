@@ -17,10 +17,43 @@ function Harness({ onNavigate = vi.fn() }: { onNavigate?: (s: 1 | -1) => void })
   );
 }
 
-test("shows the diff: added words marked, keywords bold", () => {
-  render(<Harness />);
+test("marked up (default): one proof line, removed words struck, added underlined, keywords bold", () => {
+  const { container } = render(<Harness />);
   expect(screen.getByText("forecasting").closest("ins")).not.toBeNull();
+  expect(screen.getByText("Python").closest("strong")).not.toBeNull();
+  expect(container.querySelectorAll("p strong").length).toBe(1); // shared words appear once, not on two sides
+});
+
+test("side by side: the original and the proposal as two columns", () => {
+  render(
+    <ProposalCard proposal={proposal} index={0} decision="accept" text={proposal.proposed} edited={false}
+      onDecide={vi.fn()} onEdit={vi.fn()} onNavigate={vi.fn()} view="split" />,
+  );
+  expect(screen.getByText("Original")).toBeInTheDocument();
+  expect(screen.getByText("Proposed")).toBeInTheDocument();
   expect(screen.getAllByText("Python")[1].closest("strong")).not.toBeNull();
+});
+
+test("mergeProof weaves both sides; misaligned sides fall back", async () => {
+  const { mergeProof } = await import("./DiffText");
+  const merged = mergeProof(
+    [{ text: "Made" , changed: true }, { text: "dashboards" }],
+    [{ text: "Built", changed: true }, { text: "dashboards" }],
+  );
+  expect(merged?.map((p) => `${p.kind}:${p.text}`)).toEqual(["del:Made", "ins:Built", "same:dashboards"]);
+  expect(mergeProof([{ text: "a" }], [{ text: "b" }])).toBeNull();
+  const quiet = mergeProof(
+    [{ text: "1,200" }, { text: "stores", changed: true }, { text: "Python", changed: true }],
+    [{ text: "1,200" }, { text: "stores,", changed: true }, { text: "python", changed: true }],
+  );
+  // a comma alone is not a change; a change of case still is
+  expect(quiet?.map((p) => `${p.kind}:${p.text}`)).toEqual(["same:1,200", "same:stores,", "del:Python", "ins:python"]);
+  // the proposal's line breaks stay; a changed full stop stays marked
+  const lines = mergeProof(
+    [{ text: "Tools:" }, { text: "\n" }, { text: "SQL." , changed: true }],
+    [{ text: "Tools:" }, { text: "\n" }, { text: "SQL", changed: true }],
+  );
+  expect(lines?.map((p) => `${p.kind}:${p.text}`)).toEqual(["same:Tools:", "same:\n", "del:SQL.", "ins:SQL"]);
 });
 
 test("keyboard: R rejects, Undo restores, arrows navigate", async () => {
@@ -41,7 +74,7 @@ test("E edits; saving keeps the user's wording; Escape cancels", async () => {
   render(<Harness />);
   screen.getByRole("article").focus();
   await user.keyboard("e");
-  const box = screen.getByLabelText("YOUR VERSION");
+  const box = screen.getByLabelText("Your version");
   expect(box).toHaveFocus();
   await user.clear(box);
   await user.type(box, "Shipped forecasting dashboards");
@@ -51,7 +84,7 @@ test("E edits; saving keeps the user's wording; Escape cancels", async () => {
 
   await user.click(screen.getByRole("button", { name: "Edit" }));
   await user.keyboard("{Escape}");
-  expect(screen.queryByLabelText("YOUR VERSION")).toBeNull();
+  expect(screen.queryByLabelText("Your version")).toBeNull();
 });
 
 test("normalizeEdit: blank or unchanged text means the proposal", async () => {
@@ -81,7 +114,7 @@ test("Cancel on a rejected card restores the rejection; Save accepts it", async 
 
   screen.getByRole("article").focus();
   await user.keyboard("e");
-  await user.type(screen.getByLabelText("YOUR VERSION"), " today");
+  await user.type(screen.getByLabelText("Your version"), " today");
   await user.click(screen.getByRole("button", { name: "Save edit" }));
   expect(screen.getByRole("button", { name: /Accepted/ })).toBeInTheDocument();
 });

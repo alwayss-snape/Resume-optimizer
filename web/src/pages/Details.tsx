@@ -64,7 +64,7 @@ export function Details() {
   if (progress) {
     return (
       <section className="mx-auto flex max-w-[760px] flex-col gap-6 px-4 py-14 md:px-8">
-        <h1 ref={progressHeading} tabIndex={-1} className="font-display text-[40px] font-medium leading-tight outline-none">
+        <h1 ref={progressHeading} tabIndex={-1} className="font-display text-[40px] font-bold leading-tight tracking-[-0.03em] outline-none">
           Drafting your rewrites
         </h1>
         <p className="text-muted">Every rewrite is fact-checked against your resume. This usually takes under a minute.</p>
@@ -78,7 +78,7 @@ export function Details() {
     <form className="mx-auto flex max-w-[1000px] flex-col gap-8 px-4 py-12 md:px-8 md:py-14"
       onSubmit={(e) => { e.preventDefault(); void submit(); }}>
       <div className="flex flex-col gap-3">
-        <h1 ref={heading} tabIndex={-1} className="font-display text-[40px] font-medium leading-tight outline-none md:text-5xl">
+        <h1 ref={heading} tabIndex={-1} className="font-display text-[40px] font-bold leading-tight tracking-[-0.035em] outline-none md:text-[48px]">
           Check your details
         </h1>
         <p className="max-w-[640px] text-muted">
@@ -87,15 +87,18 @@ export function Details() {
       </div>
 
       {run.parseIssues.length > 0 && (
-        <ul className="flex flex-col gap-2 border border-pencil/60 bg-pencil-soft p-4 text-sm">
+        <ul className="flex flex-col gap-2 rounded-[3px] border border-warning bg-panel p-4 text-sm">
           {run.parseIssues.map((issue) => (
-            <li key={issue}>Possible reading problem: {issue}</li>
+            <li key={issue} className="flex items-start gap-2">
+              <Icon name="alert" size={16} className="mt-0.5 shrink-0 text-warning" />
+              <span><span className="font-semibold">Possible reading problem:</span> {issue}</span>
+            </li>
           ))}
         </ul>
       )}
 
-      <section aria-labelledby="you" className="flex flex-col gap-5 border border-line bg-panel p-6 md:p-7">
-        <h2 id="you" className="font-display text-[26px] font-semibold">You</h2>
+      <section aria-labelledby="you" className="sheet flex flex-col gap-5 rounded-[3px] p-6 md:p-7">
+        <h2 id="you" className="font-display text-[22px] font-bold tracking-[-0.02em]">You</h2>
         <div className="grid gap-4 md:grid-cols-2">
           <TextField label="Name" value={c.name} onChange={(e) => setCandidate("name", e.target.value)} autoComplete="name" />
           <TextField label="Headline (optional)" value={c.headline} placeholder="e.g. Senior Data Scientist"
@@ -109,14 +112,14 @@ export function Details() {
       </section>
 
       <section aria-labelledby="jobs" className="flex flex-col gap-5">
-        <h2 id="jobs" className="font-display text-[26px] font-semibold">Experience</h2>
+        <h2 id="jobs" className="mt-2 font-display text-[22px] font-bold tracking-[-0.02em]">Experience</h2>
         {form.experience.length === 0 && <p className="text-sm text-muted">No jobs were found in your resume.</p>}
         {form.experience.map((job, i) => (
-          <fieldset key={job.id} className="flex flex-col gap-4 border border-line bg-panel p-6">
+          <fieldset key={job.id} className="sheet flex flex-col gap-4 rounded-[3px] p-6">
             <legend className="sr-only">Job {i + 1}</legend>
             <div className="flex flex-wrap items-baseline justify-between gap-2">
-              <span className="text-xs tracking-[0.2em] text-pencil">JOB {i + 1}</span>
-              <span className="text-xs text-muted">
+              <span className="text-[15px] font-semibold">Job {i + 1}</span>
+              <span className="tabular text-[13px] text-muted">
                 {job.bullets} bullet{job.bullets === 1 ? "" : "s"}{job.groups ? ` in ${job.groups} sub-sections` : ""}
               </span>
             </div>
@@ -143,7 +146,11 @@ export function Details() {
         <Button type="submit" variant="primary" size="lg">
           Looks right, draft rewrites <Icon name="arrow-right" />
         </Button>
-        {error && <p ref={errorRef} tabIndex={-1} role="alert" className="text-sm text-danger outline-none">{error}</p>}
+        {error && (
+          <p ref={errorRef} tabIndex={-1} role="alert" className="flex items-start gap-2 text-sm font-medium text-danger outline-none">
+            <Icon name="alert" size={16} className="mt-0.5 shrink-0" /><span><span className="font-semibold">Error:</span> {error}</span>
+          </p>
+        )}
       </div>
     </form>
   );

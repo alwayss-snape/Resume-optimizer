@@ -6,7 +6,8 @@ import { GapQuestionCard, type TargetOption, TargetSelect } from "../components/
 import { Icon } from "../components/Icon";
 import { KeywordList } from "../components/KeywordList";
 import { ProgressPanel } from "../components/ProgressPanel";
-import { ProposalCard } from "../components/ProposalCard";
+import { type ProofView, ProposalCard } from "../components/ProposalCard";
+import { ProofStack } from "../components/ProofStack";
 import { ScoreDial, verdict } from "../components/ScoreDial";
 import { ApiError, friendlyError, matchPreview, tailorResume } from "../lib/api";
 import { beginStep, isAbort } from "../lib/inflight";
@@ -18,7 +19,6 @@ import { useApp } from "../lib/store";
 import type { MatchPreview } from "../lib/types";
 import { useFocusHeading } from "../lib/useFocusHeading";
 
-const SECTION_LABEL = "flex items-center gap-3.5 text-xs tracking-[0.2em] text-pencil";
 
 /** Step 3 (P3.4 / P5.4): accept, reject or edit each rewrite; answer the
  *  questions about what the job asks for; add anything else; then generate. */
@@ -36,6 +36,7 @@ export function Review() {
   const [progress, setProgress] = useState<string[] | null>(null);
   const [error, setError] = useState<{ text: string; n: number } | null>(null);
   const [jobOpen, setJobOpen] = useState(() => anyJobField(review.newJob));
+  const [view, setView] = useState<ProofView>("proof");
   const hintId = "review-shortcuts";
   const cards = useRef<(HTMLElement | null)[]>([]);
   const progressHeading = useRef<HTMLHeadingElement>(null);
@@ -134,7 +135,7 @@ export function Review() {
   if (progress) {
     return (
       <section className="mx-auto flex max-w-[760px] flex-col gap-6 px-4 py-14 md:px-8">
-        <h1 ref={progressHeading} tabIndex={-1} className="font-display text-[40px] font-medium leading-tight outline-none">
+        <h1 ref={progressHeading} tabIndex={-1} className="font-display text-[40px] font-bold leading-tight tracking-[-0.03em] outline-none">
           Generating your resume
         </h1>
         <p className="text-muted">Applying your choices, laying out the pages and checking the files read back cleanly.</p>
@@ -153,39 +154,62 @@ export function Review() {
 
   return (
     <>
-      <div className="mx-auto grid max-w-[1320px] items-start gap-10 px-4 pb-28 pt-10 md:px-8 lg:grid-cols-[minmax(0,1fr)_360px]">
+      <div className="mx-auto grid max-w-[1320px] items-start gap-10 px-4 pb-32 pt-10 md:px-8 lg:grid-cols-[minmax(0,1fr)_340px] lg:pb-28">
         <div className="flex min-w-0 flex-col gap-5">
           <div className="flex flex-wrap items-end justify-between gap-5">
             <div className="flex flex-col gap-2">
-              <h1 ref={heading} tabIndex={-1} className="font-display text-5xl font-medium leading-none outline-none">Review changes</h1>
-              <p className="text-sm text-muted">
+              <h1 ref={heading} tabIndex={-1} className="font-display text-[44px] font-bold leading-none tracking-[-0.035em] outline-none">Review changes</h1>
+              <p className="tabular text-sm text-muted">
                 {drafted.proposals.length} proposals · {counts.accepted} accepted · {counts.rejected} rejected
                 {counts.edited ? ` · ${counts.edited} edited` : ""}
               </p>
             </div>
             {drafted.proposals.length > 0 && (
-              <div className="flex gap-2.5">
+              <div className="flex flex-wrap items-center gap-2.5">
+                <div role="radiogroup" aria-label="Show changes as" className="flex h-11 overflow-hidden rounded-[4px] border border-field text-sm">
+                  {([["proof", "Marked up"], ["split", "Side by side"]] as const).map(([id, l]) => (
+                    <label key={id} className={`flex cursor-pointer items-center px-3.5 has-[:focus-visible]:outline-2 has-[:focus-visible]:-outline-offset-4 has-[:focus-visible]:outline-pencil ${
+                      view === id ? "bg-pencil-soft font-semibold text-ink" : "text-muted hover:text-ink"}`}>
+                      <input type="radio" name="proof-view" value={id} checked={view === id} onChange={() => setView(id)} className="sr-only" />
+                      {l}
+                    </label>
+                  ))}
+                </div>
                 <Button onClick={() => setAll("accept")}>Accept all</Button>
                 <Button onClick={() => setAll("reject")}>Reject all</Button>
               </div>
             )}
           </div>
+          {liveError && (
+            <p role="status" className="m-0 flex items-start gap-2 rounded-[3px] border border-warning bg-panel p-3 text-sm font-medium">
+              <Icon name="alert" size={16} className="mt-0.5 shrink-0 text-warning" />{liveError}
+            </p>
+          )}
+          {drafted.proposals.length > 0 && view === "proof" && (
+            <p className="m-0 flex flex-wrap items-center gap-x-4 gap-y-1 text-[13px] text-muted">
+              <span>How to read the marks:</span>
+              <span><del className="mark-del">removed</del></span>
+              <span><ins className="mark-ins">added</ins></span>
+              <span><strong className="mark-hl font-semibold text-ink">job keyword</strong></span>
+            </p>
+          )}
 
           {!llm.available ? (
-            <div role="alert" className="border border-danger/50 p-4 text-sm leading-relaxed">
+            <div role="alert" className="rounded-[3px] border-2 border-danger bg-panel p-4 text-sm leading-relaxed">
               The AI model isn't available ({llm.provider_label}{llm.model ? `, ${llm.model}` : ""}: {llm.reason || "unavailable"}).
               No rewrites could be drafted, so the cards show your original text. {llm.fix_hint} Then start over.
             </div>
           ) : llm.failed ? (
-            <div role="status" className="border border-pencil/60 p-4 text-sm">
+            <div role="status" className="rounded-[3px] border border-warning bg-panel p-4 text-sm">
               {llm.failed} of {llm.attempted} rewrites failed and show your original text.
               {llm.errors?.[0] ? ` Reason: ${llm.errors[0]}` : ""}
             </div>
           ) : null}
           {counts.dropped > 0 && (
-            <p className="m-0 text-sm text-danger">
-              {counts.dropped} accepted {counts.dropped === 1 ? "rewrite fails" : "rewrites fail"} the fact check and won't be used unless you edit {counts.dropped === 1 ? "it" : "them"}.
-              {settings.strictFactual ? " Strict factual mode is on, so this withholds every rewrite." : ""}
+            <p className="m-0 flex items-start gap-2 text-sm font-medium text-danger">
+              <Icon name="alert" size={16} className="mt-0.5 shrink-0" />
+              <span>{counts.dropped} accepted {counts.dropped === 1 ? "rewrite fails" : "rewrites fail"} the fact check and won't be used unless you edit {counts.dropped === 1 ? "it" : "them"}.
+              {settings.strictFactual ? " Strict factual mode is on, so this withholds every rewrite." : ""}</span>
             </p>
           )}
 
@@ -195,9 +219,10 @@ export function Review() {
 
           {groups.map((g) => (
             <section key={g.key} aria-label={g.label} className="flex flex-col gap-4">
-              <div className="mt-3 flex items-center gap-3.5">
-                <h2 className="text-xs tracking-[0.2em] text-pencil">{g.label.toUpperCase()}</h2>
+              <div className="mt-4 flex items-center gap-3.5">
+                <h2 className="text-[15px] font-semibold tracking-[-0.01em]">{g.label}</h2>
                 <span aria-hidden="true" className="h-px flex-1 bg-line" />
+                <span className="tabular text-[13px] text-muted">{g.items.length}</span>
               </div>
               {g.items.map((p) => {
                 const i = cardIndex++;
@@ -206,17 +231,17 @@ export function Review() {
                   <ProposalCard key={p.id} ref={(el) => { cards.current[i] = el; }} proposal={p} index={n}
                     decision={review.decisions[p.id] ?? "accept"} text={textOf(p, review)} edited={isEdited(p, review)}
                     onDecide={(d) => decide(p.id, d)} onEdit={(t) => edit(p.id, t)} onNavigate={(s) => navigate(i, s)}
-                    shortcutsHintId={hintId} />
+                    shortcutsHintId={hintId} view={view} />
                 );
               })}
             </section>
           ))}
 
           {drafted.gap_questions.length > 0 && (
-            <section aria-labelledby="gaps-title" className="mt-6 flex flex-col gap-4">
-              <div className="flex flex-wrap items-center gap-x-3.5 gap-y-1">
-                <h2 id="gaps-title" className={SECTION_LABEL}>WHAT THE JOB ASKS FOR</h2>
-                <span className="text-[13px] text-muted">Not on your resume yet. Only what you confirm is added.</span>
+            <section aria-labelledby="gaps-title" className="mt-8 flex flex-col gap-4">
+              <div className="flex flex-col gap-1">
+                <h2 id="gaps-title" className="font-display text-2xl font-bold tracking-[-0.025em]">What the job asks for</h2>
+                <span className="text-sm text-muted">Not on your resume yet. Only what you confirm is added.</span>
               </div>
               {drafted.gap_questions.map((q) => (
                 <GapQuestionCard key={q.id} question={q} targets={targets}
@@ -227,14 +252,14 @@ export function Review() {
           )}
 
           {drafted.gaps.length > 0 && (
-            <details className="border border-line bg-panel p-5 text-sm">
-              <summary className="min-h-6 cursor-pointer text-muted hover:text-ink">
+            <details className="rounded-[3px] border border-line bg-panel p-5 text-sm">
+              <summary className="min-h-6 cursor-pointer font-medium text-muted hover:text-ink">
                 {drafted.gaps.length} job keyword{drafted.gaps.length === 1 ? "" : "s"} not on your resume
               </summary>
               <p className="mt-3 text-xs text-muted">Rewrites never add these; they come in only through your answers above.</p>
               <ul className="mt-3 flex flex-wrap gap-1.5">
                 {drafted.gaps.map((g) => (
-                  <li key={g["Missing keyword"]} className="border border-dashed border-field px-2.5 py-1 text-xs text-muted">
+                  <li key={g["Missing keyword"]} className="rounded-[3px] border border-dashed border-field px-2.5 py-1 text-xs text-ink">
                     {g["Missing keyword"]}{g.Required === "yes" ? " · required" : ""}{g["Asked below"] === "yes" ? " · asked" : ""}
                   </li>
                 ))}
@@ -243,8 +268,8 @@ export function Review() {
           )}
 
           <section aria-label="Add more" className="mt-6 flex flex-col gap-4">
-            <details className="group border border-dashed border-field bg-panel">
-              <summary className="flex min-h-15 cursor-pointer list-none items-center gap-2.5 px-5 text-sm hover:text-pencil [&::-webkit-details-marker]:hidden">
+            <details className="group rounded-[3px] border border-dashed border-field bg-panel">
+              <summary className="flex min-h-15 cursor-pointer list-none items-center gap-2.5 px-5 text-sm font-medium hover:text-pencil [&::-webkit-details-marker]:hidden">
                 <Icon name="close" size={16} className="rotate-45 text-pencil transition-transform group-open:rotate-0" />
                 Add anything else in your own words
               </summary>
@@ -257,8 +282,8 @@ export function Review() {
               </div>
             </details>
             <details open={jobOpen} onToggle={(e) => setJobOpen(e.currentTarget.open)}
-              className="group border border-dashed border-field bg-panel">
-              <summary className="flex min-h-15 cursor-pointer list-none items-center gap-2.5 px-5 text-sm hover:text-pencil [&::-webkit-details-marker]:hidden">
+              className="group rounded-[3px] border border-dashed border-field bg-panel">
+              <summary className="flex min-h-15 cursor-pointer list-none items-center gap-2.5 px-5 text-sm font-medium hover:text-pencil [&::-webkit-details-marker]:hidden">
                 <Icon name="close" size={16} className="rotate-45 text-pencil transition-transform group-open:rotate-0" />
                 Add a job that isn't on your resume
               </summary>
@@ -268,27 +293,35 @@ export function Review() {
             </details>
           </section>
 
-          <div className="mt-4 flex flex-col gap-3 lg:hidden">
-            <Button variant="primary" size="lg" onClick={() => void generate()}>Generate my resume</Button>
-          </div>
-          {error && <p key={error.n} ref={errorRef} tabIndex={-1} role="alert" className="text-sm text-danger outline-none">{error.text}</p>}
+          {error && (
+            <p key={error.n} ref={errorRef} tabIndex={-1} role="alert" className="flex items-start gap-2 text-sm font-medium text-danger outline-none">
+              <Icon name="alert" size={16} className="mt-0.5 shrink-0" /><span><span className="font-semibold">Error:</span> {error.text}</span>
+            </p>
+          )}
           <p id={hintId} className="sr-only">
             Shortcuts on a selected card: A accept, R reject, E edit, up and down arrows for the previous or next card.
           </p>
         </div>
 
         <aside aria-label="Match and actions" className="order-first flex flex-col gap-4 lg:sticky lg:top-6 lg:order-none">
-          <div className="flex flex-col items-center gap-4 border border-line bg-panel p-6">
-            <span className="self-start text-[11px] tracking-[0.2em] text-muted">KEYWORD MATCH</span>
-            <ScoreDial value={rate} before={preScore} band={band} size={168} />
-            <p aria-live="polite" className="m-0 text-center text-[13px] text-muted">
-              <span className="sr-only">Match with your choices: {rate.toFixed(1)}%. </span>
+          <p aria-live="polite" className="sr-only">
+            Match with your choices: {rate.toFixed(1)}%. Was {preScore.toFixed(1)}% before tailoring. {v.text}
+          </p>
+          <div className="sheet hidden flex-col gap-4 rounded-[3px] p-6 lg:flex">
+            <span className="text-sm font-semibold">Keyword match</span>
+            <ScoreDial value={rate} before={preScore} band={band} />
+            <p className="m-0 text-[13px] leading-relaxed text-muted">
               Was {preScore.toFixed(1)}% before tailoring. {v.text}
-              {liveError ? ` ${liveError}` : " Updates as you review."}
+              {liveError ? "" : " Updates as you review."}
             </p>
           </div>
+          {drafted.proposals.length > 0 && (
+            <div className="hidden px-1 pt-2 lg:block">
+              <ProofStack proposals={drafted.proposals} review={review} />
+            </div>
+          )}
           {(live ?? drafted.keyword_match) && (
-            <div className="hidden border border-line bg-panel p-5 lg:block">
+            <div className="sheet hidden rounded-[3px] p-5 lg:block">
               <KeywordList match={(live ?? drafted.keyword_match)!} compact />
             </div>
           )}
@@ -296,16 +329,27 @@ export function Review() {
             Output: {run.template === "keep" ? "your own DOCX layout" : "ATS template"}
             {settings.strictFactual ? " · strict factual mode" : ""}
           </p>
-          <Button variant="primary" size="lg" className="hidden lg:inline-flex" onClick={() => void generate()}>
-            Generate my resume
-          </Button>
+          <div className="hidden lg:flex lg:flex-col">
+            <Button variant="primary" size="lg" onClick={() => void generate()}>Generate my resume</Button>
+          </div>
         </aside>
       </div>
 
-      <div aria-hidden="true" className="sticky bottom-0 hidden border-t border-line bg-bg lg:block">
+      {/* phones: the rate and the main action stay in reach */}
+      <div className="sticky bottom-0 z-20 border-t border-line bg-bg/95 backdrop-blur-sm lg:hidden">
+        <div className="mx-auto flex max-w-[1320px] items-center justify-between gap-4 px-4 py-3">
+          <span aria-hidden="true" className="flex flex-col leading-tight">
+            <span className="tabular font-display text-2xl font-bold tracking-[-0.03em]">{rate.toFixed(0)}<span className="text-sm text-pencil">%</span></span>
+            <span className="text-xs text-muted">keyword match · was {preScore.toFixed(0)}%</span>
+          </span>
+          <Button variant="primary" size="lg" onClick={() => void generate()}>Generate my resume</Button>
+        </div>
+      </div>
+
+      <div aria-hidden="true" className="sticky bottom-0 hidden border-t border-line bg-bg/95 backdrop-blur-sm lg:block">
         <div className="mx-auto flex max-w-[1320px] gap-6 px-8 py-3 text-[13px] text-muted">
           {[["A", "Accept"], ["R", "Reject"], ["E", "Edit"], ["↑ ↓", "Next / previous"]].map(([k, l]) => (
-            <span key={k}><kbd className="mr-1.5 border border-field px-2 py-0.5 font-sans text-ink">{k}</kbd>{l}</span>
+            <span key={k}><kbd className="mr-1.5 rounded-[3px] border border-field bg-panel px-2 py-0.5 font-sans text-ink shadow-[0_1px_0_var(--field)]">{k}</kbd>{l}</span>
           ))}
           <span className="ml-auto">Select a card first (click or Tab)</span>
         </div>

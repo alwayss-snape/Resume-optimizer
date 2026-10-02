@@ -5,7 +5,7 @@ import { TextArea, TextField } from "./Field";
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const THIS_YEAR = new Date().getFullYear();
 const YEARS = Array.from({ length: THIS_YEAR + 1 - 1970 + 1 }, (_, i) => THIS_YEAR + 1 - i);
-const SELECT = "h-11 min-w-0 flex-1 border border-field bg-panel-2 px-3 text-sm text-ink disabled:opacity-50";
+const SELECT = "h-11 min-w-0 flex-1 rounded-[3px] border border-field bg-panel px-3 text-sm text-ink disabled:opacity-50";
 
 /** Month + year as two selects, giving "YYYY-MM" (or "" until both are
  *  chosen). Works in every browser, unlike <input type="month">. */
@@ -25,7 +25,7 @@ function MonthYear({ label, value, onChange, disabled }: {
   };
   return (
     <fieldset className="flex min-w-0 flex-col gap-1.5" disabled={disabled}>
-      <legend className="mb-1.5 text-[13px] text-muted">{label}</legend>
+      <legend className="mb-1.5 text-sm font-medium text-ink">{label}</legend>
       <div className="flex gap-2">
         <select aria-label={`${label}: month`} id={id} value={month} onChange={(e) => set({ year, month: e.target.value })} className={SELECT}>
           <option value="">Month</option>

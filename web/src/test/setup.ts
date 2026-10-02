@@ -14,3 +14,15 @@ afterEach(() => {
 // jsdom has no scrolling.
 window.scrollTo = () => undefined;
 Element.prototype.scrollIntoView = () => undefined;
+
+// jsdom has no IntersectionObserver (every browser does); nothing ever intersects here.
+if (typeof window.IntersectionObserver === "undefined") {
+  class NoIntersections {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+    takeRecords() { return []; }
+  }
+  Object.assign(window, { IntersectionObserver: NoIntersections });
+  Object.assign(globalThis, { IntersectionObserver: NoIntersections });
+}

@@ -14,10 +14,12 @@ import { Icon } from "./Icon";
 const STATE_TONE: Record<ProposalState, string> = {
   pass: "text-success border-success-line",
   unchanged: "text-muted border-field",
-  check: "text-pencil border-pencil/60",
-  dropped: "text-danger border-danger/50",
-  failed: "text-danger border-danger/50",
+  check: "text-warning border-warning",
+  dropped: "text-danger border-danger",
+  failed: "text-danger border-danger",
 };
+
+export type ProofView = "proof" | "split";
 
 const TITLES: Record<Proposal["kind"], string> = {
   summary: "Professional summary",
@@ -37,7 +39,8 @@ export const ProposalCard = forwardRef<HTMLElement, {
   onEdit: (text: string | null) => void; // null: back to the proposed text
   onNavigate: (step: 1 | -1) => void;
   shortcutsHintId?: string;
-}>(function ProposalCard({ proposal: p, index, decision, text, edited, onDecide, onEdit, onNavigate, shortcutsHintId }, ref) {
+  view?: ProofView; // one marked-up line, or original and proposal side by side
+}>(function ProposalCard({ proposal: p, index, decision, text, edited, onDecide, onEdit, onNavigate, shortcutsHintId, view = "proof" }, ref) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(text);
   // What to restore on Cancel: the text and decision from before editing.
@@ -104,10 +107,10 @@ export const ProposalCard = forwardRef<HTMLElement, {
     return (
       <article ref={setRefs} tabIndex={0} onKeyDown={onKeyDown} aria-label={`${label}, rejected`}
         aria-keyshortcuts="A R E ArrowUp ArrowDown" aria-describedby={shortcutsHintId}
-        className="flex flex-col gap-3 border border-line bg-bg p-4 outline-offset-2 sm:flex-row sm:items-center sm:gap-4 sm:px-6">
-        <Icon name="close" className="shrink-0 text-danger" />
-        <p className="m-0 flex-1 break-words text-[15px] leading-relaxed text-muted line-through decoration-field">{p.original}</p>
-        <span className="text-[13px] text-danger">Rejected, original kept</span>
+        className="flex flex-col gap-3 rounded-[3px] border border-dashed border-field bg-bg p-4 outline-offset-2 sm:flex-row sm:items-center sm:gap-4 sm:px-6">
+        <span className="shrink-0 text-[13px] font-semibold text-muted">{label}</span>
+        <p className="m-0 flex-1 break-words font-serif text-[16px] leading-relaxed text-ink">{p.original}</p>
+        <span className="text-[13px] text-muted">Rejected: your original is kept</span>
         <Button variant="ghost" onClick={() => decideAndFocus("accept")} className="text-pencil hover:text-pencil-hover">Undo</Button>
       </article>
     );
@@ -116,17 +119,17 @@ export const ProposalCard = forwardRef<HTMLElement, {
   return (
     <article ref={setRefs} tabIndex={0} onKeyDown={onKeyDown} aria-label={label}
       aria-keyshortcuts="A R E ArrowUp ArrowDown" aria-describedby={shortcutsHintId}
-      className="flex flex-col gap-4 border border-line bg-panel p-5 outline-offset-2 transition-colors focus-visible:border-pencil focus-visible:outline-none md:p-6">
+      className="sheet flex flex-col gap-4 rounded-[3px] p-5 outline-offset-2 transition-[box-shadow,translate,border-color] duration-200 hover:shadow-sheet-lift focus-visible:border-pencil focus-visible:shadow-sheet-lift focus-visible:outline-2 focus-visible:outline-pencil motion-safe:hover:-translate-y-0.5 motion-safe:focus-visible:-translate-y-0.5 md:p-6">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <span className="text-[13px] text-muted">{label}</span>
-        <span className={`border px-2.5 py-1 text-xs ${STATE_TONE[edited ? "pass" : p.state]}`}>
+        <span className="text-sm font-semibold">{label}</span>
+        <span className={`rounded-[3px] border px-2 py-0.5 text-xs font-medium ${STATE_TONE[edited ? "pass" : p.state]}`}>
           {edited ? "Your wording" : p.state_label}
         </span>
       </div>
 
       {editing ? (
         <div className="flex flex-col gap-3">
-          <label htmlFor={editId} className="text-[11px] tracking-[0.18em] text-pencil">YOUR VERSION</label>
+          <label htmlFor={editId} className="text-sm font-semibold text-pencil">Your version</label>
           <textarea id={editId} ref={box} value={draft} rows={p.kind === "skills" ? 6 : 3}
             onChange={(e) => setDraft(e.target.value)}
             onBlur={() => save(false)}
@@ -137,7 +140,7 @@ export const ProposalCard = forwardRef<HTMLElement, {
               }
               if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) save(true);
             }}
-            className="resize-y border border-field bg-panel-2 p-3.5 text-[15px] leading-relaxed text-ink" />
+            className="resize-y rounded-[3px] border border-field bg-panel p-3.5 font-serif text-[16px] leading-relaxed text-ink focus-visible:border-pencil" />
           <p className="m-0 break-words text-xs text-muted">Your own wording is used as you write it. Original: {p.original || "(none)"}</p>
           <div className="flex flex-wrap gap-2.5">
             <Button variant="primary" onMouseDown={(e) => e.preventDefault()} onClick={() => save(true)}>Save edit</Button>
@@ -147,28 +150,40 @@ export const ProposalCard = forwardRef<HTMLElement, {
           </div>
         </div>
       ) : (
-        <div className="grid gap-5 md:grid-cols-2 md:gap-7">
-          <div className="flex flex-col gap-2">
-            <span className="text-[11px] tracking-[0.18em] text-muted">ORIGINAL</span>
-            {p.diff.original.length ? <DiffText spans={p.diff.original} side="original" />
-              : <p className="m-0 text-[15px] text-muted">(none)</p>}
-          </div>
-          <div className="flex flex-col gap-2">
-            <span className="text-[11px] tracking-[0.18em] text-pencil">{edited ? "YOUR VERSION" : "PROPOSED"}</span>
-            {edited ? <p className="m-0 whitespace-pre-line break-words text-[15px] leading-relaxed">{text}</p>
-              : <DiffText spans={p.diff.proposed} side="proposed" />}
-          </div>
+        <div className="grid gap-x-8 gap-y-3 md:grid-cols-[minmax(0,1fr)_200px]">
+          {edited ? (
+            <div className="flex flex-col gap-1.5">
+              <span className="text-xs font-semibold text-pencil">Your version</span>
+              <p className="m-0 whitespace-pre-line break-words font-serif text-[17px] leading-[1.8]">{text}</p>
+            </div>
+          ) : view === "proof" ? (
+            p.diff.original.length || p.diff.proposed.length
+              ? <DiffText spans={p.diff.original} proposed={p.diff.proposed} side="proof" />
+              : <p className="m-0 text-[15px] text-muted">(none)</p>
+          ) : (
+            <div className="grid gap-5 sm:grid-cols-2 sm:gap-6">
+              <div className="flex flex-col gap-1.5">
+                <span className="text-xs font-semibold text-muted">Original</span>
+                {p.diff.original.length ? <DiffText spans={p.diff.original} side="original" />
+                  : <p className="m-0 text-[15px] text-muted">(none)</p>}
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <span className="text-xs font-semibold text-pencil">Proposed</span>
+                <DiffText spans={p.diff.proposed} side="proposed" />
+              </div>
+            </div>
+          )}
+          {/* the editor's margin: why this change, and anything to check */}
+          {(p.rationale || p.note || p.state !== "pass") && (
+            <p className="m-0 border-line font-serif text-[14px] italic leading-relaxed text-muted md:border-l md:pl-4">
+              {p.state === "failed" && !edited ? <span className="not-italic text-danger">Not rewritten: the AI call failed, so your original is shown. </span> : null}
+              {p.note && !edited && p.state !== "failed"
+                ? <span className={`not-italic ${p.state === "check" ? "text-warning" : "text-danger"}`}>{p.note}. </span> : null}
+              {p.state === "dropped" && !edited ? <span className="not-italic">Edit it, or it won't be used. </span> : null}
+              {p.rationale ? `Why: ${p.rationale}` : !p.note ? `${p.state_meaning.charAt(0).toUpperCase()}${p.state_meaning.slice(1)}.` : null}
+            </p>
+          )}
         </div>
-      )}
-
-      {!editing && (p.rationale || p.note || p.state !== "pass") && (
-        <p className="m-0 text-[13px] leading-relaxed text-muted">
-          {p.state === "failed" && !edited ? <span className="text-danger">Not rewritten: the AI call failed, so your original is shown. </span> : null}
-          {p.note && !edited && p.state !== "failed"
-            ? <span className={p.state === "check" ? "text-pencil" : "text-danger"}>{p.note}. </span> : null}
-          {p.state === "dropped" && !edited ? "Edit it, or it won't be used. " : null}
-          {p.rationale ? `Why: ${p.rationale}` : !p.note ? `${p.state_meaning.charAt(0).toUpperCase()}${p.state_meaning.slice(1)}.` : null}
-        </p>
       )}
 
       {!editing && (

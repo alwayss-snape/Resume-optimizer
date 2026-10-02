@@ -1,4 +1,5 @@
 import type { KeywordMatch, KeywordRow } from "../lib/types";
+import { Icon } from "./Icon";
 
 const KIND_LABELS: Record<string, string> = {
   hard: "Hard skills", title: "Job title", education: "Education", certification: "Certifications", soft: "Soft skills",
@@ -6,12 +7,13 @@ const KIND_LABELS: Record<string, string> = {
 
 function Chip({ row }: { row: KeywordRow }) {
   return (
-    <li className={`flex items-center gap-1.5 border px-2.5 py-1 text-xs ${
-      row.found ? "border-success-line text-success" : "border-dashed border-field text-muted"}`}
+    <li className={`flex items-center gap-1.5 rounded-[3px] border px-2.5 py-1 text-[13px] ${
+      row.found ? "border-success-line text-success" : "border-dashed border-field text-ink"}`}
       title={row.found && row.where.length ? `Found in: ${row.where.join(", ")}` : undefined}>
       <span className="sr-only">{row.found ? "Found:" : "Missing:"}</span>
+      {row.found ? <Icon name="check" size={13} strokeWidth={2.4} /> : <span aria-hidden="true" className="size-2.5 rounded-full border-[1.5px] border-field" />}
       {row.keyword}
-      {row.required && !row.found && <span className="text-[10px] tracking-[0.1em] text-danger">REQ</span>}
+      {row.required && !row.found && <span className="text-xs font-semibold text-muted">· required</span>}
     </li>
   );
 }
@@ -23,14 +25,14 @@ export function KeywordList({ match, compact = false }: { match: KeywordMatch; c
   const found = match.rows.filter((r) => r.found).length;
   return (
     <div className="flex flex-col gap-4">
-      <p className="text-[11px] tracking-[0.2em] text-muted">KEYWORDS · {found} OF {match.rows.length} FOUND</p>
+      <p className="text-sm font-semibold">Job keywords <span className="tabular font-normal text-muted">· {found} of {match.rows.length} found</span></p>
       {kinds.map((kind) => {
         const rows = match.rows
           .filter((r) => r.kind === kind)
           .sort((a, b) => Number(a.found) - Number(b.found) || Number(b.required) - Number(a.required) || b.weight - a.weight);
         return (
           <div key={kind} className="flex flex-col gap-2">
-            {!compact && <h3 className="text-sm text-ink">{KIND_LABELS[kind]}</h3>}
+            {!compact && <h3 className="text-[13px] font-medium text-muted">{KIND_LABELS[kind]}</h3>}
             <ul className="flex flex-wrap gap-1.5">
               {rows.map((r) => (
                 <Chip key={r.keyword} row={r} />
@@ -47,7 +49,7 @@ export function Breakdown({ match }: { match: KeywordMatch }) {
   if (!match.breakdown.length) return null;
   return (
     <table className="w-full text-left text-sm">
-      <caption className="mb-3 text-left text-[11px] tracking-[0.2em] text-muted">WHERE THE SCORE COMES FROM</caption>
+      <caption className="mb-3 text-left text-sm font-semibold">Where the score comes from</caption>
       <thead className="text-xs text-muted">
         <tr className="border-b border-line">
           <th scope="col" className="py-2 font-normal">Kind</th>

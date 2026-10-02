@@ -1,8 +1,9 @@
+import { motion, useReducedMotion, useScroll, useTransform } from "motion/react";
 import { type KeyboardEvent, useEffect, useRef, useState } from "react";
 import { Button } from "../components/Button";
 import { Icon } from "../components/Icon";
 import { MiniMarkdown } from "../components/MiniMarkdown";
-import { verdict } from "../components/ScoreDial";
+import { CountUp, ScoreRule, verdict } from "../components/ScoreDial";
 import { downloadFile, fileUrl, friendlyError, getChangeLog, previewUrl } from "../lib/api";
 import { useApp } from "../lib/store";
 import type { TailorResult } from "../lib/types";
@@ -28,8 +29,8 @@ function Download({ kind, label, primary, onError }: {
         setBusy(true);
         downloadFile(kind).catch((e) => onError(friendlyError(e))).finally(() => setBusy(false));
       }}
-      className={`inline-flex h-13 items-center justify-center gap-2.5 rounded-[2px] px-6 text-[15px] transition-colors disabled:opacity-60 ${
-        primary ? "bg-pencil font-semibold text-on-pencil hover:bg-pencil-hover" : "border border-line-strong text-ink hover:border-pencil"}`}>
+      className={`inline-flex h-12 items-center justify-center gap-2.5 rounded-[4px] px-6 text-[15px] font-semibold transition-colors disabled:opacity-60 ${
+        primary ? "bg-pencil text-on-pencil shadow-[0_1px_2px_rgb(27_27_31/0.12)] hover:bg-pencil-hover" : "border border-field bg-panel text-ink hover:border-pencil hover:text-pencil"}`}>
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round"
         strokeLinejoin="round" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14" /></svg>
       {label}
@@ -45,48 +46,56 @@ function pair(before: number, after: number): [string, string] {
 
 function StatTile({ value, unit, label }: { value: string | number; unit?: string; label: string }) {
   return (
-    <div className="flex flex-col gap-2 bg-bg p-5 md:p-6">
-      <span className="font-display text-[40px] leading-none">
-        {value}{unit && <span className="text-[22px] text-muted"> {unit}</span>}
+    <div className="flex flex-col gap-2 bg-panel p-5 md:p-6">
+      <span className="tabular font-display text-[40px] font-bold leading-none tracking-[-0.04em]">
+        {value}
+        {unit && <span className="text-lg font-semibold tracking-normal text-muted"> {unit}</span>}
       </span>
-      <span className="text-[13px] text-muted">{label}</span>
+      <span className="text-[13px] leading-snug text-muted">{label}</span>
     </div>
   );
 }
 
-/** Before -> after, the Novoresume-style reveal. */
+/** Before -> after on the rule, and a plain reason when the rate didn't move. */
 function ScoreReveal({ result }: { result: TailorResult }) {
   const before = result.initial_alignment_score;
   const after = result.alignment_score;
   const band = result.keyword_match?.target_band ?? [75, 85];
   const v = verdict(after, band);
   const [b, a] = pair(before, after);
+  const flat = Math.abs(after - before) < 0.5;
   return (
-    <div className="flex flex-col gap-6 border border-line bg-panel p-6 md:p-9"
-      role="img" aria-label={`Keyword match: ${before.toFixed(1)}% before, ${after.toFixed(1)}% after tailoring. ${v.text}`}>
-      <span aria-hidden="true" className="text-[11px] tracking-[0.2em] text-muted">KEYWORD MATCH</span>
-      <div aria-hidden="true" className="flex items-end justify-between gap-4">
-        <div className="flex flex-col gap-1">
-          <span className="text-[13px] text-muted">Before</span>
-          <span className="font-display text-5xl leading-[0.9] text-muted sm:text-7xl md:text-[88px]">
-            {b}<span className="text-[0.45em]">%</span>
-          </span>
+    <div className="sheet flex flex-col gap-6 rounded-[3px] p-6 md:p-8">
+      <div role="img" aria-label={`Keyword match: ${before.toFixed(1)}% before, ${after.toFixed(1)}% after tailoring. ${v.text}`}
+        className="flex flex-col gap-6">
+        <span aria-hidden="true" className="text-sm font-semibold">Keyword match</span>
+        <div aria-hidden="true" className="flex items-end justify-between gap-4">
+          <div className="flex flex-col gap-1">
+            <span className="text-[13px] text-muted">Before</span>
+            <span className="tabular font-display text-5xl font-bold leading-[0.9] tracking-[-0.04em] text-muted sm:text-7xl">
+              {b}<span className="text-[0.45em]">%</span>
+            </span>
+          </div>
+          <svg width="72" height="24" viewBox="0 0 80 24" fill="none" stroke="var(--pencil)" strokeWidth="1.6" strokeLinecap="round"
+            className="mb-4 w-12 shrink sm:mb-6 sm:w-[72px]">
+            <path d="M2 12h72M66 5l8 7-8 7" />
+          </svg>
+          <div className="flex flex-col items-end gap-1">
+            <span className="text-[13px] font-semibold text-pencil">After</span>
+            <span className="tabular font-display text-5xl font-bold leading-[0.9] tracking-[-0.04em] sm:text-7xl">
+              {Number.isInteger(Number(a)) ? <CountUp value={Number(a)} from={Number(b)} /> : a}<span className="text-[0.45em] text-pencil">%</span>
+            </span>
+          </div>
         </div>
-        <svg width="72" height="24" viewBox="0 0 80 24" fill="none" stroke="var(--pencil)" strokeWidth="1.2" className="mb-4 w-12 shrink sm:mb-6 sm:w-[72px]">
-          <path d="M0 12h76M68 5l8 7-8 7" />
-        </svg>
-        <div className="flex flex-col items-end gap-1">
-          <span className="text-[13px] text-pencil">After</span>
-          <span className="font-display text-5xl leading-[0.9] sm:text-7xl md:text-[88px]">
-            {a}<span className="text-[0.45em] text-pencil">%</span>
-          </span>
-        </div>
+        <ScoreRule value={after} before={before} band={band} />
+        <span aria-hidden="true" className={`text-sm ${v.tone === "good" ? "font-medium text-success" : "text-muted"}`}>{v.text}</span>
       </div>
-      <div aria-hidden="true" className="flex flex-col gap-2.5">
-        <div className="h-2 bg-line"><div className="h-full bg-line-strong" style={{ width: `${Math.min(100, before)}%` }} /></div>
-        <div className="h-2 bg-line"><div className="h-full bg-pencil" style={{ width: `${Math.min(100, after)}%` }} /></div>
-      </div>
-      <span aria-hidden="true" className={`text-[13px] ${v.tone === "good" ? "text-success" : "text-muted"}`}>{v.text}</span>
+      {flat && (
+        <p className="m-0 border-t border-line pt-4 font-serif text-[15px] italic leading-relaxed text-muted">
+          The wording changed, but the match didn't move: rewrites only use words already on your resume. To add a job
+          keyword you really have, go back to review and tick it under "What the job asks for".
+        </p>
+      )}
     </div>
   );
 }
@@ -105,6 +114,10 @@ export function Results() {
   const [downloadError, setDownloadError] = useState<{ text: string; n: number } | null>(null);
   const onDownloadError = (text: string) => setDownloadError((e) => ({ text, n: (e?.n ?? 0) + 1 }));
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  // A gentle parallax: the score sheet drifts a little slower than the page.
+  const reduce = useReducedMotion();
+  const { scrollY } = useScroll();
+  const drift = useTransform(scrollY, [0, 500], [0, reduce === false ? -28 : 0]);
 
   useEffect(() => {
     if (tab !== "Change log" || log !== null || !result.files.changes) return;
@@ -133,8 +146,7 @@ export function Results() {
     <div className="mx-auto flex max-w-[1240px] flex-col gap-12 px-4 py-12 md:px-8 md:py-16">
       <section className="grid items-center gap-10 md:grid-cols-2 md:gap-12">
         <div className="flex flex-col gap-5">
-          <p className="text-xs tracking-[0.28em] text-pencil">TAILORED RESUME</p>
-          <h1 ref={heading} tabIndex={-1} className="font-display text-5xl font-medium leading-[1.02] outline-none md:text-[68px]">
+          <h1 ref={heading} tabIndex={-1} className="font-display text-[44px] font-bold leading-[1.02] tracking-[-0.035em] outline-none md:text-[62px]">
             {result.success ? "Your resume is ready." : "Your resume is ready, with warnings."}
           </h1>
           <p className="max-w-[460px] text-base leading-relaxed text-muted">
@@ -143,7 +155,7 @@ export function Results() {
               : "Some checks on the finished files raised problems. See File checks below before you send it."}
           </p>
           {applied?.strict_withheld && (
-            <p role="status" className="m-0 border border-pencil/60 bg-pencil-soft p-4 text-sm leading-relaxed">
+            <p role="status" className="m-0 rounded-[3px] border border-warning bg-panel p-4 text-sm leading-relaxed">
               Strict factual mode withheld every rewrite, because at least one failed the fact check. The files keep your
               original wording. Go back to review to edit or reject the failing rewrite, or turn strict mode off in settings.
             </p>
@@ -152,16 +164,20 @@ export function Results() {
             {result.files.pdf && <Download kind="pdf" label="Download PDF" primary onError={onDownloadError} />}
             {result.files.docx && <Download kind="docx" label="Download DOCX" primary={!result.files.pdf} onError={onDownloadError} />}
           </div>
-          {downloadError && <p key={downloadError.n} role="alert" className="m-0 text-sm text-danger">{downloadError.text}</p>}
+          {downloadError && (
+            <p key={downloadError.n} role="alert" className="m-0 flex items-start gap-2 text-sm font-medium text-danger">
+              <Icon name="alert" size={16} className="mt-0.5 shrink-0" /><span><span className="font-semibold">Error:</span> {downloadError.text}</span>
+            </p>
+          )}
           {!result.files.pdf && result.files.docx && (
             <p className="m-0 text-xs text-muted">A PDF couldn't be made on the server (it needs LibreOffice); the DOCX is ready.</p>
           )}
           {result.addition_note && <p className="m-0 text-sm text-muted">Your addition was included: {result.addition_note}</p>}
         </div>
-        <ScoreReveal result={result} />
+        <motion.div style={{ y: drift }}><ScoreReveal result={result} /></motion.div>
       </section>
 
-      <section aria-label="Summary" className="grid grid-cols-2 gap-px border border-line bg-line md:grid-cols-4">
+      <section aria-label="Summary" className="grid grid-cols-2 gap-px overflow-hidden rounded-[3px] border border-line bg-line shadow-sheet md:grid-cols-4">
         <StatTile value={rows.filter((r) => r.found).length} unit={`of ${rows.length}`} label="Job keywords now on your resume" />
         <StatTile value={applied?.bullets ?? "—"}
           label={applied?.bullets_edited
@@ -179,7 +195,7 @@ export function Results() {
               aria-selected={tab === t} aria-controls="results-panel" tabIndex={tab === t ? 0 : -1}
               onClick={() => setTab(t)} onKeyDown={(e) => onTabKey(e, i)}
               className={`min-h-11 whitespace-nowrap border-b-2 pb-2 text-[15px] transition-colors ${
-                tab === t ? "border-pencil text-ink" : "border-transparent text-muted hover:text-ink"}`}>
+                tab === t ? "border-pencil font-semibold text-ink" : "border-transparent text-muted hover:text-ink"}`}>
               {t}
               {t === "Content checks" && issues.length ? <span className="text-muted"> ({issues.length})</span> : null}
               {t === "Notes" && notes.length ? <span className="text-muted"> ({notes.length})</span> : null}
@@ -192,11 +208,14 @@ export function Results() {
         <div id="results-panel" role="tabpanel" tabIndex={0} aria-labelledby={`rtab-${TABS.indexOf(tab)}`} className="outline-none">
           {tab === "Preview" && (
             result.pages > 0 ? (
-              <div className="flex flex-col items-center gap-8">
+              <div className="flex flex-col items-center gap-10 py-4">
                 {Array.from({ length: result.pages }, (_, i) => (
-                  <img key={`${run.resultsVersion}-${i}`} src={previewUrl(i + 1, run.resultsVersion)} loading="lazy"
+                  <motion.img key={`${run.resultsVersion}-${i}`} src={previewUrl(i + 1, run.resultsVersion)} loading="lazy"
                     alt={`Page ${i + 1} of your tailored resume`}
-                    className="w-full max-w-[820px] bg-paper shadow-[0_30px_60px_rgb(0_0_0/0.35)]" />
+                    initial={reduce === false ? { opacity: 0, y: 24 } : false}
+                    whileInView={reduce === false ? { opacity: 1, y: 0 } : undefined}
+                    viewport={{ once: true, margin: "-60px" }} transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+                    className="w-full max-w-[820px] border border-line bg-paper shadow-sheet-lift" />
                 ))}
                 <p className="m-0 text-xs text-muted">This is the exact PDF you download.</p>
               </div>

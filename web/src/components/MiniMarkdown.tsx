@@ -81,7 +81,7 @@ export function MiniMarkdown({ source }: { source: string }) {
     const heading = line.match(/^(#{1,4})\s+(.*)$/);
     if (heading) {
       const level = heading[1].length;
-      const cls = level === 1 ? "font-display text-[28px] mt-2" : level === 2 ? "font-display text-[22px] mt-6" : "text-sm font-semibold mt-4";
+      const cls = level === 1 ? "font-display text-[26px] font-bold tracking-[-0.025em] mt-2" : level === 2 ? "font-display text-xl font-bold tracking-[-0.02em] mt-6" : "text-sm font-semibold mt-4";
       blocks.push(<p key={blocks.length} role="heading" aria-level={level + 1} className={`m-0 ${cls}`}>{inline(heading[2])}</p>);
     } else if (/^-{3,}$/.test(line)) {
       blocks.push(<hr key={blocks.length} className="my-4 border-line" />);

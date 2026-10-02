@@ -255,3 +255,27 @@ h3 {
     transition: none;
   }
 }
+
+/* Progress (P6.5): a pencil stroke drawing across while a long step runs. */
+@keyframes pencil-run {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(250%); }
+}
+.pencil-run {
+  animation: pencil-run 1.6s cubic-bezier(0.45, 0, 0.25, 1) infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .pencil-run {
+    animation: none;
+    transform: none;
+    width: 100%;
+    opacity: 0.35;
+  }
+}
+
+/* Phones: the Review page's pinned bar must never cover the focused control (WCAG 2.4.11). */
+@media (max-width: 1023px) {
+  html {
+    scroll-padding-bottom: 6rem;
+  }
+}

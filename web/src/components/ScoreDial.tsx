@@ -1,70 +1,93 @@
-import { animate, motion, useMotionValue, useTransform } from "motion/react";
+import { animate, motion, useMotionValue, useReducedMotion, useTransform } from "motion/react";
 import { useEffect } from "react";
 
-const R = 74;
-const CIRCUMFERENCE = 2 * Math.PI * R;
+const clamp = (v: number) => Math.max(0, Math.min(100, v));
 
-/** The keyword match rate as a ring, with the earlier rate as a faint arc
- *  and the target band under it. */
-export function ScoreDial({ value, before, band, size = 180, label = "Keyword match" }: {
-  value: number;
-  before?: number | null;
-  band?: [number, number];
-  size?: number;
-  label?: string;
-}) {
-  const shown = useMotionValue(before ?? 0);
-  const text = useTransform(shown, (v) => Math.round(v).toString());
-  const dash = useTransform(shown, (v) => `${(Math.max(0, Math.min(100, v)) / 100) * CIRCUMFERENCE} ${CIRCUMFERENCE}`);
+/** A number that counts to its value; shows the value at once under reduced
+ *  motion or when the preference is unknown. */
+export function CountUp({ value, from = 0, decimals = 0 }: { value: number; from?: number; decimals?: number }) {
+  const reduce = useReducedMotion();
+  const shown = useMotionValue(reduce === false ? from : value);
+  const text = useTransform(shown, (v) => v.toFixed(decimals));
   useEffect(() => {
+    if (reduce !== false) {
+      shown.set(value);
+      return;
+    }
     const controls = animate(shown, value, { duration: 0.9, ease: [0.22, 1, 0.36, 1] });
     return () => controls.stop();
-  }, [shown, value]);
+  }, [shown, value, reduce]);
+  return <motion.span>{text}</motion.span>;
+}
 
-  const delta = before != null ? value - before : null;
+/** An editor's rule from 0 to 100: ticks, the target band, the earlier rate
+ *  as a ghost mark and the current rate as the pencil mark. */
+export function ScoreRule({ value, before, band }: { value: number; before?: number | null; band?: [number, number] }) {
+  const reduce = useReducedMotion();
   return (
-    <div className="flex flex-col items-center gap-4">
-      <div className="relative" style={{ width: size, height: size }}
-        role="img" aria-label={`${label}: ${value.toFixed(1)}%${before != null ? `, was ${before.toFixed(1)}%` : ""}`}>
-        <svg width={size} height={size} viewBox="0 0 180 180" aria-hidden="true">
-          <circle cx="90" cy="90" r={R} fill="none" stroke="var(--line)" strokeWidth="6" />
-          {before != null && (
-            <circle cx="90" cy="90" r={R} fill="none" stroke="var(--line-strong)" strokeWidth="6"
-              strokeDasharray={`${(before / 100) * CIRCUMFERENCE} ${CIRCUMFERENCE}`} transform="rotate(-90 90 90)" />
-          )}
-          <motion.circle cx="90" cy="90" r={R} fill="none" stroke="var(--pencil)" strokeWidth="6" strokeLinecap="round"
-            style={{ strokeDasharray: dash }} transform="rotate(-90 90 90)" />
-        </svg>
-        <div aria-hidden="true" className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="font-display leading-none" style={{ fontSize: size * 0.32 }}>
-            <motion.span>{text}</motion.span>
-            <span style={{ fontSize: size * 0.155 }}>%</span>
+    <div aria-hidden="true" className="flex w-full flex-col gap-1">
+      {band && (
+        <div className="relative h-4 text-xs font-medium text-success">
+          <span className="absolute whitespace-nowrap"
+            style={(band[0] + band[1]) / 2 > 70 ? { right: `${Math.max(0, 100 - band[1])}%` } : { left: `${band[0]}%` }}>
+            Target {band[0].toFixed(0)}–{band[1].toFixed(0)}%
           </span>
-          {delta != null && Math.abs(delta) >= 0.05 && (
-            <span className={`mt-1 text-xs ${delta >= 0 ? "text-success" : "text-danger"}`}>
-              {delta >= 0 ? "+" : ""}{delta.toFixed(1)} pts
-            </span>
-          )}
         </div>
+      )}
+      <div className="relative h-9">
+        {/* target band */}
+        {band && (
+          <div className="absolute bottom-3 top-1 rounded-[2px] bg-success/15 ring-1 ring-success-line ring-inset"
+            style={{ left: `${band[0]}%`, width: `${band[1] - band[0]}%` }} />
+        )}
+        {/* ticks */}
+        <div className="absolute inset-x-0 bottom-3 h-px bg-field" />
+        {Array.from({ length: 21 }, (_, i) => (
+          <span key={i} className={`absolute bottom-3 w-px bg-field ${i % 2 === 0 ? "h-3" : "h-1.5"}`} style={{ left: `${i * 5}%` }} />
+        ))}
+        {before != null && (
+          <span className="absolute bottom-3 top-0 w-0.5 -translate-x-1/2 bg-line-strong" style={{ left: `${clamp(before)}%` }} />
+        )}
+        <motion.span className="absolute bottom-1 top-0 w-[3px] -translate-x-1/2 rounded-full bg-pencil"
+          initial={reduce === false ? { left: `${clamp(before ?? 0)}%` } : false}
+          animate={{ left: `${clamp(value)}%` }}
+          transition={reduce === false ? { duration: 0.9, ease: [0.22, 1, 0.36, 1] } : { duration: 0 }}>
+          <span className="absolute -bottom-2 left-1/2 size-0 -translate-x-1/2 border-x-[6px] border-b-[7px] border-x-transparent border-b-pencil" />
+        </motion.span>
       </div>
-      {band && <BandBar value={value} band={band} />}
+      <div className="flex justify-between text-xs text-muted">
+        <span>0</span>
+        <span>100</span>
+      </div>
     </div>
   );
 }
 
-export function BandBar({ value, band }: { value: number; band: [number, number] }) {
-  const [low, high] = band;
+/** The keyword match rate: the number, the change since tailoring started,
+ *  and the rule with the target band. */
+export function ScoreDial({ value, before, band, label = "Keyword match", size = "md" }: {
+  value: number;
+  before?: number | null;
+  band?: [number, number];
+  label?: string;
+  size?: "md" | "lg";
+}) {
+  const delta = before != null ? value - before : null;
   return (
-    <div className="flex w-full flex-col gap-1.5" aria-hidden="true">
-      <div className="relative h-1.5 bg-line">
-        <div className="absolute inset-y-0 bg-success/45" style={{ left: `${low}%`, width: `${high - low}%` }} />
-        <div className="absolute -top-[5px] h-4 w-0.5 bg-pencil" style={{ left: `${Math.min(99.5, value)}%` }} />
+    <div className="flex w-full flex-col gap-4">
+      <div role="img" aria-label={`${label}: ${value.toFixed(1)}%${before != null ? `, was ${before.toFixed(1)}%` : ""}`}
+        className="flex items-end justify-between gap-3">
+        <span aria-hidden="true" className={`tabular font-display font-bold leading-none tracking-[-0.04em] ${size === "lg" ? "text-[76px]" : "text-[60px]"}`}>
+          <CountUp value={value} from={before ?? 0} /><span className="text-[0.45em] text-pencil">%</span>
+        </span>
+        {delta != null && Math.abs(delta) >= 0.05 && (
+          <span aria-hidden="true" className={`mb-1.5 rounded-[3px] border px-2 py-0.5 text-[13px] font-semibold ${
+            delta >= 0 ? "border-success-line text-success" : "border-danger text-danger"}`}>
+            {delta >= 0 ? "+" : "−"}{Math.abs(delta).toFixed(1)} pts
+          </span>
+        )}
       </div>
-      <div className="flex justify-between text-[11px] text-muted">
-        <span>0</span>
-        <span>Target {low.toFixed(0)}–{high.toFixed(0)}%</span>
-        <span>100</span>
-      </div>
+      {band && <ScoreRule value={value} before={before} band={band} />}
     </div>
   );
 }
