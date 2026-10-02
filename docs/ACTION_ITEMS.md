@@ -1,7 +1,8 @@
 # Action Items — Best Tailored Resume per JD
 
 _Living tracker. Update an item's **Status** in the same commit that changes it; add a short note (commit subject or
-what's left). Last updated: 2026-10-01 (P0–P4 done; Phase 5 web UI built, P5.7 shelved; Phase 6 UI redesign done)._
+what's left). Last updated: 2026-10-02 (P0–P7 done, P5.7 shelved; Phase 8 planned from the cross-domain user test,
+with an arrange-and-edit step; P1.15 / P1.16 moved into it)._
 
 **Goal:** every resume + JD run produces the best possible tailored resume: an accurate match score, strong
 JD-aligned rewrites, a Novoresume-style ATS layout that fits the right length, and nothing fabricated.
@@ -13,14 +14,17 @@ JD-aligned rewrites, a Novoresume-style ATS layout that fits the right length, a
 | Phase | Items | ✅ | 🟡 | ⬜ |
 |---|---|---|---|---|
 | 0: Make the LLM path work | 10 | 10 | 0 | 0 |
-| 1: Content quality | 16 | 14 | 0 | 2 |
+| 1: Content quality | 16 | 14 | 0 | 0 |
 | 2: Template, ATS, page-fit | 6 | 6 | 0 | 0 |
 | 3: Gap questions + UX | 6 | 6 | 0 | 0 |
 | 4: Evaluation harness | 3 | 3 | 0 | 0 |
 | 5: Web UI for public hosting | 7 | 6 | 0 | 1 |
 | 6: UI redesign | 6 | 6 | 0 | 0 |
 | 7: Owner feedback on the flow | 2 | 2 | 0 | 0 |
-| **Total** | **56** | **53** | **0** | **3** |
+| 8: Cross-domain robustness and user control | 26 | 0 | 0 | 26 |
+| **Total** | **82** | **53** | **0** | **27** |
+
+Phase 1's two open items (P1.15, P1.16) are ➖, moved into P8.9 and P8.18, so its row no longer adds up to 16.
 
 ## Decisions (fixed by the user, 2026-09-30)
 
@@ -31,6 +35,9 @@ JD-aligned rewrites, a Novoresume-style ATS layout that fits the right length, a
 | Layout | Clean ATS single column following Novoresume's layout conventions (our own implementation, not their assets or text) |
 | Gaps | Suggest-and-confirm: the tool asks, and drafts only from the user's answer. Never fabricate |
 | Confirmed facts | Saved locally (`data/profile/facts.json`, gitignored) and reused across JDs |
+| Languages (2026-10-02) | **Safe, not full:** never lose non-English content; Unicode-safe tokens and file names; a fallback font; a clear "English-only for now" notice. Multilingual headings, dates and questions are backlog |
+| CV conventions (2026-10-02) | **Preserve, no new modes:** unknown sections kept verbatim under their own heading; the user picks the page target or "don't trim". Academic CV and federal templates are backlog |
+| Arrange and edit (2026-10-02) | After the AI changes are applied, the user can reorder sections, entries and bullets, hide sections, edit text and restore trimmed bullets. Deterministic code re-renders with no LLM call. Bullets move only within their own job or project, never into another one |
 | LLM | **Groq free tier only** (`openai/gpt-oss-120b`), with no paid APIs (decided 2026-09-30). The Claude provider (P0.1) stays in the code but is shelved: not used, not even as a fallback. Claude Pro does not include API access |
 
 ---
@@ -51,6 +58,11 @@ FOX JD and compare with the baseline. The phase tables below stay the catalogue;
 | **E. Extras & polish** | Convenience and full evaluation | P3.2, P3.3, P3.4, P3.6, P1.10, P4.2, P4.3 | Full eval set green |
 | **F. Web UI** (added 2026-10-01) | Replace Streamlit with a fluid web app that can be hosted publicly | P5.1 → P5.2 → P5.3 → P5.4 → P5.5 → P5.6, then P5.7 | Same inputs and accepted proposals give identical output through Streamlit and the new UI; then Streamlit is removed. P5.7 has its own check-in |
 | **G. UI redesign** (added 2026-10-01) | A brighter, accessible new look with 3D and fluid moments | P6.1 → P6.2 → P6.3 → P6.4 → P6.5 → P6.6 | Owner picks the direction (P6.2); every screen rebuilt in it, AA in light and dark, all tests green; private real-resume run through the new UI, then a check-in |
+| **H. Never lose or misplace content** (added 2026-10-02) | No silent data loss or misattribution for any persona | P8.1 → P8.2 → P8.3 → P8.4 → P8.5 → P8.6 → P8.7 → P8.8 | Every persona eval case keeps 100% of its meaningful source lines in the output, with each bullet under the right job; German and Spanish CVs lose nothing; replica and private resume still match their golden parse |
+| **I. Honest content** | Nothing borrowed from the JD, nothing misattributed | P8.9 → P8.10 → P8.11 → P8.12 | The 5 LLM personas re-run with zero JD-only claims or wrong-job facts in accepted output (manual review); private real-resume run |
+| **J. Arrange and edit before download** | The user owns the final structure | P8.13 → P8.14 → P8.15 → P8.16 | On the replica and two personas, reorder sections / entries / bullets, hide a section, edit a bullet, restore a trimmed bullet and undo, by mouse and keyboard; each change re-renders with no LLM call and the coverage check and ATS round-trip pass; browser check 1440 / 390 px, light and dark; private real-resume run |
+| **K. A fair, explained score** | A score that is fair outside tech and hard to game | P8.17 → P8.18 → P8.19 → P8.20 → P8.21 | Strong-fit personas score in a plausible band; the keyword-stuffed resume no longer beats them; offline and LLM scores for the same pair agree within a stated tolerance |
+| **L. Clear failures, privacy, global basics** | Every failure explained, cloud use disclosed | P8.22 → P8.23 → P8.24 → P8.25 → P8.26 | Every edge file gets a specific message (no 500s); full persona sweep offline plus the 5 LLM runs; browser walkthrough; private real-resume run |
 
 **Privacy:** the user's resume and its golden file live in `data/eval/private/` (gitignored). Committed tests use an
 anonymized replica of the layout.
@@ -105,8 +117,8 @@ anonymized replica of the layout.
 | P1.12 | **Resume model v2:** a company can hold several roles (title + dates each, e.g. Data Scientist II / I); a role can hold project sub-sections with their own bullets; certifications become their own field. Normalizer, evidence ledger and both renderers updated | `domain/resume.py`, `resume_normalizer.py`, `rendering/*` | F37, F42 | ✅ | `Role` model + `Experience.roles` (most recent first; `title`/dates mirror roles[0]); `ResumeBullet.group` = sub-heading (project) inside a job; helpers `all_roles()` / `bullet_groups()`. Normalizer: a heading-like line followed by a dated line is a company, otherwise a sub-heading; title-before-company order handled; a new title after bullets stays at the same company; empty company/title instead of placeholders (renderers skip them); the "Previously:" note is gone (F23). Fixed `DATE_PATTERN` matching "Market"/"Decision"/"Junior" as months. Certifications were already a field; P1.11 fixed their routing. Evidence text carries the sub-heading. DOCX + HTML + preview render roles and sub-headings. Golden-file test (`tests/integration/test_parse_golden.py`): replica committed, the user's resume passes locally (private) |
 | P1.13 | **LLM-assisted structure extraction with a verbatim guard:** when the deterministic parse looks wrong (no name, placeholder company/title, orphan headings), ask Groq to map numbered lines to resume fields **by index** (same pattern as JD line selection), so every value is still copied verbatim from the file | new `analysis/structure_extractor.py`, `resume_normalizer.py` | F36, F37 | ✅ | `StructureExtractor.problems()` flags: no/odd name, bullets but no jobs, a job without company/title/bullets, ≥3 lines outside known sections. Only then one Groq call labels each line by index (name, section_*, company, job_title, subheading, bullet, text); labels become `RawBlock.hint`s and the normalizer re-runs; the re-parse is kept only if it has fewer problems. Hallucinated/duplicate indices dropped; raw doc never modified. Wired via `TailorService.parse_resume()` / `normalize_raw()`; remaining issues exposed as `last_parse_issues` / `parse_issues` (for P3.5). The user's resume parses cleanly, so no LLM call is made for it. Live Groq check on an odd layout (unknown headings, plain company line): 1 call, ~1K tokens, fixed all problems. Also: date ranges accept "to", and only a month name may precede the year ("Engineer 2019 - 2023" keeps "Engineer") |
 | P1.14 | **Rewrites must not lose information:** a prompt rule plus a validator check that flags a rewrite dropping key facts (tools, metrics, scope terms from the original) | `prompts/`, `validation/factual.py` | F48 | ✅ | Prompt: `rewrite_role.txt` lists what must be kept (tools, numbers, specific details). Validator: `FactualValidator.dropped_facts()` finds factual terms of the original missing from the rewrite and the share of content words kept (filler/generic verbs ignored, slashed terms compared per part) and short list items that vanish entirely ("pipeline stages, win rates, …"); a dropped term, < 50% retention or ≥ 2 lost list items turns PASS into NEEDS_CONFIRM with "the rewrite drops …" (REJECT stays REJECT). Lowercase single letters are never facts ("a" was matching "A/B"). On the real run it caught a rewrite dropping "Python-based" |
-| P1.15 | **Rewrites must not borrow the job's wording as new claims:** the fact check passed "Shipped demand forecasting model to batch pipeline" although "batch" and "pipeline" appear only in the JD, not in the resume (seen in the P6.5 test run on the replica fixture). Treat JD-only content words in a rewrite as new terms unless they are matched keywords the user confirmed | `validation/factual.py`, `analysis/rewriter.py` | F49 | ⬜ | Found 2026-10-02 during the UI redesign; not fixed there (backend) |
-| P1.16 | **Report: requirement status disagrees with the keyword table:** "Proficient in Python and libraries like PyTorch and XGBoost" shows as not shown while Python, PyTorch and XGBoost are all found | `analysis/matcher.py`, `analysis/keyword_match.py` | F50 | ⬜ | Found 2026-10-01 in the P6.1 baseline (replica fixture) |
+| P1.15 | **Rewrites must not borrow the job's wording as new claims:** the fact check passed "Shipped demand forecasting model to batch pipeline" although "batch" and "pipeline" appear only in the JD, not in the resume (seen in the P6.5 test run on the replica fixture). Treat JD-only content words in a rewrite as new terms unless they are matched keywords the user confirmed | `validation/factual.py`, `analysis/rewriter.py` | F49 | ➖ | Moved to P8.9 (2026-10-02): the user test showed the same borrowing in 4 of 4 English LLM runs (U6), so it's fixed there with the broader fact check |
+| P1.16 | **Report: requirement status disagrees with the keyword table:** "Proficient in Python and libraries like PyTorch and XGBoost" shows as not shown while Python, PyTorch and XGBoost are all found | `analysis/matcher.py`, `analysis/keyword_match.py` | F50 | ➖ | Moved to P8.18 (2026-10-02), with the rest of the scoring and JD fixes |
 | P1.10 | Remove `validation_agent.py` + unused prompts (keep `final_review.txt` for the judge); sanitize resume text | `services/`, `llm/prompts/`, `validation/safety.py` | F32, F35 | ✅ | Removed `services/validation_agent.py` (never imported) and the unused `resume_normalization.txt`, `tailoring_plan.txt`, `validate_claims.txt` prompts; `final_review.txt` kept for P4.3, `rewrite_bullet.txt` still used by gap answers and additions. Every LLM call now goes through `SafetyGuard.guard_messages()` in `LLMClient.generate()` / `generate_json()`: user content loses invisible/control characters, chat-template tokens (`<\|im_start\|>`, `[INST]`, `</s>`) and explicit overrides ("ignore/disregard previous instructions"), and every system prompt gets a note that resume/JD text is data, never instructions. Deliberately narrower than the JD filter, so resume wording like "designed system prompts for LLM agents" survives intact |
 
 ## Phase 2: Novoresume-style template, ATS safety, auto page-fit
@@ -203,6 +215,98 @@ way in on "Check your details", and Results showed "36% → 36%" with only a sen
 |---|---|---|---|---|---|
 | P7.1 | "Check your details" can add a job the file was missing and remove a misread one | `web/src/pages/Details.tsx`, `services/tailor.py`, `api/routes.py` | — | ✅ | 2026-10-02: "Add a job we missed" under Experience opens a new job card (the `AddJobForm` fields, several allowed, first field focused); each job card has Remove with Undo. Corrections gain `added_jobs` and `removed_jobs`: an added job is validated like P3.3's, its lines become bullets **verbatim** with matching evidence, and it goes in date order before drafting, so it gets rewrite proposals and counts in the match like any other job; a removed job takes its evidence with it. An incomplete job is explained before anything is sent ("New job 1: … Or remove it"), and the server returns a plain 422 message too. `/api/proposals` now returns the corrected `details`, so going back shows an added job as an ordinary one and continuing again doesn't add it twice. Review's own "Add a job" stays for after-the-fact additions. Tests: service (add in date order, remove with evidence, incomplete job), API (details echo, error message), flow (remove, add, focus, validation, request body). Independent review: PASS WITH ISSUES → fixed: focus fell to the page on Remove / Undo / deleting a new card (now Undo ↔ Remove, or "Add a job"); the error numbered new jobs skipping blank cards; lines past the server's 6-bullet limit were dropped silently (now refused with a count, and the hint says "Up to 6 lines"); the server let an API caller remove every job |
 | P7.2 | Results: say what would move the match, not just that it didn't; count verb forms as matches | `web/src/pages/Results.tsx`, `web/src/pages/Review.tsx`, `analysis/keyword_match.py` | — | ✅ | 2026-10-02: the score sheet lists the job keywords still missing (required first, then by weight, up to 8 + "N more") with **Add the ones you have**, which opens Review at "What the job asks for" (`run.jumpTo`, focus and scroll on that heading). When tailoring did add keywords they're named ("Now on your resume: …"). The sign-off says "Job keywords on your resume" (not "now", which implied a change). Matcher bug found on the owner's run: `_stem` only removed plurals, so the JD's "Communicate" missed "Communicated actionable insights"; it now folds -ed / -ing / final -e when four or more letters remain ("string", "spring", "used" stay whole). The owner's case goes 36.4% → 39.0% before any tailoring. The rate still moves only through keywords the user confirms: rewrites never add a skill the resume doesn't show (core rule). Independent review: PASS WITH ISSUES → fixed: stemming the whole hyphenated word broke "AWS-certified" / "cloud-native" (each part is stemmed now and the suffix list compared stemmed); -ing stripping made "Marketing" match "market" and "Accounting" match "accounts", which could also let a new-job polish write "Marketing" in (fields named by an -ing word are kept whole); with no gap questions the button led nowhere (it now opens "Add anything else in your own words"). 384 backend tests, eval 8/8, 68 front-end tests |
+
+## Phase 8: Cross-domain robustness and user control
+
+From the cross-domain user test of 2026-10-02 ([FINDINGS.md](user_testing/2026-10-02/FINDINGS.md); fictional
+personas, JDs and repro scripts beside it). 19 personas outside tech, outside the US or not in English found 39
+problems (U1–U39, index below). The worst ones silently delete content or put facts under the wrong job while the run
+reports success; none were caught because every eval case was a tech role. The owner also asked for a plug-and-play
+**arrange and edit** step after the AI changes (Stage J). Scope decisions are in the Decisions table. Work follows the
+stage order H → I → J → K → L in the Implementation strategy table, with a private real-resume run and a check-in at
+the end of each stage.
+
+| ID | Action | Files | Resolves | Status | Notes |
+|---|---|---|---|---|---|
+| P8.1 | **Persona eval cases:** turn the user-testing personas into `data/eval/cases/` pairs with `expected.json` (nurse, teacher, electrician, lawyer, EU CV, India, Spanish, designer, academic, federal, retail, sales, warehouse, accountant, veteran, executive), generated from `make_personas.py` in the existing case layout. Cases start on an `xfail` list and flip to pass as items land, so every later item shows its effect in `pytest -m eval` | `scripts/make_eval_cases.py`, `data/eval/cases/`, `tests/integration/test_eval_cases.py` | root cause | ⬜ | Stage H |
+| P8.2 | **Content coverage check:** compare the output against the **source** lines, not the parse. Report the share kept and the lines lost; lost lines fail the run loudly instead of "success" | `validation/output.py` (`round_trip` compares with the parsed `Resume` today), `services/tailor.py` | U1, U34 | ⬜ | Stage H |
+| P8.3 | **Keep unknown sections:** `Resume.other_sections` (original heading + lines, verbatim) rendered under that heading. Wider English heading vocabulary: journey, licences, publications, volunteer, languages, references, training, rotations, bar admissions, grants, teaching, memberships, military, clearance, personal details. "Academic Appointments" is not Education; licence lines aren't split on commas; rotations, training and board roles aren't jobs | `domain/resume.py`, `resume_normalizer.py` (`SECTION_KEYWORDS`, unknown-section catch-all), `rendering/*` | U1, U9, U17 | ⬜ | Stage H |
+| P8.4 | **Contact:** phone numbers with US parentheses and international groupings (+33, +49, +34, +91); links with any top-level domain (portfolio sites) | `resume_normalizer.py` (`PHONE_RE`, `URL_RE`) | U3, U12 | ⬜ | Stage H |
+| P8.5 | **Job lines:** a dated line is decided by the date pattern, not by length (< 100 chars today); never copy dates or location into a later role; split "Title, Company, City, dates" and "Title\tEmployer"; wider role-word list (nurse, electrician, driver, supervisor, clerk, attorney, paralegal, barista, professor, postdoc, NCOIC…); concurrent roles kept separate | `resume_normalizer.py` (`_is_dated_line`, `_ROLE_WORDS_RE`, new-title-after-bullets path), `analysis/structure_extractor.py` | U2, U4, U13, U16, U19 | ⬜ | Stage H |
+| P8.6 | **Dates:** seasons, MM/YYYY, DD/MM/YYYY, ISO, 'YY, "to date" / "till date" / "ongoing", lone years; future dates flagged | `resume_normalizer.py` (date regexes), `analysis/experience.py` | U5 | ⬜ | Stage H |
+| P8.7 | **Odd layouts:** DOCX text boxes read (or at least warned about); name from a separated page-header line; PDF bullets drawn with "·" recognised | `ingestion/docx.py`, `ingestion/pdf.py`, `resume_normalizer.py` | U11, U12, U15 | ⬜ | Stage H |
+| P8.8 | **Education:** two degrees on two lines stay two entries, printed newest first | `resume_normalizer.py`, `rendering/*` | U18 | ⬜ | Stage H |
+| P8.9 | **Fact check v3:** JD-only content words count as unsupported (absorbs P1.15); claim phrases ("applying X", "demonstrating X") checked; evidence limited to the bullet's own job; one consistent rule for verbs | `validation/factual.py`, `analysis/rewriter.py` | U2, U6, U29, F49 | ⬜ | Stage I |
+| P8.10 | **Summary:** domain-neutral prompt; keep the user's summary unless they ask for a rewrite; never print a title that fails a sanity check; years consistent with the resume's own claim (open issue 3) | `prompts/summary.txt`, `analysis/summary_writer.py` | U27 | ⬜ | Stage I |
+| P8.11 | **Domain voice:** the rewrite prompt keeps field-specific verbs and claims ("precept", "largest deal in company history") | `prompts/rewrite_role.txt` | U28 | ⬜ | Stage I |
+| P8.12 | **Gap questions:** wording by kind (licence / certification "Do you hold…?", education "Do you have…?", soft skill "Can you give an example…?"); skip terms already present or partly matched; a tick with no answer asks where it was used; certificates go to Certifications, not Skills | `analysis/gap_questions.py`, `services/tailor.py`, `web/src/components/GapQuestionCard.tsx` | U31, U32 | ⬜ | Stage I |
+| P8.13 | **Editable layout on the server:** a session-held layout (section order, hidden sections, entry and bullet order, text edits, pinned and restored bullets) applied to the tailored `Resume`. New `POST /api/arrange` re-renders DOCX / PDF / preview with page-fit, the coverage check and the ATS round-trip, with no LLM. Text edits are user-attested (P1.8 rule); a new number or tool is flagged as advice, never blocked. Bullets move only within their own job or project | `services/tailor.py` (`_apply_bullet_order`), `api/routes.py`, `domain/` | U30, U33 | ⬜ | Stage J (owner request) |
+| P8.14 | **Reordering made visible:** automatic bullet reordering becomes the editable starting order, labelled "sorted by job relevance", with "Restore my original order". It no longer runs silently when nothing was accepted | `services/tailor.py` | U30 | ⬜ | Stage J |
+| P8.15 | **Arrange step in the web app** (between Review and Results): sections as a list with drag plus up / down buttons and show / hide; jobs, projects and education entries reorderable (warning when jobs leave date order); bullets reorderable and editable inline; trimmed bullets listed with Restore; "Reset to AI version" and undo. Accessible drag (keyboard moves, live announcements, 44 px targets), in the Editor's Proof look | `web/src/pages/Arrange.tsx` (new), `web/src/components/Stepper.tsx`, store | U1, U30, U33 | ⬜ | Stage J |
+| P8.16 | **Page target and pinning:** the user picks 1 page, 2 pages or "don't trim"; pinned or restored bullets are never trimmed; each trim names its job; preview and page count update after each change (debounced) | `rendering/page_fit.py`, `analysis/experience.py` (`target_pages`), web | U9, U33 | ⬜ | Stage J |
+| P8.17 | **Matching:** split slash terms; "X or Y" as alternatives; acronym ↔ expansion (GAAP, LOTO); degree hierarchy (a Master's satisfies "Bachelor's"); partial credit for the head of a multi-word term ("Salesforce" for "Salesforce CRM"); Unicode-safe tokens; places not counted as skills | `analysis/keyword_match.py`, `analysis/jd_analyzer.py` (both tokenizers ASCII-only) | U7, U8, U26 | ⬜ | Stage K |
+| P8.18 | **JD cleanup and fallback:** strip HTML, entities and emoji; drop benefits and EEO blocks; the heuristic keeps lowercase trade terms and multi-word phrases; very short JDs refused; fallback score labelled "approximate"; requirement status agrees with the keyword table (absorbs P1.16) | `analysis/jd_analyzer.py`, `analysis/matcher.py` | U10, U21, U22, F50 | ⬜ | Stage K |
+| P8.19 | **Stuffing:** matches only in a skills list weigh less than matches in experience; skills with no supporting bullet flagged | `analysis/keyword_match.py`, `validation/content_lint.py` | U7 | ⬜ | Stage K |
+| P8.20 | **Requirements checklist** for non-keyword requirements (licences, clearance, shifts, lifting, driver's licence, languages, years), ticked once and shown apart from the match rate | `analysis/`, `api/routes.py`, web Report / Review | U23 | ⬜ | Stage K |
+| P8.21 | **Low scores explained:** a field-mismatch message and career-changer guidance instead of the same 75–85% target | web Report / Results, `api/routes.py` | U25 | ⬜ | Stage K |
+| P8.22 | **Upload errors:** specific messages for corrupt, password-protected and scanned files (500 today); accept .txt and pasted text; convert .doc / .odt / .rtf with LibreOffice | `api/routes.py` (`/parse`, `/analyze`), `ingestion/` | U10, U14 | ⬜ | Stage L |
+| P8.23 | **Degraded states:** `/api/analyze` says whether the AI ran; progress events during 429 back-off (silent today); a plain "daily AI limit reached" state | `llm/client.py`, `api/routes.py`, web | U10, U37, U39 | ⬜ | Stage L |
+| P8.24 | **Privacy notice** on upload (resume text is sent to Groq; files are deleted when the session ends); README no longer says "local-first" | `web/src/pages/Landing.tsx`, `README.md` | U36 | ⬜ | Stage L |
+| P8.25 | **Global basics:** fallback font for CJK and Cyrillic in DOCX and PDF; Unicode-safe file names; no "_Company" suffix when the company is unknown; "English-only for now" notice when the resume or JD isn't English | `rendering/layout.py` (`output_basename`), `rendering/*`, `jd_analyzer.py` | U8, U24 | ⬜ | Stage L |
+| P8.26 | **Check details and messages:** every section shown (education, skills, certifications, kept sections) plus a "lines we couldn't place" list the user can assign; parse issues in plain words; warnings separate template quirks from real loss; HTML download; domain-neutral placeholders; softer metrics nudge for non-quantified roles | `web/src/pages/Details.tsx`, `api/routes.py` (`FILE_KINDS`), `validation/content_lint.py` | U20, U34, U35, U38 | ⬜ | Stage L |
+
+**Backlog (not this round):** full multilingual support (headings, dates and questions in the JD's language);
+academic CV and federal modes; cover letter; history across JDs; LinkedIn import; US Letter and region presets
+(EU / India personal-details advice); OCR for scanned PDFs; tagged-PDF accessibility; per-NAT rate limit (belongs with
+P5.7); moving bullets between jobs (excluded on purpose: it risks misattribution).
+
+---
+
+## Findings index (from the 2026-10-02 user test)
+
+Details, repro inputs and the verdict per persona are in [FINDINGS.md](user_testing/2026-10-02/FINDINGS.md).
+
+| # | Finding | Impact | Item |
+|---|---|---|---|
+| U1 | Unknown section headings swallow or drop content; the run still reports success | Critical | P8.2, P8.3, P8.15 |
+| U2 | Facts end up under the wrong job (merged jobs, a student rotation claimed as job work) | Critical | P8.5, P8.9 |
+| U3 | Phone numbers in US parentheses and most international formats are dropped | Critical | P8.4 |
+| U4 | Non-tech job-line formats misread (empty company, title / company swapped) | Critical | P8.5 |
+| U5 | Many date formats lost, zeroing years of experience | High | P8.6 |
+| U6 | Rewrites and summaries borrow JD wording and overclaim; the fact check passes them | High | P8.9 |
+| U7 | Score unfair to non-tech candidates and easy to game | High | P8.17, P8.19 |
+| U8 | Non-ASCII text breaks: truncated keywords, blank CJK name in PDF, mangled file names | High | P8.17, P8.25 |
+| U9 | Academic, legal, federal, licence, military and EU conventions not modelled | High | P8.3, P8.16 (modes: backlog) |
+| U10 | Failure states mislead (500s, silent heuristic fallback) | High | P8.18, P8.22, P8.23 |
+| U11 | Text in Word text boxes vanishes | High | P8.7 |
+| U12 | Name and portfolio links taken wrongly in header layouts | High | P8.4, P8.7 |
+| U13 | A job line of 100+ characters becomes a bullet | High | P8.5 |
+| U14 | .doc / .txt / .rtf / .odt refused; corrupt, encrypted and scanned files fail badly | Medium | P8.22 |
+| U15 | PDF bullets with a "·" glyph not recognised | Low | P8.7 |
+| U16 | Later jobs inherit the previous job's location or dates | Critical | P8.5 |
+| U17 | Rotations, training, board roles, publications, references become fake jobs or education | High | P8.3 |
+| U18 | Two degrees on two lines merge into one entry | Medium | P8.8 |
+| U19 | No concept of concurrent roles or career breaks | Medium | P8.5 |
+| U20 | Check details can't show or fix most parse problems; issues in developer language | High | P8.26 |
+| U21 | Heuristic JD fallback is tech-biased and boilerplate-blind | High | P8.18 |
+| U22 | LLM JD path keeps HTML tags, emoji and benefits terms | Medium | P8.18 |
+| U23 | Non-keyword requirements (licences, shifts, lifting) are invisible | Medium | P8.20 |
+| U24 | Unknown company gives `…_Resume_Company` file names | Medium | P8.25 |
+| U25 | A low score isn't explained | Medium | P8.21 |
+| U26 | Offline and LLM scores disagree for the same pair; places count as skills | Low | P8.17 |
+| U27 | Summary prompt is tech-shaped and replaces good summaries | High | P8.10 |
+| U28 | Domain voice flattened by rewrites | Medium | P8.11 |
+| U29 | Validator inconsistent about verbs | Medium | P8.9 |
+| U30 | Bullet reordering runs without the user's approval | Medium | P8.13, P8.14, P8.15 |
+| U31 | Gap-question wording is template-driven and often absurd | Medium | P8.12 |
+| U32 | Ticking a keyword with no answer adds it to Skills and doubles the score | Medium | P8.12 |
+| U33 | Page-fit trim messages are unhelpful and can't be undone | Medium | P8.13, P8.15, P8.16 |
+| U34 | "Ready, with warnings" is mostly noise, while destructive runs report success | Medium | P8.2, P8.26 |
+| U35 | HTML output can't be downloaded | Low | P8.26 |
+| U36 | No notice that resume text is sent to the cloud | High | P8.24 |
+| U37 | Error and degraded states not shown; `/api/analyze` has no AI status | High | P8.23 |
+| U38 | Flow assumes a tech resume (placeholders, metrics nudge) | Medium | P8.26 |
+| U39 | Rate-limit back-off is invisible | Medium | P8.23 |
 
 ---
 

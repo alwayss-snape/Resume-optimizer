@@ -63,7 +63,8 @@ Semantic matching uses a local embedding model (`all-MiniLM-L6-v2`).
 | CLI | ✅ Works | `analyze`, `propose` (editable review file) and `tailor --proposals` with the UI's features: edits, gap answers, additions, a new job, strict mode; live progress (P3.6) |
 | Tests | ✅ 384 backend + 68 front-end passing | `pytest -q` (~50-80 s); the full offline eval of 8 anonymized cases runs with `pytest -m eval` |
 | Evaluation set | ✅ Works | 11 anonymized resume + JD cases with expected facts; `python -m app.eval run --tailor --check` (P4.1, P4.2); LLM-as-judge from another model family, rubric + position-swapped pairwise, `--judge` / `--replay` (P4.3) |
-| Multiple JDs / history / cover letter | ❌ Not built | — |
+| Arrange and edit after AI changes | ❌ Planned (P8.13–P8.16) | Reorder sections, entries and bullets, hide sections, edit text, restore trimmed bullets, choose the page target; re-rendered with no LLM |
+| Multiple JDs / history / cover letter | ❌ Not built | Backlog in Phase 8 |
 
 ## Open issues
 
@@ -80,8 +81,15 @@ and unused prompts (P0.8, P1.10) are all fixed. What remains:
 3. **Summary years:** the summary states years computed from role dates ("4+ years"), which can differ from a figure written in the resume ("3.6 years"); the judge flags that as a mismatch. Decide whether to keep the computed figure.
 4. **User's source resume** has "LinkedIn | Email | Leetcode" placeholder text with no hyperlinks (to fix in their
    own file).
-5. **Rewrites can borrow the job's wording** (P1.15): a fact-checked rewrite added "batch pipeline", which appears only in
-   the JD. **Report status vs keywords** (P1.16): a requirement can read "not shown" while all its keywords are found.
+5. **Rewrites can borrow the job's wording** (was P1.15, now P8.9): a fact-checked rewrite added "batch pipeline",
+   which appears only in the JD. **Report status vs keywords** (was P1.16, now P8.18): a requirement can read "not
+   shown" while all its keywords are found.
+6. **Cross-domain user testing (2026-10-02), planned as Phase 8:** 39 findings (U1–U39) from 19 non-tech, non-US and
+   non-English personas, including silent section loss, misattributed facts, dropped phone numbers and an unfair
+   score. See [user_testing/2026-10-02/FINDINGS.md](user_testing/2026-10-02/FINDINGS.md). Planned in
+   [ACTION_ITEMS.md](ACTION_ITEMS.md) as P8.1–P8.26, stages H–L: never lose content (H), honest content (I), an
+   **arrange-and-edit step** after the AI changes (J, owner request), a fair score (K), and clear failures and privacy
+   (L). Next: Stage H, starting with P8.1 (persona eval cases).
 
 ## Repo map (docs)
 
@@ -89,7 +97,8 @@ and unused prompts (P0.8, P1.10) are all fixed. What remains:
 |---|---|---|
 | `docs/PROJECT_OVERVIEW.md` | This file: what/status/issues/next | By hand |
 | `PRODUCT.md` / `DESIGN.md` | Product context and the built design system (Impeccable; `.impeccable/` holds the direction contract) | By hand / Impeccable |
-| `docs/ACTION_ITEMS.md` | Improvement roadmap with live status per item (P0–P4) | By hand, every change |
+| `docs/user_testing/` | User-testing findings and fictional persona inputs to reproduce them | By hand |
+| `docs/ACTION_ITEMS.md` | Improvement roadmap with live status per item (P0–P8) | By hand, every change |
 | `docs/KNOWLEDGE_GRAPH.md` / `.json` | Where everything is: tree, layer × stage matrix, module cards, deps | Auto (pre-commit) |
 | `docs/CHANGE_LOG.md` | Timestamped log of major commits | Auto (post-commit) |
 | `ARCHITECTURE.md` | Design principles, semantic-matching contract, privacy | By hand |
