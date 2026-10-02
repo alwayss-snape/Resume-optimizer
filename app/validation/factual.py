@@ -99,6 +99,9 @@ class FactualValidator:
         "robust", "seamless", "dynamic", "effective", "efficient", "strong", "clear", "actionable",
         "end-to-end", "fully", "highly", "based", "leveraged", "leveraging", "utilized", "utilizing",
     }
+    _SUPERLATIVE_RE = re.compile(
+        r"\b(?:largest|biggest|first|only|record|highest|fastest|top|best|youngest|#1|sole)\b", re.IGNORECASE)
+
     # A rewrite keeping less than this share of the original's content words
     # probably dropped information (P1.14).
     MIN_CONTENT_RETENTION = 0.5
@@ -109,6 +112,10 @@ class FactualValidator:
         vocab = vocab if vocab is not None else set(self._canon.values()) | set(self._canon)
         new_keys = self._term_keys([rewritten])
         dropped_terms: List[str] = []
+        # P8.11: a superlative is a claim of its own ("largest deal in company history").
+        for word in re.findall(self._SUPERLATIVE_RE, original):
+            if not re.search(rf"\b{re.escape(word)}\b", rewritten, re.IGNORECASE) and word not in dropped_terms:
+                dropped_terms.append(word)
         for i, token in enumerate(self.TOKEN_RE.findall(original)):
             if not self._is_factual(token, is_first=(i == 0), vocab=vocab) or token.lower() in self.SCOPE_CLAIMS:
                 continue

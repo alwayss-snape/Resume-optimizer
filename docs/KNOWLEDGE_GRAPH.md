@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**55 app modules · 59 test files · 103 classes · 934 functions/methods · 18,716 lines of Python** · source hash `3dacf87f7d0515d5`
+**55 app modules · 59 test files · 103 classes · 935 functions/methods · 18,732 lines of Python** · source hash `f4fc4f1775d3aa2f`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -1103,24 +1103,24 @@ _Content coverage (P8.2): does every line of the uploaded resume reach the_
 
 ### `app/validation/factual.py`
 
-**Layer:** Validation · **Stage:** 8 Validate · **Lines:** 422
+**Layer:** Validation · **Stage:** 8 Validate · **Lines:** 429
 
 - class **`ClaimCheck`** ([app/validation/factual.py:13](../app/validation/factual.py#L13))
 - class **`ValidationResult`** ([app/validation/factual.py:20](../app/validation/factual.py#L20))
 - class **`FactualValidator`** ([app/validation/factual.py:32](../app/validation/factual.py#L32)) — Checks that a rewrite adds no facts beyond the resume's evidence.
-  - `dropped_facts()` :106 — (dropped factual terms, dropped content words, retention share,
-  - `__init__()` :134
-  - `extract_numbers()` :146
-  - `_stem()` :151 — Crude stemmer so inflections compare equal:
-  - `_keys()` :165 — All forms a term can match by: stem plus canonical alias.
-  - `_term_keys()` :173
-  - `_is_factual()` :186
-  - `_positioned_tokens()` :200 — (token, starts_a_sentence) pairs, so the capital of every
-  - `_validate_skills()` :209 — The skills section may be reordered and respelled, never extended (P1.6).
-  - `_validate_summary()` :221 — A summary may draw on the whole resume (P1.5): every factual term
-  - `_owner_prefix()` :273 — 'exp_001_b03' -> 'exp_001_': the job (or project) a bullet belongs to.
-  - `_new_words()` :278 — Plain words a rewrite adds (P8.9): (borrowed from the JD only,
-  - `validate_proposal()` :299
+  - `dropped_facts()` :109 — (dropped factual terms, dropped content words, retention share,
+  - `__init__()` :141
+  - `extract_numbers()` :153
+  - `_stem()` :158 — Crude stemmer so inflections compare equal:
+  - `_keys()` :172 — All forms a term can match by: stem plus canonical alias.
+  - `_term_keys()` :180
+  - `_is_factual()` :193
+  - `_positioned_tokens()` :207 — (token, starts_a_sentence) pairs, so the capital of every
+  - `_validate_skills()` :216 — The skills section may be reordered and respelled, never extended (P1.6).
+  - `_validate_summary()` :228 — A summary may draw on the whole resume (P1.5): every factual term
+  - `_owner_prefix()` :280 — 'exp_001_b03' -> 'exp_001_': the job (or project) a bullet belongs to.
+  - `_new_words()` :285 — Plain words a rewrite adds (P8.9): (borrowed from the JD only,
+  - `validate_proposal()` :306
 - **Imports:** `analysis/rewriter.py`, `analysis/skills_tailor.py`, `analysis/terminology.py`, `domain/evidence.py`
 - **Imported by:** `services/tailor.py`
 - **Tested by:** `tests/unit/test_fact_check_p89.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_validation.py`

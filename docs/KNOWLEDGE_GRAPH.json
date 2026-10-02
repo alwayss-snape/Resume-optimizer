@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "3dacf87f7d0515d5",
+  "source_hash": "f4fc4f1775d3aa2f",
   "stats": {
     "files": 146,
     "python_files": 123,
     "app_modules": 55,
     "test_files": 59,
     "classes": 103,
-    "functions": 934,
-    "lines_of_python": 18716
+    "functions": 935,
+    "lines_of_python": 18732
   },
   "axes": {
     "x": "location (path)",
@@ -2484,7 +2484,7 @@
       "type": "prompt",
       "layer": "LLM",
       "stages": [],
-      "lines": 19
+      "lines": 20
     },
     {
       "id": "app/llm/prompts/summary.txt",
@@ -3456,7 +3456,7 @@
       "stages": [
         "8 Validate"
       ],
-      "lines": 422,
+      "lines": 429,
       "doc": "",
       "classes": [
         {
@@ -3478,67 +3478,67 @@
           "methods": [
             {
               "name": "dropped_facts",
-              "line": 106,
+              "line": 109,
               "doc": "(dropped factual terms, dropped content words, retention share,"
             },
             {
               "name": "__init__",
-              "line": 134,
+              "line": 141,
               "doc": ""
             },
             {
               "name": "extract_numbers",
-              "line": 146,
+              "line": 153,
               "doc": ""
             },
             {
               "name": "_stem",
-              "line": 151,
+              "line": 158,
               "doc": "Crude stemmer so inflections compare equal:"
             },
             {
               "name": "_keys",
-              "line": 165,
+              "line": 172,
               "doc": "All forms a term can match by: stem plus canonical alias."
             },
             {
               "name": "_term_keys",
-              "line": 173,
+              "line": 180,
               "doc": ""
             },
             {
               "name": "_is_factual",
-              "line": 186,
+              "line": 193,
               "doc": ""
             },
             {
               "name": "_positioned_tokens",
-              "line": 200,
+              "line": 207,
               "doc": "(token, starts_a_sentence) pairs, so the capital of every"
             },
             {
               "name": "_validate_skills",
-              "line": 209,
+              "line": 216,
               "doc": "The skills section may be reordered and respelled, never extended (P1.6)."
             },
             {
               "name": "_validate_summary",
-              "line": 221,
+              "line": 228,
               "doc": "A summary may draw on the whole resume (P1.5): every factual term"
             },
             {
               "name": "_owner_prefix",
-              "line": 273,
+              "line": 280,
               "doc": "'exp_001_b03' -> 'exp_001_': the job (or project) a bullet belongs to."
             },
             {
               "name": "_new_words",
-              "line": 278,
+              "line": 285,
               "doc": "Plain words a rewrite adds (P8.9): (borrowed from the JD only,"
             },
             {
               "name": "validate_proposal",
-              "line": 299,
+              "line": 306,
               "doc": ""
             }
           ]
@@ -4844,7 +4844,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 74,
+      "lines": 83,
       "doc": "P8.9: the fact check catches wording borrowed from the job description,",
       "classes": [],
       "functions": [
@@ -4882,6 +4882,11 @@
           "name": "test_scope_verbs_follow_one_rule",
           "line": 65,
           "doc": ""
+        },
+        {
+          "name": "test_dropping_a_superlative_needs_confirmation",
+          "line": 77,
+          "doc": "P8.11: \"largest deal in company history\" -> \"largest company deal\" weakens a claim."
         }
       ]
     },

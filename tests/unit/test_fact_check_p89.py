@@ -72,3 +72,12 @@ def test_scope_verbs_follow_one_rule():
     claim = _check(original, "Supervised 8 orientees on Epic charting and precept new graduate nurses",
                    sem_id="exp_001_b01", evidence=evidence, jd="")
     assert claim.verdict == "REJECT"  # a supervision claim the resume never makes
+
+
+def test_dropping_a_superlative_needs_confirmation():
+    """P8.11: "largest deal in company history" -> "largest company deal" weakens a claim."""
+    evidence = [Evidence(id="e1", source_type="experience", source_id="exp_001_b01",
+                         text="CloudMetrics: Closed largest deal in company history ($480K ACV) with a retailer")]
+    res = _check("Closed largest deal in company history ($480K ACV) with a retailer",
+                 "Closed a $480K ACV deal with a retailer", sem_id="exp_001_b01", evidence=evidence, jd="")
+    assert res.verdict == "NEEDS_CONFIRM" and any("largest" in w for w in res.warnings)
