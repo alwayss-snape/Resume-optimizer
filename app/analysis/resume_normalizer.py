@@ -1,7 +1,8 @@
 import re
 from typing import List, Optional, Tuple
 from app.domain.evidence import Evidence
-from app.domain.resume import Candidate, Education, Experience, Project, Resume, ResumeBullet, Role
+from app.domain.resume import (Candidate, Education, Experience, OtherSection, Project, Resume, ResumeBullet, Role,
+                               SectionLine)
 from app.domain.resume_document import ResumeDocument
 from app.ingestion.docx import RawDocument
 
@@ -83,7 +84,147 @@ class ResumeNormalizer:
             return False
         if text.rstrip().endswith("."):  # a sentence: summary text without a heading
             return False
+        if ":" in text:  # "Security Clearance: Active Secret" is a detail, not a title
+            return False
         return any(c.isalpha() for c in text)
+
+    # -- section headings (P8.3) ----------------------------------------------
+
+    # Words that name a section, checked in this order (the first match
+    # wins, in the order the sections were always checked: "Research
+    # Interests" is kept as is, "Career Objective" is a summary, "Academic
+    # Appointments" is experience, "Academic Projects" is projects,
+    # "Education & Training" is education). Words from before P8.3 switch section on any heading;
+    # the newer ones only on a line styled like the document's own section
+    # headings, so a bold "Languages" label inside Skills stays a label.
+    _KIND_WORDS = (
+        ("other", r"research interests?"),
+        ("summary", r"summary|profile|about|objective"),
+        ("experience", r"experience|work|employment|career|history|journey|appointments?|positions"),
+        ("projects", r"projects?|portfolios?"),
+        ("skills", r"skills?|technology|technologies|technological|competency|competencies|expertise|tools"
+                   r"|proficienc(?:y|ies)"),
+        ("education", r"education|academic|academics|qualifications?|university|degrees?|coursework|schooling"),
+        ("certifications", r"certifications?|certificates?|licen[cs]es?|licensure|credentials"),
+        ("interests", r"interests?|hobbies|hobby"),
+        ("achievements", r"awards?|achievements?|honou?rs|activity|activities|accomplishments"),
+        ("other", r"publications?|presentations?|talks|conferences?|grants?|funding|teaching|service"
+                  r"|memberships?|affiliations?|associations?|references?|volunteer(?:ing)?|languages?"
+                  r"|admissions?|rotations?|training|personal|declaration|military|clearances?|board|advisory"
+                  r"|patents?|additional|information|other"),
+    )
+    _KIND_RES = [(kind, re.compile(r"\b(?:" + words + r")\b", re.IGNORECASE)) for kind, words in _KIND_WORDS]
+    _GATED_WORDS_RE = re.compile(
+        r"\b(?:journey|appointments?|positions|academics|degrees?|coursework|schooling|licen[cs]es?|licensure"
+        r"|credentials|proficienc(?:y|ies)|hobbies|hobby|honou?rs|accomplishments|publications?|presentations?"
+        r"|talks|conferences?|grants?|funding|teaching|service|memberships?|affiliations?|associations?"
+        r"|references?|volunteer(?:ing)?|languages?|admissions?|rotations?|training|personal|declaration"
+        r"|military|clearances?|board|advisory|patents?|additional|information|other|research interests?)\b",
+        re.IGNORECASE)
+
+    @classmethod
+    def section_kind(cls, text: str) -> Optional[str]:
+        """'Clinical Rotations' -> 'other', 'Work History' -> 'experience',
+        'Licenses' -> 'certifications'; None when no section word is in it."""
+        for kind, pattern in cls._KIND_RES:
+            if pattern.search(text or ""):
+                return kind
+        return None
+
+    @staticmethod
+    def _heading_sig(block) -> Tuple:
+        """How a heading line is set: capitals, bold, size, Word style."""
+        text = block.text.strip()
+        style = (getattr(block.location, "style_name", "") or "").lower()
+        return (text.isupper(), bool(block.bold), round(block.font_size or 0), style.startswith(("heading", "title")))
+
+    def _section_heading_sigs(self, blocks) -> set:
+        """The look of the lines this document uses as section headings."""
+        return {self._heading_sig(b) for b in blocks
+                if b.block_type == "heading" and not b.hint and self._is_section_title(b.text.strip())}
+
+    def _styled_as_heading(self, block, text: str, sigs: set) -> bool:
+        """Set like the document's section headings, or (when none was
+        recognised, e.g. every heading is in German) a short all-caps line."""
+        if block.block_type != "heading":
+            return False
+        if sigs:
+            return self._heading_sig(block) in sigs
+        return text.isupper() or self._heading_sig(block)[3]
+
+    _HEADING_SHAPE_RE = re.compile(r"^[^\W\d_][\w &/'’.-]*:?$")
+
+    def _heading_kind(self, block, text: str, sigs: set, current_kind: str, blocks, idx: int,
+                      name_known: bool = True) -> Optional[str]:
+        """The section a heading line starts, or None when the line is content."""
+        if block.block_type != "heading":
+            return None
+        words = [w for w in re.split(r"[\s,:/()&]+", text) if w]
+        if self._is_section_title(text):  # a word from before P8.3: switches on any heading line
+            return self.section_kind(text)
+        if not name_known and current_kind == "header":
+            return None  # the first bold line is the name
+        if len(words) > 6 or not self._HEADING_SHAPE_RE.match(text):
+            return None  # dates, pipes, commas: a job or entry line
+        if not self._styled_as_heading(block, text, sigs):
+            return None
+        # Bold mixed-case lines are also employers, schools, projects and
+        # skill labels; only an all-caps or Word-heading line names a
+        # section the vocabulary doesn't know, or one inside Skills.
+        strong = text.isupper() or self._heading_sig(block)[3]
+        kind = self.section_kind(text)
+        if kind and not (kind == "education" and self._CONTENT_HEADING_RE.search(text)):
+            return kind if strong or current_kind != "skills" else None
+        # Any other heading set like the document's own: a section to keep
+        # as it is, unless it's an all-caps employer with a dated line
+        # right after it, or a sub-heading over bullets inside a job.
+        if len(words) > 5 or not strong:
+            return None
+        if current_kind in ("experience", "projects"):
+            following = [b for b in blocks[idx + 1: idx + 4] if b.text.strip()]
+            if any(self._is_dated_line(b) for b in following) or (following and following[0].block_type == "bullet"):
+                return None
+        return "other"
+
+    @staticmethod
+    def _display_heading(text: str) -> str:
+        """'CLINICAL ROTATIONS' -> 'Clinical Rotations'; mixed case kept."""
+        text = re.sub(r"\s+", " ", text).strip().rstrip(":")
+        return text.title() if text.isupper() else text
+
+    # -- header lines (P8.3, P8.7) -----------------------------------------
+
+    @staticmethod
+    def _header_segments(text: str) -> List[str]:
+        """'Austin, TX · a@b.com · 512-555-0199' -> its parts."""
+        return [seg.strip() for seg in re.split(r"\s*[|•·]\s*|\s{3,}|\t", text) if seg.strip()]
+
+    def _looks_like_name(self, text: str) -> bool:
+        words = text.split()
+        return (1 <= len(words) <= 5 and len(text) < 40 and "@" not in text and not re.search(r"\d", text)
+                and not self.URL_RE.search(text) and not self.CONTACT_WORDS_RE.search(text)
+                and not self._is_section_title(text) and not self._looks_like_title(text)
+                and all(w[:1].isupper() for w in words if w[:1].isalpha()))
+
+    # "City, State" / "City, Country", or "City ST" with a US state code.
+    _CITY_STATE_RE = re.compile(r"^[^\W\d_][\w .'-]*\s[A-Z]{2}$")
+
+    def _looks_like_location(self, text: str) -> bool:
+        text = text.strip()
+        return bool(self.LOCATION_RE.match(text) or self._CITY_STATE_RE.match(text)) and len(text) <= 40
+
+    def _is_detail(self, segment: str) -> bool:
+        """A header part worth keeping as is: not contact data (email,
+        phone, a link) and not a bare placeholder ("LinkedIn", "Email")."""
+        if "@" in segment or self.URL_RE.search(segment):
+            return False
+        phone = self.find_phone(segment)
+        if phone and not re.sub(re.escape(phone), "", segment).strip(" :.-"):
+            return False
+        rest = self.CONTACT_WORDS_RE.sub("", segment)
+        if phone:
+            rest = rest.replace(phone, "")
+        return bool(re.search(r"\w", rest.strip(" :|-")))
 
     # Only these mark a genuine new top-level résumé section. A heading-styled
     # line that doesn't match one of these (the candidate's name, a bold
@@ -301,6 +442,31 @@ class ResumeNormalizer:
         title = text[:m.start()].strip(self._TRIM_CHARS)
         return (title or text.strip()), m.group(1).strip(), m.group(2).strip()
 
+    # A list piece that is a date or an expiry, not an item of its own:
+    # "Certified Public Accountant (CPA), New York, 2021" is one entry.
+    _DATE_PIECE_RE = re.compile(
+        r"^(?:(?:exp(?:ires|iry|\.)?|valid(?: until)?|since|issued)\b.*|[\d/.\s–-]+|(?:\w+\.?\s)?(?:19|20)\d{2})$",
+        re.IGNORECASE)
+
+    def _split_list_items(self, text: str) -> List[str]:
+        """Items of a certification / award line. ';' always separates
+        entries; ',' only when no piece is a date, an expiry or a place, so
+        "Registered Nurse (RN), Arizona State Board of Nursing, License
+        #RN123456, exp. 06/2027" stays one licence (P8.3)."""
+        entries = self._split_respecting_parens(text, ";|•\n")
+        if len(entries) > 1:
+            return entries  # "Treasurer, BU Statistics Club; Teaching Assistant, MA 113"
+        items: List[str] = []
+        for entry in entries:
+            pieces = self._split_respecting_parens(entry, ",")
+            if len(pieces) > 1 and not any(
+                    self._DATE_PIECE_RE.match(p) or p.lower().startswith(("license", "licence", "#", "no."))
+                    or self._looks_like_location(p) or len(p.split()) > 6 for p in pieces):
+                items.extend(pieces)
+            else:
+                items.append(entry)
+        return items
+
     def _split_respecting_parens(self, text: str, sep_chars: str = ",;|•\n") -> List[str]:
         """Split on sep_chars, but never inside ( ) or [ ] groups — so
         'Python (pandas, scikit-learn, transformers), SQL' splits into
@@ -345,6 +511,7 @@ class ResumeNormalizer:
         candidate_links: List[str] = []
 
         current_section = "Header"
+        other_sections: List[OtherSection] = []
         current_exp: Optional[Experience] = None
         current_proj: Optional[Project] = None
         current_edu: Optional[Education] = None
@@ -374,6 +541,10 @@ class ResumeNormalizer:
             return exp
 
         blocks = raw_doc.blocks
+        heading_sigs = self._section_heading_sigs(blocks)
+        current_kind = "header"
+        current_other: Optional[OtherSection] = None
+        candidate_details: List[str] = []
         for idx, block in enumerate(blocks):
             text = block.text.strip()
             if not text:
@@ -383,67 +554,76 @@ class ResumeNormalizer:
                 candidate_name = text
                 continue
 
+            heading_kind = None
             if block.hint and block.hint.startswith("section:"):
-                current_section = block.hint.split(":", 1)[1]
+                hinted = block.hint.split(":", 1)[1]
+                heading_kind = "other" if hinted.lower() == "other" else (self.section_kind(hinted) or "other")
+            elif not block.hint:
+                heading_kind = self._heading_kind(block, text, heading_sigs, current_kind, blocks, idx,
+                                                  name_known=candidate_name != "Candidate")
+            if heading_kind:
+                current_section, current_kind = text, heading_kind
+                if heading_kind == "other":
+                    current_other = OtherSection(id=f"sec_{len(other_sections) + 1:02d}",
+                                                 heading=self._display_heading(text))
+                    other_sections.append(current_other)
                 section_headings.append(text)
                 continue
-
-            if block.block_type == "heading" and not block.hint:
-                if self._is_section_title(text):
-                    current_section = text
-                    section_headings.append(text)
-                    continue
-                # Else: a heading-styled line that isn't a recognized
-                # top-level section (candidate name, bold company/title
-                # line, a project sub-heading inside a job) — fall through
-                # and process it as content of the CURRENT section instead
-                # of silently resetting/discarding it.
 
             section_lower = current_section.lower()
 
             # Header / Candidate info parsing
-            if "header" in section_lower or block.location.paragraph_index in (0, 1) or candidate_name == "Candidate":
-                if "header" in section_lower:
+            if current_kind == "header" or block.location.paragraph_index in (0, 1) or candidate_name == "Candidate":
+                in_header = current_kind == "header"
+                if in_header:
                     header_blocks.append(block.id)
                 if "@" in text:
                     email_match = re.search(r'[\w\.-]+@[\w\.-]+\.\w+', text)
-                    if email_match:
+                    if email_match and candidate_email is None:
                         candidate_email = email_match.group(0)
                 phone_match = self.find_phone(text)
                 if phone_match and candidate_phone is None:
                     candidate_phone = phone_match
+                segments = self._header_segments(text)
                 is_name_line = False
-                if "@" not in text and not phone_match and len(text) < 40 and candidate_name == "Candidate":
-                    candidate_name = text
-                    is_name_line = True
+                if candidate_name == "Candidate":
+                    if "@" not in text and not phone_match and len(text) < 40 and not self._is_section_title(text):
+                        candidate_name, is_name_line = text, True
+                    elif len(segments) > 1 and self._looks_like_name(segments[0]):
+                        # "Lena Park · Product Designer · lena@example.com" in
+                        # a page header: the first part is the name (P8.7).
+                        candidate_name = segments[0]
                 for url in self._header_urls(text):
                     if url not in candidate_links:
                         candidate_links.append(url)
-                if ("header" in section_lower and not is_name_line and candidate_headline is None
-                        and candidate_name != "Candidate" and text != candidate_name and self._is_headline(text)):
-                    candidate_headline = text
-                    evidence_list.append(Evidence(
-                        id=f"ev_{ev_counter:04d}", source_type="summary",
-                        source_id=block.id, source_location_id=block.id, text=text,
-                    ))
-                    ev_counter += 1
-                # A pipe/bullet-separated contact line (e.g. "LinkedIn | Email |
-                # Leetcode | +91-... | Bangalore, India") often carries a
-                # "City, Country/State" segment; pull it out as location
-                # instead of leaving it undetected.
-                if candidate_location is None:
-                    for segment in re.split(r"[|•·]", text):
-                        segment = segment.strip()
-                        if not segment or segment == text.strip():
-                            continue
-                        if "@" in segment or self.find_phone(segment):
-                            continue
-                        if re.match(r"^[A-Za-z][A-Za-z .'-]*,\s*[A-Za-z][A-Za-z .'-]*$", segment):
-                            candidate_location = segment
-                            break
+                if in_header and candidate_location is None:
+                    candidate_location = next((seg for seg in segments if self._looks_like_location(seg)), None)
+                is_headline_line = False
+                if (in_header and not is_name_line and candidate_headline is None
+                        and candidate_name != "Candidate" and text != candidate_name):
+                    if self._is_headline(text):
+                        candidate_headline, is_headline_line = text, True
+                    else:
+                        # A title among contact items: "Name · Product Designer · email".
+                        candidate_headline = next((seg for seg in segments if seg != candidate_name
+                                                   and self._looks_like_title(seg) and self._is_headline(seg)), None)
+                    if candidate_headline:
+                        evidence_list.append(Evidence(
+                            id=f"ev_{ev_counter:04d}", source_type="summary",
+                            source_id=block.id, source_location_id=block.id, text=candidate_headline,
+                        ))
+                        ev_counter += 1
+                if in_header and not is_name_line and not is_headline_line:
+                    if len(segments) == 1 and len(text) > 90 and not phone_match and "@" not in text:
+                        # A summary paragraph under the name with no heading.
+                        current_kind, current_section = "summary", "Summary"
+                    else:
+                        consumed = {candidate_name, candidate_headline, candidate_location}
+                        candidate_details.extend(seg for seg in segments if seg not in consumed
+                                                 and seg not in candidate_details and self._is_detail(seg))
 
             # Summary section
-            if any(k in section_lower for k in ("summary", "profile", "about", "objective")):
+            if current_kind == "summary":
                 summary_text.append(text)
                 ev_id = f"ev_{ev_counter:04d}"
                 ev_counter += 1
@@ -457,7 +637,7 @@ class ResumeNormalizer:
                 ))
 
             # Experience section
-            elif any(k in section_lower for k in ("experience", "work", "employment", "career", "history")):
+            elif current_kind == "experience":
                 if "\t" in text:
                     left, right_col = [p.strip() for p in text.split("\t", 1)]
                 else:
@@ -569,7 +749,7 @@ class ResumeNormalizer:
                     ))
 
             # Projects section
-            elif any(k in section_lower for k in ("project", "portfolio")):
+            elif current_kind == "projects":
                 if current_proj is None or (len(text) < 60 and not block.block_type == "bullet"):
                     proj_counter += 1
                     proj_id = f"proj_{proj_counter:03d}"
@@ -591,7 +771,7 @@ class ResumeNormalizer:
                     ))
 
             # Skills section
-            elif any(k in section_lower for k in ("skill", "technolog", "competenc", "expertise", "tools")):
+            elif current_kind == "skills":
                 skills_list = []
                 for category, items in self._split_skill_line(text):
                     skills_dict.setdefault(category, []).extend(items)
@@ -610,7 +790,7 @@ class ResumeNormalizer:
                     ))
 
             # Education section
-            elif any(k in section_lower for k in ("education", "academic", "qualification", "degree", "university")):
+            elif current_kind == "education":
                 has_date = bool(self.DATE_PATTERN.search(text))
                 if "\t" in text:
                     left, right_col = [p.strip() for p in text.split("\t", 1)]
@@ -670,7 +850,7 @@ class ResumeNormalizer:
                 ))
 
             # Certifications / interests / awards section
-            elif any(k in section_lower for k in ("certification", "interest", "award", "achievement", "activit")):
+            elif current_kind in ("certifications", "interests", "achievements"):
                 # A line's own label ("Certifications: ...", "Interests: ...")
                 # decides the bucket; otherwise the section heading does.
                 # A mixed "CERTIFICATIONS & INTERESTS" section must not file
@@ -679,9 +859,9 @@ class ResumeNormalizer:
                 label = label_match.group(1).lower() if label_match else ""
                 bucket_key = label if any(
                     k in label for k in ("interest", "hobb", "award", "achievement", "activit", "certif", "licen")
-                ) else section_lower
+                ) else {"certifications": "certif", "interests": "interest"}.get(current_kind, "award")
                 remainder = label_match.group(2) if label_match and label == bucket_key else text
-                items = self._split_respecting_parens(remainder)
+                items = self._split_list_items(remainder)
                 if "certif" in bucket_key or "licen" in bucket_key:
                     bucket, source_type = "certifications", "certification"
                 elif "interest" in bucket_key or "hobb" in bucket_key:
@@ -709,8 +889,18 @@ class ResumeNormalizer:
 
             # Short header lines (name, contact, headline, links) were handled
             # above; they aren't evidence of experience.
-            elif "header" in section_lower and len(text) <= 90:
+            elif current_kind == "header":
                 pass
+
+            # A section kept as it is (P8.3): the line goes in verbatim.
+            elif current_kind == "other" and current_other is not None:
+                current_other.lines.append(SectionLine(text=re.sub(r"\s+", " ", text), source_location_id=block.id,
+                                                       bullet=block.block_type == "bullet"))
+                evidence_list.append(Evidence(
+                    id=f"ev_{ev_counter:04d}", source_type="other", source_id=current_other.id,
+                    source_location_id=block.id, text=f"{current_other.heading}: {text}",
+                ))
+                ev_counter += 1
 
             # Catch-all general section if text contains substantial candidate experience
             else:
@@ -735,6 +925,7 @@ class ResumeNormalizer:
             location=candidate_location,
             headline=candidate_headline,
             links=self._merge_links(candidate_links, raw_doc.links),
+            details=candidate_details,
         )
 
         resume = Resume(
@@ -747,6 +938,7 @@ class ResumeNormalizer:
             certifications=certifications,
             achievements=achievements,
             interests=interests,
+            other_sections=[sec for sec in other_sections if sec.lines],
         )
 
         # Wrap into ResumeDocument (single source of truth)

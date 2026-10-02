@@ -8,7 +8,8 @@ from docx.shared import Inches, Mm, Pt, RGBColor
 from typing import Any
 
 from app.domain.resume_document import ResumePresentation
-from app.rendering.layout import SECTION_TITLES, contact_parts, date_range, display_skills, format_date_text
+from app.rendering.layout import (SECTION_TITLES, contact_parts, date_range, display_skills, format_date_text,
+                                  ordered_sections, other_section)
 
 
 # Shared visual language with HtmlResumeRenderer's default accent (#1F4E79)
@@ -50,9 +51,11 @@ class TemplateRenderer:
             "achievements": self._add_achievements,
             "interests": self._add_interests,
         }
-        for name in presentation.section_order:
+        for name in ordered_sections(resume, presentation.section_order):
             if name in sections:
                 sections[name](doc, resume, content_width)
+            elif name.startswith("other:"):
+                self._add_other(doc, other_section(resume, name))
 
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
         doc.save(output_path)
@@ -81,6 +84,14 @@ class TemplateRenderer:
             p.paragraph_format.space_after = Pt(4)
             run = p.add_run(" | ".join(parts))
             run.font.size = Pt(10)
+            run.font.color.rgb = META_COLOR
+            if not candidate.details:
+                self._add_bottom_border(p, size=4)
+        if candidate.details:  # kept as written: address, date of birth, clearance (P8.3)
+            p = doc.add_paragraph()
+            p.paragraph_format.space_after = Pt(4)
+            run = p.add_run(" | ".join(candidate.details))
+            run.font.size = Pt(9.5)
             run.font.color.rgb = META_COLOR
             self._add_bottom_border(p, size=4)
 
@@ -141,6 +152,9 @@ class TemplateRenderer:
             meta = " · ".join(v for v in (education.institution if education.degree else "", education.location) if v)
             if meta:
                 self._add_meta_line(doc, meta)
+            for line in education.details:
+                dp = doc.add_paragraph(line)
+                dp.paragraph_format.space_after = Pt(2)
 
     def _add_projects(self, doc, resume, content_width) -> None:
         if not resume.projects:
@@ -170,6 +184,17 @@ class TemplateRenderer:
             return
         self._add_section_heading(doc, SECTION_TITLES["certifications"])
         self._add_bullets(doc, (" — ".join(v for v in c.values() if v) for c in resume.certifications))
+
+    def _add_other(self, doc, section) -> None:
+        """A kept section (P8.3): its own heading, each line as written."""
+        if not section or not section.lines:
+            return
+        self._add_section_heading(doc, section.heading)
+        for line in section.lines:
+            if line.bullet:
+                self._add_bullets(doc, [line.text])
+            else:
+                doc.add_paragraph(line.text).paragraph_format.space_after = Pt(2)
 
     def _add_achievements(self, doc, resume, content_width) -> None:
         if resume.achievements:

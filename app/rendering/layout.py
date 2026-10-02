@@ -38,14 +38,35 @@ _PRESENT_WORDS = {"present", "current", "now", "today", "ongoing", "till date", 
 
 def section_order_for(resume: Resume, today: Optional[date] = None) -> List[str]:
     """Default order; education moves before experience for someone with
-    under about 2 years of dated experience (or no jobs at all)."""
+    under about 2 years of dated experience (or no jobs at all). Sections
+    kept as they are (P8.3) go before Interests, as "other:<id>"."""
     order = list(DEFAULT_SECTION_ORDER)
     has_dates = bool(role_intervals(resume, today))
     early_career = not resume.experience or (has_dates and years_of_experience(resume, today) < EDUCATION_FIRST_BELOW_YEARS)
     if early_career:
         order.remove("education")
         order.insert(order.index("experience"), "education")
+    at = order.index("interests") if "interests" in order else len(order)
+    order[at:at] = [f"other:{sec.id}" for sec in resume.other_sections]
     return order
+
+
+def other_section(resume: Resume, key: str):
+    """The kept section an "other:<id>" order entry names, or None."""
+    sec_id = key.split(":", 1)[1] if key.startswith("other:") else None
+    return next((sec for sec in resume.other_sections if sec.id == sec_id), None)
+
+
+def ordered_sections(resume: Resume, order: List[str]) -> List[str]:
+    """`order` plus any kept section it doesn't list yet (an order saved
+    before the section existed), so no section is ever left out."""
+    missing = [f"other:{sec.id}" for sec in resume.other_sections if f"other:{sec.id}" not in order]
+    if not missing:
+        return list(order)
+    out = list(order)
+    at = out.index("interests") if "interests" in out else len(out)
+    out[at:at] = missing
+    return out
 
 
 def format_date(value: Optional[str]) -> str:

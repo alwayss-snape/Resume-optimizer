@@ -11,6 +11,7 @@ class Evidence(BaseModel):
         "certification",
         "achievement",
         "summary",
+        "other",  # a line of a kept section without a model of its own (P8.3)
         "general"
     ]
     # `source_id` is the canonical semantic id of the resume node when available

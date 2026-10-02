@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "91f3761fb60c16f9",
+  "source_hash": "dc8d7b7574018efa",
   "stats": {
-    "files": 139,
-    "python_files": 116,
+    "files": 140,
+    "python_files": 117,
     "app_modules": 55,
-    "test_files": 52,
-    "classes": 101,
-    "functions": 861,
-    "lines_of_python": 17317
+    "test_files": 53,
+    "classes": 103,
+    "functions": 883,
+    "lines_of_python": 17704
   },
   "axes": {
     "x": "location (path)",
@@ -566,112 +566,167 @@
       "stages": [
         "2 Normalize"
       ],
-      "lines": 756,
+      "lines": 948,
       "doc": "",
       "classes": [
         {
           "name": "ResumeNormalizer",
-          "line": 8,
+          "line": 9,
           "doc": "",
           "methods": [
             {
               "name": "find_phone",
-              "line": 46,
+              "line": 47,
               "doc": "The first phone number in a line, as written, or None."
             },
             {
               "name": "_header_urls",
-              "line": 67,
+              "line": 68,
               "doc": ""
             },
             {
               "name": "_is_headline",
-              "line": 77,
+              "line": 78,
               "doc": "A short title line under the name, e.g. 'Senior Data Scientist |"
             },
             {
+              "name": "section_kind",
+              "line": 126,
+              "doc": "'Clinical Rotations' -> 'other', 'Work History' -> 'experience',"
+            },
+            {
+              "name": "_heading_sig",
+              "line": 135,
+              "doc": "How a heading line is set: capitals, bold, size, Word style."
+            },
+            {
+              "name": "_section_heading_sigs",
+              "line": 141,
+              "doc": "The look of the lines this document uses as section headings."
+            },
+            {
+              "name": "_styled_as_heading",
+              "line": 146,
+              "doc": "Set like the document's section headings, or (when none was"
+            },
+            {
+              "name": "_heading_kind",
+              "line": 157,
+              "doc": "The section a heading line starts, or None when the line is content."
+            },
+            {
+              "name": "_display_heading",
+              "line": 190,
+              "doc": "'CLINICAL ROTATIONS' -> 'Clinical Rotations'; mixed case kept."
+            },
+            {
+              "name": "_header_segments",
+              "line": 198,
+              "doc": "'Austin, TX \u00b7 a@b.com \u00b7 512-555-0199' -> its parts."
+            },
+            {
+              "name": "_looks_like_name",
+              "line": 202,
+              "doc": ""
+            },
+            {
+              "name": "_looks_like_location",
+              "line": 212,
+              "doc": ""
+            },
+            {
+              "name": "_is_detail",
+              "line": 216,
+              "doc": "A header part worth keeping as is: not contact data (email,"
+            },
+            {
               "name": "_is_section_title",
-              "line": 125,
+              "line": 266,
               "doc": ""
             },
             {
               "name": "_looks_like_title",
-              "line": 145,
+              "line": 286,
               "doc": ""
             },
             {
               "name": "_split_title_company",
-              "line": 148,
+              "line": 289,
               "doc": "'Title | Company | Place', 'Company \u2014 Title', 'Title \u2014 Team \u2014 Company'"
             },
             {
               "name": "_title_score",
-              "line": 165,
+              "line": 306,
               "doc": "2 when a role word ends the phrase (\"Data Analyst\"), 1 when it's"
             },
             {
               "name": "_split_skill_line",
-              "line": 187,
+              "line": 328,
               "doc": "'Languages: Python, SQL<tab>Frameworks: Pandas, and XGBoost' ->"
             },
             {
               "name": "_skill_items",
-              "line": 208,
+              "line": 349,
               "doc": ""
             },
             {
               "name": "_looks_like_degree",
-              "line": 223,
+              "line": 364,
               "doc": "'B.Tech in Computer Science' yes; 'State University' no."
             },
             {
               "name": "_split_middle_dot",
-              "line": 228,
+              "line": 369,
               "doc": "'Acme Corp \u00b7 Pune, India' -> ('Acme Corp', 'Pune, India'), the"
             },
             {
               "name": "_is_dated_line",
-              "line": 237,
+              "line": 378,
               "doc": "A job title/company line carrying a date range or year."
             },
             {
               "name": "_experience_line_kind",
-              "line": 244,
+              "line": 385,
               "doc": "'dated' (title and/or company with dates), 'header_line' (a short"
             },
             {
               "name": "_add_role",
-              "line": 263,
+              "line": 404,
               "doc": "Record a role; the first one also fills the entry's title/dates."
             },
             {
               "name": "_merge_links",
-              "line": 273,
+              "line": 414,
               "doc": "Profile links from the file's hyperlinks and from URLs written in"
             },
             {
               "name": "_extract_date_range",
-              "line": 287,
+              "line": 428,
               "doc": ""
             },
             {
               "name": "_strip_date_range",
-              "line": 291,
+              "line": 432,
               "doc": ""
             },
             {
               "name": "_parse_title_and_dates",
-              "line": 295,
+              "line": 436,
               "doc": "'Data Scientist II | August 2024 - Present' ->"
             },
             {
+              "name": "_split_list_items",
+              "line": 451,
+              "doc": "Items of a certification / award line. ';' always separates"
+            },
+            {
               "name": "_split_respecting_parens",
-              "line": 304,
+              "line": 470,
               "doc": "Split on sep_chars, but never inside ( ) or [ ] groups \u2014 so"
             },
             {
               "name": "normalize",
-              "line": 327,
+              "line": 493,
               "doc": ""
             }
           ]
@@ -1492,7 +1547,7 @@
         "2 Normalize",
         "4 Match"
       ],
-      "lines": 21,
+      "lines": 22,
       "doc": "",
       "classes": [
         {
@@ -1585,7 +1640,7 @@
       "stages": [
         "2 Normalize"
       ],
-      "lines": 91,
+      "lines": 112,
       "doc": "",
       "classes": [
         {
@@ -1595,55 +1650,67 @@
           "methods": [
             {
               "name": "display_links",
-              "line": 14,
+              "line": 17,
               "doc": "Links as shown on a resume: 'linkedin.com/in/x', no scheme/www."
             }
           ]
         },
         {
           "name": "ResumeBullet",
-          "line": 18,
+          "line": 21,
           "doc": "",
           "methods": []
         },
         {
           "name": "Role",
-          "line": 26,
+          "line": 29,
           "doc": "One title held at a company, e.g. 'Data Scientist II, Aug 2024 - Present'.",
           "methods": []
         },
         {
           "name": "Experience",
-          "line": 32,
+          "line": 35,
           "doc": "One company entry. `title` / `start_date` / `end_date` describe the",
           "methods": [
             {
               "name": "all_roles",
-              "line": 50,
+              "line": 53,
               "doc": ""
             },
             {
               "name": "bullet_groups",
-              "line": 57,
+              "line": 60,
               "doc": "Consecutive bullets grouped by sub-heading, in document order."
             }
           ]
         },
         {
           "name": "Project",
-          "line": 67,
+          "line": 70,
           "doc": "",
           "methods": []
         },
         {
           "name": "Education",
-          "line": 74,
+          "line": 77,
           "doc": "",
           "methods": []
         },
         {
+          "name": "SectionLine",
+          "line": 88,
+          "doc": "",
+          "methods": []
+        },
+        {
+          "name": "OtherSection",
+          "line": 94,
+          "doc": "A section the resume model has no fields for (Publications, Bar",
+          "methods": []
+        },
+        {
           "name": "Resume",
-          "line": 82,
+          "line": 102,
           "doc": "",
           "methods": []
         }
@@ -2532,47 +2599,52 @@
       "stages": [
         "9 Render"
       ],
-      "lines": 136,
+      "lines": 159,
       "doc": "",
       "classes": [
         {
           "name": "HtmlResumeRenderer",
-          "line": 9,
+          "line": 10,
           "doc": "Render an ATS-safe, printable r\u00e9sum\u00e9 from the canonical document.",
           "methods": [
             {
               "name": "_items",
-              "line": 12,
+              "line": 13,
               "doc": ""
             },
             {
               "name": "_meta_line",
-              "line": 15,
+              "line": 16,
               "doc": "A de-emphasized 'Company \u00b7 Location' style line under a bolded"
             },
             {
               "name": "_dates",
-              "line": 24,
+              "line": 25,
               "doc": ""
             },
             {
               "name": "_experience_entry",
-              "line": 27,
+              "line": 28,
               "doc": ""
             },
             {
               "name": "_section",
-              "line": 52,
+              "line": 53,
               "doc": ""
             },
             {
+              "name": "_other",
+              "line": 56,
+              "doc": "A kept section (P8.3), each line as written."
+            },
+            {
               "name": "render",
-              "line": 55,
+              "line": 73,
               "doc": "Same sections, order and headings as the DOCX template (P2.1)."
             },
             {
               "name": "write_html",
-              "line": 132,
+              "line": 155,
               "doc": ""
             }
           ]
@@ -2587,7 +2659,7 @@
       "stages": [
         "9 Render"
       ],
-      "lines": 113,
+      "lines": 134,
       "doc": "Shared layout rules for the ATS template (P2.1).",
       "classes": [],
       "functions": [
@@ -2597,33 +2669,43 @@
           "doc": "Default order; education moves before experience for someone with"
         },
         {
+          "name": "other_section",
+          "line": 54,
+          "doc": "The kept section an \"other:<id>\" order entry names, or None."
+        },
+        {
+          "name": "ordered_sections",
+          "line": 60,
+          "doc": "`order` plus any kept section it doesn't list yet (an order saved"
+        },
+        {
           "name": "format_date",
-          "line": 51,
+          "line": 72,
           "doc": "'August 2024' / 'Aug. 2024' / '08/2024' -> 'Aug 2024'; 'Current' ->"
         },
         {
           "name": "date_range",
-          "line": 71,
+          "line": 92,
           "doc": "'Jan 2022 \u2013 Present'; one side only when the other is missing."
         },
         {
           "name": "format_date_text",
-          "line": 76,
+          "line": 97,
           "doc": "A free-text range such as an education's '2016 - 2020' or"
         },
         {
           "name": "contact_parts",
-          "line": 86,
+          "line": 107,
           "doc": "email | phone | City, Country | linkedin | github | other links."
         },
         {
           "name": "display_skills",
-          "line": 94,
+          "line": 115,
           "doc": "At most `max_categories` lines: the first ones as they are (JD-relevant"
         },
         {
           "name": "output_basename",
-          "line": 108,
+          "line": 129,
           "doc": "First_Last_Resume_<Company>, using only file-name-safe characters."
         }
       ]
@@ -2807,102 +2889,107 @@
       "stages": [
         "9 Render"
       ],
-      "lines": 279,
+      "lines": 304,
       "doc": "",
       "classes": [
         {
           "name": "TemplateRenderer",
-          "line": 22,
+          "line": 23,
           "doc": "Standard single-column, ATS-safe DOCX renderer with support for ResumeDocument.",
           "methods": [
             {
               "name": "render_ats_default",
-              "line": 27,
+              "line": 28,
               "doc": "Render the ATS template (P2.1): A4, single column, Arial,"
             },
             {
               "name": "_add_header",
-              "line": 63,
+              "line": 66,
               "doc": ""
             },
             {
               "name": "_add_summary",
-              "line": 87,
+              "line": 98,
               "doc": ""
             },
             {
               "name": "_add_experience",
-              "line": 93,
+              "line": 104,
               "doc": ""
             },
             {
               "name": "_add_skills",
-              "line": 122,
-              "doc": ""
-            },
-            {
-              "name": "_add_education",
               "line": 133,
               "doc": ""
             },
             {
+              "name": "_add_education",
+              "line": 144,
+              "doc": ""
+            },
+            {
               "name": "_add_projects",
-              "line": 145,
+              "line": 159,
               "doc": ""
             },
             {
               "name": "_add_certifications",
-              "line": 168,
+              "line": 182,
               "doc": ""
             },
             {
+              "name": "_add_other",
+              "line": 188,
+              "doc": "A kept section (P8.3): its own heading, each line as written."
+            },
+            {
               "name": "_add_achievements",
-              "line": 174,
+              "line": 199,
               "doc": ""
             },
             {
               "name": "_add_interests",
-              "line": 179,
+              "line": 204,
               "doc": ""
             },
             {
               "name": "_set_document_defaults",
-              "line": 186,
+              "line": 211,
               "doc": "A4, the template's margins and font, instead of python-docx's"
             },
             {
               "name": "_content_width",
-              "line": 208,
+              "line": 233,
               "doc": ""
             },
             {
               "name": "_add_section_heading",
-              "line": 212,
+              "line": 237,
               "doc": "A section label in the accent color with a rule underneath \u2014"
             },
             {
               "name": "_role_dates",
-              "line": 227,
+              "line": 252,
               "doc": ""
             },
             {
               "name": "_add_meta_line",
-              "line": 230,
+              "line": 255,
               "doc": "'Company \u00b7 Location' in italic grey under a title line."
             },
             {
               "name": "_add_bullets",
-              "line": 239,
+              "line": 264,
               "doc": ""
             },
             {
               "name": "_add_title_dates_line",
-              "line": 244,
+              "line": 269,
               "doc": "Title (bold) on the left, date range right-aligned on the same"
             },
             {
               "name": "_add_bottom_border",
-              "line": 266,
+              "line": 291,
               "doc": "Adds a single bottom border to a paragraph via raw OOXML \u2014 the"
             }
           ]
@@ -3391,7 +3478,7 @@
       "stages": [
         "8 Validate"
       ],
-      "lines": 138,
+      "lines": 147,
       "doc": "",
       "classes": [
         {
@@ -3950,33 +4037,33 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 81,
+      "lines": 79,
       "doc": "P8.1: the cross-domain user-testing personas as eval cases (offline, no LLM).",
       "classes": [],
       "functions": [
         {
           "name": "_failures",
-          "line": 53,
+          "line": 51,
           "doc": ""
         },
         {
           "name": "_params",
-          "line": 62,
+          "line": 60,
           "doc": ""
         },
         {
           "name": "test_persona_cases_exist",
-          "line": 67,
+          "line": 65,
           "doc": ""
         },
         {
           "name": "test_persona_content",
-          "line": 74,
+          "line": 72,
           "doc": ""
         },
         {
           "name": "test_persona_full",
-          "line": 80,
+          "line": 78,
           "doc": ""
         }
       ]
@@ -4918,6 +5005,52 @@
         {
           "name": "test_replay_judges_the_newest_file",
           "line": 106,
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "tests/unit/test_kept_sections_p83.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 97,
+      "doc": "P8.3: sections the model has no fields for are kept verbatim under their",
+      "classes": [],
+      "functions": [
+        {
+          "name": "_doc",
+          "line": 15,
+          "doc": ""
+        },
+        {
+          "name": "test_section_kinds",
+          "line": 39,
+          "doc": ""
+        },
+        {
+          "name": "test_unknown_and_foreign_sections_are_kept_and_rendered",
+          "line": 43,
+          "doc": ""
+        },
+        {
+          "name": "test_rotations_volunteer_languages_and_licences",
+          "line": 58,
+          "doc": ""
+        },
+        {
+          "name": "test_header_details_kept_and_name_from_separated_header",
+          "line": 73,
+          "doc": ""
+        },
+        {
+          "name": "test_placeholder_contact_words_are_not_details",
+          "line": 82,
+          "doc": ""
+        },
+        {
+          "name": "test_bold_label_inside_skills_is_not_a_section",
+          "line": 88,
           "doc": ""
         }
       ]
@@ -7011,6 +7144,11 @@
     },
     {
       "from": "app/analysis/resume_normalizer.py",
+      "to": "tests/unit/test_kept_sections_p83.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/analysis/resume_normalizer.py",
       "to": "tests/unit/test_parser_regressions_p42.py",
       "type": "tested_by"
     },
@@ -7756,6 +7894,11 @@
     },
     {
       "from": "app/domain/resume.py",
+      "to": "app/domain/resume.py::OtherSection",
+      "type": "contains"
+    },
+    {
+      "from": "app/domain/resume.py",
       "to": "app/domain/resume.py::Project",
       "type": "contains"
     },
@@ -7772,6 +7915,11 @@
     {
       "from": "app/domain/resume.py",
       "to": "app/domain/resume.py::Role",
+      "type": "contains"
+    },
+    {
+      "from": "app/domain/resume.py",
+      "to": "app/domain/resume.py::SectionLine",
       "type": "contains"
     },
     {
@@ -7937,6 +8085,11 @@
     {
       "from": "app/domain/resume_document.py",
       "to": "tests/unit/test_html_renderer.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/resume_document.py",
+      "to": "tests/unit/test_kept_sections_p83.py",
       "type": "tested_by"
     },
     {
@@ -8222,6 +8375,11 @@
     {
       "from": "app/ingestion/docx.py",
       "to": "tests/unit/test_docx_renderer.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/ingestion/docx.py",
+      "to": "tests/unit/test_kept_sections_p83.py",
       "type": "tested_by"
     },
     {
@@ -8551,6 +8709,11 @@
     },
     {
       "from": "app/rendering/html_renderer.py",
+      "to": "tests/unit/test_kept_sections_p83.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/rendering/html_renderer.py",
       "to": "tests/unit/test_parsing_fixes_p19.py",
       "type": "tested_by"
     },
@@ -8578,6 +8741,11 @@
       "from": "app/rendering/layout.py",
       "to": "app/domain/resume_document.py",
       "type": "imports"
+    },
+    {
+      "from": "app/rendering/layout.py",
+      "to": "tests/unit/test_kept_sections_p83.py",
+      "type": "tested_by"
     },
     {
       "from": "app/rendering/layout.py",
@@ -8677,6 +8845,11 @@
     {
       "from": "app/rendering/template_renderer.py",
       "to": "tests/unit/test_docx_renderer.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/rendering/template_renderer.py",
+      "to": "tests/unit/test_kept_sections_p83.py",
       "type": "tested_by"
     },
     {
@@ -9087,6 +9260,11 @@
     {
       "from": "app/validation/coverage.py",
       "to": "tests/unit/test_coverage.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/validation/coverage.py",
+      "to": "tests/unit/test_kept_sections_p83.py",
       "type": "tested_by"
     },
     {

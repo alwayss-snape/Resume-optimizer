@@ -135,4 +135,13 @@ class OutputQAValidator:
             if (norm(e.degree), norm(e.institution), format_date_text(e.dates), norm(e.location)) not in have_edu:
                 problems.append(f"education entry \"{e.degree or e.institution}\" not read back")
 
+        # Sections kept as they are (P8.3): every line must be in the file.
+        for section in getattr(expected, "other_sections", []):
+            missing = [line.text for line in section.lines if norm(line.text) not in raw_text]
+            if missing:
+                problems.append(f"\"{section.heading}\": {len(missing)} line(s) not read back")
+        details = getattr(exp_c, "details", [])
+        if any(norm(d) not in raw_text for d in details):
+            problems.append("header details not read back")
+
         return [f"{prefix} {p}" for p in problems]

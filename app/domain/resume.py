@@ -10,6 +10,9 @@ class Candidate(BaseModel):
     phone: Optional[str] = None
     location: Optional[str] = None
     links: List[str] = Field(default_factory=list)
+    # Other header items, verbatim: an address, "Date of birth: ...",
+    # "Security Clearance: Active Secret" (P8.3). Kept, never interpreted.
+    details: List[str] = Field(default_factory=list)
 
     def display_links(self) -> List[str]:
         """Links as shown on a resume: 'linkedin.com/in/x', no scheme/www."""
@@ -78,6 +81,23 @@ class Education(BaseModel):
     location: Optional[str] = None
     field_of_study: Optional[str] = None
     dates: Optional[str] = None
+    # Further lines of the entry, verbatim ("Relevant Coursework: ...").
+    details: List[str] = Field(default_factory=list)
+
+
+class SectionLine(BaseModel):
+    text: str
+    bullet: bool = False
+    source_location_id: Optional[str] = None
+
+
+class OtherSection(BaseModel):
+    """A section the resume model has no fields for (Publications, Bar
+    Admissions, Languages, Volunteer, a heading in another language...),
+    kept verbatim under its own heading (P8.3) so nothing is dropped."""
+    id: str
+    heading: str
+    lines: List[SectionLine] = Field(default_factory=list)
 
 class Resume(BaseModel):
     candidate: Candidate
@@ -89,3 +109,4 @@ class Resume(BaseModel):
     certifications: List[Dict[str, str]] = Field(default_factory=list)
     achievements: List[str] = Field(default_factory=list)
     interests: List[str] = Field(default_factory=list)
+    other_sections: List[OtherSection] = Field(default_factory=list)

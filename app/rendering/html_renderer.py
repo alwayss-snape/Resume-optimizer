@@ -4,7 +4,8 @@ from typing import Iterable
 
 from app.domain.resume import Resume
 from app.domain.resume_document import ResumeDocument
-from app.rendering.layout import SECTION_TITLES, contact_parts, date_range, display_skills, format_date_text
+from app.rendering.layout import (SECTION_TITLES, contact_parts, date_range, display_skills, format_date_text,
+                                  ordered_sections, other_section)
 
 class HtmlResumeRenderer:
     """Render an ATS-safe, printable résumé from the canonical document."""
@@ -49,8 +50,25 @@ class HtmlResumeRenderer:
         parts.append("</article>")
         return "".join(parts)
 
-    def _section(self, name: str, body: str) -> str:
-        return f"<section><h2>{SECTION_TITLES[name]}</h2>{body}</section>"
+    def _section(self, name: str, body: str, title: str = "") -> str:
+        return f"<section><h2>{html.escape(title) if title else SECTION_TITLES[name]}</h2>{body}</section>"
+
+    def _other(self, section) -> str:
+        """A kept section (P8.3), each line as written."""
+        if not section or not section.lines:
+            return ""
+        parts, bullets = [], []
+        for line in section.lines:
+            if line.bullet:
+                bullets.append(line.text)
+                continue
+            if bullets:
+                parts.append(f"<ul>{self._items(bullets)}</ul>")
+                bullets = []
+            parts.append(f"<p>{html.escape(line.text)}</p>")
+        if bullets:
+            parts.append(f"<ul>{self._items(bullets)}</ul>")
+        return self._section("other", "".join(parts), title=section.heading)
 
     def render(self, document: ResumeDocument) -> str:
         """Same sections, order and headings as the DOCX template (P2.1)."""
@@ -59,10 +77,14 @@ class HtmlResumeRenderer:
         contact = " | ".join(html.escape(value) for value in contact_parts(resume.candidate))
         headline = (f'<p class="headline">{html.escape(resume.candidate.headline)}</p>'
                     if resume.candidate.headline else "")
+        details = (f'<p class="contact">{" | ".join(html.escape(d) for d in resume.candidate.details)}</p>'
+                   if resume.candidate.details else "")
         sections = []
 
-        for section_name in presentation.section_order:
-            if section_name == "summary" and resume.summary:
+        for section_name in ordered_sections(resume, presentation.section_order):
+            if section_name.startswith("other:"):
+                sections.append(self._other(other_section(resume, section_name)))
+            elif section_name == "summary" and resume.summary:
                 sections.append(self._section("summary", f"<p>{html.escape(resume.summary)}</p>"))
             elif section_name == "experience" and resume.experience:
                 entries = "".join(self._experience_entry(item) for item in resume.experience)
@@ -90,7 +112,8 @@ class HtmlResumeRenderer:
                     f"<span class='dates'>{html.escape(format_date_text(item.dates))}</span>"
                     "</div>"
                     f"{self._meta_line(item.institution if item.degree else '', item.location)}"
-                    "</article>"
+                    + "".join(f"<p>{html.escape(d)}</p>" for d in item.details)
+                    + "</article>"
                     for item in resume.education
                 )
                 sections.append(self._section("education", entries))
@@ -125,7 +148,7 @@ li {{ margin: 2px 0; }}
 .group {{ font-weight: 700; margin: 6px 0 0; }}
 strong {{ font-weight: 700; }}
 </style></head><body>
-<header><h1>{html.escape(resume.candidate.name)}</h1>{headline}<p class="contact">{contact}</p></header>
+<header><h1>{html.escape(resume.candidate.name)}</h1>{headline}<p class="contact">{contact}</p>{details}</header>
 {''.join(sections)}
 </body></html>"""
 
