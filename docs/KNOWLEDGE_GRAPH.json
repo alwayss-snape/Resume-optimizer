@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "dc8d7b7574018efa",
+  "source_hash": "82a755f9f1cfe044",
   "stats": {
-    "files": 140,
-    "python_files": 117,
+    "files": 141,
+    "python_files": 118,
     "app_modules": 55,
-    "test_files": 53,
+    "test_files": 54,
     "classes": 103,
-    "functions": 883,
-    "lines_of_python": 17704
+    "functions": 889,
+    "lines_of_python": 17828
   },
   "axes": {
     "x": "location (path)",
@@ -281,38 +281,43 @@
         "2 Normalize",
         "7 Rewrite"
       ],
-      "lines": 88,
+      "lines": 122,
       "doc": "Years of experience from role date ranges (P1.5), and the page target",
       "classes": [],
       "functions": [
         {
           "name": "is_ongoing",
-          "line": 19,
-          "doc": "'Present' / 'Current' / 'Now' / ... : the role hasn't ended."
+          "line": 25,
+          "doc": "'Present' / 'Current' / 'Till Date' / ... : the role hasn't ended."
         },
         {
           "name": "parse_month",
-          "line": 24,
-          "doc": "'August 2024' / 'Aug. 2024' / '08/2024' / '2024' / 'Present' -> (year, month)."
+          "line": 30,
+          "doc": "'August 2024' / 'Aug. 2024' / '08/2024' / '31/08/2024' / '2024-08' /"
+        },
+        {
+          "name": "future_dates",
+          "line": 64,
+          "doc": "Roles whose start date is after this month (P8.6): usually a typo or a"
         },
         {
           "name": "role_intervals",
-          "line": 45,
+          "line": 79,
           "doc": "Each dated role as [start, end] in absolute months (year*12 + month)."
         },
         {
           "name": "years_of_experience",
-          "line": 62,
+          "line": 96,
           "doc": "Total months covered by any role (overlaps merged), in years."
         },
         {
           "name": "years_phrase",
-          "line": 74,
+          "line": 108,
           "doc": "How a resume states it: '4+ years', '1 year', or None under 1 year."
         },
         {
           "name": "target_pages",
-          "line": 86,
+          "line": 120,
           "doc": "How many A4 pages the tailored resume should fill."
         }
       ]
@@ -566,7 +571,7 @@
       "stages": [
         "2 Normalize"
       ],
-      "lines": 948,
+      "lines": 976,
       "doc": "",
       "classes": [
         {
@@ -576,157 +581,162 @@
           "methods": [
             {
               "name": "find_phone",
-              "line": 47,
+              "line": 62,
               "doc": "The first phone number in a line, as written, or None."
             },
             {
               "name": "_header_urls",
-              "line": 68,
+              "line": 83,
               "doc": ""
             },
             {
               "name": "_is_headline",
-              "line": 78,
+              "line": 93,
               "doc": "A short title line under the name, e.g. 'Senior Data Scientist |"
             },
             {
               "name": "section_kind",
-              "line": 126,
+              "line": 141,
               "doc": "'Clinical Rotations' -> 'other', 'Work History' -> 'experience',"
             },
             {
               "name": "_heading_sig",
-              "line": 135,
+              "line": 150,
               "doc": "How a heading line is set: capitals, bold, size, Word style."
             },
             {
               "name": "_section_heading_sigs",
-              "line": 141,
+              "line": 156,
               "doc": "The look of the lines this document uses as section headings."
             },
             {
               "name": "_styled_as_heading",
-              "line": 146,
+              "line": 161,
               "doc": "Set like the document's section headings, or (when none was"
             },
             {
               "name": "_heading_kind",
-              "line": 157,
+              "line": 172,
               "doc": "The section a heading line starts, or None when the line is content."
             },
             {
               "name": "_display_heading",
-              "line": 190,
+              "line": 205,
               "doc": "'CLINICAL ROTATIONS' -> 'Clinical Rotations'; mixed case kept."
             },
             {
               "name": "_header_segments",
-              "line": 198,
+              "line": 213,
               "doc": "'Austin, TX \u00b7 a@b.com \u00b7 512-555-0199' -> its parts."
             },
             {
               "name": "_looks_like_name",
-              "line": 202,
+              "line": 217,
               "doc": ""
             },
             {
               "name": "_looks_like_location",
-              "line": 212,
+              "line": 227,
               "doc": ""
             },
             {
               "name": "_is_detail",
-              "line": 216,
+              "line": 231,
               "doc": "A header part worth keeping as is: not contact data (email,"
             },
             {
               "name": "_is_section_title",
-              "line": 266,
+              "line": 281,
               "doc": ""
             },
             {
               "name": "_looks_like_title",
-              "line": 286,
+              "line": 301,
               "doc": ""
             },
             {
               "name": "_split_title_company",
-              "line": 289,
+              "line": 304,
               "doc": "'Title | Company | Place', 'Company \u2014 Title', 'Title \u2014 Team \u2014 Company'"
             },
             {
               "name": "_title_score",
-              "line": 306,
+              "line": 321,
               "doc": "2 when a role word ends the phrase (\"Data Analyst\"), 1 when it's"
             },
             {
               "name": "_split_skill_line",
-              "line": 328,
+              "line": 343,
               "doc": "'Languages: Python, SQL<tab>Frameworks: Pandas, and XGBoost' ->"
             },
             {
               "name": "_skill_items",
-              "line": 349,
+              "line": 364,
               "doc": ""
             },
             {
               "name": "_looks_like_degree",
-              "line": 364,
+              "line": 379,
               "doc": "'B.Tech in Computer Science' yes; 'State University' no."
             },
             {
               "name": "_split_middle_dot",
-              "line": 369,
+              "line": 384,
               "doc": "'Acme Corp \u00b7 Pune, India' -> ('Acme Corp', 'Pune, India'), the"
             },
             {
               "name": "_is_dated_line",
-              "line": 378,
+              "line": 393,
               "doc": "A job title/company line carrying a date range or year."
             },
             {
               "name": "_experience_line_kind",
-              "line": 385,
+              "line": 400,
               "doc": "'dated' (title and/or company with dates), 'header_line' (a short"
             },
             {
               "name": "_add_role",
-              "line": 404,
+              "line": 419,
               "doc": "Record a role; the first one also fills the entry's title/dates."
             },
             {
               "name": "_merge_links",
-              "line": 414,
+              "line": 429,
               "doc": "Profile links from the file's hyperlinks and from URLs written in"
             },
             {
+              "name": "_trailing_dates",
+              "line": 443,
+              "doc": "(match, start, end) for a trailing date range or single date."
+            },
+            {
               "name": "_extract_date_range",
-              "line": 428,
+              "line": 453,
               "doc": ""
             },
             {
               "name": "_strip_date_range",
-              "line": 432,
+              "line": 459,
               "doc": ""
             },
             {
               "name": "_parse_title_and_dates",
-              "line": 436,
+              "line": 463,
               "doc": "'Data Scientist II | August 2024 - Present' ->"
             },
             {
               "name": "_split_list_items",
-              "line": 451,
+              "line": 479,
               "doc": "Items of a certification / award line. ';' always separates"
             },
             {
               "name": "_split_respecting_parens",
-              "line": 470,
+              "line": 498,
               "doc": "Split on sep_chars, but never inside ( ) or [ ] groups \u2014 so"
             },
             {
               "name": "normalize",
-              "line": 493,
+              "line": 521,
               "doc": ""
             }
           ]
@@ -2659,53 +2669,53 @@
       "stages": [
         "9 Render"
       ],
-      "lines": 134,
+      "lines": 138,
       "doc": "Shared layout rules for the ATS template (P2.1).",
       "classes": [],
       "functions": [
         {
           "name": "section_order_for",
-          "line": 39,
+          "line": 38,
           "doc": "Default order; education moves before experience for someone with"
         },
         {
           "name": "other_section",
-          "line": 54,
+          "line": 53,
           "doc": "The kept section an \"other:<id>\" order entry names, or None."
         },
         {
           "name": "ordered_sections",
-          "line": 60,
+          "line": 59,
           "doc": "`order` plus any kept section it doesn't list yet (an order saved"
         },
         {
           "name": "format_date",
-          "line": 72,
+          "line": 71,
           "doc": "'August 2024' / 'Aug. 2024' / '08/2024' -> 'Aug 2024'; 'Current' ->"
         },
         {
           "name": "date_range",
-          "line": 92,
+          "line": 96,
           "doc": "'Jan 2022 \u2013 Present'; one side only when the other is missing."
         },
         {
           "name": "format_date_text",
-          "line": 97,
+          "line": 101,
           "doc": "A free-text range such as an education's '2016 - 2020' or"
         },
         {
           "name": "contact_parts",
-          "line": 107,
+          "line": 111,
           "doc": "email | phone | City, Country | linkedin | github | other links."
         },
         {
           "name": "display_skills",
-          "line": 115,
+          "line": 119,
           "doc": "At most `max_categories` lines: the first ones as they are (JD-relevant"
         },
         {
           "name": "output_basename",
-          "line": 129,
+          "line": 133,
           "doc": "First_Last_Resume_<Company>, using only file-name-safe characters."
         }
       ]
@@ -3132,7 +3142,7 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 1189,
+      "lines": 1191,
       "doc": "",
       "classes": [
         {
@@ -3242,37 +3252,37 @@
             },
             {
               "name": "_copy_parsed",
-              "line": 398,
+              "line": 400,
               "doc": "Deep copies, so a parse kept in UI session state is never mutated."
             },
             {
               "name": "preview_keyword_match",
-              "line": 403,
+              "line": 405,
               "doc": "Match rate if these proposals were applied (P3.4 \"recalculate\"):"
             },
             {
               "name": "apply_parse_corrections",
-              "line": 426,
+              "line": 428,
               "doc": "Apply the user's fixes from the \"Check parsed resume\" step (P3.5)."
             },
             {
               "name": "analyze_only",
-              "line": 523,
+              "line": 525,
               "doc": ""
             },
             {
               "name": "generate_proposals",
-              "line": 549,
+              "line": 551,
               "doc": "Generate rewrite proposals without applying them, plus questions"
             },
             {
               "name": "incorporate_user_addition",
-              "line": 618,
+              "line": 620,
               "doc": "Fold a user-supplied free-text addition (a project, an"
             },
             {
               "name": "tailor_resume",
-              "line": 697,
+              "line": 699,
               "doc": ""
             }
           ]
@@ -3286,7 +3296,7 @@
         },
         {
           "name": "_merge_usage",
-          "line": 1180,
+          "line": 1182,
           "doc": "Combine two LLMClient.get_usage_summary() dicts into one."
         }
       ]
@@ -3298,23 +3308,23 @@
       "stages": [
         "8 Validate"
       ],
-      "lines": 126,
+      "lines": 125,
       "doc": "Content checks on the finished resume (P2.6). Deterministic, no LLM.",
       "classes": [
         {
           "name": "LintIssue",
-          "line": 34,
+          "line": 33,
           "doc": "",
           "methods": []
         },
         {
           "name": "ContentReport",
-          "line": 40,
+          "line": 39,
           "doc": "",
           "methods": [
             {
               "name": "metric_share",
-              "line": 46,
+              "line": 45,
               "doc": ""
             }
           ]
@@ -3323,17 +3333,17 @@
       "functions": [
         {
           "name": "_short",
-          "line": 50,
+          "line": 49,
           "doc": ""
         },
         {
           "name": "_is_present",
-          "line": 55,
+          "line": 54,
           "doc": ""
         },
         {
           "name": "lint",
-          "line": 59,
+          "line": 58,
           "doc": ""
         }
       ]
@@ -4553,6 +4563,37 @@
         {
           "name": "test_reformatted_dates_and_contact_still_count_as_kept",
           "line": 30,
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "tests/unit/test_dates_p86.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 57,
+      "doc": "P8.6: date formats from outside the US tech norm.",
+      "classes": [],
+      "functions": [
+        {
+          "name": "test_date_ranges",
+          "line": 27,
+          "doc": ""
+        },
+        {
+          "name": "test_parse_month",
+          "line": 36,
+          "doc": ""
+        },
+        {
+          "name": "test_formatting_and_ongoing",
+          "line": 40,
+          "doc": ""
+        },
+        {
+          "name": "test_years_from_eu_dates_and_future_flag",
+          "line": 50,
           "doc": ""
         }
       ]
@@ -6919,6 +6960,11 @@
     },
     {
       "from": "app/analysis/experience.py",
+      "to": "tests/unit/test_dates_p86.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/analysis/experience.py",
       "to": "tests/unit/test_experience.py",
       "type": "tested_by"
     },
@@ -7140,6 +7186,11 @@
     {
       "from": "app/analysis/resume_normalizer.py",
       "to": "tests/unit/test_contact_p84.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/analysis/resume_normalizer.py",
+      "to": "tests/unit/test_dates_p86.py",
       "type": "tested_by"
     },
     {
@@ -7935,6 +7986,11 @@
     {
       "from": "app/domain/resume.py",
       "to": "tests/unit/test_content_lint.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/resume.py",
+      "to": "tests/unit/test_dates_p86.py",
       "type": "tested_by"
     },
     {
@@ -8741,6 +8797,11 @@
       "from": "app/rendering/layout.py",
       "to": "app/domain/resume_document.py",
       "type": "imports"
+    },
+    {
+      "from": "app/rendering/layout.py",
+      "to": "tests/unit/test_dates_p86.py",
+      "type": "tested_by"
     },
     {
       "from": "app/rendering/layout.py",

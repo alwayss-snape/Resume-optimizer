@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**55 app modules · 53 test files · 103 classes · 883 functions/methods · 17,704 lines of Python** · source hash `dc8d7b7574018efa`
+**55 app modules · 54 test files · 103 classes · 889 functions/methods · 17,828 lines of Python** · source hash `82a755f9f1cfe044`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -140,6 +140,7 @@ tests/
     test_contact_p84.py                          P8.4: phone numbers in any common grouping, and links with any common
     test_content_lint.py                         P2.6: deterministic content checks on the finished resume.
     test_coverage.py                             P8.2: content coverage of the output against the source lines.
+    test_dates_p86.py                            P8.6: date formats from outside the US tech norm.
     test_docx_parser.py                          test_docx_parser_sample(), test_docx_parser_file_not_found()
     test_docx_renderer.py                        test_docx_patcher_preserve_mode(), test_template_renderer_ats_mode(), …
     test_env.py                                  test_environment_baseline()
@@ -214,19 +215,20 @@ Spanning all stages: `app/api/main.py`, `app/api/routes.py`, `app/cli.py`, `app/
 
 ### `app/analysis/experience.py`
 
-**Layer:** Analysis · **Stage:** 2 Normalize, 7 Rewrite · **Lines:** 88
+**Layer:** Analysis · **Stage:** 2 Normalize, 7 Rewrite · **Lines:** 122
 
 _Years of experience from role date ranges (P1.5), and the page target_
 
-- function **`is_ongoing()`** ([app/analysis/experience.py:19](../app/analysis/experience.py#L19)) — 'Present' / 'Current' / 'Now' / ... : the role hasn't ended.
-- function **`parse_month()`** ([app/analysis/experience.py:24](../app/analysis/experience.py#L24)) — 'August 2024' / 'Aug. 2024' / '08/2024' / '2024' / 'Present' -> (year, month).
-- function **`role_intervals()`** ([app/analysis/experience.py:45](../app/analysis/experience.py#L45)) — Each dated role as [start, end] in absolute months (year*12 + month).
-- function **`years_of_experience()`** ([app/analysis/experience.py:62](../app/analysis/experience.py#L62)) — Total months covered by any role (overlaps merged), in years.
-- function **`years_phrase()`** ([app/analysis/experience.py:74](../app/analysis/experience.py#L74)) — How a resume states it: '4+ years', '1 year', or None under 1 year.
-- function **`target_pages()`** ([app/analysis/experience.py:86](../app/analysis/experience.py#L86)) — How many A4 pages the tailored resume should fill.
+- function **`is_ongoing()`** ([app/analysis/experience.py:25](../app/analysis/experience.py#L25)) — 'Present' / 'Current' / 'Till Date' / ... : the role hasn't ended.
+- function **`parse_month()`** ([app/analysis/experience.py:30](../app/analysis/experience.py#L30)) — 'August 2024' / 'Aug. 2024' / '08/2024' / '31/08/2024' / '2024-08' /
+- function **`future_dates()`** ([app/analysis/experience.py:64](../app/analysis/experience.py#L64)) — Roles whose start date is after this month (P8.6): usually a typo or a
+- function **`role_intervals()`** ([app/analysis/experience.py:79](../app/analysis/experience.py#L79)) — Each dated role as [start, end] in absolute months (year*12 + month).
+- function **`years_of_experience()`** ([app/analysis/experience.py:96](../app/analysis/experience.py#L96)) — Total months covered by any role (overlaps merged), in years.
+- function **`years_phrase()`** ([app/analysis/experience.py:108](../app/analysis/experience.py#L108)) — How a resume states it: '4+ years', '1 year', or None under 1 year.
+- function **`target_pages()`** ([app/analysis/experience.py:120](../app/analysis/experience.py#L120)) — How many A4 pages the tailored resume should fill.
 - **Imports:** `domain/resume.py`
 - **Imported by:** `analysis/summary_writer.py`, `eval/harness.py`, `rendering/layout.py`, `rendering/page_fit.py`, `services/tailor.py`, `validation/content_lint.py`
-- **Tested by:** `tests/unit/test_experience.py`, `tests/unit/test_summary_writer.py`
+- **Tested by:** `tests/unit/test_dates_p86.py`, `tests/unit/test_experience.py`, `tests/unit/test_summary_writer.py`
 
 ### `app/analysis/gap_questions.py`
 
@@ -303,43 +305,44 @@ _Keyword-level match rate, the headline score (P1.2)._
 
 ### `app/analysis/resume_normalizer.py`
 
-**Layer:** Analysis · **Stage:** 2 Normalize · **Lines:** 948
+**Layer:** Analysis · **Stage:** 2 Normalize · **Lines:** 976
 
 - class **`ResumeNormalizer`** ([app/analysis/resume_normalizer.py:9](../app/analysis/resume_normalizer.py#L9))
-  - `find_phone()` :47 — The first phone number in a line, as written, or None.
-  - `_header_urls()` :68
-  - `_is_headline()` :78 — A short title line under the name, e.g. 'Senior Data Scientist |
-  - `section_kind()` :126 — 'Clinical Rotations' -> 'other', 'Work History' -> 'experience',
-  - `_heading_sig()` :135 — How a heading line is set: capitals, bold, size, Word style.
-  - `_section_heading_sigs()` :141 — The look of the lines this document uses as section headings.
-  - `_styled_as_heading()` :146 — Set like the document's section headings, or (when none was
-  - `_heading_kind()` :157 — The section a heading line starts, or None when the line is content.
-  - `_display_heading()` :190 — 'CLINICAL ROTATIONS' -> 'Clinical Rotations'; mixed case kept.
-  - `_header_segments()` :198 — 'Austin, TX · a@b.com · 512-555-0199' -> its parts.
-  - `_looks_like_name()` :202
-  - `_looks_like_location()` :212
-  - `_is_detail()` :216 — A header part worth keeping as is: not contact data (email,
-  - `_is_section_title()` :266
-  - `_looks_like_title()` :286
-  - `_split_title_company()` :289 — 'Title | Company | Place', 'Company — Title', 'Title — Team — Company'
-  - `_title_score()` :306 — 2 when a role word ends the phrase ("Data Analyst"), 1 when it's
-  - `_split_skill_line()` :328 — 'Languages: Python, SQL<tab>Frameworks: Pandas, and XGBoost' ->
-  - `_skill_items()` :349
-  - `_looks_like_degree()` :364 — 'B.Tech in Computer Science' yes; 'State University' no.
-  - `_split_middle_dot()` :369 — 'Acme Corp · Pune, India' -> ('Acme Corp', 'Pune, India'), the
-  - `_is_dated_line()` :378 — A job title/company line carrying a date range or year.
-  - `_experience_line_kind()` :385 — 'dated' (title and/or company with dates), 'header_line' (a short
-  - `_add_role()` :404 — Record a role; the first one also fills the entry's title/dates.
-  - `_merge_links()` :414 — Profile links from the file's hyperlinks and from URLs written in
-  - `_extract_date_range()` :428
-  - `_strip_date_range()` :432
-  - `_parse_title_and_dates()` :436 — 'Data Scientist II | August 2024 - Present' ->
-  - `_split_list_items()` :451 — Items of a certification / award line. ';' always separates
-  - `_split_respecting_parens()` :470 — Split on sep_chars, but never inside ( ) or [ ] groups — so
-  - `normalize()` :493
+  - `find_phone()` :62 — The first phone number in a line, as written, or None.
+  - `_header_urls()` :83
+  - `_is_headline()` :93 — A short title line under the name, e.g. 'Senior Data Scientist |
+  - `section_kind()` :141 — 'Clinical Rotations' -> 'other', 'Work History' -> 'experience',
+  - `_heading_sig()` :150 — How a heading line is set: capitals, bold, size, Word style.
+  - `_section_heading_sigs()` :156 — The look of the lines this document uses as section headings.
+  - `_styled_as_heading()` :161 — Set like the document's section headings, or (when none was
+  - `_heading_kind()` :172 — The section a heading line starts, or None when the line is content.
+  - `_display_heading()` :205 — 'CLINICAL ROTATIONS' -> 'Clinical Rotations'; mixed case kept.
+  - `_header_segments()` :213 — 'Austin, TX · a@b.com · 512-555-0199' -> its parts.
+  - `_looks_like_name()` :217
+  - `_looks_like_location()` :227
+  - `_is_detail()` :231 — A header part worth keeping as is: not contact data (email,
+  - `_is_section_title()` :281
+  - `_looks_like_title()` :301
+  - `_split_title_company()` :304 — 'Title | Company | Place', 'Company — Title', 'Title — Team — Company'
+  - `_title_score()` :321 — 2 when a role word ends the phrase ("Data Analyst"), 1 when it's
+  - `_split_skill_line()` :343 — 'Languages: Python, SQL<tab>Frameworks: Pandas, and XGBoost' ->
+  - `_skill_items()` :364
+  - `_looks_like_degree()` :379 — 'B.Tech in Computer Science' yes; 'State University' no.
+  - `_split_middle_dot()` :384 — 'Acme Corp · Pune, India' -> ('Acme Corp', 'Pune, India'), the
+  - `_is_dated_line()` :393 — A job title/company line carrying a date range or year.
+  - `_experience_line_kind()` :400 — 'dated' (title and/or company with dates), 'header_line' (a short
+  - `_add_role()` :419 — Record a role; the first one also fills the entry's title/dates.
+  - `_merge_links()` :429 — Profile links from the file's hyperlinks and from URLs written in
+  - `_trailing_dates()` :443 — (match, start, end) for a trailing date range or single date.
+  - `_extract_date_range()` :453
+  - `_strip_date_range()` :459
+  - `_parse_title_and_dates()` :463 — 'Data Scientist II | August 2024 - Present' ->
+  - `_split_list_items()` :479 — Items of a certification / award line. ';' always separates
+  - `_split_respecting_parens()` :498 — Split on sep_chars, but never inside ( ) or [ ] groups — so
+  - `normalize()` :521
 - **Imports:** `domain/evidence.py`, `domain/resume.py`, `domain/resume_document.py`, `ingestion/docx.py`
 - **Imported by:** `analysis/structure_extractor.py`, `eval/golden.py`, `services/tailor.py`, `validation/output.py`
-- **Tested by:** `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_ats_round_trip.py`, `tests/unit/test_contact_p84.py`, `tests/unit/test_kept_sections_p83.py`, `tests/unit/test_parser_regressions_p42.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_structure_extractor.py`, `tests/unit/test_tailor_resume_flow.py`
+- **Tested by:** `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_ats_round_trip.py`, `tests/unit/test_contact_p84.py`, `tests/unit/test_dates_p86.py`, `tests/unit/test_kept_sections_p83.py`, `tests/unit/test_parser_regressions_p42.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_structure_extractor.py`, `tests/unit/test_tailor_resume_flow.py`
 
 ### `app/analysis/rewriter.py`
 
@@ -627,7 +630,7 @@ _Per-visitor state for the web API (P5.1)._
 - class **`OtherSection`** ([app/domain/resume.py:94](../app/domain/resume.py#L94)) — A section the resume model has no fields for (Publications, Bar
 - class **`Resume`** ([app/domain/resume.py:102](../app/domain/resume.py#L102))
 - **Imported by:** `analysis/experience.py`, `analysis/keyword_match.py`, `analysis/resume_normalizer.py`, `analysis/rewriter.py`, `analysis/skills_tailor.py`, `analysis/structure_extractor.py`, `analysis/summary_writer.py`, `analysis/tailor_planner.py`, `domain/resume_document.py`, `eval/golden.py`, `rendering/html_renderer.py`, `rendering/layout.py`, `rendering/page_fit.py`, `services/tailor.py`, `validation/content_lint.py`, `validation/structural.py`
-- **Tested by:** `tests/unit/test_ats_round_trip.py`, `tests/unit/test_check_parsed_resume.py`, `tests/unit/test_content_lint.py`, `tests/unit/test_docx_renderer.py`, `tests/unit/test_experience.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_html_renderer.py`, `tests/unit/test_keyword_match.py`, `tests/unit/test_new_role.py`, `tests/unit/test_page_fit.py`, `tests/unit/test_parser_regressions_p42.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_resume_document.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_review_view.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_tailor_planner.py`, `tests/unit/test_tailor_service_addition.py`, `tests/unit/test_template_layout.py`, `tests/unit/test_template_renderer_standalone.py`
+- **Tested by:** `tests/unit/test_ats_round_trip.py`, `tests/unit/test_check_parsed_resume.py`, `tests/unit/test_content_lint.py`, `tests/unit/test_dates_p86.py`, `tests/unit/test_docx_renderer.py`, `tests/unit/test_experience.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_html_renderer.py`, `tests/unit/test_keyword_match.py`, `tests/unit/test_new_role.py`, `tests/unit/test_page_fit.py`, `tests/unit/test_parser_regressions_p42.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_resume_document.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_review_view.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_tailor_planner.py`, `tests/unit/test_tailor_service_addition.py`, `tests/unit/test_template_layout.py`, `tests/unit/test_template_renderer_standalone.py`
 
 ### `app/domain/resume_document.py`
 
@@ -882,22 +885,22 @@ _LLM-as-judge for the evaluation harness (P4.3)._
 
 ### `app/rendering/layout.py`
 
-**Layer:** Rendering · **Stage:** 9 Render · **Lines:** 134
+**Layer:** Rendering · **Stage:** 9 Render · **Lines:** 138
 
 _Shared layout rules for the ATS template (P2.1)._
 
-- function **`section_order_for()`** ([app/rendering/layout.py:39](../app/rendering/layout.py#L39)) — Default order; education moves before experience for someone with
-- function **`other_section()`** ([app/rendering/layout.py:54](../app/rendering/layout.py#L54)) — The kept section an "other:<id>" order entry names, or None.
-- function **`ordered_sections()`** ([app/rendering/layout.py:60](../app/rendering/layout.py#L60)) — `order` plus any kept section it doesn't list yet (an order saved
-- function **`format_date()`** ([app/rendering/layout.py:72](../app/rendering/layout.py#L72)) — 'August 2024' / 'Aug. 2024' / '08/2024' -> 'Aug 2024'; 'Current' ->
-- function **`date_range()`** ([app/rendering/layout.py:92](../app/rendering/layout.py#L92)) — 'Jan 2022 – Present'; one side only when the other is missing.
-- function **`format_date_text()`** ([app/rendering/layout.py:97](../app/rendering/layout.py#L97)) — A free-text range such as an education's '2016 - 2020' or
-- function **`contact_parts()`** ([app/rendering/layout.py:107](../app/rendering/layout.py#L107)) — email | phone | City, Country | linkedin | github | other links.
-- function **`display_skills()`** ([app/rendering/layout.py:115](../app/rendering/layout.py#L115)) — At most `max_categories` lines: the first ones as they are (JD-relevant
-- function **`output_basename()`** ([app/rendering/layout.py:129](../app/rendering/layout.py#L129)) — First_Last_Resume_<Company>, using only file-name-safe characters.
+- function **`section_order_for()`** ([app/rendering/layout.py:38](../app/rendering/layout.py#L38)) — Default order; education moves before experience for someone with
+- function **`other_section()`** ([app/rendering/layout.py:53](../app/rendering/layout.py#L53)) — The kept section an "other:<id>" order entry names, or None.
+- function **`ordered_sections()`** ([app/rendering/layout.py:59](../app/rendering/layout.py#L59)) — `order` plus any kept section it doesn't list yet (an order saved
+- function **`format_date()`** ([app/rendering/layout.py:71](../app/rendering/layout.py#L71)) — 'August 2024' / 'Aug. 2024' / '08/2024' -> 'Aug 2024'; 'Current' ->
+- function **`date_range()`** ([app/rendering/layout.py:96](../app/rendering/layout.py#L96)) — 'Jan 2022 – Present'; one side only when the other is missing.
+- function **`format_date_text()`** ([app/rendering/layout.py:101](../app/rendering/layout.py#L101)) — A free-text range such as an education's '2016 - 2020' or
+- function **`contact_parts()`** ([app/rendering/layout.py:111](../app/rendering/layout.py#L111)) — email | phone | City, Country | linkedin | github | other links.
+- function **`display_skills()`** ([app/rendering/layout.py:119](../app/rendering/layout.py#L119)) — At most `max_categories` lines: the first ones as they are (JD-relevant
+- function **`output_basename()`** ([app/rendering/layout.py:133](../app/rendering/layout.py#L133)) — First_Last_Resume_<Company>, using only file-name-safe characters.
 - **Imports:** `analysis/experience.py`, `domain/resume.py`, `domain/resume_document.py`
 - **Imported by:** `eval/harness.py`, `rendering/html_renderer.py`, `rendering/template_renderer.py`, `services/tailor.py`, `validation/output.py`
-- **Tested by:** `tests/unit/test_kept_sections_p83.py`, `tests/unit/test_template_layout.py`
+- **Tested by:** `tests/unit/test_dates_p86.py`, `tests/unit/test_kept_sections_p83.py`, `tests/unit/test_template_layout.py`
 
 ### `app/rendering/page_fit.py`
 
@@ -1015,7 +1018,7 @@ _Local profile of facts the user has confirmed (P3.2)._
 
 ### `app/services/tailor.py`
 
-**Layer:** Services · **Stage:** all · **Lines:** 1189
+**Layer:** Services · **Stage:** all · **Lines:** 1191
 
 - class **`TailorService`** ([app/services/tailor.py:56](../app/services/tailor.py#L56))
   - `__init__()` :57
@@ -1038,31 +1041,31 @@ _Local profile of facts the user has confirmed (P3.2)._
   - `_apply_bullet_order()` :365 — Reorder bullets as planned (most relevant first within each
   - `parse_resume()` :380 — File -> (raw document, ResumeDocument, evidence). The deterministic
   - `normalize_raw()` :390
-  - `_copy_parsed()` :398 — Deep copies, so a parse kept in UI session state is never mutated.
-  - `preview_keyword_match()` :403 — Match rate if these proposals were applied (P3.4 "recalculate"):
-  - `apply_parse_corrections()` :426 — Apply the user's fixes from the "Check parsed resume" step (P3.5).
-  - `analyze_only()` :523
-  - `generate_proposals()` :549 — Generate rewrite proposals without applying them, plus questions
-  - `incorporate_user_addition()` :618 — Fold a user-supplied free-text addition (a project, an
-  - `tailor_resume()` :697
+  - `_copy_parsed()` :400 — Deep copies, so a parse kept in UI session state is never mutated.
+  - `preview_keyword_match()` :405 — Match rate if these proposals were applied (P3.4 "recalculate"):
+  - `apply_parse_corrections()` :428 — Apply the user's fixes from the "Check parsed resume" step (P3.5).
+  - `analyze_only()` :525
+  - `generate_proposals()` :551 — Generate rewrite proposals without applying them, plus questions
+  - `incorporate_user_addition()` :620 — Fold a user-supplied free-text addition (a project, an
+  - `tailor_resume()` :699
 - function **`_progress()`** ([app/services/tailor.py:45](../app/services/tailor.py#L45)) — A progress reporter that can never break a run (P3.6).
-- function **`_merge_usage()`** ([app/services/tailor.py:1180](../app/services/tailor.py#L1180)) — Combine two LLMClient.get_usage_summary() dicts into one.
+- function **`_merge_usage()`** ([app/services/tailor.py:1182](../app/services/tailor.py#L1182)) — Combine two LLMClient.get_usage_summary() dicts into one.
 - **Imports:** `analysis/experience.py`, `analysis/gap_questions.py`, `analysis/jd_analyzer.py`, `analysis/keyword_match.py`, `analysis/matcher.py`, `analysis/resume_normalizer.py`, `analysis/rewriter.py`, `analysis/scoring.py`, `analysis/semantic_matcher.py`, `analysis/skills_tailor.py`, `analysis/structure_extractor.py`, `analysis/summary_writer.py`, `analysis/tailor_planner.py`, `domain/evidence.py`, `domain/job.py`, `domain/report.py`, `domain/resume.py`, `domain/resume_document.py`, `domain/tailoring.py`, `ingestion/docx.py`, `ingestion/pdf.py`, `llm/client.py`, `rendering/docx_patcher.py`, `rendering/html_renderer.py`, `rendering/layout.py`, `rendering/page_fit.py`, `rendering/pdf_converter.py`, `rendering/template_renderer.py`, `services/profile_store.py`, `services/run_manager.py`, `validation/content_lint.py`, `validation/coverage.py`, `validation/factual.py`, `validation/output.py`, `validation/safety.py`, `validation/structural.py`
 - **Imported by:** `api/main.py`, `cli.py`, `eval/harness.py`
 - **Tested by:** `tests/integration/test_coverage_tailor.py`, `tests/integration/test_end_to_end.py`, `tests/unit/test_api.py`, `tests/unit/test_check_parsed_resume.py`, `tests/unit/test_cli.py`, `tests/unit/test_cli_parity.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_new_role.py`, `tests/unit/test_profile_store.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_review_view.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_tailor_resume_flow.py`, `tests/unit/test_tailor_service_addition.py`
 
 ### `app/validation/content_lint.py`
 
-**Layer:** Validation · **Stage:** 8 Validate · **Lines:** 126
+**Layer:** Validation · **Stage:** 8 Validate · **Lines:** 125
 
 _Content checks on the finished resume (P2.6). Deterministic, no LLM._
 
-- class **`LintIssue`** ([app/validation/content_lint.py:34](../app/validation/content_lint.py#L34))
-- class **`ContentReport`** ([app/validation/content_lint.py:40](../app/validation/content_lint.py#L40))
-  - `metric_share()` :46
-- function **`_short()`** ([app/validation/content_lint.py:50](../app/validation/content_lint.py#L50))
-- function **`_is_present()`** ([app/validation/content_lint.py:55](../app/validation/content_lint.py#L55))
-- function **`lint()`** ([app/validation/content_lint.py:59](../app/validation/content_lint.py#L59))
+- class **`LintIssue`** ([app/validation/content_lint.py:33](../app/validation/content_lint.py#L33))
+- class **`ContentReport`** ([app/validation/content_lint.py:39](../app/validation/content_lint.py#L39))
+  - `metric_share()` :45
+- function **`_short()`** ([app/validation/content_lint.py:49](../app/validation/content_lint.py#L49))
+- function **`_is_present()`** ([app/validation/content_lint.py:54](../app/validation/content_lint.py#L54))
+- function **`lint()`** ([app/validation/content_lint.py:58](../app/validation/content_lint.py#L58))
 - **Imports:** `analysis/experience.py`, `analysis/rewriter.py`, `domain/resume.py`
 - **Imported by:** `services/tailor.py`
 - **Tested by:** `tests/unit/test_content_lint.py`

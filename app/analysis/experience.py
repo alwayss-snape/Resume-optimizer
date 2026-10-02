@@ -13,33 +13,67 @@ from app.domain.resume import Resume
 
 _MONTHS = {m: i for i, m in enumerate(
     ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"], start=1)}
-_PRESENT = {"present", "current", "now", "today", "ongoing"}
+# Ways of saying "still in this role" (P8.6: "Till Date", "to date", German
+# "heute", Spanish "actualidad" were read as no date at all).
+PRESENT_WORDS = ("present", "current", "currently", "now", "today", "ongoing", "till date", "to date",
+                 "till now", "date", "heute", "actualidad", "presente", "actual", "aujourd'hui")
+_PRESENT = set(PRESENT_WORDS)
+# Seasons -> the month they start in ("Summer 2021" -> Jun 2021).
+SEASONS = {"spring": 3, "summer": 6, "fall": 9, "autumn": 9, "winter": 12}
 
 
 def is_ongoing(end_date: Optional[str]) -> bool:
-    """'Present' / 'Current' / 'Now' / ... : the role hasn't ended."""
+    """'Present' / 'Current' / 'Till Date' / ... : the role hasn't ended."""
     return (end_date or "").strip().lower().rstrip(".") in _PRESENT
 
 
 def parse_month(value: Optional[str], *, is_end: bool, today: date) -> Optional[Tuple[int, int]]:
-    """'August 2024' / 'Aug. 2024' / '08/2024' / '2024' / 'Present' -> (year, month).
+    """'August 2024' / 'Aug. 2024' / '08/2024' / '31/08/2024' / '2024-08' /
+    "Aug '24" / 'Summer 2024' / '2024' / 'Present' -> (year, month).
     A bare year starts in January or ends in December."""
     if not value:
         return None
-    text = value.strip().lower()
+    text = value.strip().lower().rstrip(".")
     if text in _PRESENT:
         return today.year, today.month
     year_m = re.search(r"(19|20)\d{2}", text)
-    if not year_m:
-        return None
-    year = int(year_m.group(0))
+    if year_m:
+        year = int(year_m.group(0))
+    else:
+        short = re.search(r"['’](\d{2})\b", text)  # "Jan '19"
+        if not short:
+            return None
+        year = 2000 + int(short.group(1))
+        if year > today.year + 1:
+            year -= 100
     month_m = re.search(r"\b([a-z]{3})[a-z]*\.?", text)
     if month_m and month_m.group(1) in _MONTHS:
         return year, _MONTHS[month_m.group(1)]
+    season = re.search(r"\b(spring|summer|fall|autumn|winter)\b", text)
+    if season:
+        return year, SEASONS[season.group(1)]
+    iso = re.search(r"\b(?:19|20)\d{2}-(0[1-9]|1[0-2])\b", text)
+    if iso:
+        return year, int(iso.group(1))
     num_m = re.search(r"\b(0?[1-9]|1[0-2])\s*[/.-]\s*(19|20)\d{2}", text)
     if num_m:
         return year, int(num_m.group(1))
     return year, (12 if is_end else 1)
+
+
+def future_dates(resume: Resume, today: Optional[date] = None) -> List[str]:
+    """Roles whose start date is after this month (P8.6): usually a typo or a
+    misread date, worth a look before tailoring."""
+    today = today or date.today()
+    now = today.year * 12 + today.month
+    out = []
+    for exp in resume.experience:
+        for role in exp.all_roles():
+            start = parse_month(role.start_date, is_end=False, today=today)
+            if start and start[0] * 12 + start[1] > now:
+                label = " at ".join(v for v in (role.title, exp.company) if v) or "a job"
+                out.append(f"{label} starts in the future ({role.start_date})")
+    return out
 
 
 def role_intervals(resume: Resume, today: Optional[date] = None) -> List[Tuple[int, int]]:

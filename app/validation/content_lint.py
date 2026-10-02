@@ -11,7 +11,7 @@ from typing import List, Optional
 
 from pydantic import BaseModel, Field
 
-from app.analysis.experience import parse_month
+from app.analysis.experience import is_ongoing, parse_month
 from app.analysis.rewriter import FILLER_WORDS, MAX_BULLET_WORDS
 from app.domain.resume import Resume
 
@@ -28,7 +28,6 @@ BUZZWORDS = tuple(FILLER_WORDS) + (
 )
 _BUZZ_RE = re.compile(r"\b(" + "|".join(re.escape(w) for w in BUZZWORDS) + r")\b", re.IGNORECASE)
 _METRIC_RE = re.compile(r"\d|%|\$|€|£|₹")
-_PRESENT_WORDS = {"present", "current", "now", "today", "ongoing"}
 
 
 class LintIssue(BaseModel):
@@ -53,7 +52,7 @@ def _short(text: str, limit: int = 50) -> str:
 
 
 def _is_present(value: Optional[str]) -> bool:
-    return (value or "").strip().lower() in _PRESENT_WORDS
+    return is_ongoing(value)
 
 
 def lint(resume: Resume, today: Optional[date] = None) -> ContentReport:

@@ -15,16 +15,31 @@ class ResumeNormalizer:
         r"\b(?:19|20)\d{2}\b|\b" + _MONTH + r"\b\.?|\b(?:Present|Current)\b",
         re.IGNORECASE,
     )
+    # One date as resumes write it (P8.6): "Aug 2024", "Jan '19", "Summer
+    # 2021", "31/08/2023", "03/2021", "2019-03", "2019".
+    _YEAR = r"(?:19|20)\d{2}"
+    _DATE = (r"(?:\b" + _MONTH + r"\.?,?\s*(?:" + _YEAR + r"|['’]\d{2}\b)"
+             r"|\b(?:Spring|Summer|Fall|Autumn|Winter)\s+" + _YEAR +
+             r"|\b\d{1,2}[/.]\d{1,2}[/.]" + _YEAR +
+             r"|\b\d{1,2}[/.-]" + _YEAR +
+             r"|\b" + _YEAR + r"-(?:0[1-9]|1[0-2])\b"
+             r"|\b" + _YEAR + r"\b)")
+    # The end of a range may also say the role continues.
+    _END = (r"(?:" + _DATE + r"|\b(?:Present|Currently|Current|Now|Today|Ongoing|Till\s+Date|To\s+Date|Till\s+Now"
+            r"|Heute|Actualidad|Presente|Actual)\b)")
+    _RANGE = r"(" + _DATE + r")\s*(?:[-–—]|\bto\b|\buntil\b|\btill\b|\bbis\b|\bhasta\b)\s*(" + _END + r")"
     # A job line's dates always carry a year or "Present".
-    YEAR_OR_PRESENT = re.compile(r"\b(?:19|20)\d{2}\b|\b(?:Present|Current|Now)\b", re.IGNORECASE)
-    # Trailing "<start> - <end>" / "(<start> - <end>)" date-range pattern, e.g.
-    # "August 2024 - Present", "(2014 – 2018)" or "2019 to 2023". Only a month
-    # name may precede the year ("Engineer 2019 - 2023" keeps "Engineer").
-    DATE_RANGE_RE = re.compile(
-        r"\(?\s*((?:\b" + _MONTH + r"\.?,?\s*)?\d{4})\s*(?:[-–—]|\bto\b)\s*"
-        r"((?:\b" + _MONTH + r"\.?,?\s*)?\d{4}|Present|Current|Now)\s*\)?\s*$",
-        re.IGNORECASE,
-    )
+    YEAR_OR_PRESENT = re.compile(r"\b(?:19|20)\d{2}\b|\b(?:Present|Current|Now)\b|\b" + _MONTH + r"\.?\s*['’]\d{2}\b",
+                                 re.IGNORECASE)
+    # Trailing "<start> - <end>" / "(<start> - <end>)" date range, e.g.
+    # "August 2024 - Present", "(2014 – 2018)", "2019 to 2023", "03/2021 -
+    # 06/2022", "July 2018 – Till Date". Only a date may precede the dash
+    # ("Engineer 2019 - 2023" keeps "Engineer").
+    DATE_RANGE_RE = re.compile(r"\(?\s*" + _RANGE + r"\.?\s*\)?\s*$", re.IGNORECASE)
+    # The same range anywhere in a line ("10/2019 – Present | 40 hours per week").
+    DATE_RANGE_ANY_RE = re.compile(_RANGE, re.IGNORECASE)
+    # One trailing date with no range: "Curriculum Writer | Summer 2021".
+    SINGLE_DATE_RE = re.compile(r"(?:^|(?<=[\s,|(–—-]))\(?(" + _DATE + r")\)?\.?\s*$", re.IGNORECASE)
     # A phone number in any common grouping (P8.4): "(602) 555-0147",
     # "+33 6 12 34 56 78", "+49 30 12345678", "+91 98765 43210", "216-555-0110".
     # Candidates are checked by find_phone(): 8-15 digits, not a year range
@@ -425,22 +440,35 @@ class ResumeNormalizer:
                 merged.append(url)
         return merged
 
-    def _extract_date_range(self, text: str) -> Optional[str]:
+    def _trailing_dates(self, text: str):
+        """(match, start, end) for a trailing date range or single date."""
         m = self.DATE_RANGE_RE.search(text)
-        return f"{m.group(1).strip()} – {m.group(2).strip()}" if m else None
+        if m:
+            return m, m.group(1).strip(), m.group(2).strip()
+        m = self.SINGLE_DATE_RE.search(text)
+        if m and text[:m.start()].strip(self._TRIM_CHARS):
+            return m, m.group(1).strip(), None
+        return None, None, None
+
+    def _extract_date_range(self, text: str) -> Optional[str]:
+        m, start, end = self._trailing_dates(text)
+        if not m:
+            return None
+        return f"{start} – {end}" if end else start
 
     def _strip_date_range(self, text: str) -> str:
-        m = self.DATE_RANGE_RE.search(text)
+        m, _, _ = self._trailing_dates(text)
         return text[:m.start()].strip(self._TRIM_CHARS) if m else text.strip()
 
     def _parse_title_and_dates(self, text: str) -> Tuple[str, Optional[str], Optional[str]]:
         """'Data Scientist II | August 2024 - Present' ->
-        ('Data Scientist II', 'August 2024', 'Present')."""
-        m = self.DATE_RANGE_RE.search(text)
+        ('Data Scientist II', 'August 2024', 'Present'); a single date is
+        the start ('Writer | Summer 2021' -> ('Writer', 'Summer 2021', None))."""
+        m, start, end = self._trailing_dates(text)
         if not m:
             return text.strip(), None, None
         title = text[:m.start()].strip(self._TRIM_CHARS)
-        return (title or text.strip()), m.group(1).strip(), m.group(2).strip()
+        return (title or text.strip()), start, end
 
     # A list piece that is a date or an expiry, not an item of its own:
     # "Certified Public Accountant (CPA), New York, 2021" is one entry.

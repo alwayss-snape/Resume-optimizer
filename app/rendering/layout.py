@@ -8,7 +8,7 @@ import re
 from datetime import date
 from typing import Dict, List, Optional
 
-from app.analysis.experience import parse_month, role_intervals, years_of_experience
+from app.analysis.experience import is_ongoing, parse_month, role_intervals, years_of_experience
 from app.domain.resume import Candidate, Resume
 from app.domain.resume_document import ResumePresentation
 
@@ -33,7 +33,6 @@ MAX_SKILL_CATEGORIES = 4
 DATE_SEPARATOR = " – "
 
 _MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
-_PRESENT_WORDS = {"present", "current", "now", "today", "ongoing", "till date", "to date"}
 
 
 def section_order_for(resume: Resume, today: Optional[date] = None) -> List[str]:
@@ -75,14 +74,19 @@ def format_date(value: Optional[str]) -> str:
     text = (value or "").strip()
     if not text:
         return ""
-    if text.lower().rstrip(".") in _PRESENT_WORDS:
+    if is_ongoing(text):
         return "Present"
     lowered = text.lower()
     year_m = re.search(r"(19|20)\d{2}", lowered)
     if not year_m:
-        return text
+        short = re.search(r"\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s*['’]\d{2}\b", lowered)
+        if not short:
+            return text
+        year, month = parse_month(text, is_end=False, today=date.today())
+        return f"{_MONTH_NAMES[month - 1]} {year}"  # "Jan '19" -> "Jan 2019"
     has_month = re.search(r"\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?", lowered) \
-        or re.search(r"\b(0?[1-9]|1[0-2])\s*[/.-]\s*(19|20)\d{2}", lowered)
+        or re.search(r"\b(0?[1-9]|1[0-2])\s*[/.-]\s*(19|20)\d{2}", lowered) \
+        or re.search(r"\b(19|20)\d{2}-(0[1-9]|1[0-2])\b", lowered)
     if not has_month:
         return text if re.search(r"[a-z]", lowered) else year_m.group(0)
     year, month = parse_month(text, is_end=False, today=date.today())

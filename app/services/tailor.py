@@ -5,7 +5,7 @@ from datetime import date, datetime
 from typing import Callable, Dict, List, Optional, Tuple
 from uuid import uuid4
 
-from app.analysis.experience import is_ongoing, parse_month, target_pages
+from app.analysis.experience import future_dates, is_ongoing, parse_month, target_pages
 from app.analysis.gap_questions import GapAnswer, build_questions
 from app.analysis.jd_analyzer import JDAnalyzer
 from app.analysis.keyword_match import KeywordMatcher, _contains_seq, tokens
@@ -392,6 +392,8 @@ class TailorService:
         resume_doc, evidence_list, self.last_parse_issues = self.structure_extractor.improve(
             raw_doc, resume_doc, evidence_list,
         )
+        # Shown on "Check your details"; not a reason to ask the LLM (P8.6).
+        self.last_parse_issues = list(self.last_parse_issues) + future_dates(resume_doc.resume)
         return resume_doc, evidence_list
 
     @staticmethod
