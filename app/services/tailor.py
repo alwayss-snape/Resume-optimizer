@@ -768,6 +768,10 @@ class TailorService:
             resume_doc, evidence_list = self.normalize_raw(raw_doc)
         resume = resume_doc.resume
         _append_progress("Imported and normalized resume")
+        if mode == "PRESERVE" and any(b.id.startswith("txb_") for b in raw_doc.blocks):
+            # Text in text boxes can't be patched in place (P8.7).
+            mode = "ATS_DEFAULT"
+            _append_progress("Your file keeps some text in text boxes, so the standard template is used")
         # Record import as a revision (best-effort)
         try:
             resume_doc.record_revision("Imported uploaded résumé", ["resume", "source"], actor="import")

@@ -21,18 +21,15 @@ PERSONAS = [c for c in load_cases(include_private=False, include_personas=True) 
 
 # Persona -> why it still fails. Remove an entry when the case passes.
 CONTENT_XFAIL = {
-    'nurse-pdf': "'·' bullets and date dashes from the PDF's font (P8.7)",
     'teacher': 'two degrees merged (P8.8)',
-    'sales-pdf': "'·' bullets and date dashes from the PDF's font (P8.7)",
     'lawyer': 'two degrees merged (P8.8)',
     'academic': 'two degrees merged (P8.8)',
     'executive': 'two degrees merged (P8.8)',
-    'textbox': 'text boxes ignored (P8.7)',
 }
 # Until Stage K, scoring and page checks fail for most personas too.
 FULL_XFAIL = {name: 'content (see CONTENT_XFAIL), scoring (Stage K) or page target (P8.16)'
               for name in [*CONTENT_XFAIL, 'newgrad', 'eu_cv', 'spanish', 'nurse', 'sales', 'lawyer', 'academic',
-                           'executive', 'gap', 'veteran', 'eu_en', 'india', 'federal']}
+                           'executive', 'gap', 'veteran', 'eu_en', 'india', 'federal', 'nurse-pdf', 'sales-pdf']}
 
 _RESULTS = {}
 

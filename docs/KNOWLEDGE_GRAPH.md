@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**55 app modules · 55 test files · 103 classes · 899 functions/methods · 18,034 lines of Python** · source hash `d6e6af5cf8d1cfd8`
+**55 app modules · 56 test files · 103 classes · 904 functions/methods · 18,132 lines of Python** · source hash `dc04434bf7738527`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -155,6 +155,7 @@ tests/
     test_judge.py                                P4.3: LLM-as-judge (rubric + position-swapped pairwise), with a fake
     test_kept_sections_p83.py                    P8.3: sections the model has no fields for are kept verbatim under the…
     test_keyword_match.py                        Keyword-level match rate as the headline score (P1.2).
+    test_layouts_p87.py                          P8.7: text boxes, a name in a separated page header, "·" bullets.
     test_llm_client.py                           SampleSchema
     test_matcher.py                              test_evidence_matcher_exact_and_alias(), test_one_generic_word_cannot_…
     test_new_role.py                             P3.3: add a job that isn't on the resume yet.
@@ -346,7 +347,7 @@ _Keyword-level match rate, the headline score (P1.2)._
   - `normalize()` :579
 - **Imports:** `domain/evidence.py`, `domain/resume.py`, `domain/resume_document.py`, `ingestion/docx.py`
 - **Imported by:** `analysis/structure_extractor.py`, `eval/golden.py`, `services/tailor.py`, `validation/output.py`
-- **Tested by:** `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_ats_round_trip.py`, `tests/unit/test_contact_p84.py`, `tests/unit/test_dates_p86.py`, `tests/unit/test_job_lines_p85.py`, `tests/unit/test_kept_sections_p83.py`, `tests/unit/test_parser_regressions_p42.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_structure_extractor.py`, `tests/unit/test_tailor_resume_flow.py`
+- **Tested by:** `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_ats_round_trip.py`, `tests/unit/test_contact_p84.py`, `tests/unit/test_dates_p86.py`, `tests/unit/test_job_lines_p85.py`, `tests/unit/test_kept_sections_p83.py`, `tests/unit/test_layouts_p87.py`, `tests/unit/test_parser_regressions_p42.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_structure_extractor.py`, `tests/unit/test_tailor_resume_flow.py`
 
 ### `app/analysis/rewriter.py`
 
@@ -751,18 +752,19 @@ _LLM-as-judge for the evaluation harness (P4.3)._
 
 ### `app/ingestion/docx.py`
 
-**Layer:** Ingestion · **Stage:** 1 Ingest · **Lines:** 224
+**Layer:** Ingestion · **Stage:** 1 Ingest · **Lines:** 259
 
-- class **`RawBlock`** ([app/ingestion/docx.py:11](../app/ingestion/docx.py#L11))
-- class **`RawDocument`** ([app/ingestion/docx.py:27](../app/ingestion/docx.py#L27))
-- class **`DocxParser`** ([app/ingestion/docx.py:35](../app/ingestion/docx.py#L35))
-  - `_classify()` :46 — -> (block_type, text without a bullet glyph, whole line bold).
-  - `_skills_label_row()` :80 — 'Label: values' for a two-cell row of a skills table, else None.
-  - `_hyperlinks()` :105 — Targets of every external hyperlink in the body, in rId order
-  - `parse()` :116
+- class **`RawBlock`** ([app/ingestion/docx.py:12](../app/ingestion/docx.py#L12))
+- class **`RawDocument`** ([app/ingestion/docx.py:28](../app/ingestion/docx.py#L28))
+- class **`DocxParser`** ([app/ingestion/docx.py:36](../app/ingestion/docx.py#L36))
+  - `_classify()` :48 — -> (block_type, text without a bullet glyph, whole line bold).
+  - `_skills_label_row()` :82 — 'Label: values' for a two-cell row of a skills table, else None.
+  - `_text_box_paragraphs()` :109 — Paragraphs inside text boxes anchored in this paragraph (P8.7:
+  - `_hyperlinks()` :127 — Targets of every external hyperlink in the body, in rId order
+  - `parse()` :138
 - **Imports:** `rendering/document_map.py`
 - **Imported by:** `analysis/resume_normalizer.py`, `analysis/structure_extractor.py`, `eval/golden.py`, `ingestion/pdf.py`, `services/tailor.py`, `validation/output.py`
-- **Tested by:** `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_ats_round_trip.py`, `tests/unit/test_docx_parser.py`, `tests/unit/test_docx_renderer.py`, `tests/unit/test_job_lines_p85.py`, `tests/unit/test_kept_sections_p83.py`, `tests/unit/test_parser_regressions_p42.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_pdf_parser.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_structure_extractor.py`, `tests/unit/test_tailor_resume_flow.py`
+- **Tested by:** `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_ats_round_trip.py`, `tests/unit/test_docx_parser.py`, `tests/unit/test_docx_renderer.py`, `tests/unit/test_job_lines_p85.py`, `tests/unit/test_kept_sections_p83.py`, `tests/unit/test_layouts_p87.py`, `tests/unit/test_parser_regressions_p42.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_pdf_parser.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_structure_extractor.py`, `tests/unit/test_tailor_resume_flow.py`
 
 ### `app/ingestion/ocr.py`
 
@@ -776,27 +778,27 @@ _LLM-as-judge for the evaluation harness (P4.3)._
 
 ### `app/ingestion/pdf.py`
 
-**Layer:** Ingestion · **Stage:** 1 Ingest · **Lines:** 371
+**Layer:** Ingestion · **Stage:** 1 Ingest · **Lines:** 373
 
 - class **`_Line`** ([app/ingestion/pdf.py:41](../app/ingestion/pdf.py#L41)) — One visual text line with the layout facts the parser needs.
 - class **`PdfParser`** ([app/ingestion/pdf.py:73](../app/ingestion/pdf.py#L73))
-  - `__init__()` :78
-  - `_ensure_fitz()` :81
-  - `_merge_wrapped_lines()` :89 — Text-only fallback for joining word-wrapped lines: a line is joined
-  - `_page_lines()` :110
-  - `_attach_right_columns()` :132 — A short, right-aligned run printed on the same row as a left-hand
-  - `_split_bullet()` :179 — Return the bullet text without its glyph, or None if not a bullet.
-  - `_continues()` :186 — Is `line` a word-wrap continuation of the item ending with `prev`?
-  - `_assemble()` :209 — Join continuation lines onto their bullet/paragraph. Each returned
-  - `_body_size()` :233
-  - `_is_heading()` :240
-  - `parse()` :256
+  - `__init__()` :80
+  - `_ensure_fitz()` :83
+  - `_merge_wrapped_lines()` :91 — Text-only fallback for joining word-wrapped lines: a line is joined
+  - `_page_lines()` :112
+  - `_attach_right_columns()` :134 — A short, right-aligned run printed on the same row as a left-hand
+  - `_split_bullet()` :181 — Return the bullet text without its glyph, or None if not a bullet.
+  - `_continues()` :188 — Is `line` a word-wrap continuation of the item ending with `prev`?
+  - `_assemble()` :211 — Join continuation lines onto their bullet/paragraph. Each returned
+  - `_body_size()` :235
+  - `_is_heading()` :242
+  - `parse()` :258
 - function **`_clean()`** ([app/ingestion/pdf.py:54](../app/ingestion/pdf.py#L54))
 - function **`_is_bold_span()`** ([app/ingestion/pdf.py:60](../app/ingestion/pdf.py#L60))
 - function **`_join_wrapped()`** ([app/ingestion/pdf.py:64](../app/ingestion/pdf.py#L64)) — Join a wrapped line to the one before it. A line that breaks after
 - **Imports:** `ingestion/docx.py`, `ingestion/ocr.py`, `rendering/document_map.py`
 - **Imported by:** `eval/golden.py`, `services/tailor.py`, `validation/output.py`
-- **Tested by:** `tests/unit/test_parser_regressions_p42.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_pdf_parser.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_structure_extractor.py`
+- **Tested by:** `tests/unit/test_layouts_p87.py`, `tests/unit/test_parser_regressions_p42.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_pdf_parser.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_structure_extractor.py`
 
 ### `app/llm/client.py`
 
@@ -1022,7 +1024,7 @@ _Local profile of facts the user has confirmed (P3.2)._
 
 ### `app/services/tailor.py`
 
-**Layer:** Services · **Stage:** all · **Lines:** 1191
+**Layer:** Services · **Stage:** all · **Lines:** 1195
 
 - class **`TailorService`** ([app/services/tailor.py:56](../app/services/tailor.py#L56))
   - `__init__()` :57
@@ -1053,7 +1055,7 @@ _Local profile of facts the user has confirmed (P3.2)._
   - `incorporate_user_addition()` :620 — Fold a user-supplied free-text addition (a project, an
   - `tailor_resume()` :699
 - function **`_progress()`** ([app/services/tailor.py:45](../app/services/tailor.py#L45)) — A progress reporter that can never break a run (P3.6).
-- function **`_merge_usage()`** ([app/services/tailor.py:1182](../app/services/tailor.py#L1182)) — Combine two LLMClient.get_usage_summary() dicts into one.
+- function **`_merge_usage()`** ([app/services/tailor.py:1186](../app/services/tailor.py#L1186)) — Combine two LLMClient.get_usage_summary() dicts into one.
 - **Imports:** `analysis/experience.py`, `analysis/gap_questions.py`, `analysis/jd_analyzer.py`, `analysis/keyword_match.py`, `analysis/matcher.py`, `analysis/resume_normalizer.py`, `analysis/rewriter.py`, `analysis/scoring.py`, `analysis/semantic_matcher.py`, `analysis/skills_tailor.py`, `analysis/structure_extractor.py`, `analysis/summary_writer.py`, `analysis/tailor_planner.py`, `domain/evidence.py`, `domain/job.py`, `domain/report.py`, `domain/resume.py`, `domain/resume_document.py`, `domain/tailoring.py`, `ingestion/docx.py`, `ingestion/pdf.py`, `llm/client.py`, `rendering/docx_patcher.py`, `rendering/html_renderer.py`, `rendering/layout.py`, `rendering/page_fit.py`, `rendering/pdf_converter.py`, `rendering/template_renderer.py`, `services/profile_store.py`, `services/run_manager.py`, `validation/content_lint.py`, `validation/coverage.py`, `validation/factual.py`, `validation/output.py`, `validation/safety.py`, `validation/structural.py`
 - **Imported by:** `api/main.py`, `cli.py`, `eval/harness.py`
 - **Tested by:** `tests/integration/test_coverage_tailor.py`, `tests/integration/test_end_to_end.py`, `tests/unit/test_api.py`, `tests/unit/test_check_parsed_resume.py`, `tests/unit/test_cli.py`, `tests/unit/test_cli_parity.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_new_role.py`, `tests/unit/test_profile_store.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_review_view.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_tailor_resume_flow.py`, `tests/unit/test_tailor_service_addition.py`

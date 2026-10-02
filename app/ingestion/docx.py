@@ -3,6 +3,7 @@ import re
 from typing import Any, Dict, List, Optional, Tuple
 import docx
 from docx.opc.constants import RELATIONSHIP_TYPE as RT
+from docx.oxml.ns import qn
 from docx.text.paragraph import Paragraph
 from pydantic import BaseModel, Field
 
@@ -36,7 +37,8 @@ class DocxParser:
     # "●" (U+25CF) and friends are common Word bullet glyphs that are NOT the
     # same character as "•" (U+2022) — missing them here left the raw glyph
     # baked into bullet text (double-bulleted output: "• ● Built...").
-    BULLET_PREFIXES = ("•", "●", "◦", "‣", "▸", "▪", "-", "*", "–", "—", "o ")
+    BULLET_PREFIXES = ("•", "●", "◦", "‣", "▸", "▪", "·", "∙", "⁃", "➢", "➤", "►", "✓", "❖",
+                       "-", "*", "–", "—", "o ")
 
     _LABEL_RE = re.compile(r"^[^:\t]{1,40}:\s+\S")
 
@@ -101,6 +103,26 @@ class DocxParser:
             return None
         return f"{label.rstrip(':')}: {values}"
 
+    _MC_FALLBACK = "{http://schemas.openxmlformats.org/markup-compatibility/2006}Fallback"
+
+    @classmethod
+    def _text_box_paragraphs(cls, paragraph) -> List[Paragraph]:
+        """Paragraphs inside text boxes anchored in this paragraph (P8.7:
+        Canva and many Word templates put whole sections in text boxes,
+        which python-docx doesn't walk). Word stores each box twice, the
+        second copy as a legacy fallback; that copy is skipped."""
+        out: List[Paragraph] = []
+        for box in paragraph._p.iter(qn("w:txbxContent")):
+            node, fallback = box.getparent(), False
+            while node is not None:
+                if node.tag == cls._MC_FALLBACK:
+                    fallback = True
+                    break
+                node = node.getparent()
+            if not fallback:
+                out.extend(Paragraph(p, paragraph._parent) for p in box.iter(qn("w:p")))
+        return out
+
     @staticmethod
     def _hyperlinks(doc) -> List[str]:
         """Targets of every external hyperlink in the body, in rId order
@@ -152,27 +174,40 @@ class DocxParser:
         # job header, a skills grid) under whichever section came last.
         p_idx = -1
         t_idx = -1
+        box_counter = 0
         for item in doc.iter_inner_content():
             if isinstance(item, Paragraph):
                 p_idx += 1
                 p = item
                 text = self._INVISIBLE_RE.sub("", p.text).strip()
-                if not text:
-                    continue
-                block_type, text, bold = self._classify(p, text)
-                if block_type == "heading":
-                    current_section = text
+                if text:
+                    block_type, text, bold = self._classify(p, text)
+                    if block_type == "heading":
+                        current_section = text
 
-                block_id = f"blk_{block_counter:04d}"
-                block_counter += 1
-                location = DocumentLocation(
-                    section=current_section,
-                    paragraph_index=p_idx,
-                    run_indices=list(range(len(p.runs))),
-                    style_name=p.style.name if p.style else "",
-                    original_text=p.text,
-                )
-                add_block(block_id, block_type, text, bold, location)
+                    block_id = f"blk_{block_counter:04d}"
+                    block_counter += 1
+                    location = DocumentLocation(
+                        section=current_section,
+                        paragraph_index=p_idx,
+                        run_indices=list(range(len(p.runs))),
+                        style_name=p.style.name if p.style else "",
+                        original_text=p.text,
+                    )
+                    add_block(block_id, block_type, text, bold, location)
+                # Text boxes anchored here, in reading order. Never patched
+                # in place (no paragraph index): the template rebuilds them.
+                for box_p in self._text_box_paragraphs(p):
+                    box_text = self._INVISIBLE_RE.sub("", box_p.text).strip()
+                    if not box_text:
+                        continue
+                    block_type, box_text, bold = self._classify(box_p, box_text)
+                    if block_type == "heading":
+                        current_section = box_text
+                    location = DocumentLocation(section=current_section, original_text=box_p.text,
+                                                style_name=box_p.style.name if box_p.style else "")
+                    add_block(f"txb_{box_counter:04d}", block_type, box_text, bold, location)
+                    box_counter += 1
                 continue
 
             # Process every table paragraph individually. A cell may contain multiple

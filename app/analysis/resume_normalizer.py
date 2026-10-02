@@ -27,7 +27,7 @@ class ResumeNormalizer:
     # The end of a range may also say the role continues.
     _END = (r"(?:" + _DATE + r"|\b(?:Present|Currently|Current|Now|Today|Ongoing|Till\s+Date|To\s+Date|Till\s+Now"
             r"|Heute|Actualidad|Presente|Actual)\b)")
-    _RANGE = r"(" + _DATE + r")\s*(?:[-–—]|\bto\b|\buntil\b|\btill\b|\bbis\b|\bhasta\b)\s*(" + _END + r")"
+    _RANGE = r"(" + _DATE + r")\s*(?:[-–—·]|\bto\b|\buntil\b|\btill\b|\bbis\b|\bhasta\b)\s*(" + _END + r")"
     # A job line's dates always carry a year or "Present".
     YEAR_OR_PRESENT = re.compile(r"\b(?:19|20)\d{2}\b|\b(?:Present|Current|Now)\b|\b" + _MONTH + r"\.?\s*['’]\d{2}\b",
                                  re.IGNORECASE)

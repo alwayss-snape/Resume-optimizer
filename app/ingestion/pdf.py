@@ -73,7 +73,9 @@ def _join_wrapped(prev: str, nxt: str) -> str:
 class PdfParser:
     # "●" (U+25CF) is what Google Docs / Word export for a default bullet; the
     # private-use U+F0B7 is Word's Symbol-font bullet.
-    BULLET_PREFIXES = ("•", "●", "◦", "‣", "▸", "▪", "■", "\uf0b7", "-", "*", "–", "—", "o ")
+    # P8.8: "·" (a font without "•" prints a middle dot), arrows and ticks.
+    BULLET_PREFIXES = ("•", "●", "◦", "‣", "▸", "▪", "■", "\uf0b7", "·", "∙", "⁃", "➢", "➤", "►", "✓", "❖",
+                       "-", "*", "–", "—", "o ")
 
     def __init__(self):
         self.ocr_engine = OCREngine()

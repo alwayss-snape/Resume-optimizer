@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "d6e6af5cf8d1cfd8",
+  "source_hash": "dc04434bf7738527",
   "stats": {
-    "files": 142,
-    "python_files": 119,
+    "files": 143,
+    "python_files": 120,
     "app_modules": 55,
-    "test_files": 55,
+    "test_files": 56,
     "classes": 103,
-    "functions": 899,
-    "lines_of_python": 18034
+    "functions": 904,
+    "lines_of_python": 18132
   },
   "axes": {
     "x": "location (path)",
@@ -2112,44 +2112,49 @@
       "stages": [
         "1 Ingest"
       ],
-      "lines": 224,
+      "lines": 259,
       "doc": "",
       "classes": [
         {
           "name": "RawBlock",
-          "line": 11,
+          "line": 12,
           "doc": "",
           "methods": []
         },
         {
           "name": "RawDocument",
-          "line": 27,
+          "line": 28,
           "doc": "",
           "methods": []
         },
         {
           "name": "DocxParser",
-          "line": 35,
+          "line": 36,
           "doc": "",
           "methods": [
             {
               "name": "_classify",
-              "line": 46,
+              "line": 48,
               "doc": "-> (block_type, text without a bullet glyph, whole line bold)."
             },
             {
               "name": "_skills_label_row",
-              "line": 80,
+              "line": 82,
               "doc": "'Label: values' for a two-cell row of a skills table, else None."
             },
             {
+              "name": "_text_box_paragraphs",
+              "line": 109,
+              "doc": "Paragraphs inside text boxes anchored in this paragraph (P8.7:"
+            },
+            {
               "name": "_hyperlinks",
-              "line": 105,
+              "line": 127,
               "doc": "Targets of every external hyperlink in the body, in rId order"
             },
             {
               "name": "parse",
-              "line": 116,
+              "line": 138,
               "doc": ""
             }
           ]
@@ -2199,7 +2204,7 @@
       "stages": [
         "1 Ingest"
       ],
-      "lines": 371,
+      "lines": 373,
       "doc": "",
       "classes": [
         {
@@ -2215,57 +2220,57 @@
           "methods": [
             {
               "name": "__init__",
-              "line": 78,
+              "line": 80,
               "doc": ""
             },
             {
               "name": "_ensure_fitz",
-              "line": 81,
+              "line": 83,
               "doc": ""
             },
             {
               "name": "_merge_wrapped_lines",
-              "line": 89,
+              "line": 91,
               "doc": "Text-only fallback for joining word-wrapped lines: a line is joined"
             },
             {
               "name": "_page_lines",
-              "line": 110,
+              "line": 112,
               "doc": ""
             },
             {
               "name": "_attach_right_columns",
-              "line": 132,
+              "line": 134,
               "doc": "A short, right-aligned run printed on the same row as a left-hand"
             },
             {
               "name": "_split_bullet",
-              "line": 179,
+              "line": 181,
               "doc": "Return the bullet text without its glyph, or None if not a bullet."
             },
             {
               "name": "_continues",
-              "line": 186,
+              "line": 188,
               "doc": "Is `line` a word-wrap continuation of the item ending with `prev`?"
             },
             {
               "name": "_assemble",
-              "line": 209,
+              "line": 211,
               "doc": "Join continuation lines onto their bullet/paragraph. Each returned"
             },
             {
               "name": "_body_size",
-              "line": 233,
+              "line": 235,
               "doc": ""
             },
             {
               "name": "_is_heading",
-              "line": 240,
+              "line": 242,
               "doc": ""
             },
             {
               "name": "parse",
-              "line": 256,
+              "line": 258,
               "doc": ""
             }
           ]
@@ -3157,7 +3162,7 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 1191,
+      "lines": 1195,
       "doc": "",
       "classes": [
         {
@@ -3311,7 +3316,7 @@
         },
         {
           "name": "_merge_usage",
-          "line": 1182,
+          "line": 1186,
           "doc": "Combine two LLMClient.get_usage_summary() dicts into one."
         }
       ]
@@ -4062,33 +4067,33 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 68,
+      "lines": 65,
       "doc": "P8.1: the cross-domain user-testing personas as eval cases (offline, no LLM).",
       "classes": [],
       "functions": [
         {
           "name": "_failures",
-          "line": 40,
+          "line": 37,
           "doc": ""
         },
         {
           "name": "_params",
-          "line": 49,
+          "line": 46,
           "doc": ""
         },
         {
           "name": "test_persona_cases_exist",
-          "line": 54,
+          "line": 51,
           "doc": ""
         },
         {
           "name": "test_persona_content",
-          "line": 61,
+          "line": 58,
           "doc": ""
         },
         {
           "name": "test_persona_full",
-          "line": 67,
+          "line": 64,
           "doc": ""
         }
       ]
@@ -5230,6 +5235,37 @@
           "name": "test_hyphenated_terms_and_ing_fields_after_verb_folding",
           "line": 100,
           "doc": "P7.2 review: stemming must not break \"AWS-certified\" or turn"
+        }
+      ]
+    },
+    {
+      "id": "tests/unit/test_layouts_p87.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 60,
+      "doc": "P8.7: text boxes, a name in a separated page header, \"\u00b7\" bullets.",
+      "classes": [],
+      "functions": [
+        {
+          "name": "_p",
+          "line": 22,
+          "doc": ""
+        },
+        {
+          "name": "test_text_box_content_is_read_once_in_order",
+          "line": 27,
+          "doc": ""
+        },
+        {
+          "name": "test_name_from_a_separated_page_header",
+          "line": 46,
+          "doc": ""
+        },
+        {
+          "name": "test_middle_dot_bullets",
+          "line": 57,
+          "doc": ""
         }
       ]
     },
@@ -7266,6 +7302,11 @@
     },
     {
       "from": "app/analysis/resume_normalizer.py",
+      "to": "tests/unit/test_layouts_p87.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/analysis/resume_normalizer.py",
       "to": "tests/unit/test_parser_regressions_p42.py",
       "type": "tested_by"
     },
@@ -8511,6 +8552,11 @@
     },
     {
       "from": "app/ingestion/docx.py",
+      "to": "tests/unit/test_layouts_p87.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/ingestion/docx.py",
       "to": "tests/unit/test_parser_regressions_p42.py",
       "type": "tested_by"
     },
@@ -8573,6 +8619,11 @@
       "from": "app/ingestion/pdf.py",
       "to": "app/rendering/document_map.py",
       "type": "imports"
+    },
+    {
+      "from": "app/ingestion/pdf.py",
+      "to": "tests/unit/test_layouts_p87.py",
+      "type": "tested_by"
     },
     {
       "from": "app/ingestion/pdf.py",
