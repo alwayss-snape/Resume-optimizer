@@ -2,7 +2,7 @@
 // Vite proxies /api in development and FastAPI serves this app in
 // production, so the session cookie just works.
 
-import type { AnalysisReport, Details, MatchPreview, ParseResult, ProposalsResult, TailorResult } from "./types";
+import type { AnalysisReport, Details, Layout, MatchPreview, ParseResult, ProposalsResult, TailorResult } from "./types";
 
 export interface AppConfig {
   provider: string;
@@ -185,6 +185,12 @@ export interface TailorRequest {
 
 export const tailorResume = (body: TailorRequest, onProgress: (m: string) => void, signal?: AbortSignal) =>
   streamStep<TailorResult>("/api/tailor", body, onProgress, signal);
+
+/** Re-render with the user's arrangement (P8.13). No AI call. */
+export const arrangeResume = (layout: Layout, signal?: AbortSignal) =>
+  request<TailorResult>("/api/arrange", {
+    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ layout }), signal,
+  });
 
 export const fileUrl = (kind: "docx" | "pdf" | "changes") => `/api/files/${kind}`;
 export const previewUrl = (page: number, version: string | number) => `/api/preview/${page}?v=${version}`;

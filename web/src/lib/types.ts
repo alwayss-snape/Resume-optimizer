@@ -170,4 +170,57 @@ export interface TailorResult {
     strict_withheld: boolean } | null;
   pages: number;
   files: { docx: boolean; pdf: boolean; changes: boolean };
+  coverage?: { pct: number | null; counted: number; kept: number; reworded: number; trimmed: number; lost: string[] } | null;
+  /** What the Arrange screen edits (P8.13); null for "keep my layout". */
+  arrangement?: Arrangement | null;
+}
+
+export interface ArrangeBullet {
+  id: string;
+  text: string;
+  /** The bullet as the uploaded file had it (null for one added in this run). */
+  file_text: string | null;
+  group: string | null;
+}
+
+export interface ArrangeEntry {
+  id: string;
+  title: string;
+  subtitle: string;
+  bullets: ArrangeBullet[];
+}
+
+export interface ArrangeSection {
+  key: string;
+  title: string;
+  kind: "text" | "entries" | "other";
+  lines?: string[];
+  entries?: ArrangeEntry[];
+}
+
+export interface Layout {
+  section_order: string[];
+  hidden_sections: string[];
+  entry_order: Record<string, string[]>;
+  bullet_order: Record<string, string[]>;
+  removed_bullets: string[];
+  edits: Record<string, string>;
+  pinned: string[];
+  page_target: number | null;
+  trim: boolean;
+}
+
+export interface TrimmedItem {
+  kind: "bullet" | "project" | "interests";
+  id: string;
+  owner: string | null;
+  owner_label?: string;
+  text: string;
+}
+
+export interface Arrangement {
+  sections: ArrangeSection[];
+  layout: Layout;
+  source_order: { bullets: Record<string, string[]>; experience: string[]; projects: string[]; education: string[] };
+  trimmed: TrimmedItem[];
 }

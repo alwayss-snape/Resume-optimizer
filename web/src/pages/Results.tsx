@@ -8,6 +8,7 @@ import { downloadFile, fileUrl, friendlyError, getChangeLog, previewUrl } from "
 import { useApp } from "../lib/store";
 import type { KeywordRow, TailorResult } from "../lib/types";
 import { useFocusHeading } from "../lib/useFocusHeading";
+import { Arrange } from "./Arrange";
 
 const CHECK_LABELS: Record<string, string> = {
   bullets_per_role: "Bullets per role", length: "Length", pronoun: "Pronouns", buzzword: "Buzzwords",
@@ -145,6 +146,16 @@ type Tab = (typeof TABS)[number];
 
 /** Step 4: the finished files, how the match moved, and what changed. */
 export function Results() {
+  const { run, updateRun } = useApp();
+  const [arranging, setArranging] = useState(false);
+  if (arranging && run.results?.arrangement) {
+    return <Arrange result={run.results} onBack={() => setArranging(false)}
+      onResult={(r) => updateRun({ results: r, resultsVersion: run.resultsVersion + 1 })} />;
+  }
+  return <ResultsView onArrange={() => setArranging(true)} />;
+}
+
+function ResultsView({ onArrange }: { onArrange: () => void }) {
   const { run, goTo, updateRun } = useApp();
   const result = run.results!;
   const heading = useFocusHeading();
@@ -214,6 +225,12 @@ export function Results() {
             <p className="m-0 text-xs text-muted">A PDF couldn't be made on the server (it needs LibreOffice); the DOCX is ready.</p>
           )}
           {result.addition_note && <p className="m-0 text-sm text-muted">Your addition was included: {result.addition_note}</p>}
+          {result.arrangement && (
+            <div className="flex flex-col gap-1.5 border-t border-line pt-4 sm:flex-row sm:items-center sm:gap-4">
+              <Button onClick={onArrange}>Arrange and edit</Button>
+              <span className="text-sm text-muted">Reorder sections and bullets, hide what you don't need, reword a line, or bring back what was trimmed.</span>
+            </div>
+          )}
         </div>
         <motion.div style={{ y: drift }}>
           <ScoreReveal result={result} beforeRows={run.drafted?.keyword_match?.rows ?? []} asked={asked}
