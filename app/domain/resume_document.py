@@ -48,6 +48,13 @@ class ResumeDocument(BaseModel):
     presentation: ResumePresentation = Field(default_factory=ResumePresentation)
     source: Optional[ResumeSource] = None
     revisions: List[ResumeRevision] = Field(default_factory=list)
+    # Where the parse came from, for the content coverage check (P8.2):
+    # source lines read as standard section headings (the template renames
+    # them), the header's lines, and lines the user changed or removed on
+    # "Check your details" (their edits, not losses).
+    section_headings: List[str] = Field(default_factory=list)
+    header_blocks: List[str] = Field(default_factory=list)
+    user_changed_blocks: List[str] = Field(default_factory=list)
 
     def record_revision(
         self,

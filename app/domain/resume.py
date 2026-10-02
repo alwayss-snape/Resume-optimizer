@@ -43,6 +43,9 @@ class Experience(BaseModel):
     end_date: Optional[str] = None
     roles: List[Role] = Field(default_factory=list)
     bullets: List[ResumeBullet] = Field(default_factory=list)
+    # Source block ids of the entry's header lines (title, company, dates),
+    # so a check can tell which lines of the file this job came from.
+    source_blocks: List[str] = Field(default_factory=list)
 
     def all_roles(self) -> List[Role]:
         if self.roles:

@@ -25,6 +25,8 @@ def main(argv=None) -> int:
     r.add_argument("--tailor", action="store_true", help="also draft rewrites and render the output")
     r.add_argument("--case", action="append", help="only these case names (repeatable)")
     r.add_argument("--no-private", action="store_true", help="skip data/eval/private cases")
+    r.add_argument("--personas", action="store_true",
+                   help="also run the cross-domain user-testing personas (data/eval/personas, P8.1)")
     r.add_argument("--compare", help="baseline JSON to compare against")
     r.add_argument("--save", help="write the report JSON here (e.g. to record a new baseline)")
     r.add_argument("--out-dir", help="where tailored outputs go (default: a temp dir)")
@@ -39,7 +41,7 @@ def main(argv=None) -> int:
     args = parser.parse_args(argv)
 
     logging.basicConfig(level=logging.WARNING, format="%(levelname)s %(name)s: %(message)s")
-    cases = load_cases(include_private=not args.no_private)
+    cases = load_cases(include_private=not args.no_private, include_personas=args.personas)
     if args.case:
         cases = [c for c in cases if c.name in args.case]
     if not cases:

@@ -17,7 +17,7 @@ import pytest
 
 from app.eval.harness import PERSONA_MANIFEST, is_content_failure, load_cases, run
 
-PERSONAS = [c for c in load_cases(include_private=False) if c.suite == "persona"]
+PERSONAS = [c for c in load_cases(include_private=False, include_personas=True) if c.suite == "persona"]
 
 # Persona -> why it still fails. Remove an entry when the case passes.
 CONTENT_XFAIL = {

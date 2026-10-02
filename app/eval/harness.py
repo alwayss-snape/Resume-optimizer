@@ -71,7 +71,7 @@ class _RetryCounter(logging.Handler):
             self.count += 1
 
 
-def load_cases(include_private: bool = True, include_personas: bool = True) -> List[Case]:
+def load_cases(include_private: bool = True, include_personas: bool = False) -> List[Case]:
     cases: List[Case] = []
     manifests = [(COMMITTED_MANIFEST, "fixture"), (GENERATED_MANIFEST, "generated")]
     if include_personas:
@@ -222,6 +222,8 @@ def _tailor_metrics(service, case: Case, jd_text: str, parsed, generated: Dict, 
         "metric_share": round(result["content_lint"].metric_share, 2) if result.get("content_lint") else None,
         # P4.2: numbers in the output that the resume never had (zero is the goal)
         "fabricated_numbers": fabricated_numbers(output_text, source_text),
+        # P8.2: source lines that never reached the output (zero is the goal)
+        "coverage": result.get("coverage"),
         # P4.2: keyword stuffing: above the target band, or a JD keyword repeated too often
         "stuffing": stuffing(output_text, job.keywords if job else [], rate_after,
                              float(result.get("initial_alignment_score") or 0.0)),
@@ -385,6 +387,9 @@ def check_expected(expected: Dict, resume, job, keyword_report, metrics: Dict,
             failed.append(f"{t['pages']} pages, target {t['target_pages']}")
         if t["ats_round_trip"]:
             failed.append(f"ATS round-trip: {t['ats_round_trip'][0]}")
+        cov = t.get("coverage") or {}
+        if cov.get("lost"):
+            failed.append(f"coverage: {len(cov['lost'])} source line(s) lost, e.g. {cov['lost'][0][:80]!r}")
         if t["fabricated_numbers"]:
             failed.append(f"numbers not in the resume: {t['fabricated_numbers']}")
         if not t["stuffing"]["ok"]:

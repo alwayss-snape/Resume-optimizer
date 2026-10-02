@@ -36,6 +36,7 @@ from app.rendering.template_renderer import TemplateRenderer
 from app.services.profile_store import ProfileStore
 from app.services.run_manager import RunManager
 from app.validation.content_lint import lint as content_lint
+from app.validation.coverage import content_coverage, docx_text
 from app.validation.factual import FactualValidator
 from app.validation.output import OutputQAValidator
 from app.validation.structural import StructuralValidator
@@ -337,6 +338,29 @@ class TailorService:
         self.template_renderer.render_ats_default(resume_doc, docx_path)
         return self.pdf_converter.convert_docx_to_pdf(docx_path, output_dir)
 
+    COVERAGE_PREFIX = "Content coverage:"
+
+    @staticmethod
+    def _coverage(raw_doc, resume_doc: ResumeDocument, original: Resume, before_fit: Resume, docx_path: str):
+        """Content coverage of the rendered DOCX against the uploaded file (P8.2)."""
+        final = resume_doc.resume
+        original_text = {b.source_location_id: b.text for s in [*original.experience, *original.projects]
+                         for b in s.bullets if b.source_location_id}
+        final_bullets = {b.source_location_id: b.text for s in [*final.experience, *final.projects]
+                         for b in s.bullets if b.source_location_id}
+        fit_bullets = {b.source_location_id for s in [*before_fit.experience, *before_fit.projects]
+                       for b in s.bullets if b.source_location_id}
+        reworded = {sid for sid, text in final_bullets.items() if text != original_text.get(sid, text)}
+        reworded |= set(resume_doc.user_changed_blocks)
+        if (final.summary or "") != (original.summary or ""):
+            reworded |= {b.id for b in raw_doc.blocks if b.text.strip() and b.text.strip() in (original.summary or "")}
+        trimmed = fit_bullets - set(final_bullets)
+        removed = [*[i for i in before_fit.interests if i not in final.interests],
+                   *[t for p in before_fit.projects if p not in final.projects
+                     for t in [p.name, *(b.text for b in p.bullets)]]]
+        return content_coverage(raw_doc.blocks, docx_text(docx_path), heading_texts=resume_doc.section_headings,
+                                reworded_blocks=reworded, trimmed_blocks=trimmed, removed_text="\n".join(removed))
+
     @staticmethod
     def _apply_bullet_order(resume: Resume, bullet_order: Dict[str, List[str]]) -> int:
         """Reorder bullets as planned (most relevant first within each
@@ -428,6 +452,8 @@ class TailorService:
             if links != resume.candidate.links:
                 resume.candidate.links = links
                 changed.append("candidate.links")
+        if any(c.startswith("candidate.") for c in changed):
+            resume_doc.user_changed_blocks.extend(resume_doc.header_blocks)  # P8.2: the user's edit, not a loss
 
         by_id = {e.id: e for e in resume.experience}
         for fix in corrections.get("experience") or []:
@@ -454,6 +480,8 @@ class TailorService:
                     exp.title, exp.start_date, exp.end_date = first.title, first.start_date, first.end_date
                     exp.roles = roles if len(roles) > 1 else []
                     changed.append(f"{exp.id}.roles")
+            if any(c.startswith(f"{exp.id}.") for c in changed):
+                resume_doc.user_changed_blocks.extend(exp.source_blocks)
             # Experience evidence reads "<company>: <bullet>"; keep it in step.
             new_context = exp.company or exp.title or "Experience"
             if new_context != old_context:
@@ -466,6 +494,11 @@ class TailorService:
         if resume.experience and set(by_id) <= removed and not corrections.get("added_jobs"):
             raise ValueError("Keep at least one job, or add the right one.")
         if removed & set(by_id):
+            for e in resume.experience:
+                if e.id in removed:  # removed by the user: not counted as lost (P8.2)
+                    resume_doc.user_changed_blocks.extend(e.source_blocks)
+                    resume_doc.user_changed_blocks.extend(b.source_location_id for b in e.bullets
+                                                          if b.source_location_id)
             gone = {b.id for e in resume.experience if e.id in removed for b in e.bullets}
             resume.experience = [e for e in resume.experience if e.id not in removed]
             evidence_list = [ev for ev in evidence_list if ev.source_id not in gone]
@@ -936,6 +969,7 @@ class TailorService:
             # Render, count pages and trim the least relevant content until
             # it fits the page target (P2.4). This also produces the PDF.
             page_target = target_pages(resume)
+            before_fit = copy.deepcopy(resume)
             fit = PageFitter(self._render_template).fit(
                 resume_doc, docx_output_path, output_dir, page_target,
                 relevance=self._fit_relevance(resume, plan),
@@ -953,6 +987,20 @@ class TailorService:
 
         # Content checks on what was rendered (P2.6): advice, never auto-applied.
         content_report = content_lint(resume)
+
+        # Did every line of the uploaded file reach the output? (P8.2) Only
+        # the template rebuilds the document; a PRESERVE patch keeps it all.
+        coverage = None
+        if fit:
+            coverage = self._coverage(raw_doc, resume_doc, original_resume, before_fit, docx_output_path)
+            if coverage.lost:
+                shown = "; ".join(f"\"{line[:70]}\"" for line in coverage.lost[:5])
+                more = f" and {len(coverage.lost) - 5} more" if len(coverage.lost) > 5 else ""
+                warnings.append(f"{self.COVERAGE_PREFIX} {len(coverage.lost)} line(s) from your resume are missing "
+                                f"from the output: {shown}{more}")
+            _append_progress(f"Content coverage: {coverage.pct}% of {coverage.counted} source lines kept "
+                             f"({coverage.reworded} reworded, {coverage.trimmed} trimmed to fit, "
+                             f"{len(coverage.lost)} lost)")
 
         # Canonical ATS HTML is available for browser preview and print workflows.
         try:
@@ -1088,7 +1136,9 @@ class TailorService:
         def has_critical(warnings_list):
             return any(any(sig in w for sig in critical_signals) for w in warnings_list)
 
-        success = True
+        # Content lost from the uploaded file fails the run, however clean
+        # the file reads back (P8.2).
+        success = not (coverage and coverage.lost)
         if has_critical(docx_warnings):
             success = False
         if pdf_res and has_critical(pdf_warnings):
@@ -1112,6 +1162,7 @@ class TailorService:
             "docx_warnings": docx_warnings,
             "pdf_warnings": pdf_warnings,
             "success": success,
+            "coverage": coverage.as_dict() if coverage else None,
             # What really went into the files (P5.5), for an honest summary.
             "applied": {
                 "bullets": sum(1 for p in approved_proposals if getattr(p, "kind", "bullet") == "bullet"

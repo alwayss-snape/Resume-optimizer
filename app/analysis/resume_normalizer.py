@@ -24,12 +24,39 @@ class ResumeNormalizer:
         r"((?:\b" + _MONTH + r"\.?,?\s*)?\d{4}|Present|Current|Now)\s*\)?\s*$",
         re.IGNORECASE,
     )
-    PHONE_RE = re.compile(r'(\+\d{1,3}[-.\s]?)?\d{3}[-.\s]?\d{3}[-.\s]?\d{4}\b')
+    # A phone number in any common grouping (P8.4): "(602) 555-0147",
+    # "+33 6 12 34 56 78", "+49 30 12345678", "+91 98765 43210", "216-555-0110".
+    # Candidates are checked by find_phone(): 8-15 digits, not a year range
+    # or a dotted date.
+    PHONE_RE = re.compile(
+        r"(?<![\w/.+-])(?:\+\d{1,3}[\s.-]?)?(?:\(\d{1,4}\)[\s.-]?)?\d{1,12}(?:[\s.-]\d{1,12}){0,5}(?![\w/])")
     # A URL written out in the text: "linkedin.com/in/x", "https://github.com/x".
+    # Common generic and country top-level domains (P8.4: portfolio sites such
+    # as "name.design" were dropped). A fixed list keeps "B.Sc", "e.g." and
+    # "Node.js" from reading as links.
+    _TLDS = ("com|net|org|io|dev|me|ai|co|app|page|design|art|studio|site|online|tech|xyz|info|biz|blog|link|"
+             "portfolio|work|works|pro|name|codes|cloud|digital|space|website|tv|fm|edu|gov|ac|us|uk|ca|de|fr|"
+             "es|it|nl|eu|in|au|nz|jp|cn|sg|ch|se|no|dk|fi|pl|pt|br|mx|ie|be|at|za|ng|ke|ae|il|kr|hk|tw|my|ph")
     URL_RE = re.compile(
-        r"(?:https?://)?(?:www\.)?(?:[a-z0-9-]+\.)+(?:com|in|io|dev|me|org|net|ai|co|app|page)(?:/[^\s|,;]*)?",
+        r"(?:https?://)?(?:www\.)?(?:[a-z0-9-]+\.)+(?:" + _TLDS + r")(?![a-z0-9-])(?:/[^\s|,;·]*)?",
         re.IGNORECASE,
     )
+
+    @classmethod
+    def find_phone(cls, text: str) -> Optional[str]:
+        """The first phone number in a line, as written, or None."""
+        for m in cls.PHONE_RE.finditer(text or ""):
+            candidate = m.group(0).strip(" .-")
+            digits = re.sub(r"\D", "", candidate)
+            if not 8 <= len(digits) <= 15:
+                continue
+            groups = re.findall(r"\d+", candidate)
+            if all(re.fullmatch(r"(?:19|20)\d{2}", g) for g in groups):
+                continue  # "2019-2023"
+            if "." in candidate and [len(g) for g in groups] in ([2, 2, 4], [1, 2, 4], [2, 1, 4]):
+                continue  # "14.03.1990"
+            return candidate
+        return None
     # Words that make a header segment a contact item, not a headline.
     CONTACT_WORDS_RE = re.compile(
         r"\b(?:linkedin|github|gitlab|leetcode|kaggle|portfolio|website|email|e-mail|phone|mobile|tel)\b",
@@ -44,14 +71,13 @@ class ResumeNormalizer:
             # Skip the domain part of an email address.
             if m.start() > 0 and text[m.start() - 1] == "@":
                 continue
-            if "/" in url or url.lower().startswith(("http", "www.")):
-                urls.append(url)
+            urls.append(url)
         return urls
 
     def _is_headline(self, text: str) -> bool:
         """A short title line under the name, e.g. 'Senior Data Scientist |
         MLOps'. Contact lines, links and a bare location don't count."""
-        if len(text) > 90 or "@" in text or self.PHONE_RE.search(text) or self.URL_RE.search(text):
+        if len(text) > 90 or "@" in text or self.find_phone(text) or self.URL_RE.search(text):
             return False
         if self.CONTACT_WORDS_RE.search(text) or self.LOCATION_RE.match(text.strip()):
             return False
@@ -308,6 +334,8 @@ class ResumeNormalizer:
         interests: List[str] = []
         achievements: List[str] = []
         evidence_list: List[Evidence] = []
+        section_headings: List[str] = []
+        header_blocks: List[str] = []
 
         candidate_name = "Candidate"
         candidate_email = None
@@ -357,11 +385,13 @@ class ResumeNormalizer:
 
             if block.hint and block.hint.startswith("section:"):
                 current_section = block.hint.split(":", 1)[1]
+                section_headings.append(text)
                 continue
 
             if block.block_type == "heading" and not block.hint:
                 if self._is_section_title(text):
                     current_section = text
+                    section_headings.append(text)
                     continue
                 # Else: a heading-styled line that isn't a recognized
                 # top-level section (candidate name, bold company/title
@@ -373,13 +403,15 @@ class ResumeNormalizer:
 
             # Header / Candidate info parsing
             if "header" in section_lower or block.location.paragraph_index in (0, 1) or candidate_name == "Candidate":
+                if "header" in section_lower:
+                    header_blocks.append(block.id)
                 if "@" in text:
                     email_match = re.search(r'[\w\.-]+@[\w\.-]+\.\w+', text)
                     if email_match:
                         candidate_email = email_match.group(0)
-                phone_match = self.PHONE_RE.search(text)
-                if phone_match:
-                    candidate_phone = phone_match.group(0)
+                phone_match = self.find_phone(text)
+                if phone_match and candidate_phone is None:
+                    candidate_phone = phone_match
                 is_name_line = False
                 if "@" not in text and not phone_match and len(text) < 40 and candidate_name == "Candidate":
                     candidate_name = text
@@ -404,7 +436,7 @@ class ResumeNormalizer:
                         segment = segment.strip()
                         if not segment or segment == text.strip():
                             continue
-                        if "@" in segment or self.PHONE_RE.search(segment):
+                        if "@" in segment or self.find_phone(segment):
                             continue
                         if re.match(r"^[A-Za-z][A-Za-z .'-]*,\s*[A-Za-z][A-Za-z .'-]*$", segment):
                             candidate_location = segment
@@ -483,6 +515,7 @@ class ResumeNormalizer:
                         if right_col and not current_exp.location:
                             current_exp.location = right_col
                     current_group = None
+                    current_exp.source_blocks.append(block.id)
 
                 elif kind == "company_of_current":
                     if current_exp.id in inherited_company:
@@ -491,17 +524,20 @@ class ResumeNormalizer:
                     current_exp.company = left
                     if right_col and not current_exp.location:
                         current_exp.location = right_col
+                    current_exp.source_blocks.append(block.id)
 
                 elif kind == "company" or (kind == "header_line" and current_exp is None):
                     # "Northwind Analytics - A Contoso Company<tab>Pune, India"
                     current_exp = new_experience(left, right_col)
                     current_group = None
+                    current_exp.source_blocks.append(block.id)
 
                 elif kind == "header_line" and not current_exp.company and not current_exp_has_content:
                     # "Title, dates" came first; this line names the company.
                     current_exp.company = left
                     if right_col and not current_exp.location:
                         current_exp.location = right_col
+                    current_exp.source_blocks.append(block.id)
 
                 elif kind in ("header_line", "subheading"):
                     # A sub-heading inside the job, e.g. a project name.
@@ -714,7 +750,7 @@ class ResumeNormalizer:
         )
 
         # Wrap into ResumeDocument (single source of truth)
-        resume_doc = ResumeDocument(resume=resume)
+        resume_doc = ResumeDocument(resume=resume, section_headings=section_headings, header_blocks=header_blocks)
         resume_doc.record_revision(rev_id="import_0001", actor="import", original=None, rewritten=None, evidence_ids=[e.id for e in evidence_list], source=raw_doc.filename)
 
         return resume_doc, evidence_list
