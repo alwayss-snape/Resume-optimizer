@@ -2,6 +2,8 @@ import logging
 import os
 import shutil
 import subprocess
+import tempfile
+from pathlib import Path
 from typing import Optional
 
 logger = logging.getLogger(__name__)
@@ -37,9 +39,14 @@ class PdfConverter:
             return None
 
         os.makedirs(output_dir, exist_ok=True)
+        # Each conversion gets its own LibreOffice profile: two at once on the
+        # shared default profile make the second one fail or hang (two
+        # visitors, or a page-fit loop next to another run).
+        profile = tempfile.mkdtemp(prefix="lo_profile_")
         try:
             cmd = [
                 binary,
+                f"-env:UserInstallation={Path(profile).as_uri()}",
                 "--headless",
                 "--convert-to",
                 "pdf",
@@ -47,7 +54,7 @@ class PdfConverter:
                 output_dir,
                 docx_path,
             ]
-            result = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=120, stdin=subprocess.DEVNULL)
             if result.returncode == 0:
                 base_name = os.path.splitext(os.path.basename(docx_path))[0] + ".pdf"
                 expected_pdf = os.path.join(output_dir, base_name)
@@ -58,6 +65,8 @@ class PdfConverter:
         except Exception as e:
             logger.error(f"PDF conversion exception: {e}")
             return None
+        finally:
+            shutil.rmtree(profile, ignore_errors=True)
 
 
 def pdf_page_images(pdf_path: str, zoom: float = 2.0) -> list:

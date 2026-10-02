@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**56 app modules · 60 test files · 105 classes · 972 functions/methods · 19,570 lines of Python** · source hash `190337d59fd7fe47`
+**56 app modules · 60 test files · 105 classes · 972 functions/methods · 19,579 lines of Python** · source hash `f069d725ffd7259b`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -955,12 +955,12 @@ _Page-fit loop (P2.4): render, count pages, trim, render again._
 
 ### `app/rendering/pdf_converter.py`
 
-**Layer:** Rendering · **Stage:** 9 Render · **Lines:** 69
+**Layer:** Rendering · **Stage:** 9 Render · **Lines:** 78
 
-- class **`PdfConverter`** ([app/rendering/pdf_converter.py:9](../app/rendering/pdf_converter.py#L9))
-  - `find_libreoffice_binary()` :10
-  - `convert_docx_to_pdf()` :27
-- function **`pdf_page_images()`** ([app/rendering/pdf_converter.py:63](../app/rendering/pdf_converter.py#L63)) — Each PDF page as PNG bytes. Shown as images, a preview works in any
+- class **`PdfConverter`** ([app/rendering/pdf_converter.py:11](../app/rendering/pdf_converter.py#L11))
+  - `find_libreoffice_binary()` :12
+  - `convert_docx_to_pdf()` :29
+- function **`pdf_page_images()`** ([app/rendering/pdf_converter.py:72](../app/rendering/pdf_converter.py#L72)) — Each PDF page as PNG bytes. Shown as images, a preview works in any
 - **Imported by:** `api/routes.py`, `services/tailor.py`, `scripts/make_eval_cases.py`
 - **Tested by:** `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_ats_round_trip.py`, `tests/unit/test_pdf_converter.py`
 

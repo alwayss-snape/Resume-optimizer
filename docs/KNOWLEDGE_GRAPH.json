@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "source_hash": "190337d59fd7fe47",
+  "source_hash": "f069d725ffd7259b",
   "stats": {
     "files": 148,
     "python_files": 125,
@@ -8,7 +8,7 @@
     "test_files": 60,
     "classes": 105,
     "functions": 972,
-    "lines_of_python": 19570
+    "lines_of_python": 19579
   },
   "axes": {
     "x": "location (path)",
@@ -2916,22 +2916,22 @@
       "stages": [
         "9 Render"
       ],
-      "lines": 69,
+      "lines": 78,
       "doc": "",
       "classes": [
         {
           "name": "PdfConverter",
-          "line": 9,
+          "line": 11,
           "doc": "",
           "methods": [
             {
               "name": "find_libreoffice_binary",
-              "line": 10,
+              "line": 12,
               "doc": ""
             },
             {
               "name": "convert_docx_to_pdf",
-              "line": 27,
+              "line": 29,
               "doc": ""
             }
           ]
@@ -2940,7 +2940,7 @@
       "functions": [
         {
           "name": "pdf_page_images",
-          "line": 63,
+          "line": 72,
           "doc": "Each PDF page as PNG bytes. Shown as images, a preview works in any"
         }
       ]
