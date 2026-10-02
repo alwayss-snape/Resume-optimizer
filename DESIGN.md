@@ -1,5 +1,5 @@
 ---
-name: Tailor · Resume Studio
+name: Tailores · Resume Studio
 description: Resume tailoring shown the way an editor marks a proof; every change struck, inserted, explained and reversible.
 colors:
   desk: "#f6f6f3"
@@ -142,7 +142,7 @@ components:
     size: "22px"
 ---
 
-# Design System: Tailor · Resume Studio
+# Design System: Tailores · Resume Studio
 
 ## Overview
 
@@ -272,7 +272,7 @@ Quiet and firm, like a stamped instruction.
 - **Error:** danger text with an alert icon and words; blocking errors use a 2px danger border.
 
 ### Navigation
-- **Header:** a hairline under a 1240px bar holding the "Tailor" wordmark (24px bold grotesk with a drawn blue caret beneath it), the stepper and a settings popover.
+- **Header:** a hairline under a 1240px bar holding the "Tailores" wordmark (24px bold grotesk with a drawn blue caret beneath it), the stepper and a settings popover.
 - **Stepper:** 22px round markers joined by 24px rules. Done: pencil wash with a check; current: solid pencil with the number and bold ink label; ahead: Field Edge ring and muted text. Reached steps are buttons back. Below 768px it collapses to "Step 2 of 4 · Label" with a back link.
 
 ### Proof Marks (signature)

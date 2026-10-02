@@ -132,7 +132,7 @@ export function App() {
                 Start over
               </button>
             ) : (
-              <span>Tailor · Resume Studio</span>
+              <span>Tailores · Resume Studio</span>
             )}
           </div>
         </footer>

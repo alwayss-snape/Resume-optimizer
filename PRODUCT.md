@@ -15,7 +15,7 @@ several jobs.
 
 ## Product Purpose
 
-Tailor scores how well a resume matches a job description, drafts rewrites of the resume's bullets, summary and skills
+Tailores scores how well a resume matches a job description, drafts rewrites of the resume's bullets, summary and skills
 that lean toward the job, lets the user review each change, and produces ATS-ready DOCX and PDF files with a log of
 every change. Success: the user leaves with a stronger, truthful resume for this job, and trusts every line in it.
 
@@ -45,7 +45,7 @@ closely, so long reading and side-by-side text comparison are central.
 
 ## Brand Commitments
 
-- Name: **Tailor**, with the descriptor "Resume Studio".
+- Name: **Tailores** (decided 2026-10-03), with the descriptor "Resume Studio".
 - Voice: plain, calm, specific wording; no hype; state limits honestly (for example "Nothing is invented").
 - Visual world (chosen by the owner 2026-10-01, replacing the dark "Succession" look): **Editor's Proof**, changes
   shown the way an editor marks a proof. Bright by default with a matching dark mode that follows the system. The

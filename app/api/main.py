@@ -26,7 +26,7 @@ def default_service(model: Optional[str] = None):
 
 def create_app(make_service: Callable = default_service, sessions: Optional[SessionStore] = None,
                rate_limit: Optional[int] = None, serve_web: bool = True) -> FastAPI:
-    app = FastAPI(title="Resume Tailor", docs_url="/api/docs", openapi_url="/api/openapi.json")
+    app = FastAPI(title="Tailores", docs_url="/api/docs", openapi_url="/api/openapi.json")
     app.state.make_service = make_service
     app.state.sessions = sessions or SessionStore(ttl_seconds=settings.api_session_ttl_minutes * 60)
     app.state.rate_limiter = RateLimiter(rate_limit if rate_limit is not None else settings.api_rate_limit_per_hour)

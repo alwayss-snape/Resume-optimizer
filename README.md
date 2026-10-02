@@ -1,4 +1,4 @@
-# Local Resume Tailor
+# Tailores
 
 Local-first, privacy-focused application for tailoring resumes to job descriptions using local LLMs (Ollama + Qwen3) and a local sentence-embedding model for semantic matching. Optionally, generation can be routed through [Groq](https://console.groq.com) (free cloud inference) instead of Ollama when a stronger model is needed — see `BUILD.md`; this is opt-in and sends resume/JD text off-device.
 
