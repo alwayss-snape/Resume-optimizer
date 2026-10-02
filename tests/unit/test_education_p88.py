@@ -24,7 +24,11 @@ def _education(lines, tmp_path):
      ("MBA", "Kellogg School of Management, Northwestern University", "2005")),
     ("B.E. Computer Science, Anna University, 2015 — 78%", ("B.E. Computer Science, 78%", "Anna University", "2015")),
     ("High School Diploma, Whitehaven High School, 2017", ("High School Diploma", "Whitehaven High School", "2017")),
-    ("BFA Graphic Design, RISD, 2017", ("BFA Graphic Design", "RISD", "2017")),
+    ("BFA Graphic Design, Rhode Island School of Design, 2017",
+     ("BFA Graphic Design", "Rhode Island School of Design", "2017")),
+    # The part after the degree must name a school; otherwise the school is on another line.
+    ("Bachelor of Science, Electrical Engineering, May 2020", None),
+    ("M.S., Computer Science, 2022", None),
     ("Grado en Enfermería, Universidad Complutense de Madrid, 2019",
      ("Grado en Enfermería", "Universidad Complutense de Madrid", "2019")),
 ])
@@ -45,11 +49,15 @@ def test_coursework_is_a_detail_and_semicolons_split_entries(tmp_path):
                       "Relevant Coursework: Regression Analysis, Data Mining"], tmp_path)
     assert len(edu) == 1 and edu[0].details == ["Relevant Coursework: Regression Analysis, Data Mining"]
     assert edu[0].dates == "Expected May 2026"
-    edu = _education(["Advanced Leader Course (ALC), 2019; B.S. Business Administration (in progress), UMGC"], tmp_path)
+    edu = _education(["Advanced Leader Course (ALC), 2019; B.S. Business Administration (in progress), "
+                      "University of Maryland Global Campus"], tmp_path)
     assert [e.degree or e.institution for e in edu] == ["Advanced Leader Course (ALC)",
                                                        "B.S. Business Administration (in progress)"]
 
 
-def test_two_line_entries_still_work(tmp_path):
-    edu = _education(["State University", "B.S. in Physics\t2016 - 2020"], tmp_path)
-    assert [(e.institution, e.degree, e.dates) for e in edu] == [("State University", "B.S. in Physics", "2016 - 2020")]
+def test_school_line_then_degree_line_pairs_up(tmp_path):
+    edu = _education(["Purdue University, West Lafayette, IN", "Bachelor of Science, Electrical Engineering, May 2020",
+                      "University of Illinois Urbana-Champaign", "M.S., Computer Science, 2022"], tmp_path)
+    assert [(e.institution, e.degree, e.dates) for e in edu] == [
+        ("University of Illinois Urbana-Champaign", "M.S., Computer Science", "2022"),
+        ("Purdue University, West Lafayette, IN", "Bachelor of Science, Electrical Engineering", "May 2020")]

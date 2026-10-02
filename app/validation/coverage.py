@@ -70,13 +70,15 @@ class CoverageReport:
 
 def content_coverage(blocks: Iterable, output_text: str, *, heading_texts: Iterable[str] = (),
                      reworded_blocks: Iterable[str] = (), trimmed_blocks: Iterable[str] = (),
-                     removed_text: str = "") -> CoverageReport:
+                     removed_text: str = "", ignore_words: Iterable[str] = ()) -> CoverageReport:
     """`blocks`: the source RawBlocks. `heading_texts`: standard section
     headings, which the template renames, so they aren't counted.
     `reworded_blocks` / `trimmed_blocks`: block ids changed or removed on
     purpose. `removed_text`: text page-fit removed (a dropped Interests line
-    has no block id of its own to point at)."""
+    has no block id of its own to point at). `ignore_words`: labels the
+    template may merge away (skill categories beyond four become "Other")."""
     have = words(output_text)
+    ignored = set().union(*(words(w) for w in ignore_words)) if ignore_words else set()
     removed = words(removed_text)
     headings = {re.sub(r"\s+", " ", h).strip().lower() for h in heading_texts}
     reworded, trimmed = set(reworded_blocks), set(trimmed_blocks)
@@ -85,7 +87,7 @@ def content_coverage(blocks: Iterable, output_text: str, *, heading_texts: Itera
         text = (block.text or "").strip()
         if not text or re.sub(r"\s+", " ", text).lower() in headings:
             continue
-        line_words = words(text)
+        line_words = words(text) - ignored if ignored else words(text)
         if not line_words:
             continue
         report.counted += 1

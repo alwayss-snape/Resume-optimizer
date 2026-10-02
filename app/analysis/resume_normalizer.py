@@ -64,8 +64,10 @@ class ResumeNormalizer:
         for m in cls.PHONE_RE.finditer(text or ""):
             candidate = m.group(0).strip(" .-")
             digits = re.sub(r"\D", "", candidate)
-            if not 8 <= len(digits) <= 15:
+            if not 8 <= len(digits) <= 15 or (len(digits) < 10 and not candidate.startswith("+")):
                 continue
+            if re.fullmatch(r"\d{5}-\d{4}", candidate):
+                continue  # a ZIP+4 code
             groups = re.findall(r"\d+", candidate)
             if all(re.fullmatch(r"(?:19|20)\d{2}", g) for g in groups):
                 continue  # "2019-2023"
@@ -87,16 +89,21 @@ class ResumeNormalizer:
             # Skip the domain part of an email address.
             if m.start() > 0 and text[m.start() - 1] == "@":
                 continue
+            bare = "/" not in url and not url.lower().startswith(("http", "www."))
+            if bare and url != url.lower():
+                continue  # "ASP.NET" is a framework; a written-out site is lower case
             urls.append(url)
         return urls
 
     def _is_headline(self, text: str) -> bool:
         """A short title line under the name, e.g. 'Senior Data Scientist |
         MLOps'. Contact lines, links and a bare location don't count."""
-        if len(text) > 90 or "@" in text or self.find_phone(text) or self.URL_RE.search(text):
+        if len(text) > 90 or "@" in text or self.find_phone(text) or self._header_urls(text):
             return False
-        if self.CONTACT_WORDS_RE.search(text) or self.LOCATION_RE.match(text.strip()):
+        if self.CONTACT_WORDS_RE.search(text):
             return False
+        if self.LOCATION_RE.match(text.strip()) and not self._looks_like_title(text):
+            return False  # "Austin, TX"; "Backend Engineer, Payments" is a headline
         if text.rstrip().endswith("."):  # a sentence: summary text without a heading
             return False
         if ":" in text:  # "Security Clearance: Active Secret" is a detail, not a title
@@ -187,18 +194,28 @@ class ResumeNormalizer:
         # skill labels; only an all-caps or Word-heading line names a
         # section the vocabulary doesn't know, or one inside Skills.
         strong = text.isupper() or self._heading_sig(block)[3]
+        following = [b for b in blocks[idx + 1: idx + 4] if b.text.strip()]
+        entry_follows = any(self._is_dated_line(b) for b in following) or bool(
+            following and following[0].block_type == "bullet")
         kind = self.section_kind(text)
         if kind and not (kind == "education" and self._CONTENT_HEADING_RE.search(text)):
-            return kind if strong or current_kind != "skills" else None
-        # Any other heading set like the document's own: a section to keep
-        # as it is, unless it's an all-caps employer with a dated line
-        # right after it, or a sub-heading over bullets inside a job.
+            if not strong and current_kind == "skills":
+                return None  # a bold "Languages" label inside Skills
+            if current_kind in ("experience", "projects") and entry_follows and self._looks_like_title(text):
+                return None  # "TEACHING ASSISTANT" over a dated line is a job; "CLINICAL ROTATIONS" isn't
+            return kind
+        # A heading no vocabulary knows (Review of Stage H): only where no
+        # section has been recognised yet, i.e. the whole document uses
+        # headings we don't know (a German or Spanish CV), or before the
+        # first section. Inside a known section an all-caps line is a
+        # school, a project or a certificate ("STANFORD UNIVERSITY", "OPEN
+        # TRACE"), as it always was.
         if len(words) > 5 or not strong:
             return None
-        if current_kind in ("experience", "projects"):
-            following = [b for b in blocks[idx + 1: idx + 4] if b.text.strip()]
-            if any(self._is_dated_line(b) for b in following) or (following and following[0].block_type == "bullet"):
-                return None
+        if sigs and current_kind != "header":
+            return None
+        if current_kind in ("experience", "projects") and entry_follows:
+            return None
         return "other"
 
     @staticmethod
@@ -221,12 +238,18 @@ class ResumeNormalizer:
                 and not self._is_section_title(text) and not self._looks_like_title(text)
                 and all(w[:1].isupper() for w in words if w[:1].isalpha()))
 
-    # "City, State" / "City, Country", or "City ST" with a US state code.
-    _CITY_STATE_RE = re.compile(r"^[^\W\d_][\w .'-]*\s[A-Z]{2}$")
+    # "City, State" / "City, Country", or "City ST" with a real US state code.
+    _US_STATES = ("AL AK AZ AR CA CO CT DE DC FL GA HI ID IL IN IA KS KY LA ME MD MA MI MN MS MO MT NE NV NH NJ NM "
+                  "NY NC ND OH OK OR PA RI SC SD TN TX UT VT VA WA WV WI WY").split()
+    _CITY_STATE_RE = re.compile(r"^[^\W\d_][\w .'-]*\s(?:" + "|".join(_US_STATES) + r")$")
 
     def _looks_like_location(self, text: str) -> bool:
+        """A place, never a job title ("Backend Engineer, Payments" or
+        "Software Engineer II" were taken for the location)."""
         text = text.strip()
-        return bool(self.LOCATION_RE.match(text) or self._CITY_STATE_RE.match(text)) and len(text) <= 40
+        if len(text) > 40 or self._looks_like_title(text):
+            return False
+        return bool(self.LOCATION_RE.match(text) or self._CITY_STATE_RE.match(text))
 
     def _is_detail(self, segment: str) -> bool:
         """A header part worth keeping as is: not contact data (email,
@@ -336,6 +359,12 @@ class ResumeNormalizer:
             return 2
         return 1 if self._looks_like_title(text) else 0
 
+    _COUNTRIES = {"india", "france", "germany", "spain", "italy", "uk", "united kingdom", "england", "scotland",
+                  "ireland", "usa", "us", "united states", "canada", "mexico", "brazil", "australia", "new zealand",
+                  "singapore", "japan", "china", "hong kong", "netherlands", "belgium", "switzerland", "austria",
+                  "sweden", "norway", "denmark", "finland", "poland", "portugal", "uae", "israel", "south africa",
+                  "nigeria", "kenya", "philippines", "malaysia", "indonesia", "south korea", "korea", "españa",
+                  "deutschland", "remote"}
     _COMPANY_SUFFIX_RE = re.compile(
         r"\b(?:inc|llc|llp|ltd|limited|corp|corporation|co|company|group|gmbh|ag|sa|plc|pvt|bank|university"
         r"|college|school|hospital|clinic|center|centre|institute|agency|department|army|navy|isd)\b\.?",
@@ -352,9 +381,11 @@ class ResumeNormalizer:
         if re.fullmatch(r"[A-Z]{2}", parts[-1]) and len(parts) >= 3:
             return ", ".join(parts[:-2]), ", ".join(parts[-2:])
         last = parts[-1]
-        if (len(last.split()) <= 3 and not re.search(r"\d", last) and not self._COMPANY_SUFFIX_RE.search(last)
-                and not self._looks_like_title(last) and last[:1].isupper()):
+        if last.lower() in self._COUNTRIES or self._CITY_STATE_RE.match(last):
             return ", ".join(parts[:-1]), last
+        # A lone city ("Groupe SEB, Lyon") can't be told from a company
+        # ("Payments Platform, Stripe"), so it stays with the company
+        # rather than risk dropping the employer into the location.
         return text.strip(), None
 
     def _split_comma_job(self, body: str) -> Optional[Tuple[str, str, Optional[str]]]:
@@ -467,14 +498,14 @@ class ResumeNormalizer:
         stop = date_at if date_at is not None else len(parts)
         before = [p for p in parts[:degree_at]]
         after = parts[degree_at + 1:stop]
-        if before and all(is_school(p) or not is_date(p) for p in before) and not after:
+        if before and is_school(before[-1]) and not after:
             institution, degree = ", ".join(before), parts[degree_at]  # "Georgetown University, J.D., 2017"
         else:
             honours = []
             while after and not is_school(after[0]) and len(after) > 1:
                 honours.append(after.pop(0))  # "cum laude"
-            if not after:
-                return None
+            if not after or not is_school(after[0]):
+                return None  # "Bachelor of Science, Electrical Engineering, May 2020": the school is another line
             degree = ", ".join([parts[degree_at], *honours])
             institution = ", ".join(after)
         rest = parts[stop + 1:] if date_at is not None else []
@@ -483,7 +514,9 @@ class ResumeNormalizer:
         if rest:
             degree = f"{degree}, {', '.join(rest)}"
         return degree, institution, (parts[date_at] if date_at is not None else None)
-    _INSTITUTION_RE = re.compile(r"\b(?:University|Institute|College|School|Academy|IIT|NIT)\b", re.IGNORECASE)
+    _INSTITUTION_RE = re.compile(
+        r"\b(?:Universit\w*|Institut\w*|College|School|Academy|IIT|NIT|Hochschule|Universidad|Polytechnic"
+        r"|[EÉ]cole)\b", re.IGNORECASE)
 
     def _looks_like_degree(self, text: str) -> bool:
         """'B.Tech in Computer Science' yes; 'State University' no."""
@@ -509,9 +542,28 @@ class ResumeNormalizer:
         text = block.text.strip()
         if not text:
             return False
-        if self.DATE_RANGE_ANY_RE.search(text):
-            return not (len(text) > 140 and text.endswith("."))  # a sentence that mentions a period
+        if self.DATE_RANGE_RE.search(text) or self._header_range(text):
+            return True
         return len(text) < 100 and bool(self.YEAR_OR_PRESENT.search(text))
+
+    _SEPARATED_RE = re.compile(r"(?:[|,\t·—–]|\s-)\s*\(?$")
+
+    def _header_range(self, text: str):
+        """A date range inside a job header line, or None. Trailing ranges
+        are found by DATE_RANGE_RE; this one is for "10/2019 – Present | 40
+        hours per week" (dates first) and "Title, Company, Jan 2020 – Present,
+        Remote" (a short header and a separator before the dates). A
+        sentence that mentions a period ("grew it from 2020 to 2023 into...")
+        is not a header (Review of Stage H)."""
+        m = self.DATE_RANGE_ANY_RE.search(text)
+        if not m:
+            return None
+        before = text[:m.start()]
+        if not before.strip():
+            return m if re.match(r"\s*(?:[|,·—–;]|$)", text[m.end():]) else None
+        if len(before.split()) <= 12 and self._SEPARATED_RE.search(before.rstrip()) and not before.rstrip().endswith("."):
+            return m
+        return None
 
     def _experience_line_kind(self, block, text: str) -> str:
         """'dated' (title and/or company with dates), 'header_line' (a short
@@ -705,12 +757,14 @@ class ResumeNormalizer:
                 heading_kind = self._heading_kind(block, text, heading_sigs, current_kind, blocks, idx,
                                                   name_known=candidate_name != "Candidate")
             if heading_kind:
-                current_section, current_kind = text, heading_kind
                 if heading_kind == "other":
                     current_other = OtherSection(id=f"sec_{len(other_sections) + 1:02d}",
-                                                 heading=self._display_heading(text))
+                                                 heading=self._display_heading(text), after=current_kind,
+                                                 source_location_id=block.id)
                     other_sections.append(current_other)
-                section_headings.append(text)
+                else:
+                    section_headings.append(text)  # renamed by the template, so not counted as content
+                current_section, current_kind = text, heading_kind
                 continue
 
             section_lower = current_section.lower()
@@ -739,7 +793,9 @@ class ResumeNormalizer:
                 for url in self._header_urls(text):
                     if url not in candidate_links:
                         candidate_links.append(url)
-                if in_header and candidate_location is None:
+                if in_header and candidate_location is None and (
+                        len(segments) > 1 or "@" in text or phone_match or self.URL_RE.search(text)):
+                    # From a contact line, not from a headline on its own line.
                     candidate_location = next((seg for seg in segments if self._looks_like_location(seg)), None)
                 is_headline_line = False
                 if (in_header and not is_name_line and candidate_headline is None
@@ -812,7 +868,7 @@ class ResumeNormalizer:
                         right_col = rest or None
                     if start is None:
                         # Dates mid-line: "10/2019 – Present | 40 hours per week | Salary: ..."
-                        m = self.DATE_RANGE_ANY_RE.search(left)
+                        m = self._header_range(left)
                         if m:
                             start, end = m.group(1).strip(), m.group(2).strip()
                             title = self._trim(left[:m.start()])
@@ -851,6 +907,11 @@ class ResumeNormalizer:
                         location = right_col
                         if location is None:
                             company_part, location = self._split_company_location(company_part)
+                        if location is None:
+                            # "Title | Company | City, ST | dates": keep the place (Review of Stage H)
+                            location = next((seg.strip() for seg in re.split(r"\s+\|\s+", body)
+                                             if seg.strip() not in (title_part, company_part)
+                                             and self._looks_like_location(seg.strip())), None)
                         current_exp = new_experience(company_part, location)
                         self._add_role(current_exp, Role(title=title_part, start_date=start, end_date=end))
                     elif comma_job and not self._next_is_meta_line(blocks, idx):
@@ -1165,6 +1226,9 @@ class ResumeNormalizer:
             interests=interests,
             other_sections=[sec for sec in other_sections if sec.lines],
         )
+        # A kept heading with nothing under it has no content to keep.
+        section_headings += [raw_doc_text for sec in other_sections if not sec.lines
+                             for raw_doc_text in [next((b.text for b in blocks if b.id == sec.source_location_id), "")]]
 
         # Wrap into ResumeDocument (single source of truth)
         resume_doc = ResumeDocument(resume=resume, section_headings=section_headings, header_blocks=header_blocks)

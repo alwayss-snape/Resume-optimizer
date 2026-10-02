@@ -355,11 +355,15 @@ class TailorService:
         if (final.summary or "") != (original.summary or ""):
             reworded |= {b.id for b in raw_doc.blocks if b.text.strip() and b.text.strip() in (original.summary or "")}
         trimmed = fit_bullets - set(final_bullets)
+        final_groups = {b.group for e in final.experience for b in e.bullets if b.group}
         removed = [*[i for i in before_fit.interests if i not in final.interests],
                    *[t for p in before_fit.projects if p not in final.projects
-                     for t in [p.name, *(b.text for b in p.bullets)]]]
+                     for t in [p.name, *(b.text for b in p.bullets)]],
+                   # a job sub-section page-fit removed takes its heading along
+                   *{b.group for e in before_fit.experience for b in e.bullets if b.group} - final_groups]
         return content_coverage(raw_doc.blocks, docx_text(docx_path), heading_texts=resume_doc.section_headings,
-                                reworded_blocks=reworded, trimmed_blocks=trimmed, removed_text="\n".join(removed))
+                                reworded_blocks=reworded, trimmed_blocks=trimmed, removed_text="\n".join(removed),
+                                ignore_words=list(original.skills))
 
     @staticmethod
     def _apply_bullet_order(resume: Resume, bullet_order: Dict[str, List[str]]) -> int:

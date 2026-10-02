@@ -29,7 +29,24 @@ def is_ongoing(end_date: Optional[str]) -> bool:
     return (end_date or "").strip().lower().rstrip(".") in _PRESENT
 
 
-def parse_month(value: Optional[str], *, is_end: bool, today: date) -> Optional[Tuple[int, int]]:
+def day_first(*values: Optional[str]) -> Optional[bool]:
+    """For "dd/mm/yyyy" vs "mm/dd/yyyy": True when any value can only be
+    day-first (31/08/2023), False when any can only be month-first
+    (08/31/2023), None when it can't be told."""
+    verdict = None
+    for value in values:
+        m = re.search(r"\b(\d{1,2})[/.](\d{1,2})[/.](?:19|20)\d{2}", value or "")
+        if m:
+            a, b = int(m.group(1)), int(m.group(2))
+            if a > 12 >= b:
+                return True
+            if b > 12 >= a:
+                verdict = False
+    return verdict
+
+
+def parse_month(value: Optional[str], *, is_end: bool, today: date,
+                dayfirst: Optional[bool] = None) -> Optional[Tuple[int, int]]:
     """'August 2024' / 'Aug. 2024' / '08/2024' / '31/08/2024' / '2024-08' /
     "Aug '24" / 'Summer 2024' / '2024' / 'Present' -> (year, month).
     A bare year starts in January or ends in December."""
@@ -58,6 +75,13 @@ def parse_month(value: Optional[str], *, is_end: bool, today: date) -> Optional[
     iso = re.search(r"\b(?:19|20)\d{2}-(0[1-9]|1[0-2])\b", text)
     if iso:
         return year, int(iso.group(1))
+    full = re.search(r"\b(\d{1,2})[/.](\d{1,2})[/.](?:19|20)\d{2}", text)
+    if full:  # dd/mm/yyyy or mm/dd/yyyy
+        a, b = int(full.group(1)), int(full.group(2))
+        first = dayfirst if dayfirst is not None else day_first(text)
+        month = b if (first or (first is None and a > 12)) else a
+        if 1 <= month <= 12:
+            return year, month
     num_m = re.search(r"\b(0?[1-9]|1[0-2])\s*[/.-]\s*(19|20)\d{2}", text)
     if num_m:
         return year, int(num_m.group(1))
@@ -85,8 +109,9 @@ def role_intervals(resume: Resume, today: Optional[date] = None) -> List[Tuple[i
     intervals = []
     for exp in resume.experience:
         for role in exp.all_roles():
-            start = parse_month(role.start_date, is_end=False, today=today)
-            end = parse_month(role.end_date, is_end=True, today=today) if role.end_date else None
+            first = day_first(role.start_date, role.end_date)
+            start = parse_month(role.start_date, is_end=False, today=today, dayfirst=first)
+            end = parse_month(role.end_date, is_end=True, today=today, dayfirst=first) if role.end_date else None
             if start is None:
                 continue
             end = end or start

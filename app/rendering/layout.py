@@ -8,7 +8,7 @@ import re
 from datetime import date
 from typing import Dict, List, Optional
 
-from app.analysis.experience import is_ongoing, parse_month, role_intervals, years_of_experience
+from app.analysis.experience import day_first, is_ongoing, parse_month, role_intervals, years_of_experience
 from app.domain.resume import Candidate, Resume
 from app.domain.resume_document import ResumePresentation
 
@@ -45,9 +45,31 @@ def section_order_for(resume: Resume, today: Optional[date] = None) -> List[str]
     if early_career:
         order.remove("education")
         order.insert(order.index("experience"), "education")
-    at = order.index("interests") if "interests" in order else len(order)
-    order[at:at] = [f"other:{sec.id}" for sec in resume.other_sections]
-    return order
+    return _place_kept_sections(resume, order)
+
+
+def _place_kept_sections(resume: Resume, order: List[str]) -> List[str]:
+    """Each kept section goes right after the section it followed in the
+    file (before everything if it came first), so "Bar Admissions" stays at
+    the top and "Publications" stays after the jobs. Unknown: before Interests."""
+    out = list(order)
+    last_for: Dict[str, str] = {}
+    for sec in resume.other_sections:
+        key = f"other:{sec.id}"
+        if key in out:
+            continue
+        anchor = sec.after or ""
+        if anchor == "header":
+            at = out.index(last_for[anchor]) + 1 if anchor in last_for else 0
+        elif anchor in last_for:
+            at = out.index(last_for[anchor]) + 1
+        elif anchor in out:
+            at = out.index(anchor) + 1
+        else:
+            at = out.index("interests") if "interests" in out else len(out)
+        out.insert(at, key)
+        last_for[anchor] = key
+    return out
 
 
 def other_section(resume: Resume, key: str):
@@ -59,16 +81,10 @@ def other_section(resume: Resume, key: str):
 def ordered_sections(resume: Resume, order: List[str]) -> List[str]:
     """`order` plus any kept section it doesn't list yet (an order saved
     before the section existed), so no section is ever left out."""
-    missing = [f"other:{sec.id}" for sec in resume.other_sections if f"other:{sec.id}" not in order]
-    if not missing:
-        return list(order)
-    out = list(order)
-    at = out.index("interests") if "interests" in out else len(out)
-    out[at:at] = missing
-    return out
+    return _place_kept_sections(resume, order)
 
 
-def format_date(value: Optional[str]) -> str:
+def format_date(value: Optional[str], dayfirst: Optional[bool] = None) -> str:
     """'August 2024' / 'Aug. 2024' / '08/2024' -> 'Aug 2024'; 'Current' ->
     'Present'; a bare year stays a year; anything unrecognised is kept."""
     text = (value or "").strip()
@@ -76,7 +92,7 @@ def format_date(value: Optional[str]) -> str:
         return ""
     qualifier = re.match(r"^(expected|anticipated|graduating|graduated|class of)\s+", text, re.IGNORECASE)
     if qualifier:  # "Expected May 2026" keeps its word
-        return f"{qualifier.group(1).capitalize()} {format_date(text[qualifier.end():])}"
+        return f"{qualifier.group(1).capitalize()} {format_date(text[qualifier.end():], dayfirst)}"
     if is_ongoing(text):
         return "Present"
     lowered = text.lower()
@@ -89,16 +105,25 @@ def format_date(value: Optional[str]) -> str:
         return f"{_MONTH_NAMES[month - 1]} {year}"  # "Jan '19" -> "Jan 2019"
     has_month = re.search(r"\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?", lowered) \
         or re.search(r"\b(0?[1-9]|1[0-2])\s*[/.-]\s*(19|20)\d{2}", lowered) \
-        or re.search(r"\b(19|20)\d{2}-(0[1-9]|1[0-2])\b", lowered)
+        or re.search(r"\b(19|20)\d{2}-(0[1-9]|1[0-2])\b", lowered) \
+        or re.search(r"\b\d{1,2}[/.]\d{1,2}[/.](?:19|20)\d{2}", lowered)
     if not has_month:
         return text if re.search(r"[a-z]", lowered) else year_m.group(0)
+    if re.search(r"\b\d{1,2}[/.]\d{1,2}[/.](?:19|20)\d{2}", lowered):
+        first = dayfirst if dayfirst is not None else day_first(text)
+        if first is None:
+            return text  # 05/06/2023 could be May or June: print it as written
+        year, month = parse_month(text, is_end=False, today=date.today(), dayfirst=first)
+        return f"{_MONTH_NAMES[month - 1]} {year}"
     year, month = parse_month(text, is_end=False, today=date.today())
     return f"{_MONTH_NAMES[month - 1]} {year}"
 
 
 def date_range(start: Optional[str], end: Optional[str]) -> str:
-    """'Jan 2022 – Present'; one side only when the other is missing."""
-    return DATE_SEPARATOR.join(v for v in (format_date(start), format_date(end)) if v)
+    """'Jan 2022 – Present'; one side only when the other is missing. Both
+    sides read day-first or month-first alike ("01/09/2019 – 31/08/2023")."""
+    first = day_first(start, end)
+    return DATE_SEPARATOR.join(v for v in (format_date(start, first), format_date(end, first)) if v)
 
 
 def format_date_text(text: Optional[str]) -> str:

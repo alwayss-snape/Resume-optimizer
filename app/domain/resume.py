@@ -102,6 +102,10 @@ class OtherSection(BaseModel):
     id: str
     heading: str
     lines: List[SectionLine] = Field(default_factory=list)
+    # The section it followed in the file ("header", "experience", ...), so
+    # the template can print it in the same place.
+    after: Optional[str] = None
+    source_location_id: Optional[str] = None
 
 class Resume(BaseModel):
     candidate: Candidate

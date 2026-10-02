@@ -32,7 +32,7 @@ def _jobs(lines, tmp_path, heading="Experience"):
     ("Logistics NCOIC (92Y Unit Supply Specialist), U.S. Army, Fort Hood, TX\t2014 – 2024",
      ("Logistics NCOIC (92Y Unit Supply Specialist)", "U.S. Army", "Fort Hood, TX", "2014", "2024")),
     ("Supply Chain Analyst, Groupe SEB, Lyon\t01/09/2019 – 31/08/2023",
-     ("Supply Chain Analyst", "Groupe SEB", "Lyon", "01/09/2019", "31/08/2023")),
+     ("Supply Chain Analyst", "Groupe SEB, Lyon", None, "01/09/2019", "31/08/2023")),
     ("SVP, Global Supply Chain | Meridian Consumer Products | 2013 – 2018",
      ("SVP, Global Supply Chain", "Meridian Consumer Products", None, "2013", "2018")),
     ("Delivery Driver (part-time, concurrent) — DoorDash — 2020 to present",
