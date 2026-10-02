@@ -68,7 +68,7 @@ def write_proposals(service: TailorService, resume_path: str, jd_text: str, out_
         "keyword_match_rate": generated["alignment_score"],
         "jobs": [{"id": o["id"], "label": o["label"]} for o in generated["experience_options"]],
         "proposals": [
-            {**_without_mirrors(p.model_dump(mode="json")), "apply": getattr(p, "validation", None) != "REJECT",
+            {**_without_mirrors(p.model_dump(mode="json")), "apply": getattr(p, "validation", None) != "REJECT" and not getattr(p, "opt_in", False),
              "draft_text": p.proposed_text or ""}
             for p in generated["proposals"]
         ],

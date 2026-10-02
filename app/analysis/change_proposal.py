@@ -30,6 +30,9 @@ class ChangeProposal(BaseModel):
     # wording is accepted as user-attested instead of being fact-checked
     # (and silently dropped) like model output.
     user_edited: bool = False
+    # Starts unticked in review: the user's own text stays unless they pick
+    # this one (P8.10: a tailored summary replacing a good original).
+    opt_in: bool = False
     # Planner v2 (P1.3): relevance of the bullet to the JD (0-1) and the JD
     # keywords the rewrite was allowed to use.
     relevance: Optional[float] = None

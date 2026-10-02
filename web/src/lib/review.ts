@@ -31,11 +31,12 @@ export interface ReviewState {
 
 export const EMPTY_JOB: NewJob = { company: "", title: "", location: "", current: false, start: "", end: "", description: "" };
 
-/** Every proposal starts accepted (as the old Streamlit page did); saved answers pre-tick
- *  their keywords and pre-fill the answer. */
+/** Every proposal starts accepted (as the old Streamlit page did), except an opt-in one such as
+ *  a tailored summary replacing the user's own; saved answers pre-tick their keywords and
+ *  pre-fill the answer. */
 export function initialReview(drafted: ProposalsResult): ReviewState {
   return {
-    decisions: Object.fromEntries(drafted.proposals.map((p) => [p.id, "accept" as Decision])),
+    decisions: Object.fromEntries(drafted.proposals.map((p) => [p.id, (p.opt_in ? "reject" : "accept") as Decision])),
     edits: {},
     gaps: Object.fromEntries(drafted.gap_questions.map((q) => [q.id, { ticked: [...q.saved_keywords], answer: q.saved_answer, target: "auto" }])),
     addition: { text: "", target: "auto" },

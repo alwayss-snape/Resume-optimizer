@@ -51,3 +51,10 @@ test("cards are grouped: summary, skills, then each job", () => {
   ]);
   expect(groups.map((g) => g.label)).toEqual(["Professional summary", "Skills", "Northwind — Data Analyst", "Contoso"]);
 });
+
+test("an opt-in proposal (a summary replacing the user's own) starts unticked", () => {
+  const props: Proposal[] = DRAFTED.proposals.map((p, i) => (i === 0 ? { ...p, opt_in: true } : p));
+  const r = initialReview({ ...DRAFTED, proposals: props });
+  expect(r.decisions[props[0].id]).toBe("reject");
+  expect(props.slice(1).every((p) => r.decisions[p.id] === "accept")).toBe(true);
+});

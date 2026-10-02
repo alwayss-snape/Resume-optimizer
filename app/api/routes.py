@@ -237,6 +237,7 @@ def _proposal_out(p, keywords: List[str], sections: Dict[str, Dict]) -> Dict:
     return {"id": p.id, "kind": p.kind, "section": sections.get(p.target_semantic_id),
             "original": original, "proposed": proposed, "rationale": p.rationale,
             "state": state, "state_label": label, "state_meaning": meaning, "note": note,
+            "opt_in": bool(getattr(p, "opt_in", False)),
             "diff": {"original": left, "proposed": right}}
 
 

@@ -22,7 +22,7 @@ TODAY = date(2026, 9, 30)
 def _resume():
     return Resume(
         candidate=Candidate(name="Jordan Avery"),
-        summary="Data Scientist with 2 years of experience in forecasting.",
+        summary="Data Scientist experienced in forecasting.",
         experience=[
             Experience(id="e1", company="Northwind", title="Senior Data Scientist", start_date="March 2024",
                        end_date="Present",
@@ -139,3 +139,20 @@ def test_capital_at_start_of_any_sentence_is_not_a_proper_noun():
     result = FactualValidator().validate_proposal(_summary_prop(
         "Senior Data Scientist with 5+ years. Builds XGBoost churn models. Cut costs for 1,200 stores."), ev)
     assert result.verdict == "PASS", result.warnings
+
+
+def test_years_follow_the_resumes_own_claim_and_titles_are_sane():
+    """P8.10: the summary repeats the years the resume states (computed
+    only when it states none), never prints a misread title, keeps the
+    user's own summary unless they choose the new one, and lists licences
+    apart from tools."""
+    from app.analysis.summary_writer import SummaryWriter
+    resume = _resume()
+    resume.summary = "Account executive with 7 years of B2B SaaS sales."
+    assert SummaryWriter.years_claim(resume) == "7 years"
+    assert SummaryWriter.facts(resume, KeywordMatcher().match(_job(), resume), TODAY)["years"] == "7 years"
+    assert not SummaryWriter.sane_title("03/") and not SummaryWriter.sane_title("06/2019 - 02/2021")
+    assert SummaryWriter.sane_title("Registered Nurse - Step-Down Unit")
+    writer, _llm = _writer("Senior Data Scientist with 7 years in forecasting, using Python and SQL.")
+    prop = writer.propose(resume, _job(), KeywordMatcher().match(_job(), resume), _evidence(resume), TODAY)
+    assert prop.opt_in is True  # the resume has its own summary

@@ -34,20 +34,45 @@ class SummaryWriter:
     def __init__(self, llm_client: Optional[LLMClient] = None):
         self.llm_client = llm_client
 
+    # The resume's own claim of experience: "7 years", "5+ years", "10+ yrs".
+    _YEARS_CLAIM_RE = re.compile(r"\b(\d{1,2}(?:\.\d)?\+?)\s*(?:years?|yrs?)\b", re.IGNORECASE)
+
     @staticmethod
-    def facts(resume: Resume, keyword_report: KeywordMatchReport, today: Optional[date] = None) -> dict:
+    def sane_title(title: Optional[str]) -> bool:
+        """A title fit to print (P8.10: a misread "03/" became the summary's
+        first words): letters, no date fragments, not a sentence."""
+        t = (title or "").strip()
+        return (bool(re.search(r"[^\W\d_]{2}", t)) and not re.search(r"\d{1,2}/|\d{4}", t)
+                and len(t.split()) <= 8 and not t.endswith(".") and len(t) <= 70)
+
+    @classmethod
+    def years_claim(cls, resume: Resume) -> Optional[str]:
+        """The years the resume itself states, if it states any (open issue
+        3: "4+ years" computed vs "3.6 years" written; sales 7 vs 10+)."""
+        for text in (resume.summary, resume.candidate.headline):
+            m = cls._YEARS_CLAIM_RE.search(text or "")
+            if m:
+                n = m.group(1)
+                return f"{n} year" if n == "1" else f"{n} years"
+        return None
+
+    @classmethod
+    def facts(cls, resume: Resume, keyword_report: KeywordMatchReport, today: Optional[date] = None) -> dict:
         """The inputs code decides; the LLM only phrases them."""
         roles = [r for e in resume.experience for r in e.all_roles() if r.title]
-        skills = [r.keyword for r in sorted(
-            (r for r in keyword_report.rows if r.found and r.kind in ("hard", "certification")),
-            key=lambda r: (-r.weight, -r.jd_count))][:MAX_SKILLS]
+        found = sorted((r for r in keyword_report.rows if r.found), key=lambda r: (-r.weight, -r.jd_count))
+        skills = [r.keyword for r in found if r.kind == "hard"][:MAX_SKILLS]
+        credentials = [r.keyword for r in found if r.kind == "certification"][:MAX_SKILLS]
         results = [b.text for e in resume.experience for b in e.bullets if _NUMBER_RE.search(b.text)]
         projects = list(dict.fromkeys(b.group for e in resume.experience for b in e.bullets if b.group))
-        years = years_of_experience(resume, today)
+        title = next((r.title for r in roles if cls.sane_title(r.title)), None)
+        if title is None and cls.sane_title(resume.candidate.headline):
+            title = resume.candidate.headline
         return {
-            "title": roles[0].title if roles else (resume.candidate.headline or ""),
-            "years": years_phrase(years),
+            "title": title or "",
+            "years": cls.years_claim(resume) or years_phrase(years_of_experience(resume, today)),
             "skills": skills,
+            "credentials": credentials,
             "results": results[:MAX_RESULT_LINES],
             "projects": projects,
         }
@@ -69,7 +94,9 @@ class SummaryWriter:
             # Facts the summary may state that aren't in the evidence ledger:
             # the computed years, role titles, project names.
             allowed_facts=[f for f in [facts["years"], *(r.title for e in resume.experience for r in e.all_roles()),
-                                       *facts["projects"], *facts["skills"]] if f],
+                                       *facts["projects"], *facts["skills"], *facts["credentials"]] if f],
+            # A summary the user wrote stays unless they choose this one (P8.10).
+            opt_in=bool(original.strip()),
             # (skills are verified by the keyword matcher, which knows
             # PySpark means Spark; the plain term check doesn't)
         )
@@ -85,6 +112,7 @@ class SummaryWriter:
             f"Years of experience: {facts['years'] or 'under 1 year (do not state a number)'}",
             f"JD title: {job.job_title or '(not given)'}",
             "JD skills the resume shows: " + (", ".join(facts["skills"]) or "(none)"),
+            "Licences / certifications the resume lists: " + (", ".join(facts["credentials"]) or "(none)"),
             "Resume lines with real results:",
             *[f"- {r}" for r in facts["results"]],
             "Project names: " + (", ".join(facts["projects"]) or "(none)"),
@@ -106,7 +134,8 @@ class SummaryWriter:
         used = [s for s in result.skills_used if s in facts["skills"] and s.lower() in text.lower()]
         rationale = (f"Summary tailored to {job.job_title or 'the JD'}: "
                      f"{facts['years'] or 'experience'} as {facts['title'] or 'stated'}"
-                     + (f"; skills: {', '.join(used)}" if used else ""))
+                     + (f"; skills: {', '.join(used)}" if used else "")
+                     + (". Optional: your own summary stays unless you accept this one" if original.strip() else ""))
         status = STATUS_UNCHANGED if text.strip() == original.strip() else STATUS_OK
         return ChangeProposal(**base, proposed_text=text, status=status, rationale=rationale,
                               target_keywords=facts["skills"])

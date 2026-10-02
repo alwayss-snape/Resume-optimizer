@@ -97,6 +97,8 @@ export interface Proposal {
   state_label: string;
   state_meaning: string;
   note: string | null;
+  /** Starts unticked: the user's own text stays unless they pick this one (P8.10). */
+  opt_in?: boolean;
   diff: { original: DiffSpan[]; proposed: DiffSpan[] };
 }
 

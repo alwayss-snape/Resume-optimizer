@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "3e2a89354288a578",
+  "source_hash": "3dacf87f7d0515d5",
   "stats": {
     "files": 146,
     "python_files": 123,
     "app_modules": 55,
     "test_files": 59,
     "classes": 103,
-    "functions": 933,
-    "lines_of_python": 18699
+    "functions": 934,
+    "lines_of_python": 18716
   },
   "axes": {
     "x": "location (path)",
@@ -6729,7 +6729,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 141,
+      "lines": 158,
       "doc": "Summary tailoring (P1.5) and years of experience from dates.",
       "classes": [],
       "functions": [
@@ -6802,6 +6802,11 @@
           "name": "test_capital_at_start_of_any_sentence_is_not_a_proper_noun",
           "line": 137,
           "doc": ""
+        },
+        {
+          "name": "test_years_follow_the_resumes_own_claim_and_titles_are_sane",
+          "line": 144,
+          "doc": "P8.10: the summary repeats the years the resume states (computed"
         }
       ]
     },
