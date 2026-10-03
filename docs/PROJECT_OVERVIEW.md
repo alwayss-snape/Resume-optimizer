@@ -91,7 +91,7 @@ and unused prompts (P0.8, P1.10) are all fixed. What remains:
    score. See [user_testing/2026-10-02/FINDINGS.md](user_testing/2026-10-02/FINDINGS.md). Planned in
    [ACTION_ITEMS.md](ACTION_ITEMS.md) as P8.1–P8.26, stages H–L: never lose content (H), honest content (I), an
    **arrange-and-edit step** after the AI changes (J, owner request), a fair score (K), and clear failures and privacy
-   (L). Next: Stage H, starting with P8.1 (persona eval cases).
+   (L). Next: the owner reviews the current state; that review and what is left of the Stage L gate are Phase 9 in ACTION_ITEMS.
 
 ## Repo map (docs)
 

@@ -1,8 +1,8 @@
 # Action Items — Best Tailored Resume per JD
 
 _Living tracker. Update an item's **Status** in the same commit that changes it; add a short note (commit subject or
-what's left). Last updated: 2026-10-02 (P0–P7 done, P5.7 shelved; Phase 8 planned from the cross-domain user test,
-with an arrange-and-edit step; P1.15 / P1.16 moved into it)._
+what's left). Last updated: 2026-10-04 (P0–P8 done, P5.7 shelved; Phase 9 holds what's left of the Stage L gate and
+waits for the owner's review of the current state before more items are added)._
 
 **Goal:** every resume + JD run produces the best possible tailored resume: an accurate match score, strong
 JD-aligned rewrites, a Novoresume-style ATS layout that fits the right length, and nothing fabricated.
@@ -22,7 +22,8 @@ JD-aligned rewrites, a Novoresume-style ATS layout that fits the right length, a
 | 6: UI redesign | 6 | 6 | 0 | 0 |
 | 7: Owner feedback on the flow | 2 | 2 | 0 | 0 |
 | 8: Cross-domain robustness and user control | 26 | 26 | 0 | 0 |
-| **Total** | **82** | **79** | **0** | **1** |
+| 9: Close-out and owner review | 6 | 0 | 0 | 6 |
+| **Total** | **88** | **79** | **0** | **7** |
 
 Phase 1's two open items (P1.15, P1.16) are ➖, moved into P8.9 and P8.18, so its row no longer adds up to 16.
 
@@ -269,6 +270,35 @@ the end of each stage.
 academic CV and federal modes; cover letter; history across JDs; LinkedIn import; US Letter and region presets
 (EU / India personal-details advice); OCR for scanned PDFs; tagged-PDF accessibility; per-NAT rate limit (belongs with
 P5.7); moving bullets between jobs (excluded on purpose: it risks misattribution).
+
+---
+
+## Phase 9: Close-out and owner review
+
+Phase 8 is built, but its last gate (Stage L) isn't finished: the session ran out of budget on 2026-10-03. P9.1–P9.6
+are what's left. Before they run, the owner reviews the current state of the app; that review is recorded below as
+findings (R1, R2…) and turned into new items (P9.7 onward) in the same way the user-testing findings became Phase 8.
+
+**Order:** owner review first → plan the review findings as items → P9.1–P9.4 (the Stage L gate) together with the
+new items → P9.5–P9.6 when convenient.
+
+| ID | Item | Files | Status | Notes |
+|---|---|---|---|---|
+| P9.1 | **Stage L independent review:** a fresh review agent checks P8.22–P8.26 (upload errors, degraded states, privacy notice, global basics, Check details); every issue reproduced and fixed with a test | `ingestion/*`, `api/routes.py`, `llm/client.py`, `rendering/*`, `web/src/pages/Details.tsx` | ⬜ | The first review stalled on 2026-10-03 with no report |
+| P9.2 | **Edge-file API sweep:** corrupt, password-protected, scanned, empty and very large files, plus .doc / .odt / .rtf / .txt and pasted text, each sent to `/api/parse` and `/api/analyze`; each must give its own plain message and never a 500 | `api/routes.py`, `ingestion/*` | ⬜ | The 2026-10-03 sweep hung with no output. Re-run one file at a time with a timeout per request, to find which file or converter hangs |
+| P9.3 | **Final private real-resume run:** the owner's resume with the FOX JD, live Groq; check golden parse, rewrites, coverage, read-back, page count, then arrange and re-render | `data/eval/private/` (gitignored) | ⬜ | Needs Groq daily quota; results never committed |
+| P9.4 | **Browser walkthrough:** the whole flow plus Arrange, Check details ("Also read", "Lines we couldn't place") and the conditions checklist, at 1440 / 390 px, light and dark, by mouse and keyboard | `web/src/pages/*` | ⬜ | Not done in any Phase 8 stage (no browser automation in those sessions) |
+| P9.5 | **Minor matching notes from the Stage K review:** `definitions()` can take a connector word as an acronym; "X or Y" doesn't share a tail ("Java or Python developer"); keyword spans from `original.find` can be off when the JD had HTML; Results shows only the different-field guidance, not the others | `analysis/keyword_match.py`, `analysis/jd_analyzer.py`, `web/src/pages/Results.tsx` | ⬜ | Low impact; none changes a score much on the persona set |
+| P9.6 | **Docs catch-up:** PROJECT_OVERVIEW (test counts, open issue 6 "Next"), README and BUILD.md describe the state after Phase 8 | `docs/PROJECT_OVERVIEW.md`, `README.md`, `BUILD.md` | ⬜ | BUILD.md has an uncommitted owner edit; keep it |
+
+### Owner review of the current state (pending)
+
+_To be filled from the owner's review. One line per finding: ID, what they saw, where, and how bad. Each finding then
+becomes a P9.x item above or goes to the Backlog._
+
+| ID | Finding | Where | Severity | Item |
+|---|---|---|---|---|
+| R1 | _(waiting for the owner's review)_ | | | |
 
 ---
 
