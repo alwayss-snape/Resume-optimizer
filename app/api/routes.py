@@ -85,6 +85,7 @@ class TailorIn(BaseModel):
     keep_layout: bool = False
     strict_factual: bool = False
     remember_answers: bool = True
+    conditions: List[str] = Field(default_factory=list)  # ids of job conditions the user meets (P8.20)
 
 
 # ---------------------------------------------------------------------------
@@ -354,6 +355,7 @@ def proposals(request: Request, body: ProposalsIn, session: Session = Depends(cu
             pre_score=generated["alignment_score"], experience_options=generated["experience_options"],
         )
         session.data.pop("results", None)
+        session.data["conditions"] = generated.get("conditions") or []
         report = generated.get("keyword_match")
         keywords = [r.keyword for r in getattr(report, "rows", [])]
         sections = _sections(parsed[1].resume)
@@ -365,6 +367,7 @@ def proposals(request: Request, body: ProposalsIn, session: Session = Depends(cu
             "details": _details(parsed[1].resume),
             "proposals": [_proposal_out(p, keywords, sections) for p in generated["proposals"]],
             "gap_questions": [q.model_dump() for q in questions],
+            "conditions": [c.model_dump() for c in generated.get("conditions") or []],
             "keyword_match": _match_out(report),
             "gaps": gap_table(report, asked=[k for q in questions for k in q.keywords]),
             "pre_score": generated["alignment_score"],
@@ -418,6 +421,7 @@ def tailor(request: Request, body: TailorIn, session: Session = Depends(current_
             parse_corrected=bool(session.data.get("parse_corrected")),
             job_desc=session.data.get("job_description"), gap_answers=answers, new_role=new_role,
             gap_questions=questions, remember_answers=body.remember_answers, progress=progress,
+            conditions_confirmed=[c.text for c in session.data.get("conditions") or [] if c.id in set(body.conditions)],
         )
         session.data["arrange"] = results.pop("arrange", None)
         session.data.pop("layout", None)  # a new run starts from its own arrangement

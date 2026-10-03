@@ -1,5 +1,6 @@
 import { type KeyboardEvent, useRef, useState } from "react";
 import { Button } from "../components/Button";
+import { ConditionList } from "../components/ConditionList";
 import { Icon } from "../components/Icon";
 import { Breakdown, KeywordList } from "../components/KeywordList";
 import { ScoreDial, verdict } from "../components/ScoreDial";
@@ -107,6 +108,18 @@ export function Report({ report, onTailor, onStartOver, busy, error }: {
           )}
         </div>
       </section>
+
+      {(report.conditions?.length ?? 0) > 0 && (
+        <section aria-labelledby="conditions-h" className="flex flex-col gap-3 border-t border-line pt-10">
+          <h2 id="conditions-h" className="font-display text-2xl font-bold tracking-[-0.025em]">Job conditions</h2>
+          <p className="m-0 max-w-[62ch] text-sm text-muted">
+            Things the job requires that a keyword match can't show. They don't change the score; check them yourself.
+          </p>
+          <div className="sheet max-w-[820px] rounded-[3px] px-5 py-2 md:px-6">
+            <ConditionList conditions={report.conditions ?? []} />
+          </div>
+        </section>
+      )}
 
       {match && (
         <section aria-label="Keywords" className="grid gap-10 border-t border-line pt-10 md:grid-cols-[1fr_360px]">

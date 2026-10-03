@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**56 app modules · 63 test files · 105 classes · 995 functions/methods · 20,061 lines of Python** · source hash `1c5d3667f0abbc12`
+**57 app modules · 64 test files · 106 classes · 997 functions/methods · 20,176 lines of Python** · source hash `928e63aca1a3901c`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -33,6 +33,7 @@ app/
   cli.py                                         check_llm(), write_proposals(), _without_mirrors(), read_proposals(), …
   analysis/
     change_proposal.py                           ChangeProposal
+    checklist.py                                 Job conditions that aren't keywords (P8.20).
     experience.py                                Years of experience from role date ranges (P1.5), and the page target
     gap_questions.py                             Suggest-and-confirm gaps (P3.1): ask, never assume.
     jd_analyzer.py                               JDAnalyzer
@@ -137,6 +138,7 @@ tests/
     test_api.py                                  Web API (P5.1): the full flow through HTTP, plus the shared form helpe…
     test_ats_round_trip.py                       P2.5: the rendered template must read back exactly as rendered, and the
     test_check_parsed_resume.py                  P3.5: "Check parsed resume" step: corrections applied by the service
+    test_checklist_p820.py                       P8.20: job conditions that aren't keywords, apart from the score.
     test_cli.py                                  test_tailor_service_analyze_only(), test_tailor_service_end_to_end_doc…
     test_cli_parity.py                           P3.6: progress reporting, and the CLI doing what the UI does (review,
     test_contact_p84.py                          P8.4: phone numbers in any common grouping, and links with any common
@@ -199,7 +201,7 @@ Rows = layer (what kind of code), columns = pipeline stage (when it runs during 
 | Layer | 1 Ingest | 2 Normalize | 3 JD analysis | 4 Match | 5 Score | 6 Plan | 7 Rewrite | 8 Validate | 9 Render | 10 Report |
 |---|---|---|---|---|---|---|---|---|---|---|
 | **Ingestion** | `docx`<br>`ocr`<br>`pdf` | · | · | · | · | · | · | · | · | · |
-| **Analysis** | · | `experience`<br>`resume_normalizer`<br>`structure_extractor` | `jd_analyzer` | `matcher`<br>`semantic_matcher`<br>`terminology` | `keyword_match`<br>`scoring` | `gap_questions`<br>`tailor_planner` | `change_proposal`<br>`experience`<br>`rewriter`<br>`skills_tailor`<br>`summary_writer` | · | · | · |
+| **Analysis** | · | `experience`<br>`resume_normalizer`<br>`structure_extractor` | `jd_analyzer` | `checklist`<br>`matcher`<br>`semantic_matcher`<br>`terminology` | `keyword_match`<br>`scoring` | `gap_questions`<br>`tailor_planner` | `change_proposal`<br>`experience`<br>`rewriter`<br>`skills_tailor`<br>`summary_writer` | · | · | · |
 | **LLM** | · | · | `client`<br>`schemas` | · | · | · | `client`<br>`schemas` | · | · | · |
 | **Validation** | · | · | `safety` | · | · | · | · | `content_lint`<br>`coverage`<br>`factual`<br>`output`<br>`structural` | · | · |
 | **Rendering** | `document_map` | · | · | · | · | · | `review_view` | · | `document_map`<br>`docx_patcher`<br>`html_renderer`<br>`layout`<br>`page_fit`<br>`pdf_converter`<br>`template_renderer` | · |
@@ -223,6 +225,18 @@ Spanning all stages: `app/api/main.py`, `app/api/routes.py`, `app/cli.py`, `app/
 - **Imported by:** `analysis/rewriter.py`, `analysis/skills_tailor.py`, `analysis/summary_writer.py`
 - **Tested by:** `tests/unit/test_api.py`, `tests/unit/test_review_view.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_validation.py`
 
+### `app/analysis/checklist.py`
+
+**Layer:** Analysis · **Stage:** 4 Match · **Lines:** 72
+
+_Job conditions that aren't keywords (P8.20)._
+
+- class **`Condition`** ([app/analysis/checklist.py:41](../app/analysis/checklist.py#L41))
+- function **`build_checklist()`** ([app/analysis/checklist.py:52](../app/analysis/checklist.py#L52))
+- **Imports:** `analysis/experience.py`, `domain/job.py`, `domain/resume.py`
+- **Imported by:** `services/tailor.py`
+- **Tested by:** `tests/unit/test_checklist_p820.py`
+
 ### `app/analysis/experience.py`
 
 **Layer:** Analysis · **Stage:** 2 Normalize, 7 Rewrite · **Lines:** 150
@@ -238,7 +252,7 @@ _Years of experience from role date ranges (P1.5), and the page target_
 - function **`years_phrase()`** ([app/analysis/experience.py:136](../app/analysis/experience.py#L136)) — How a resume states it: '4+ years', '1 year', or None under 1 year.
 - function **`target_pages()`** ([app/analysis/experience.py:148](../app/analysis/experience.py#L148)) — How many A4 pages the tailored resume should fill.
 - **Imports:** `domain/resume.py`
-- **Imported by:** `analysis/summary_writer.py`, `eval/harness.py`, `rendering/layout.py`, `rendering/page_fit.py`, `services/arrange.py`, `services/tailor.py`, `validation/content_lint.py`
+- **Imported by:** `analysis/checklist.py`, `analysis/summary_writer.py`, `eval/harness.py`, `rendering/layout.py`, `rendering/page_fit.py`, `services/arrange.py`, `services/tailor.py`, `validation/content_lint.py`
 - **Tested by:** `tests/unit/test_dates_p86.py`, `tests/unit/test_experience.py`, `tests/unit/test_summary_writer.py`
 
 ### `app/analysis/gap_questions.py`
@@ -284,7 +298,7 @@ _Suggest-and-confirm gaps (P3.1): ask, never assume._
   - `analyze()` :394
 - **Imports:** `analysis/terminology.py`, `domain/job.py`, `llm/client.py`, `llm/schemas.py`
 - **Imported by:** `api/routes.py`, `eval/harness.py`, `services/tailor.py`
-- **Tested by:** `tests/unit/test_jd_analyzer.py`, `tests/unit/test_jd_analyzer_llm.py`, `tests/unit/test_jd_analyzer_v2.py`, `tests/unit/test_jd_p818.py`, `tests/unit/test_parser_regressions_p42.py`
+- **Tested by:** `tests/unit/test_checklist_p820.py`, `tests/unit/test_jd_analyzer.py`, `tests/unit/test_jd_analyzer_llm.py`, `tests/unit/test_jd_analyzer_v2.py`, `tests/unit/test_jd_p818.py`, `tests/unit/test_parser_regressions_p42.py`
 - **Prompts:** `llm/prompts/jd_analysis.txt`
 
 ### `app/analysis/keyword_match.py`
@@ -533,7 +547,7 @@ _The web app (P5.1): `uvicorn app.api.main:app`._
 
 ### `app/api/routes.py`
 
-**Layer:** Web API · **Stage:** all · **Lines:** 546
+**Layer:** Web API · **Stage:** all · **Lines:** 550
 
 _HTTP endpoints, one per step of the review flow (P5.1)._
 
@@ -544,38 +558,38 @@ _HTTP endpoints, one per step of the review flow (P5.1)._
 - class **`AdditionIn`** ([app/api/routes.py:65](../app/api/routes.py#L65))
 - class **`NewRoleIn`** ([app/api/routes.py:70](../app/api/routes.py#L70))
 - class **`TailorIn`** ([app/api/routes.py:80](../app/api/routes.py#L80))
-- class **`RateLimiter`** ([app/api/routes.py:93](../app/api/routes.py#L93)) — At most `limit` calls per `window` seconds per key (visitor IP).
-  - `__init__()` :96
-  - `check()` :101
-- class **`ArrangeIn`** ([app/api/routes.py:462](../app/api/routes.py#L462))
-- function **`rate_limited()`** ([app/api/routes.py:112](../app/api/routes.py#L112))
-- function **`current_session()`** ([app/api/routes.py:116](../app/api/routes.py#L116))
-- function **`_require()`** ([app/api/routes.py:123](../app/api/routes.py#L123))
-- function **`_claim()`** ([app/api/routes.py:128](../app/api/routes.py#L128))
-- function **`_save_upload()`** ([app/api/routes.py:133](../app/api/routes.py#L133)) — The upload as a temp file, after checking its type and size.
-- function **`_check_jd()`** ([app/api/routes.py:149](../app/api/routes.py#L149))
-- function **`_event()`** ([app/api/routes.py:158](../app/api/routes.py#L158))
-- function **`_stream()`** ([app/api/routes.py:162](../app/api/routes.py#L162)) — Run `work(progress)` in a thread (the session must already be
-- function **`_service()`** ([app/api/routes.py:197](../app/api/routes.py#L197)) — A TailorService for one step. With a session, saved gap answers come
-- function **`_details()`** ([app/api/routes.py:209](../app/api/routes.py#L209)) — What the "check details" step shows and edits (P3.5).
-- function **`_sections()`** ([app/api/routes.py:225](../app/api/routes.py#L225)) — Bullet id -> the job or project it belongs to, for grouping cards.
-- function **`_proposal_out()`** ([app/api/routes.py:237](../app/api/routes.py#L237))
-- function **`_match_out()`** ([app/api/routes.py:250](../app/api/routes.py#L250))
-- function **`_selected()`** ([app/api/routes.py:256](../app/api/routes.py#L256))
-- function **`health()`** ([app/api/routes.py:266](../app/api/routes.py#L266))
-- function **`config()`** ([app/api/routes.py:271](../app/api/routes.py#L271))
-- function **`_model()`** ([app/api/routes.py:278](../app/api/routes.py#L278))
-- function **`analyze()`** ([app/api/routes.py:285](../app/api/routes.py#L285)) — "Just check my match": score only, nothing kept.
-- function **`parse()`** ([app/api/routes.py:299](../app/api/routes.py#L299)) — Step 1: read the resume and start a fresh session for this run.
-- function **`proposals()`** ([app/api/routes.py:332](../app/api/routes.py#L332)) — Step 2: apply the user's fixes, then draft rewrites and gap
-- function **`match_preview()`** ([app/api/routes.py:381](../app/api/routes.py#L381)) — The match rate if the selected (and edited) proposals were applied.
-- function **`tailor()`** ([app/api/routes.py:391](../app/api/routes.py#L391)) — Step 3: apply the review and generate the files. Streams progress.
-- function **`_results_out()`** ([app/api/routes.py:430](../app/api/routes.py#L430)) — What the Results (and Arrange) screen gets after a run.
-- function **`arrange()`** ([app/api/routes.py:470](../app/api/routes.py#L470)) — Re-render the tailored resume as the user arranged it (P8.13). No LLM
-- function **`_result_path()`** ([app/api/routes.py:509](../app/api/routes.py#L509))
-- function **`download()`** ([app/api/routes.py:517](../app/api/routes.py#L517))
-- function **`preview()`** ([app/api/routes.py:525](../app/api/routes.py#L525)) — One page of the tailored PDF as a PNG (Chrome blocks embedded PDFs).
-- function **`reset()`** ([app/api/routes.py:534](../app/api/routes.py#L534)) — Start over: delete this visitor's files and state. If a step is still
+- class **`RateLimiter`** ([app/api/routes.py:94](../app/api/routes.py#L94)) — At most `limit` calls per `window` seconds per key (visitor IP).
+  - `__init__()` :97
+  - `check()` :102
+- class **`ArrangeIn`** ([app/api/routes.py:466](../app/api/routes.py#L466))
+- function **`rate_limited()`** ([app/api/routes.py:113](../app/api/routes.py#L113))
+- function **`current_session()`** ([app/api/routes.py:117](../app/api/routes.py#L117))
+- function **`_require()`** ([app/api/routes.py:124](../app/api/routes.py#L124))
+- function **`_claim()`** ([app/api/routes.py:129](../app/api/routes.py#L129))
+- function **`_save_upload()`** ([app/api/routes.py:134](../app/api/routes.py#L134)) — The upload as a temp file, after checking its type and size.
+- function **`_check_jd()`** ([app/api/routes.py:150](../app/api/routes.py#L150))
+- function **`_event()`** ([app/api/routes.py:159](../app/api/routes.py#L159))
+- function **`_stream()`** ([app/api/routes.py:163](../app/api/routes.py#L163)) — Run `work(progress)` in a thread (the session must already be
+- function **`_service()`** ([app/api/routes.py:198](../app/api/routes.py#L198)) — A TailorService for one step. With a session, saved gap answers come
+- function **`_details()`** ([app/api/routes.py:210](../app/api/routes.py#L210)) — What the "check details" step shows and edits (P3.5).
+- function **`_sections()`** ([app/api/routes.py:226](../app/api/routes.py#L226)) — Bullet id -> the job or project it belongs to, for grouping cards.
+- function **`_proposal_out()`** ([app/api/routes.py:238](../app/api/routes.py#L238))
+- function **`_match_out()`** ([app/api/routes.py:251](../app/api/routes.py#L251))
+- function **`_selected()`** ([app/api/routes.py:257](../app/api/routes.py#L257))
+- function **`health()`** ([app/api/routes.py:267](../app/api/routes.py#L267))
+- function **`config()`** ([app/api/routes.py:272](../app/api/routes.py#L272))
+- function **`_model()`** ([app/api/routes.py:279](../app/api/routes.py#L279))
+- function **`analyze()`** ([app/api/routes.py:286](../app/api/routes.py#L286)) — "Just check my match": score only, nothing kept.
+- function **`parse()`** ([app/api/routes.py:300](../app/api/routes.py#L300)) — Step 1: read the resume and start a fresh session for this run.
+- function **`proposals()`** ([app/api/routes.py:333](../app/api/routes.py#L333)) — Step 2: apply the user's fixes, then draft rewrites and gap
+- function **`match_preview()`** ([app/api/routes.py:384](../app/api/routes.py#L384)) — The match rate if the selected (and edited) proposals were applied.
+- function **`tailor()`** ([app/api/routes.py:394](../app/api/routes.py#L394)) — Step 3: apply the review and generate the files. Streams progress.
+- function **`_results_out()`** ([app/api/routes.py:434](../app/api/routes.py#L434)) — What the Results (and Arrange) screen gets after a run.
+- function **`arrange()`** ([app/api/routes.py:474](../app/api/routes.py#L474)) — Re-render the tailored resume as the user arranged it (P8.13). No LLM
+- function **`_result_path()`** ([app/api/routes.py:513](../app/api/routes.py#L513))
+- function **`download()`** ([app/api/routes.py:521](../app/api/routes.py#L521))
+- function **`preview()`** ([app/api/routes.py:529](../app/api/routes.py#L529)) — One page of the tailored PDF as a PNG (Chrome blocks embedded PDFs).
+- function **`reset()`** ([app/api/routes.py:538](../app/api/routes.py#L538)) — Start over: delete this visitor's files and state. If a step is still
 - **Imports:** `analysis/jd_analyzer.py`, `api/__init__.py`, `api/sessions.py`, `rendering/pdf_converter.py`, `rendering/review_view.py`, `services/arrange.py`
 - **Imported by:** `api/main.py`
 - **Tested by:** `tests/unit/test_api.py`
@@ -634,12 +648,12 @@ _Per-visitor state for the web API (P5.1)._
 
 - class **`Requirement`** ([app/domain/job.py:4](../app/domain/job.py#L4))
 - class **`JobDescription`** ([app/domain/job.py:28](../app/domain/job.py#L28))
-- **Imported by:** `analysis/gap_questions.py`, `analysis/jd_analyzer.py`, `analysis/keyword_match.py`, `analysis/matcher.py`, `analysis/rewriter.py`, `analysis/scoring.py`, `analysis/semantic_matcher.py`, `analysis/summary_writer.py`, `analysis/tailor_planner.py`, `cli.py`, `services/tailor.py`
+- **Imported by:** `analysis/checklist.py`, `analysis/gap_questions.py`, `analysis/jd_analyzer.py`, `analysis/keyword_match.py`, `analysis/matcher.py`, `analysis/rewriter.py`, `analysis/scoring.py`, `analysis/semantic_matcher.py`, `analysis/summary_writer.py`, `analysis/tailor_planner.py`, `cli.py`, `services/tailor.py`
 - **Tested by:** `tests/unit/test_gap_questions.py`, `tests/unit/test_jd_analyzer.py`, `tests/unit/test_keyword_match.py`, `tests/unit/test_matcher.py`, `tests/unit/test_matching_p817.py`, `tests/unit/test_new_role.py`, `tests/unit/test_parser_regressions_p42.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_review_view.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_scoring.py`, `tests/unit/test_semantic_matcher.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_stuffing_p819.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_tailor_planner.py`, `tests/unit/test_tailor_service_addition.py`
 
 ### `app/domain/report.py`
 
-**Layer:** Domain models · **Stage:** 4 Match, 5 Score · **Lines:** 65
+**Layer:** Domain models · **Stage:** 4 Match, 5 Score · **Lines:** 67
 
 - class **`Match`** ([app/domain/report.py:8](../app/domain/report.py#L8))
 - class **`KeywordRow`** ([app/domain/report.py:23](../app/domain/report.py#L23))
@@ -666,8 +680,8 @@ _Per-visitor state for the web API (P5.1)._
 - class **`SectionLine`** ([app/domain/resume.py:92](../app/domain/resume.py#L92))
 - class **`OtherSection`** ([app/domain/resume.py:98](../app/domain/resume.py#L98)) — A section the resume model has no fields for (Publications, Bar
 - class **`Resume`** ([app/domain/resume.py:110](../app/domain/resume.py#L110))
-- **Imported by:** `analysis/experience.py`, `analysis/keyword_match.py`, `analysis/resume_normalizer.py`, `analysis/rewriter.py`, `analysis/skills_tailor.py`, `analysis/structure_extractor.py`, `analysis/summary_writer.py`, `analysis/tailor_planner.py`, `domain/resume_document.py`, `eval/golden.py`, `rendering/html_renderer.py`, `rendering/layout.py`, `rendering/page_fit.py`, `services/arrange.py`, `services/tailor.py`, `validation/content_lint.py`, `validation/structural.py`
-- **Tested by:** `tests/unit/test_ats_round_trip.py`, `tests/unit/test_check_parsed_resume.py`, `tests/unit/test_content_lint.py`, `tests/unit/test_dates_p86.py`, `tests/unit/test_docx_renderer.py`, `tests/unit/test_experience.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_html_renderer.py`, `tests/unit/test_jd_p818.py`, `tests/unit/test_keyword_match.py`, `tests/unit/test_matching_p817.py`, `tests/unit/test_new_role.py`, `tests/unit/test_page_fit.py`, `tests/unit/test_parser_regressions_p42.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_resume_document.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_review_view.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_stuffing_p819.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_tailor_planner.py`, `tests/unit/test_tailor_service_addition.py`, `tests/unit/test_template_layout.py`, `tests/unit/test_template_renderer_standalone.py`
+- **Imported by:** `analysis/checklist.py`, `analysis/experience.py`, `analysis/keyword_match.py`, `analysis/resume_normalizer.py`, `analysis/rewriter.py`, `analysis/skills_tailor.py`, `analysis/structure_extractor.py`, `analysis/summary_writer.py`, `analysis/tailor_planner.py`, `domain/resume_document.py`, `eval/golden.py`, `rendering/html_renderer.py`, `rendering/layout.py`, `rendering/page_fit.py`, `services/arrange.py`, `services/tailor.py`, `validation/content_lint.py`, `validation/structural.py`
+- **Tested by:** `tests/unit/test_ats_round_trip.py`, `tests/unit/test_check_parsed_resume.py`, `tests/unit/test_checklist_p820.py`, `tests/unit/test_content_lint.py`, `tests/unit/test_dates_p86.py`, `tests/unit/test_docx_renderer.py`, `tests/unit/test_experience.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_html_renderer.py`, `tests/unit/test_jd_p818.py`, `tests/unit/test_keyword_match.py`, `tests/unit/test_matching_p817.py`, `tests/unit/test_new_role.py`, `tests/unit/test_page_fit.py`, `tests/unit/test_parser_regressions_p42.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_resume_document.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_review_view.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_stuffing_p819.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_tailor_planner.py`, `tests/unit/test_tailor_service_addition.py`, `tests/unit/test_template_layout.py`, `tests/unit/test_template_renderer_standalone.py`
 
 ### `app/domain/resume_document.py`
 
@@ -1081,41 +1095,41 @@ _Local profile of facts the user has confirmed (P3.2)._
 
 ### `app/services/tailor.py`
 
-**Layer:** Services · **Stage:** all · **Lines:** 1379
+**Layer:** Services · **Stage:** all · **Lines:** 1389
 
-- class **`TailorService`** ([app/services/tailor.py:59](../app/services/tailor.py#L59))
-  - `__init__()` :60
-  - `generate_preview_md()` :93
-  - `_patchable()` :139 — Proposals as in-place DOCX patches. A summary proposal targets the
-  - `_apply_gap_answers()` :162 — Ticked keywords join the skills section; a typed answer becomes a
-  - `_prefill_from_profile()` :210 — Answers confirmed for an earlier JD pre-fill the same questions
-  - `_draft_from_answer()` :222 — Polish the candidate's answer into one bullet that may use only
-  - `_split_description()` :241 — Pasted role description -> bullet-sized chunks: one per line (list
-  - `validate_new_role()` :251 — Check a new job before any work is done; raises ValueError with a
-  - `_new_experience()` :276 — An empty job from the "add a job" fields, validated.
-  - `_insert_by_date()` :284 — Place a job in date order: current jobs first, then most recent start.
-  - `add_new_role()` :297 — Add a job the resume doesn't have yet (P3.3). Each chunk of the
-  - `_skills_proposals()` :334 — The skills section with the JD's skills first, when that changes it (P1.6).
-  - `_summary_proposals()` :339 — The tailored summary as a proposal, when one was written (P1.5).
-  - `_embed()` :344 — Sentence embeddings for the planner, loaded lazily; raises when the
-  - `_fit_relevance()` :353 — Planner relevance per bullet for the page-fit loop. Bullets the user
-  - `_render_template()` :363 — One template render plus PDF conversion (the page-fit loop's step).
-  - `_coverage()` :371 — Content coverage of the rendered DOCX against the uploaded file (P8.2).
-  - `_apply_bullet_order()` :398 — Reorder bullets as planned (most relevant first within each
-  - `parse_resume()` :413 — File -> (raw document, ResumeDocument, evidence). The deterministic
-  - `normalize_raw()` :423
-  - `_copy_parsed()` :433 — Deep copies, so a parse kept in UI session state is never mutated.
-  - `preview_keyword_match()` :438 — Match rate if these proposals were applied (P3.4 "recalculate"):
-  - `apply_parse_corrections()` :461 — Apply the user's fixes from the "Check parsed resume" step (P3.5).
-  - `analyze_only()` :558
-  - `generate_proposals()` :585 — Generate rewrite proposals without applying them, plus questions
-  - `incorporate_user_addition()` :659 — Fold a user-supplied free-text addition (a project, an
-  - `tailor_resume()` :738
-  - `arrange()` :1247 — Re-render the tailored resume as the user arranged it (P8.13–P8.16):
-- function **`_progress()`** ([app/services/tailor.py:48](../app/services/tailor.py#L48)) — A progress reporter that can never break a run (P3.6).
-- function **`_hidden_text()`** ([app/services/tailor.py:1343](../app/services/tailor.py#L1343)) — Text of the sections the user hid, so coverage counts it as their choice.
-- function **`_merge_usage()`** ([app/services/tailor.py:1370](../app/services/tailor.py#L1370)) — Combine two LLMClient.get_usage_summary() dicts into one.
-- **Imports:** `analysis/experience.py`, `analysis/gap_questions.py`, `analysis/jd_analyzer.py`, `analysis/keyword_match.py`, `analysis/matcher.py`, `analysis/resume_normalizer.py`, `analysis/rewriter.py`, `analysis/scoring.py`, `analysis/semantic_matcher.py`, `analysis/skills_tailor.py`, `analysis/structure_extractor.py`, `analysis/summary_writer.py`, `analysis/tailor_planner.py`, `domain/evidence.py`, `domain/job.py`, `domain/report.py`, `domain/resume.py`, `domain/resume_document.py`, `domain/tailoring.py`, `ingestion/docx.py`, `ingestion/pdf.py`, `llm/client.py`, `rendering/docx_patcher.py`, `rendering/html_renderer.py`, `rendering/layout.py`, `rendering/page_fit.py`, `rendering/pdf_converter.py`, `rendering/template_renderer.py`, `services/arrange.py`, `services/profile_store.py`, `services/run_manager.py`, `validation/content_lint.py`, `validation/coverage.py`, `validation/factual.py`, `validation/output.py`, `validation/safety.py`, `validation/structural.py`
+- class **`TailorService`** ([app/services/tailor.py:60](../app/services/tailor.py#L60))
+  - `__init__()` :61
+  - `generate_preview_md()` :94
+  - `_patchable()` :140 — Proposals as in-place DOCX patches. A summary proposal targets the
+  - `_apply_gap_answers()` :163 — Ticked keywords join the skills section; a typed answer becomes a
+  - `_prefill_from_profile()` :211 — Answers confirmed for an earlier JD pre-fill the same questions
+  - `_draft_from_answer()` :223 — Polish the candidate's answer into one bullet that may use only
+  - `_split_description()` :242 — Pasted role description -> bullet-sized chunks: one per line (list
+  - `validate_new_role()` :252 — Check a new job before any work is done; raises ValueError with a
+  - `_new_experience()` :277 — An empty job from the "add a job" fields, validated.
+  - `_insert_by_date()` :285 — Place a job in date order: current jobs first, then most recent start.
+  - `add_new_role()` :298 — Add a job the resume doesn't have yet (P3.3). Each chunk of the
+  - `_skills_proposals()` :335 — The skills section with the JD's skills first, when that changes it (P1.6).
+  - `_summary_proposals()` :340 — The tailored summary as a proposal, when one was written (P1.5).
+  - `_embed()` :345 — Sentence embeddings for the planner, loaded lazily; raises when the
+  - `_fit_relevance()` :354 — Planner relevance per bullet for the page-fit loop. Bullets the user
+  - `_render_template()` :364 — One template render plus PDF conversion (the page-fit loop's step).
+  - `_coverage()` :372 — Content coverage of the rendered DOCX against the uploaded file (P8.2).
+  - `_apply_bullet_order()` :399 — Reorder bullets as planned (most relevant first within each
+  - `parse_resume()` :414 — File -> (raw document, ResumeDocument, evidence). The deterministic
+  - `normalize_raw()` :424
+  - `_copy_parsed()` :434 — Deep copies, so a parse kept in UI session state is never mutated.
+  - `preview_keyword_match()` :439 — Match rate if these proposals were applied (P3.4 "recalculate"):
+  - `apply_parse_corrections()` :462 — Apply the user's fixes from the "Check parsed resume" step (P3.5).
+  - `analyze_only()` :559
+  - `generate_proposals()` :587 — Generate rewrite proposals without applying them, plus questions
+  - `incorporate_user_addition()` :662 — Fold a user-supplied free-text addition (a project, an
+  - `tailor_resume()` :741
+  - `arrange()` :1257 — Re-render the tailored resume as the user arranged it (P8.13–P8.16):
+- function **`_progress()`** ([app/services/tailor.py:49](../app/services/tailor.py#L49)) — A progress reporter that can never break a run (P3.6).
+- function **`_hidden_text()`** ([app/services/tailor.py:1353](../app/services/tailor.py#L1353)) — Text of the sections the user hid, so coverage counts it as their choice.
+- function **`_merge_usage()`** ([app/services/tailor.py:1380](../app/services/tailor.py#L1380)) — Combine two LLMClient.get_usage_summary() dicts into one.
+- **Imports:** `analysis/checklist.py`, `analysis/experience.py`, `analysis/gap_questions.py`, `analysis/jd_analyzer.py`, `analysis/keyword_match.py`, `analysis/matcher.py`, `analysis/resume_normalizer.py`, `analysis/rewriter.py`, `analysis/scoring.py`, `analysis/semantic_matcher.py`, `analysis/skills_tailor.py`, `analysis/structure_extractor.py`, `analysis/summary_writer.py`, `analysis/tailor_planner.py`, `domain/evidence.py`, `domain/job.py`, `domain/report.py`, `domain/resume.py`, `domain/resume_document.py`, `domain/tailoring.py`, `ingestion/docx.py`, `ingestion/pdf.py`, `llm/client.py`, `rendering/docx_patcher.py`, `rendering/html_renderer.py`, `rendering/layout.py`, `rendering/page_fit.py`, `rendering/pdf_converter.py`, `rendering/template_renderer.py`, `services/arrange.py`, `services/profile_store.py`, `services/run_manager.py`, `validation/content_lint.py`, `validation/coverage.py`, `validation/factual.py`, `validation/output.py`, `validation/safety.py`, `validation/structural.py`
 - **Imported by:** `api/main.py`, `cli.py`, `eval/harness.py`
 - **Tested by:** `tests/integration/test_arrange.py`, `tests/integration/test_coverage_tailor.py`, `tests/integration/test_end_to_end.py`, `tests/unit/test_api.py`, `tests/unit/test_check_parsed_resume.py`, `tests/unit/test_cli.py`, `tests/unit/test_cli_parity.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_new_role.py`, `tests/unit/test_profile_store.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_review_view.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_tailor_resume_flow.py`, `tests/unit/test_tailor_service_addition.py`
 
@@ -1219,6 +1233,7 @@ Arrows point from importer to imported module (app code only; domain models omit
 flowchart LR
   subgraph Analysis[Analysis]
     analysis_change_proposal[change_proposal]
+    analysis_checklist[checklist]
     analysis_experience[experience]
     analysis_gap_questions[gap_questions]
     analysis_jd_analyzer[jd_analyzer]
@@ -1285,6 +1300,7 @@ flowchart LR
     api_routes[routes]
     api_sessions[sessions]
   end
+  analysis_checklist --> analysis_experience
   analysis_gap_questions --> analysis_keyword_match
   analysis_jd_analyzer --> analysis_terminology
   analysis_jd_analyzer --> llm_client
@@ -1360,6 +1376,7 @@ flowchart LR
   services_arrange --> analysis_experience
   services_arrange --> rendering_layout
   services_profile_store --> config_settings
+  services_tailor --> analysis_checklist
   services_tailor --> analysis_experience
   services_tailor --> analysis_gap_questions
   services_tailor --> analysis_jd_analyzer

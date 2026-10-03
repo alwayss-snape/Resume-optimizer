@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { AddJobForm } from "../components/AddJobForm";
 import { Button } from "../components/Button";
 import { TextArea } from "../components/Field";
+import { ConditionList } from "../components/ConditionList";
 import { GapQuestionCard, type TargetOption, TargetSelect } from "../components/GapQuestionCard";
 import { Icon } from "../components/Icon";
 import { KeywordList } from "../components/KeywordList";
@@ -261,6 +262,25 @@ export function Review() {
                   value={review.gaps[q.id] ?? { ticked: [], answer: "", target: "auto" }}
                   onChange={(value) => update((r) => ({ ...r, gaps: { ...r.gaps, [q.id]: value } }))} />
               ))}
+            </section>
+          )}
+
+          {(drafted.conditions?.length ?? 0) > 0 && (
+            <section aria-labelledby="conditions-title" className="mt-8 flex flex-col gap-3">
+              <div className="flex flex-col gap-1">
+                <h2 id="conditions-title" className="font-display text-2xl font-bold tracking-[-0.025em]">Job conditions</h2>
+                <span className="text-sm text-muted">
+                  Licences, schedule, physical demands and the like. Tick what you meet: it's for you and the change log,
+                  never added to your resume or the match.
+                </span>
+              </div>
+              <div className="sheet rounded-[3px] px-5 py-2 md:px-6">
+                <ConditionList conditions={drafted.conditions ?? []} ticked={review.conditions ?? []}
+                  onToggle={(id) => update((r) => {
+                    const now = r.conditions ?? [];
+                    return { ...r, conditions: now.includes(id) ? now.filter((x) => x !== id) : [...now, id] };
+                  })} />
+              </div>
             </section>
           )}
 

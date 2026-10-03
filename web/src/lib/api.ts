@@ -180,6 +180,7 @@ export interface TailorRequest {
   };
   keep_layout: boolean;
   strict_factual: boolean;
+  conditions?: string[];
   remember_answers: boolean;
 }
 

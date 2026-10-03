@@ -6,6 +6,7 @@ from datetime import date, datetime
 from typing import Callable, Dict, List, Optional, Tuple
 from uuid import uuid4
 
+from app.analysis.checklist import build_checklist
 from app.analysis.experience import future_dates, is_ongoing, parse_month, target_pages
 from app.analysis.gap_questions import GapAnswer, build_questions, infer_kind
 from app.analysis.jd_analyzer import JDAnalyzer
@@ -580,6 +581,7 @@ class TailorService:
             missing_requirements=missing_m,
             score_components=score_components,
             keyword_match=keyword_report,
+            conditions=[c.model_dump() for c in build_checklist(job_desc, resume)],
         )
 
     def generate_proposals(self, resume_path: str, jd_text: str, suggestion_limit: int = 5,
@@ -636,6 +638,7 @@ class TailorService:
         return {
             "proposals": proposals,
             "gap_questions": gap_questions,
+            "conditions": build_checklist(job_desc, resume),
             "alignment_score": score,
             "keyword_match": keyword_report,
             "job_description": job_desc,
@@ -754,6 +757,7 @@ class TailorService:
         gap_questions: Optional[List] = None,
         remember_answers: bool = True,
         progress: Optional[Callable[[str], None]] = None,
+        conditions_confirmed: Optional[List[str]] = None,
     ) -> Dict[str, str]:
         run_dir = self.run_manager.create_run(resume_path, jd_text)
         clean_jd_text = self.safety_guard.sanitize(jd_text)
@@ -1146,6 +1150,12 @@ class TailorService:
                     f.write(f"- **Original:** {prop.original_text}\n")
                     f.write(f"- **Tailored:** {_prop_text(prop)}\n")
                     f.write(f"- **Rationale:** {prop.rationale}\n\n")
+                if conditions_confirmed:
+                    # P8.20: the user's own word; not on the resume, not in the score.
+                    f.write("## Job conditions you confirmed\n\n")
+                    for line in conditions_confirmed:
+                        f.write(f"- {line}\n")
+                    f.write("\n")
                 if plan.unsupported_requirements:
                     f.write("## Unsupported Missing Requirements\n\n")
                     for req in plan.unsupported_requirements:

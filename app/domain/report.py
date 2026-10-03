@@ -63,3 +63,5 @@ class TailoringReport(BaseModel):
     score_components: Optional[Dict[str, float]] = None
     # Matched / missing keyword table behind alignment_score.
     keyword_match: Optional[KeywordMatchReport] = None
+    # Job conditions that aren't keywords (P8.20): licences, shifts, lifting...
+    conditions: List[Dict] = Field(default_factory=list)

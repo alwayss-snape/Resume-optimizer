@@ -27,6 +27,7 @@ export interface ReviewState {
   gaps: Record<string, GapInput>;
   addition: { text: string; target: string };
   newJob: NewJob;
+  conditions?: string[]; // job conditions the user meets (P8.20)
 }
 
 export const EMPTY_JOB: NewJob = { company: "", title: "", location: "", current: false, start: "", end: "", description: "" };
@@ -41,6 +42,7 @@ export function initialReview(drafted: ProposalsResult): ReviewState {
     gaps: Object.fromEntries(drafted.gap_questions.map((q) => [q.id, { ticked: [...q.saved_keywords], answer: q.saved_answer, target: "auto" }])),
     addition: { text: "", target: "auto" },
     newJob: EMPTY_JOB,
+    conditions: [],
   };
 }
 
@@ -108,6 +110,7 @@ export function tailorRequest(proposals: Proposal[], review: ReviewState, option
     keep_layout: options.keepLayout,
     strict_factual: options.strictFactual,
     remember_answers: options.rememberAnswers,
+    conditions: review.conditions ?? [],
   };
 }
 

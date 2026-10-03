@@ -73,6 +73,17 @@ export interface RequirementMatch {
   explanation: string;
 }
 
+export interface Condition {
+  id: string;
+  text: string;
+  kind: string;
+  label: string;
+  priority: "required" | "preferred";
+  /** "met" / "not_met" when code can tell (years), else null: the user ticks it. */
+  auto: "met" | "not_met" | null;
+  note: string | null;
+}
+
 export interface AnalysisReport {
   alignment_score: number;
   required_matches: RequirementMatch[];
@@ -80,6 +91,7 @@ export interface AnalysisReport {
   missing_requirements: RequirementMatch[];
   score_components: Record<string, number> | null;
   keyword_match: KeywordMatch | null;
+  conditions?: Condition[];
 }
 
 export interface DiffSpan {
@@ -142,6 +154,7 @@ export interface ProposalsResult {
   details?: Details; // what the server holds after the corrections (added jobs included)
   proposals: Proposal[];
   gap_questions: GapQuestion[];
+  conditions?: Condition[]; // job conditions that aren't keywords (P8.20)
   keyword_match: KeywordMatch | null;
   gaps: GapRow[];
   pre_score: number;
