@@ -45,6 +45,8 @@ export interface KeywordRow {
   found: boolean;
   credit: number;
   where: string[];
+  /** Only listed under Skills, never shown in the work: half credit (P8.19). */
+  skills_only?: boolean;
 }
 
 export interface BreakdownRow {

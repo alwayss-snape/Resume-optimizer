@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "b7deaedb262f8aec",
+  "source_hash": "1c5d3667f0abbc12",
   "stats": {
-    "files": 150,
-    "python_files": 127,
+    "files": 151,
+    "python_files": 128,
     "app_modules": 56,
-    "test_files": 62,
+    "test_files": 63,
     "classes": 105,
-    "functions": 994,
-    "lines_of_python": 20030
+    "functions": 995,
+    "lines_of_python": 20061
   },
   "axes": {
     "x": "location (path)",
@@ -500,42 +500,42 @@
       "stages": [
         "5 Score"
       ],
-      "lines": 332,
+      "lines": 340,
       "doc": "Keyword-level match rate, the headline score (P1.2).",
       "classes": [
         {
           "name": "KeywordMatcher",
-          "line": 191,
+          "line": 195,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
-              "line": 192,
+              "line": 196,
               "doc": ""
             },
             {
               "name": "_slash_parts",
-              "line": 196,
+              "line": 200,
               "doc": "\"Compact/NLC\", \"English/Spanish\": words joined by a slash, each"
             },
             {
               "name": "_found_with_credit",
-              "line": 206,
+              "line": 210,
               "doc": ""
             },
             {
               "name": "_find",
-              "line": 228,
+              "line": 232,
               "doc": ""
             },
             {
               "name": "_title_credit",
-              "line": 255,
+              "line": 259,
               "doc": ""
             },
             {
               "name": "match",
-              "line": 265,
+              "line": 269,
               "doc": ""
             }
           ]
@@ -544,47 +544,47 @@
       "functions": [
         {
           "name": "_stem",
-          "line": 50,
+          "line": 54,
           "doc": "Plural- and verb-form-insensitive: \"communicate\", \"communicated\" and"
         },
         {
           "name": "_alias",
-          "line": 68,
+          "line": 72,
           "doc": ""
         },
         {
           "name": "tokens",
-          "line": 78,
+          "line": 82,
           "doc": "Lowercased, alias-canonical, plural- and verb-form-insensitive tokens."
         },
         {
           "name": "_contains_seq",
-          "line": 84,
+          "line": 88,
           "doc": ""
         },
         {
           "name": "resume_sections",
-          "line": 89,
+          "line": 93,
           "doc": "(label, text) for every part of the resume a recruiter or ATS reads."
         },
         {
           "name": "is_place",
-          "line": 137,
+          "line": 141,
           "doc": "A location the JD names, not a skill (P8.17: \"Arizona\" and \"DC\" were"
         },
         {
           "name": "definitions",
-          "line": 156,
+          "line": 160,
           "doc": "acronym -> expansion (both lowercase), from \"Full Name (ACR)\" in texts."
         },
         {
           "name": "alternatives_of",
-          "line": 174,
+          "line": 178,
           "doc": "Token sequences that count as the keyword: \"OSHA 10 or 30\" -> OSHA 10,"
         },
         {
           "name": "reconcile",
-          "line": 310,
+          "line": 318,
           "doc": "A requirement can't read \"not shown\" while every job keyword in it is"
         }
       ]
@@ -1738,7 +1738,7 @@
         "4 Match",
         "5 Score"
       ],
-      "lines": 63,
+      "lines": 65,
       "doc": "",
       "classes": [
         {
@@ -1755,24 +1755,24 @@
         },
         {
           "name": "KeywordMatchReport",
-          "line": 34,
+          "line": 36,
           "doc": "",
           "methods": [
             {
               "name": "matched",
-              "line": 42,
+              "line": 44,
               "doc": ""
             },
             {
               "name": "missing",
-              "line": 46,
+              "line": 48,
               "doc": ""
             }
           ]
         },
         {
           "name": "TailoringReport",
-          "line": 51,
+          "line": 53,
           "doc": "",
           "methods": []
         }
@@ -7079,6 +7079,22 @@
       ]
     },
     {
+      "id": "tests/unit/test_stuffing_p819.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 21,
+      "doc": "P8.19: a Skills line pasted from the JD no longer beats real experience.",
+      "classes": [],
+      "functions": [
+        {
+          "name": "test_stuffed_skills_line_scores_below_real_experience",
+          "line": 11,
+          "doc": ""
+        }
+      ]
+    },
+    {
       "id": "tests/unit/test_summary_writer.py",
       "type": "python",
       "layer": "Tests",
@@ -7770,6 +7786,11 @@
     {
       "from": "app/analysis/keyword_match.py",
       "to": "tests/unit/test_skills_tailor.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/analysis/keyword_match.py",
+      "to": "tests/unit/test_stuffing_p819.py",
       "type": "tested_by"
     },
     {
@@ -8579,6 +8600,11 @@
     },
     {
       "from": "app/domain/job.py",
+      "to": "tests/unit/test_stuffing_p819.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/job.py",
       "to": "tests/unit/test_summary_writer.py",
       "type": "tested_by"
     },
@@ -8800,6 +8826,11 @@
     {
       "from": "app/domain/resume.py",
       "to": "tests/unit/test_skills_tailor.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/resume.py",
+      "to": "tests/unit/test_stuffing_p819.py",
       "type": "tested_by"
     },
     {

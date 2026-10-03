@@ -18,6 +18,10 @@ from app.domain.resume import Resume
 
 KIND_WEIGHTS = {"hard": 3.0, "title": 2.0, "education": 1.5, "certification": 1.5, "soft": 1.0}
 REQUIRED_MULTIPLIER = 1.5
+# A skill or soft skill only listed under Skills, never shown in a bullet,
+# summary or project, earns this share of its weight (P8.19: one Skills line
+# pasted from the JD outscored a strong resume, 87.5% vs 37.5%).
+SKILLS_ONLY_CREDIT = 0.5
 
 # Having the left term means having the right one (PySpark is Spark's Python API).
 IMPLIES: Dict[str, List[str]] = {
@@ -282,9 +286,13 @@ class KeywordMatcher:
             in_required = _contains_seq(tokens(required_text), tokens(keyword)) if required_text else True
             weight = KIND_WEIGHTS[kind] * (REQUIRED_MULTIPLIER if in_required else 1.0)
             where, credit = self._found_with_credit(keyword, kind, sections)
+            skills_only = bool(where) and kind in ("hard", "soft") and set(where) == {"skills"}
+            if skills_only:
+                credit = round(credit * SKILLS_ONLY_CREDIT, 2)
             jd_count = len([1 for i in range(len(jd_tokens)) if jd_tokens[i:i + len(tokens(keyword))] == tokens(keyword)])
             rows.append(KeywordRow(keyword=keyword, kind=kind, required=in_required, weight=weight,
-                                   found=credit >= 0.5, credit=credit, where=where, jd_count=jd_count))
+                                   found=bool(where) and credit >= 0.25, credit=credit, where=where,
+                                   jd_count=jd_count, skills_only=skills_only))
 
         jd_tokens = tokens(job.raw_text or "")
         certs = {c.lower() for c in job.certifications}

@@ -29,6 +29,8 @@ class KeywordRow(BaseModel):
     credit: float = 0.0  # 0..1 (the title can match partially)
     where: List[str] = Field(default_factory=list)  # e.g. "skills", "summary", "Acme Corp (bullet)"
     jd_count: int = 0
+    # Found only in the Skills list, nowhere in the work (P8.19): half credit.
+    skills_only: bool = False
 
 
 class KeywordMatchReport(BaseModel):
