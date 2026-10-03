@@ -8,7 +8,9 @@ const file = (name: string, size = 1000) => new File([new Uint8Array(size)], nam
 test("fileProblem mirrors the server's checks", () => {
   expect(fileProblem(file("cv.docx"))).toBeNull();
   expect(fileProblem(file("CV.PDF"))).toBeNull();
-  expect(fileProblem(file("cv.txt"))).toMatch(/docx or .pdf/);
+  expect(fileProblem(file("cv.txt"))).toBeNull(); // plain text is read too (P8.22)
+  expect(fileProblem(file("cv.doc"))).toBeNull();
+  expect(fileProblem(file("cv.pages"))).toMatch(/\.docx, \.pdf/);
   expect(fileProblem(file("cv.pdf", MAX_UPLOAD_MB * 1024 * 1024 + 1))).toMatch(/larger/);
 });
 
@@ -17,12 +19,13 @@ test("submits the file, job description and template once both are given", async
   const onSubmit = vi.fn();
   render(<UploadForm intent="tailor" onSubmit={onSubmit} />);
   const submit = screen.getByRole("button", { name: /Read my resume/ });
+  const anyFile = userEvent.setup({ applyAccept: false }); // the form checks the type itself
 
   await user.click(submit);
-  expect(screen.getByRole("alert")).toHaveTextContent("Add your resume first.");
+  expect(screen.getByRole("alert")).toHaveTextContent("Add your resume first, or paste it as text.");
 
-  await user.upload(screen.getByLabelText(/Drop your resume here/), file("notes.txt"));
-  expect(screen.getByRole("alert")).toHaveTextContent(/docx or .pdf/);
+  await anyFile.upload(screen.getByLabelText(/Drop your resume here/), file("notes.pages"));
+  expect(screen.getByRole("alert")).toHaveTextContent(/\.docx, \.pdf/);
 
   await user.upload(screen.getByLabelText(/Drop your resume here/), file("cv.docx"));
   await user.click(screen.getByRole("radio", { name: /Keep my layout/ }));
@@ -71,4 +74,18 @@ test("the match check needs no output format", () => {
   render(<UploadForm intent="check" onSubmit={vi.fn()} />);
   expect(screen.queryByText("Output format")).toBeNull();
   expect(screen.getByRole("button", { name: /Check my match/ })).toBeInTheDocument();
+});
+
+
+test("pasted text is sent as a plain-text resume with the ATS template", async () => {
+  const onSubmit = vi.fn();
+  const user = userEvent.setup();
+  render(<UploadForm intent="tailor" onSubmit={onSubmit} />);
+  await user.click(screen.getByText("No file? Paste your resume as text"));
+  await user.type(screen.getByLabelText("Your resume as text"), "Jane Doe\njane@example.com");
+  await user.type(screen.getByLabelText("The job description"), "Data analyst with SQL");
+  await user.click(screen.getByRole("button", { name: /Read my resume/ }));
+  const values = onSubmit.mock.calls[0][0];
+  expect(values.file.name).toBe("resume.txt");
+  expect(values.template).toBe("ats");
 });

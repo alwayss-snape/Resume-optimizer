@@ -12,7 +12,9 @@ export interface UploadValues {
 }
 
 export const MAX_UPLOAD_MB = 5; // until /api/config says otherwise
-const ACCEPTED = [".docx", ".pdf"];
+// .doc / .odt / .rtf are converted to .docx on the server; .txt is read as plain text (P8.22).
+const ACCEPTED = [".docx", ".pdf", ".doc", ".odt", ".rtf", ".txt"];
+const NO_LAYOUT = [".pdf", ".txt"]; // nothing to keep the layout of
 
 const extension = (name: string) => name.slice(name.lastIndexOf(".")).toLowerCase();
 const formatSize = (bytes: number) =>
@@ -20,7 +22,7 @@ const formatSize = (bytes: number) =>
 
 /** Why a file can't be used, or null. Mirrors the server's checks. */
 export function fileProblem(file: File, maxMb = MAX_UPLOAD_MB): string | null {
-  if (!ACCEPTED.includes(extension(file.name))) return "Please choose a .docx or .pdf file.";
+  if (!ACCEPTED.includes(extension(file.name))) return "Please choose a .docx, .pdf, .doc, .odt, .rtf or .txt file.";
   if (file.size > maxMb * 1024 * 1024) return `The file is larger than ${maxMb} MB.`;
   return null;
 }
@@ -70,6 +72,7 @@ export function UploadForm({ intent, onSubmit, busy = false, initial, maxUploadM
   serverErrorKey?: number; // changes per failure, so a repeated message is announced again
 }) {
   const [file, setFile] = useState<File | null>(initial?.file ?? null);
+  const [pasteText, setPasteText] = useState("");
   const [jdText, setJdText] = useState(initial?.jdText ?? "");
   const [template, setTemplate] = useState<Template>(initial?.template ?? "ats");
   const [dragging, setDragging] = useState(false);
@@ -108,7 +111,7 @@ export function UploadForm({ intent, onSubmit, busy = false, initial, maxUploadM
     if (problem) return fail(problem, "file");
     setError(null);
     setFile(picked);
-    if (extension(picked.name) === ".pdf") setTemplate("ats"); // a PDF can't keep its layout
+    if (NO_LAYOUT.includes(extension(picked.name))) setTemplate("ats"); // a PDF or text can't keep its layout
   };
 
   const onDrop = (e: DragEvent) => {
@@ -118,7 +121,14 @@ export function UploadForm({ intent, onSubmit, busy = false, initial, maxUploadM
   };
 
   const submit = () => {
-    if (!file) return fail("Add your resume first.", "file");
+    const pasted = pasteText.trim();
+    if (!file && pasted) {
+      // Pasted text goes up as a plain-text file; the server reads it like any upload (P8.22).
+      if (!jdText.trim()) return fail("Paste the job description.", "jd");
+      setError(null);
+      return onSubmit({ file: new File([pasted], "resume.txt", { type: "text/plain" }), jdText, template: "ats" });
+    }
+    if (!file) return fail("Add your resume first, or paste it as text.", "file");
     if (!jdText.trim()) return fail("Paste the job description.", "jd");
     setError(null);
     onSubmit({ file, jdText, template });
@@ -127,7 +137,7 @@ export function UploadForm({ intent, onSubmit, busy = false, initial, maxUploadM
   const invalid = (field: "file" | "jd") =>
     error?.field === field ? { "aria-invalid": true, "aria-describedby": errorId } : {};
 
-  const isPdf = file ? extension(file.name) === ".pdf" : false;
+  const isPdf = file ? NO_LAYOUT.includes(extension(file.name)) : pasteText.trim().length > 0;
 
   return (
     <form className="flex flex-col gap-10" onSubmit={(e) => { e.preventDefault(); submit(); }} noValidate>
@@ -135,7 +145,7 @@ export function UploadForm({ intent, onSubmit, busy = false, initial, maxUploadM
         <section className="sheet flex flex-col gap-4 rounded-[3px] p-6 md:p-7">
           <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
             <h2 className="font-display text-[22px] font-bold tracking-[-0.015em]">Your resume</h2>
-            <span className="text-[13px] text-muted">DOCX or PDF, up to {maxUploadMb} MB</span>
+            <span className="text-[13px] text-muted">DOCX, PDF, DOC, ODT, RTF or TXT, up to {maxUploadMb} MB</span>
           </div>
           <label htmlFor={fileId}
             onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
@@ -165,6 +175,18 @@ export function UploadForm({ intent, onSubmit, busy = false, initial, maxUploadM
               <button type="button" onClick={() => input.current?.click()}
                 className="min-h-11 text-sm font-medium text-pencil underline-offset-4 hover:underline">Replace</button>
             </div>
+          )}
+          {!file && (
+            <details className="group">
+              <summary className="flex min-h-11 w-fit cursor-pointer list-none items-center gap-2 text-sm font-medium text-pencil [&::-webkit-details-marker]:hidden">
+                <Icon name="arrow-right" size={14} strokeWidth={2} className="transition-transform group-open:rotate-90" />
+                No file? Paste your resume as text
+              </summary>
+              <label htmlFor={`${fileId}-paste`} className="sr-only">Your resume as text</label>
+              <textarea id={`${fileId}-paste`} value={pasteText} onChange={(e) => setPasteText(e.target.value)} rows={8}
+                placeholder="Paste your resume: name and contact first, then each section."
+                className="mt-2 w-full resize-y rounded-[3px] border border-field bg-panel p-3.5 text-[15px] leading-relaxed text-ink placeholder:text-muted hover:border-ink focus-visible:border-pencil" />
+            </details>
           )}
         </section>
 
@@ -196,7 +218,7 @@ export function UploadForm({ intent, onSubmit, busy = false, initial, maxUploadM
               </span>
             </TemplateCard>
             <TemplateCard value="keep" current={template} onSelect={setTemplate} title="Keep my layout" disabled={isPdf}
-              text={isPdf ? "Only for .docx uploads. PDFs always use the ATS template."
+              text={isPdf ? "Only for Word uploads. PDFs and text always use the ATS template."
                 : "Rewrites go into your own DOCX design. Order and page length stay as they are."}>
               <span aria-hidden="true" className="flex h-[120px] w-[92px] shrink-0 gap-1.5 bg-line p-2.5">
                 <span className="w-[26px] bg-line-strong" />

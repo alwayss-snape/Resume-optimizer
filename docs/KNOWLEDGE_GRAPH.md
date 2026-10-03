@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**59 app modules · 66 test files · 108 classes · 1012 functions/methods · 20,501 lines of Python** · source hash `08ec058877aecdc4`
+**59 app modules · 66 test files · 108 classes · 1012 functions/methods · 20,506 lines of Python** · source hash `afc87efc50bc2164`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -204,7 +204,7 @@ Rows = layer (what kind of code), columns = pipeline stage (when it runs during 
 
 | Layer | 1 Ingest | 2 Normalize | 3 JD analysis | 4 Match | 5 Score | 6 Plan | 7 Rewrite | 8 Validate | 9 Render | 10 Report |
 |---|---|---|---|---|---|---|---|---|---|---|
-| **Ingestion** | `docx`<br>`ocr`<br>`pdf` | · | · | · | · | · | · | · | · | · |
+| **Ingestion** | `docx`<br>`errors`<br>`ocr`<br>`pdf`<br>`text` | · | · | · | · | · | · | · | · | · |
 | **Analysis** | · | `experience`<br>`resume_normalizer`<br>`structure_extractor` | `jd_analyzer` | `checklist`<br>`matcher`<br>`semantic_matcher`<br>`terminology` | `keyword_match`<br>`scoring` | `gap_questions`<br>`tailor_planner` | `change_proposal`<br>`experience`<br>`rewriter`<br>`skills_tailor`<br>`summary_writer` | · | · | · |
 | **LLM** | · | · | `client`<br>`schemas` | · | · | · | `client`<br>`schemas` | · | · | · |
 | **Validation** | · | · | `safety` | · | · | · | · | `content_lint`<br>`coverage`<br>`factual`<br>`output`<br>`structural` | · | · |
@@ -819,7 +819,7 @@ _LLM-as-judge for the evaluation harness (P4.3)._
 
 ### `app/ingestion/errors.py`
 
-**Layer:** Ingestion · **Stage:** — · **Lines:** 21
+**Layer:** Ingestion · **Stage:** 1 Ingest · **Lines:** 21
 
 _A file the tool can't read, with a message the person can act on (P8.22)._
 
@@ -863,7 +863,7 @@ _A file the tool can't read, with a message the person can act on (P8.22)._
 
 ### `app/ingestion/text.py`
 
-**Layer:** Ingestion · **Stage:** — · **Lines:** 63
+**Layer:** Ingestion · **Stage:** 1 Ingest · **Lines:** 63
 
 _Plain-text resumes: a .txt upload or text pasted in the app (P8.22)._
 
@@ -1125,7 +1125,7 @@ _Local profile of facts the user has confirmed (P3.2)._
 
 ### `app/services/tailor.py`
 
-**Layer:** Services · **Stage:** all · **Lines:** 1419
+**Layer:** Services · **Stage:** all · **Lines:** 1421
 
 - class **`TailorService`** ([app/services/tailor.py:60](../app/services/tailor.py#L60))
   - `__init__()` :61
@@ -1148,18 +1148,18 @@ _Local profile of facts the user has confirmed (P3.2)._
   - `_apply_bullet_order()` :399 — Reorder bullets as planned (most relevant first within each
   - `parse_resume()` :414 — File -> (raw document, ResumeDocument, evidence). The deterministic
   - `read_file()` :421 — The uploaded file as raw blocks, or UnreadableFile with a message
-  - `normalize_raw()` :454
-  - `_copy_parsed()` :464 — Deep copies, so a parse kept in UI session state is never mutated.
-  - `preview_keyword_match()` :469 — Match rate if these proposals were applied (P3.4 "recalculate"):
-  - `apply_parse_corrections()` :492 — Apply the user's fixes from the "Check parsed resume" step (P3.5).
-  - `analyze_only()` :589
-  - `generate_proposals()` :617 — Generate rewrite proposals without applying them, plus questions
-  - `incorporate_user_addition()` :692 — Fold a user-supplied free-text addition (a project, an
-  - `tailor_resume()` :771
-  - `arrange()` :1287 — Re-render the tailored resume as the user arranged it (P8.13–P8.16):
+  - `normalize_raw()` :456
+  - `_copy_parsed()` :466 — Deep copies, so a parse kept in UI session state is never mutated.
+  - `preview_keyword_match()` :471 — Match rate if these proposals were applied (P3.4 "recalculate"):
+  - `apply_parse_corrections()` :494 — Apply the user's fixes from the "Check parsed resume" step (P3.5).
+  - `analyze_only()` :591
+  - `generate_proposals()` :619 — Generate rewrite proposals without applying them, plus questions
+  - `incorporate_user_addition()` :694 — Fold a user-supplied free-text addition (a project, an
+  - `tailor_resume()` :773
+  - `arrange()` :1289 — Re-render the tailored resume as the user arranged it (P8.13–P8.16):
 - function **`_progress()`** ([app/services/tailor.py:49](../app/services/tailor.py#L49)) — A progress reporter that can never break a run (P3.6).
-- function **`_hidden_text()`** ([app/services/tailor.py:1383](../app/services/tailor.py#L1383)) — Text of the sections the user hid, so coverage counts it as their choice.
-- function **`_merge_usage()`** ([app/services/tailor.py:1410](../app/services/tailor.py#L1410)) — Combine two LLMClient.get_usage_summary() dicts into one.
+- function **`_hidden_text()`** ([app/services/tailor.py:1385](../app/services/tailor.py#L1385)) — Text of the sections the user hid, so coverage counts it as their choice.
+- function **`_merge_usage()`** ([app/services/tailor.py:1412](../app/services/tailor.py#L1412)) — Combine two LLMClient.get_usage_summary() dicts into one.
 - **Imports:** `analysis/checklist.py`, `analysis/experience.py`, `analysis/gap_questions.py`, `analysis/jd_analyzer.py`, `analysis/keyword_match.py`, `analysis/matcher.py`, `analysis/resume_normalizer.py`, `analysis/rewriter.py`, `analysis/scoring.py`, `analysis/semantic_matcher.py`, `analysis/skills_tailor.py`, `analysis/structure_extractor.py`, `analysis/summary_writer.py`, `analysis/tailor_planner.py`, `domain/evidence.py`, `domain/job.py`, `domain/report.py`, `domain/resume.py`, `domain/resume_document.py`, `domain/tailoring.py`, `ingestion/docx.py`, `ingestion/pdf.py`, `ingestion/text.py`, `llm/client.py`, `rendering/docx_patcher.py`, `rendering/html_renderer.py`, `rendering/layout.py`, `rendering/page_fit.py`, `rendering/pdf_converter.py`, `rendering/template_renderer.py`, `services/arrange.py`, `services/profile_store.py`, `services/run_manager.py`, `validation/content_lint.py`, `validation/coverage.py`, `validation/factual.py`, `validation/output.py`, `validation/safety.py`, `validation/structural.py`
 - **Imported by:** `api/main.py`, `cli.py`, `eval/harness.py`
 - **Tested by:** `tests/integration/test_arrange.py`, `tests/integration/test_coverage_tailor.py`, `tests/integration/test_end_to_end.py`, `tests/unit/test_api.py`, `tests/unit/test_check_parsed_resume.py`, `tests/unit/test_cli.py`, `tests/unit/test_cli_parity.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_new_role.py`, `tests/unit/test_profile_store.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_review_view.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_tailor_resume_flow.py`, `tests/unit/test_tailor_service_addition.py`, `tests/unit/test_uploads_p822.py`
@@ -1513,5 +1513,4 @@ From `app/config/settings.py`; each can be overridden by the env var of the same
 
 **Not in `STAGE_MAP`** (add them in `scripts/update_docs.py`):
 
-- `app/ingestion/errors.py`
-- `app/ingestion/text.py`
+- none

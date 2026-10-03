@@ -3,10 +3,34 @@ import os
 import shutil
 import subprocess
 import tempfile
+import threading
 from pathlib import Path
-from typing import Optional
+from typing import List, Optional
 
 logger = logging.getLogger(__name__)
+
+# LibreOffice profiles, one per conversion running at the same time: two
+# conversions on one profile make the second fail, and a brand-new profile
+# costs ~5 s to set up, so finished ones go back in the pool warm.
+_PROFILE_ROOT = os.path.join(tempfile.gettempdir(), "tailores_lo_profiles")
+_free_profiles: List[str] = []
+_profiles_lock = threading.Lock()
+_profile_count = [0]
+
+
+def _take_profile() -> str:
+    with _profiles_lock:
+        if _free_profiles:
+            return _free_profiles.pop()
+        _profile_count[0] += 1
+        path = os.path.join(_PROFILE_ROOT, f"{os.getpid()}_{_profile_count[0]}")
+    os.makedirs(path, exist_ok=True)
+    return path
+
+
+def _give_back(path: str) -> None:
+    with _profiles_lock:
+        _free_profiles.append(path)
 
 class PdfConverter:
     def find_libreoffice_binary(self) -> Optional[str]:
@@ -39,10 +63,9 @@ class PdfConverter:
             return None
 
         os.makedirs(output_dir, exist_ok=True)
-        # Each conversion gets its own LibreOffice profile: two at once on the
-        # shared default profile make the second one fail or hang (two
-        # visitors, or a page-fit loop next to another run).
-        profile = tempfile.mkdtemp(prefix="lo_profile_")
+        # Never two conversions on one LibreOffice profile (two visitors, or a
+        # page-fit loop next to another run): each takes one from the pool.
+        profile = _take_profile()
         try:
             cmd = [
                 binary,
@@ -66,7 +89,26 @@ class PdfConverter:
             logger.error(f"PDF conversion exception: {e}")
             return None
         finally:
-            shutil.rmtree(profile, ignore_errors=True)
+            _give_back(profile)
+
+
+def convert_to_docx(path: str, output_dir: str) -> Optional[str]:
+    """A .doc / .odt / .rtf as .docx through LibreOffice (P8.22), or None."""
+    binary = PdfConverter().find_libreoffice_binary()
+    if not binary:
+        return None
+    profile = _take_profile()
+    try:
+        result = subprocess.run([binary, f"-env:UserInstallation={Path(profile).as_uri()}", "--headless",
+                                 "--convert-to", "docx", "--outdir", output_dir, path],
+                                capture_output=True, text=True, timeout=120, stdin=subprocess.DEVNULL)
+        out = os.path.join(output_dir, os.path.splitext(os.path.basename(path))[0] + ".docx")
+        return out if result.returncode == 0 and os.path.exists(out) else None
+    except Exception as e:
+        logger.error(f"DOCX conversion exception: {e}")
+        return None
+    finally:
+        _give_back(profile)
 
 
 def pdf_page_images(pdf_path: str, zoom: float = 2.0) -> list:

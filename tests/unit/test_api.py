@@ -123,7 +123,8 @@ def test_tailor_before_drafting_is_refused(client):
 
 
 @pytest.mark.parametrize("name,content,status", [
-    ("resume.txt", b"hello", 415),
+    ("resume.pages", b"hello", 415),  # .txt is read since P8.22
+    ("resume.txt", b"\x00\x01binary\x00", 415),
     ("resume.pdf", b"PK\x03\x04 not a pdf", 415),
     ("resume.docx", b"%PDF-1.7 not a docx", 415),
 ])
@@ -351,3 +352,18 @@ def test_arrange_after_tailoring(client):
 def test_very_short_job_description_is_refused(client):
     r = client.post("/api/analyze", files=_upload(SAMPLE_DOCX), data={"jd_text": "Data Analyst"})
     assert r.status_code == 422 and "very short" in r.json()["detail"]
+
+
+def test_upload_edge_cases(client, tmp_path):
+    """P8.22: broken files get their own message, pasted text and a renamed .doc work."""
+    UT = "docs/user_testing/2026-10-02/resumes/"
+    r = client.post("/api/analyze", files=_upload(UT + "corrupt.docx"), data={"jd_text": SAMPLE_JD})
+    assert r.status_code == 422 and "damaged" in r.json()["detail"]
+    r = client.post("/api/analyze", files=_upload(UT + "encrypted.pdf"), data={"jd_text": SAMPLE_JD})
+    assert r.status_code == 422 and "password" in r.json()["detail"]
+    r = client.post("/api/analyze", data={"jd_text": SAMPLE_JD, "resume_text": "Jane Doe\njane@example.com\n\n"
+                                          "EXPERIENCE\nData Engineer | Acme | 2020 - Present\n- Built Spark pipelines"})
+    assert r.status_code == 200, r.text
+    r = client.post("/api/analyze", files=_upload(UT + "renamed.doc"), data={"jd_text": SAMPLE_JD})
+    assert r.status_code == 200, r.text
+    assert client.post("/api/analyze", data={"jd_text": SAMPLE_JD}).status_code == 422  # nothing to read

@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "source_hash": "08ec058877aecdc4",
+  "source_hash": "afc87efc50bc2164",
   "stats": {
     "files": 157,
     "python_files": 134,
@@ -8,7 +8,7 @@
     "test_files": 66,
     "classes": 108,
     "functions": 1012,
-    "lines_of_python": 20501
+    "lines_of_python": 20506
   },
   "axes": {
     "x": "location (path)",
@@ -2317,7 +2317,9 @@
       "id": "app/ingestion/errors.py",
       "type": "python",
       "layer": "Ingestion",
-      "stages": [],
+      "stages": [
+        "1 Ingest"
+      ],
       "lines": 21,
       "doc": "A file the tool can't read, with a message the person can act on (P8.22).",
       "classes": [
@@ -2466,7 +2468,9 @@
       "id": "app/ingestion/text.py",
       "type": "python",
       "layer": "Ingestion",
-      "stages": [],
+      "stages": [
+        "1 Ingest"
+      ],
       "lines": 63,
       "doc": "Plain-text resumes: a .txt upload or text pasted in the app (P8.22).",
       "classes": [
@@ -3464,7 +3468,7 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 1419,
+      "lines": 1421,
       "doc": "",
       "classes": [
         {
@@ -3574,47 +3578,47 @@
             },
             {
               "name": "normalize_raw",
-              "line": 454,
+              "line": 456,
               "doc": ""
             },
             {
               "name": "_copy_parsed",
-              "line": 464,
+              "line": 466,
               "doc": "Deep copies, so a parse kept in UI session state is never mutated."
             },
             {
               "name": "preview_keyword_match",
-              "line": 469,
+              "line": 471,
               "doc": "Match rate if these proposals were applied (P3.4 \"recalculate\"):"
             },
             {
               "name": "apply_parse_corrections",
-              "line": 492,
+              "line": 494,
               "doc": "Apply the user's fixes from the \"Check parsed resume\" step (P3.5)."
             },
             {
               "name": "analyze_only",
-              "line": 589,
+              "line": 591,
               "doc": ""
             },
             {
               "name": "generate_proposals",
-              "line": 617,
+              "line": 619,
               "doc": "Generate rewrite proposals without applying them, plus questions"
             },
             {
               "name": "incorporate_user_addition",
-              "line": 692,
+              "line": 694,
               "doc": "Fold a user-supplied free-text addition (a project, an"
             },
             {
               "name": "tailor_resume",
-              "line": 771,
+              "line": 773,
               "doc": ""
             },
             {
               "name": "arrange",
-              "line": 1287,
+              "line": 1289,
               "doc": "Re-render the tailored resume as the user arranged it (P8.13\u2013P8.16):"
             }
           ]
@@ -3628,12 +3632,12 @@
         },
         {
           "name": "_hidden_text",
-          "line": 1383,
+          "line": 1385,
           "doc": "Text of the sections the user hid, so coverage counts it as their choice."
         },
         {
           "name": "_merge_usage",
-          "line": 1410,
+          "line": 1412,
           "doc": "Combine two LLMClient.get_usage_summary() dicts into one."
         }
       ]
@@ -4096,118 +4100,118 @@
       "type": "python",
       "layer": "Tooling",
       "stages": [],
-      "lines": 738,
+      "lines": 740,
       "doc": "Regenerate the repo's living docs: the knowledge graph and the change log.",
       "classes": [],
       "functions": [
         {
           "name": "git",
-          "line": 136,
+          "line": 138,
           "doc": ""
         },
         {
           "name": "layer_of",
-          "line": 143,
+          "line": 145,
           "doc": ""
         },
         {
           "name": "module_name",
-          "line": 150,
+          "line": 152,
           "doc": ""
         },
         {
           "name": "first_line",
-          "line": 157,
+          "line": 159,
           "doc": ""
         },
         {
           "name": "list_files",
-          "line": 166,
+          "line": 168,
           "doc": "Tracked + new (not ignored) files, restricted to the project map."
         },
         {
           "name": "parse_python",
-          "line": 184,
+          "line": 186,
           "doc": ""
         },
         {
           "name": "symbols_of",
-          "line": 212,
+          "line": 214,
           "doc": ""
         },
         {
           "name": "settings_fields",
-          "line": 225,
+          "line": 227,
           "doc": ""
         },
         {
           "name": "build_graph",
-          "line": 244,
+          "line": 246,
           "doc": ""
         },
         {
           "name": "render_graph_md",
-          "line": 318,
+          "line": 320,
           "doc": ""
         },
         {
           "name": "write_graph",
-          "line": 516,
+          "line": 518,
           "doc": ""
         },
         {
           "name": "commit_info",
-          "line": 559,
+          "line": 561,
           "doc": ""
         },
         {
           "name": "changed_files",
-          "line": 570,
+          "line": 572,
           "doc": ""
         },
         {
           "name": "is_major",
-          "line": 583,
+          "line": 585,
           "doc": ""
         },
         {
           "name": "blob",
-          "line": 592,
+          "line": 594,
           "doc": ""
         },
         {
           "name": "structure_delta",
-          "line": 597,
+          "line": 599,
           "doc": ""
         },
         {
           "name": "render_entry",
-          "line": 620,
+          "line": 622,
           "doc": ""
         },
         {
           "name": "_split_entries",
-          "line": 663,
+          "line": 665,
           "doc": ""
         },
         {
           "name": "_join",
-          "line": 675,
+          "line": 677,
           "doc": ""
         },
         {
           "name": "log_entry",
-          "line": 679,
+          "line": 681,
           "doc": ""
         },
         {
           "name": "backfill",
-          "line": 697,
+          "line": 699,
           "doc": ""
         },
         {
           "name": "main",
-          "line": 714,
+          "line": 716,
           "doc": ""
         }
       ]
@@ -4502,7 +4506,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 368,
+      "lines": 369,
       "doc": "Web API (P5.1): the full flow through HTTP, plus the shared form helpers.",
       "classes": [],
       "functions": [
@@ -4558,122 +4562,122 @@
         },
         {
           "name": "test_bad_uploads_are_refused",
-          "line": 130,
+          "line": 131,
           "doc": ""
         },
         {
           "name": "test_oversized_upload_and_empty_jd_are_refused",
-          "line": 135,
+          "line": 136,
           "doc": ""
         },
         {
           "name": "test_unknown_model_is_refused",
-          "line": 142,
+          "line": 143,
           "doc": ""
         },
         {
           "name": "test_invalid_new_role_is_refused_before_any_work",
-          "line": 147,
+          "line": 148,
           "doc": ""
         },
         {
           "name": "test_rate_limit",
-          "line": 155,
+          "line": 156,
           "doc": ""
         },
         {
           "name": "test_preview_renders_pdf_pages",
-          "line": 162,
+          "line": 163,
           "doc": ""
         },
         {
           "name": "test_reset_deletes_temp_files",
-          "line": 176,
+          "line": 177,
           "doc": ""
         },
         {
           "name": "test_expired_sessions_are_swept_with_their_files",
-          "line": 186,
+          "line": 187,
           "doc": ""
         },
         {
           "name": "_question",
-          "line": 202,
+          "line": 203,
           "doc": ""
         },
         {
           "name": "test_gap_answers_count_only_confirmed_input",
-          "line": 206,
+          "line": 207,
           "doc": ""
         },
         {
           "name": "test_resolve_target_rejects_unknown_ids",
-          "line": 215,
+          "line": 216,
           "doc": ""
         },
         {
           "name": "test_new_role_validation",
-          "line": 221,
+          "line": 222,
           "doc": ""
         },
         {
           "name": "test_preapproved_carries_edits",
-          "line": 231,
+          "line": 232,
           "doc": ""
         },
         {
           "name": "test_failing_service_does_not_lock_the_session",
-          "line": 240,
+          "line": 241,
           "doc": "Review fix: a step that fails before its worker starts must release"
         },
         {
           "name": "test_worker_errors_are_generic_and_release_the_lock",
-          "line": 252,
+          "line": 253,
           "doc": ""
         },
         {
           "name": "test_saved_answers_stay_with_their_visitor",
-          "line": 261,
+          "line": 262,
           "doc": "Review fix: confirmed gap answers are per session, never shared."
         },
         {
           "name": "test_failed_first_parse_leaves_no_session",
-          "line": 273,
+          "line": 274,
           "doc": ""
         },
         {
           "name": "test_cookie_is_refreshed_on_activity",
-          "line": 280,
+          "line": 281,
           "doc": ""
         },
         {
           "name": "test_reset_during_a_running_step_happens_when_it_ends",
-          "line": 286,
+          "line": 287,
           "doc": "P5.3 review: Start over while drafting must still clear the session."
         },
         {
           "name": "test_drafting_again_keeps_earlier_corrections",
-          "line": 303,
+          "line": 304,
           "doc": "P5.3 review: going back and drafting again must not forget fixes."
         },
         {
           "name": "test_an_added_job_comes_back_as_an_ordinary_one",
-          "line": 313,
+          "line": 314,
           "doc": "Drafting returns the corrected details, so the form shows an added job"
         },
         {
           "name": "test_arrange_after_tailoring",
-          "line": 329,
+          "line": 330,
           "doc": "P8.13: the result carries what the Arrange screen edits; a layout"
         },
         {
           "name": "test_very_short_job_description_is_refused",
-          "line": 351,
+          "line": 352,
           "doc": ""
         },
         {
           "name": "test_upload_edge_cases",
-          "line": 356,
+          "line": 357,
           "doc": "P8.22: broken files get their own message, pasted text and a renamed .doc work."
         }
       ]

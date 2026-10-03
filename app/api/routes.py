@@ -9,6 +9,7 @@ import json
 import logging
 import os
 import queue
+import shutil
 import tempfile
 import threading
 import time
@@ -25,6 +26,7 @@ from starlette.concurrency import run_in_threadpool
 from app.api import forms
 from app.api.sessions import Session, remove_path
 from app.rendering.pdf_converter import pdf_page_images
+from app.ingestion.errors import UnreadableFile
 from app.services.arrange import Layout
 from app.services.arrange import view as arrange_view
 from app.rendering.review_view import PROPOSAL_STATES, diff_spans, gap_table, proposal_state, score_breakdown
@@ -33,6 +35,10 @@ logger = logging.getLogger(__name__)
 
 SESSION_COOKIE = "rt_session"
 ALLOWED_TYPES = {".pdf": b"%PDF", ".docx": b"PK\x03\x04"}
+# Read after conversion to .docx with LibreOffice (P8.22); a ".doc" that is
+# really a .docx (renamed) is read as one.
+CONVERTED_TYPES = {".doc": b"\xd0\xcf\x11\xe0", ".odt": b"PK\x03\x04", ".rtf": b"{\\rtf"}
+MAX_PASTED_CHARS = 60_000
 
 router = APIRouter(prefix="/api")
 
@@ -131,20 +137,48 @@ def _claim(session: Session) -> None:
         raise HTTPException(409, "Still working on your previous request.")
 
 
-async def _save_upload(request: Request, file: UploadFile) -> str:
-    """The upload as a temp file, after checking its type and size."""
+async def _save_upload(request: Request, file: Optional[UploadFile], resume_text: Optional[str] = None) -> str:
+    """The upload (or pasted text) as a temp file, after checking its type
+    and size. .doc / .odt / .rtf are converted to .docx (P8.22)."""
+    if file is None or not (file.filename or "").strip():
+        text = (resume_text or "").strip()
+        if not text:
+            raise HTTPException(422, "Please upload your resume or paste it as text.")
+        if len(text) > MAX_PASTED_CHARS:
+            raise HTTPException(413, "That's too much text for a resume. Paste just the resume.")
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".txt", mode="w", encoding="utf-8") as tmp:
+            tmp.write(text)
+            return tmp.name
     suffix = os.path.splitext(file.filename or "")[1].lower()
-    if suffix not in ALLOWED_TYPES:
-        raise HTTPException(415, "Please upload a .docx or .pdf file.")
+    if suffix not in ALLOWED_TYPES and suffix not in CONVERTED_TYPES and suffix != ".txt":
+        raise HTTPException(415, "Please upload a .docx, .pdf, .doc, .odt, .rtf or .txt file, or paste your resume.")
     limit = request.app.state.max_upload_bytes
     data = await file.read(limit + 1)
     if len(data) > limit:
         raise HTTPException(413, f"The file is larger than {limit // (1024 * 1024)} MB.")
-    if not data.startswith(ALLOWED_TYPES[suffix]):
+    if suffix == ".doc" and data.startswith(ALLOWED_TYPES[".docx"]):
+        suffix = ".docx"  # a .docx renamed to .doc
+    if suffix == ".txt":
+        if b"\x00" in data[:4096] and not data.startswith((b"\xff\xfe", b"\xfe\xff")):
+            raise HTTPException(415, "That file doesn't look like plain text.")
+    elif not data.startswith({**ALLOWED_TYPES, **CONVERTED_TYPES}[suffix]):
         raise HTTPException(415, f"That file doesn't look like a real {suffix} file.")
     with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
         tmp.write(data)
-        return tmp.name
+        path = tmp.name
+    if suffix in CONVERTED_TYPES:
+        from app.rendering.pdf_converter import convert_to_docx
+        out_dir = tempfile.mkdtemp(prefix="convert_")
+        converted = await run_in_threadpool(convert_to_docx, path, out_dir)
+        os.remove(path)
+        if not converted:
+            from app.ingestion.errors import CONVERT_FAILED
+            raise HTTPException(422, CONVERT_FAILED)
+        final = tempfile.NamedTemporaryFile(delete=False, suffix=".docx").name
+        shutil.move(converted, final)
+        shutil.rmtree(out_dir, ignore_errors=True)
+        return final
+    return path
 
 
 def _check_jd(jd_text: str) -> None:
@@ -283,26 +317,29 @@ def _model(model: Optional[str]) -> Optional[str]:
 
 
 @router.post("/analyze", dependencies=[Depends(rate_limited)])
-async def analyze(request: Request, file: UploadFile = File(...), jd_text: str = Form(...),
-                  model: Optional[str] = Form(None)) -> Dict:
+async def analyze(request: Request, file: Optional[UploadFile] = File(None), jd_text: str = Form(...),
+                  model: Optional[str] = Form(None), resume_text: Optional[str] = Form(None)) -> Dict:
     """"Just check my match": score only, nothing kept."""
     _check_jd(jd_text)
     model = _model(model)
-    path = await _save_upload(request, file)
+    path = await _save_upload(request, file, resume_text)
     try:
         report = await run_in_threadpool(_service(request, model=model).analyze_only, path, jd_text)
+    except UnreadableFile as e:
+        raise HTTPException(422, str(e))
     finally:
         os.remove(path)
     return {**report.model_dump(), "keyword_match": _match_out(report.keyword_match)}
 
 
 @router.post("/parse", dependencies=[Depends(rate_limited)])
-async def parse(request: Request, response: Response, file: UploadFile = File(...), jd_text: str = Form(...),
-                model: Optional[str] = Form(None)) -> Dict:
+async def parse(request: Request, response: Response, file: Optional[UploadFile] = File(None),
+                jd_text: str = Form(...), model: Optional[str] = Form(None),
+                resume_text: Optional[str] = Form(None)) -> Dict:
     """Step 1: read the resume and start a fresh session for this run."""
     _check_jd(jd_text)
     model = _model(model)
-    path = await _save_upload(request, file)
+    path = await _save_upload(request, file, resume_text)
     store = request.app.state.sessions
     session = store.get(request.cookies.get(SESSION_COOKIE))
     is_new = session is None
@@ -318,10 +355,12 @@ async def parse(request: Request, response: Response, file: UploadFile = File(..
         parsed = await run_in_threadpool(service.parse_resume, path)
         session.data.update(parsed=parsed, jd_text=jd_text, model=model,
                             parse_issues=list(service.last_parse_issues))
-    except BaseException:
+    except BaseException as e:
         session.busy.release()
         if is_new:  # no cookie was sent, so nobody could reach it again
             store.drop(session)
+        if isinstance(e, UnreadableFile):
+            raise HTTPException(422, str(e))
         raise
     session.busy.release()
     response.set_cookie(SESSION_COOKIE, session.id, httponly=True, samesite="lax",

@@ -415,11 +415,43 @@ class TailorService:
         """File -> (raw document, ResumeDocument, evidence). The deterministic
         parse runs first; only if it looks wrong is the LLM asked to label
         lines by index (P1.13), which keeps every value verbatim."""
-        if resume_path.lower().endswith(".pdf"):
-            raw_doc = self.pdf_parser.parse(resume_path)
-        else:
-            raw_doc = self.docx_parser.parse(resume_path)
+        raw_doc = self.read_file(resume_path)
         return (raw_doc, *self.normalize_raw(raw_doc))
+
+    def read_file(self, resume_path: str):
+        """The uploaded file as raw blocks, or UnreadableFile with a message
+        the person can act on (P8.22) instead of a crash."""
+        import zipfile
+        from docx.opc.exceptions import PackageNotFoundError
+        from app.ingestion import errors
+        from app.ingestion.text import TextParser
+        lower = resume_path.lower()
+        if os.path.getsize(resume_path) == 0:
+            raise errors.UnreadableFile(errors.NO_TEXT)
+        if lower.endswith(".txt"):
+            return TextParser().parse(resume_path)
+        if lower.endswith(".pdf"):
+            import pymupdf
+            try:
+                with pymupdf.open(resume_path) as pdf:
+                    if pdf.needs_pass or pdf.is_encrypted:
+                        raise errors.UnreadableFile(errors.LOCKED_PDF)
+                    has_images = any(page.get_images() for page in pdf)
+            except errors.UnreadableFile:
+                raise
+            except Exception:
+                raise errors.UnreadableFile(errors.DAMAGED_PDF)
+            raw_doc = self.pdf_parser.parse(resume_path)
+            if len(raw_doc.raw_text.strip()) < 40:
+                raise errors.UnreadableFile(errors.SCANNED_PDF if has_images else errors.NO_TEXT)
+            return raw_doc
+        try:
+            raw_doc = self.docx_parser.parse(resume_path)
+        except (PackageNotFoundError, zipfile.BadZipFile, KeyError):
+            raise errors.UnreadableFile(errors.DAMAGED_DOCX)
+        if not raw_doc.raw_text.strip():
+            raise errors.UnreadableFile(errors.NO_TEXT)
+        return raw_doc
 
     def normalize_raw(self, raw_doc):
         resume_doc, evidence_list = self.resume_normalizer.normalize(raw_doc)
@@ -785,15 +817,15 @@ class TailorService:
         
         _append_progress("Run created: " + run_dir)
 
-        is_pdf = resume_path.lower().endswith(".pdf")
+        is_pdf = resume_path.lower().endswith((".pdf", ".txt"))  # nothing to patch in place
         if is_pdf:
-            mode = "ATS_DEFAULT"  # Force ATS reconstruction for PDF inputs
+            mode = "ATS_DEFAULT"  # Force ATS reconstruction for PDF and text inputs
         if parse_corrected and mode == "PRESERVE":
             # Header/role corrections have no place to go in an in-place
             # patch of the original file; only the template shows them.
             mode = "ATS_DEFAULT"
         if parsed is None:
-            raw_doc = self.pdf_parser.parse(resume_path) if is_pdf else self.docx_parser.parse(resume_path)
+            raw_doc = self.read_file(resume_path)
 
         if new_role and mode == "PRESERVE":
             mode = "ATS_DEFAULT"  # a new job has no place in the original layout
