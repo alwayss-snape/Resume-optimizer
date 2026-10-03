@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "source_hash": "00a2f34d0b7d37dd",
+  "source_hash": "c5e0b0f1c2a5a779",
   "stats": {
     "files": 160,
     "python_files": 137,
@@ -8,7 +8,7 @@
     "test_files": 68,
     "classes": 109,
     "functions": 1030,
-    "lines_of_python": 20868
+    "lines_of_python": 20906
   },
   "axes": {
     "x": "location (path)",
@@ -280,12 +280,12 @@
       "stages": [
         "4 Match"
       ],
-      "lines": 72,
+      "lines": 82,
       "doc": "Job conditions that aren't keywords (P8.20).",
       "classes": [
         {
           "name": "Condition",
-          "line": 41,
+          "line": 48,
           "doc": "",
           "methods": []
         }
@@ -293,7 +293,7 @@
       "functions": [
         {
           "name": "build_checklist",
-          "line": 52,
+          "line": 59,
           "doc": ""
         }
       ]
@@ -410,7 +410,7 @@
       "stages": [
         "3 JD analysis"
       ],
-      "lines": 502,
+      "lines": 513,
       "doc": "",
       "classes": [
         {
@@ -425,92 +425,92 @@
             },
             {
               "name": "clean_text",
-              "line": 103,
+              "line": 104,
               "doc": "A pasted JD as plain text (P8.18): HTML tags and entities removed"
             },
             {
               "name": "too_short",
-              "line": 122,
+              "line": 123,
               "doc": "Too little to score against (P8.18: a two-word JD scored 100%)."
             },
             {
               "name": "_not_benefit",
-              "line": 126,
+              "line": 127,
               "doc": ""
             },
             {
               "name": "extract_keywords_from_text",
-              "line": 130,
+              "line": 131,
               "doc": "Stopgap keyword extraction: keep only technical-looking terms,"
             },
             {
               "name": "_category",
-              "line": 216,
+              "line": 227,
               "doc": ""
             },
             {
               "name": "_clean_line",
-              "line": 229,
+              "line": 240,
               "doc": "Strip a bullet marker, including private-use glyphs pasted from Word/PDF."
             },
             {
               "name": "_is_heading",
-              "line": 234,
+              "line": 245,
               "doc": "A section heading: the known patterns, an ALL-CAPS short line"
             },
             {
               "name": "_is_requirement",
-              "line": 251,
+              "line": 262,
               "doc": ""
             },
             {
               "name": "_reflow_lines",
-              "line": 260,
+              "line": 271,
               "doc": "Undo hard line-wrapping from pasted JDs (job boards/PDFs often wrap"
             },
             {
               "name": "_verbatim",
-              "line": 298,
+              "line": 309,
               "doc": "The JD's own spelling of `value` if it occurs in the JD (case- and"
             },
             {
               "name": "_verbatim_list",
-              "line": 308,
+              "line": 319,
               "doc": ""
             },
             {
               "name": "_contains_term",
-              "line": 319,
+              "line": 330,
               "doc": "Whole-term containment: \"A/B\" is in \"A/B testing\", \"ML\" is not in \"MLflow\"."
             },
             {
               "name": "count_occurrences",
-              "line": 324,
+              "line": 335,
               "doc": "Whole-term, case-insensitive count (\"R\" doesn't match \"React\")."
             },
             {
               "name": "_heuristic_title_company",
-              "line": 330,
+              "line": 341,
               "doc": ""
             },
             {
               "name": "_seniority",
-              "line": 351,
+              "line": 362,
               "doc": ""
             },
             {
               "name": "_years",
-              "line": 358,
+              "line": 369,
               "doc": ""
             },
             {
               "name": "_llm_analyze",
-              "line": 366,
+              "line": 377,
               "doc": "One structured call: metadata, requirement lines by index, skills."
             },
             {
               "name": "analyze",
-              "line": 394,
+              "line": 405,
               "doc": ""
             }
           ]
@@ -525,42 +525,42 @@
       "stages": [
         "5 Score"
       ],
-      "lines": 382,
+      "lines": 399,
       "doc": "Keyword-level match rate, the headline score (P1.2).",
       "classes": [
         {
           "name": "KeywordMatcher",
-          "line": 196,
+          "line": 202,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
-              "line": 197,
+              "line": 203,
               "doc": ""
             },
             {
               "name": "_slash_parts",
-              "line": 201,
+              "line": 207,
               "doc": "\"Compact/NLC\", \"English/Spanish\": words joined by a slash, each"
             },
             {
               "name": "_found_with_credit",
-              "line": 211,
+              "line": 217,
               "doc": ""
             },
             {
               "name": "_find",
-              "line": 233,
+              "line": 239,
               "doc": ""
             },
             {
               "name": "_title_credit",
-              "line": 260,
+              "line": 266,
               "doc": ""
             },
             {
               "name": "match",
-              "line": 270,
+              "line": 276,
               "doc": ""
             }
           ]
@@ -569,52 +569,52 @@
       "functions": [
         {
           "name": "_stem",
-          "line": 55,
+          "line": 59,
           "doc": "Plural- and verb-form-insensitive: \"communicate\", \"communicated\" and"
         },
         {
           "name": "_alias",
-          "line": 73,
+          "line": 77,
           "doc": ""
         },
         {
           "name": "tokens",
-          "line": 83,
+          "line": 89,
           "doc": "Lowercased, alias-canonical, plural- and verb-form-insensitive tokens."
         },
         {
           "name": "_contains_seq",
-          "line": 89,
+          "line": 95,
           "doc": ""
         },
         {
           "name": "resume_sections",
-          "line": 94,
+          "line": 100,
           "doc": "(label, text) for every part of the resume a recruiter or ATS reads."
         },
         {
           "name": "is_place",
-          "line": 142,
+          "line": 148,
           "doc": "A location the JD names, not a skill (P8.17: \"Arizona\" and \"DC\" were"
         },
         {
           "name": "definitions",
-          "line": 161,
+          "line": 167,
           "doc": "acronym -> expansion (both lowercase), from \"Full Name (ACR)\" in texts."
         },
         {
           "name": "alternatives_of",
-          "line": 179,
+          "line": 185,
           "doc": "Token sequences that count as the keyword: \"OSHA 10 or 30\" -> OSHA 10,"
         },
         {
           "name": "guidance",
-          "line": 326,
+          "line": 339,
           "doc": "What a low match means (P8.21): a nurse applying to a sales job scored"
         },
         {
           "name": "reconcile",
-          "line": 360,
+          "line": 373,
           "doc": "A requirement can't read \"not shown\" while every job keyword in it is"
         }
       ]

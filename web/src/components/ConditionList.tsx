@@ -12,22 +12,22 @@ export function ConditionList({ conditions, ticked, onToggle }: {
   return (
     <ul className="m-0 flex flex-col p-0">
       {conditions.map((c) => {
-        const met = c.auto === "met";
-        const on = met || (ticked?.includes(c.id) ?? false);
+        // Code's guess about years is a hint; the user's tick decides (Stage K review).
+        const on = ticked?.includes(c.id) ?? false;
         return (
           <li key={c.id} className="flex flex-col gap-1 border-t border-line py-3 first:border-t-0">
             <span className="text-xs text-muted">
               {c.label}{c.priority === "preferred" ? " · nice to have" : ""}
             </span>
-            {onToggle && !c.auto ? (
+            {onToggle ? (
               <label className="flex min-h-11 cursor-pointer items-start gap-3 text-[15px] leading-relaxed">
                 <input type="checkbox" className="mt-1 size-4 shrink-0" checked={on} onChange={() => onToggle(c.id)} />
                 <span><span className="font-serif">{c.text}</span> <span className="text-sm text-muted">· I meet this</span></span>
               </label>
             ) : (
               <p className="m-0 flex items-start gap-2 text-[15px] leading-relaxed">
-                {c.auto === "met" ? <Icon name="check" size={16} strokeWidth={2.2} className="mt-1 shrink-0 text-success" />
-                  : c.auto === "not_met" ? <Icon name="alert" size={16} className="mt-1 shrink-0 text-warning" />
+                {c.auto === "met" ? <><Icon name="check" size={16} strokeWidth={2.2} className="mt-1 shrink-0 text-success" /><span className="sr-only">Looks met: </span></>
+                  : c.auto === "not_met" ? <><Icon name="alert" size={16} className="mt-1 shrink-0 text-warning" /><span className="sr-only">Looks not met: </span></>
                   : <span aria-hidden="true" className="mt-1.5 size-2.5 shrink-0 rounded-full border-[1.5px] border-field" />}
                 <span className="font-serif">{c.text}</span>
               </p>

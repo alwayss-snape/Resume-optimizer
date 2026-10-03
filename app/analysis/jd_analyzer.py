@@ -97,7 +97,8 @@ class JDAnalyzer:
 
     _TAG_BREAK_RE = re.compile(r"(?i)<\s*(?:br|/p|/li|/h[1-6]|/div|/tr)\s*/?>")
     _TAG_ITEM_RE = re.compile(r"(?i)<\s*li[^>]*>")
-    _TAG_RE = re.compile(r"<[^>]{1,200}>")
+    # Only tag-shaped text on one line: "C++ with < 5 years ... > $100k" stays (Stage K review).
+    _TAG_RE = re.compile(r"</?[A-Za-z][A-Za-z0-9-]*(?:\s[^<>\n]{0,200})?/?>")
 
     @classmethod
     def clean_text(cls, text: str) -> str:
@@ -107,12 +108,12 @@ class JDAnalyzer:
         import html
         import unicodedata
         text = text or ""
-        if "<" in text and ">" in text:
+        if cls._TAG_RE.search(text):
             text = cls._TAG_BREAK_RE.sub("\n", text)
             text = cls._TAG_ITEM_RE.sub("\n- ", text)
             text = cls._TAG_RE.sub(" ", text)
         text = html.unescape(text)
-        keep = set("•●▪◦‣▸–—-*")
+        keep = set("•●▪◦‣▸–—-*°™©®✓✔")
         text = "".join(ch for ch in text if ch in keep or ch in "\n\t" or not (
             unicodedata.category(ch) in ("So", "Cs", "Co") or ch in "\ufe0f\u200d"))
         lines = [re.sub(r"[ \t\u00a0]+", " ", line).strip() for line in text.splitlines()]
@@ -121,7 +122,7 @@ class JDAnalyzer:
     @staticmethod
     def too_short(text: str) -> bool:
         """Too little to score against (P8.18: a two-word JD scored 100%)."""
-        return len(re.findall(r"\w+", text or "")) < 12
+        return len(re.findall(r"\w+", text or "")) < 5
 
     def _not_benefit(self, keywords: List[str]) -> List[str]:
         from app.analysis.terminology import BENEFIT_TERMS
@@ -146,6 +147,7 @@ class JDAnalyzer:
 
         from app.analysis.terminology import DOMAIN_TERMS
         boilerplate = False
+        opening_runs: List[str] = []
         for line in text.splitlines():
             line = self._clean_line(line)
             if self._is_heading(line) or line.lower().startswith(self.METADATA_PREFIXES):
@@ -160,8 +162,13 @@ class JDAnalyzer:
                 last_end = -1
 
                 def flush() -> None:
-                    if len(run) >= 2:
-                        add(" ".join(run[:4]))
+                    phrase = " ".join(run[:4])
+                    if len(run) >= 2 and not initial[0]:
+                        add(phrase)
+                    elif len(run) >= 2:
+                        # "Wingtip Cloud is looking for...": a name opening a
+                        # sentence; kept only if it shows up mid-sentence too.
+                        opening_runs.append(phrase)
                     elif run and not initial[0]:
                         add(run[0])  # a lone sentence-initial capital is just a capital
                     run.clear()
@@ -196,6 +203,10 @@ class JDAnalyzer:
                     if has_symbol or is_acronym:
                         add(tok)
                 flush()
+
+        for phrase in opening_runs:
+            if phrase.lower() in counts or phrase.lower() in DOMAIN_TERMS or phrase.lower() in TECH_TERMS:
+                add(phrase)
 
         lowered_text = text.lower()
         for canonical in ALIAS_MAP:
@@ -474,8 +485,8 @@ class JDAnalyzer:
         requirement_text = "\n".join(r.text for r in requirements) or jd_text
         for term in self.extract_keywords_from_text(requirement_text):
             low = term.lower()
-            if low in company_words or any(self._contains_term(k, term) or self._contains_term(term, k)
-                                           for k in keywords):
+            if low in company_words or set(low.split()) <= company_words or any(
+                    self._contains_term(k, term) or self._contains_term(term, k) for k in keywords):
                 continue
             keywords.append(term)
         keywords = self._not_benefit(keywords)

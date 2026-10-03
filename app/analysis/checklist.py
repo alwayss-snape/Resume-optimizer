@@ -21,19 +21,26 @@ from app.domain.resume import Resume
 _KINDS = [
     ("authorization", "Right to work",
      r"\b(?:authori[sz]ed to work|work authori[sz]ation|citizenship|u\.?s\.? citizen|visa sponsorship|right to work)\b"),
-    ("clearance", "Security clearance", r"\b(?:security clearance|clearance|secret|ts/sci)\b"),
-    ("driving", "Driving", r"\b(?:driver'?s licen[cs]e|driving licen[cs]e|valid licen[cs]e to drive|cdl)\b"),
+    ("clearance", "Security clearance",
+     r"\b(?:security clearance|(?:active |current )?(?:secret|top secret|ts/sci) clearance|clearance required"
+     r"|(?:active|current) secret\b)"),
+    ("driving", "Driving", r"\b(?:driver'?s licen[cs]e|driving licen[cs]e|valid licen[cs]e to drive|\bcdl\b)"),
     ("licence", "Licence or registration",
-     r"\b(?:licen[cs]e|licensure|licensed|registration|registered|board certified|bar (?:membership|admission)"
-     r"|member of the bar|active .{0,20}bar)\b"),
+     r"\b(?:(?:active|current|valid|unrestricted|state|professional)\s+(?:\w+\s+){0,3}licen[cs]e(?!\s+management)"
+     r"|licensed (?:to practice|in)|licensure|board certified|bar (?:membership|admission)|member of the bar"
+     r"|active .{0,20}\bbar\b|journeyman (?:\w+ )?licen[cs]e|registered (?:nurse|pharmacist|dietitian))\b"),
     ("physical", "Physical demands",
-     r"\b(?:lift(?:ing)? (?:up to )?\d+\s*(?:lbs?|pounds|kg)|stand(?:ing)? for|climb|work at heights|kneel|on your feet)\b"),
+     r"\b(?:lift(?:ing)? (?:up to )?\d+\s*(?:lbs?|pounds|kg)|stand(?:ing)? for (?:long|extended)|climb (?:ladders|stairs)"
+     r"|work at heights|kneel|on your feet)\b"),
     ("schedule", "Schedule and availability",
-     r"\b(?:shifts?|nights?|weekends?|holidays?|overtime|on[- ]call|availability|available to|travel|relocat\w*|rotating)\b"),
+     r"\b(?:night shifts?|day shifts?|rotating shifts?|\d+-hour shifts?|shift work|work(?:ing)? (?:nights|weekends)"
+     r"|nights?,? weekends|weekends(?: and|,)? holidays|overtime|on[- ]call|available (?:to work|for)"
+     r"|flexible availability|willing(?:ness)? to travel|travel (?:up to )?\d+\s*%|relocat(?:e|ion))\b"),
     ("specialized", "Specialized experience", r"\b(?:specialized experience|equivalent to (?:the )?gs-\d+)\b"),
     ("language", "Languages",
-     r"\b(?:bilingual|fluent|fluency|native speaker|english|spanish|french|german|mandarin|hindi|arabic|portuguese"
-     r"|deutsch|englisch)\b"),
+     r"\b(?:bilingual|fluen(?:t|cy) in|native (?:speaker|level)|(?:english|spanish|french|german|mandarin|hindi"
+     r"|arabic|portuguese)(?:/\w+)? (?:a plus|required|fluency|speaking|proficiency)|(?:sehr )?gute deutsch\w*"
+     r"|deutsch- und englischkenntnisse)"),
 ]
 _YEARS_RE = re.compile(r"(?:minimum (?:of )?|at least )?(\d{1,2})\s*\+?\s*(?:-\s*\d{1,2}\s*)?(?:years|yrs)\b", re.IGNORECASE)
 
@@ -60,7 +67,10 @@ def build_checklist(job: JobDescription, resume: Optional[Resume] = None,
         auto = note = None
         if kind is None:
             m = _YEARS_RE.search(text)
-            if not m or not re.search(r"experience|years in|years of", low):
+            # General experience only ("2 years of acute care experience"); "5+
+            # years of Python" is a skill the keyword match already covers.
+            if not m or not re.search(r"\d+\s*\+?\s*(?:-\s*\d+\s*)?(?:years|yrs)\s+(?:of\s+)?(?:[\w-]+\s+){0,3}"
+                                      r"experience", low):
                 continue
             kind = ("years", "Years of experience")
             if years is not None and years > 0:

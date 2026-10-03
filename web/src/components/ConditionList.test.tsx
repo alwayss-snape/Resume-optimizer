@@ -14,6 +14,6 @@ test("ticks the user's own conditions; years are checked by code", async () => {
   render(<ConditionList conditions={CONDITIONS} ticked={[]} onToggle={onToggle} />);
   await userEvent.click(screen.getByRole("checkbox", { name: /Current RN license in Arizona/ }));
   expect(onToggle).toHaveBeenCalledWith("c1");
-  expect(screen.getAllByRole("checkbox")).toHaveLength(1); // the years line isn't a tick box
+  expect(screen.getAllByRole("checkbox")).toHaveLength(2); // years are a hint; the user still ticks
   expect(screen.getByText("About 5.6 years.")).toBeInTheDocument();
 });

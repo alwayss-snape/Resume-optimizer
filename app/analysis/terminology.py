@@ -122,7 +122,7 @@ DOMAIN_TERMS = frozenset({
     "month-end close", "reconciliations", "account reconciliations", "accruals", "journal entries",
     "financial statements", "financial reporting", "variance analysis", "budgeting", "forecasting", "audit",
     "sox", "asc 606", "revenue recognition", "accounts payable", "accounts receivable", "payroll", "netsuite",
-    "quickbooks", "pivot tables", "vlookup", "p&l", "s&op", "six sigma", "lean six sigma", "kaizen",
+    "quickbooks", "pivot tables", "vlookup", "p&l", "s&op", "six sigma", "lean six sigma", "kaizen", "supply chain",
     # sales and retail
     "pipeline management", "prospecting", "cold calling", "quota", "forecasting accuracy", "negotiation",
     "account management", "merchandising", "planograms", "loss prevention", "shrink", "cash handling",

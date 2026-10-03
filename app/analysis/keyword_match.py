@@ -22,7 +22,11 @@ REQUIRED_MULTIPLIER = 1.5
 # summary or project, earns this share of its weight (P8.19: one Skills line
 # pasted from the JD outscored a strong resume, 87.5% vs 37.5%; at half
 # credit the Stage K gate's stuffed resume still won, 50% vs 36%).
-SKILLS_ONLY_CREDIT = 0.25
+SKILLS_ONLY_CREDIT = 0.5
+# ...and this when most of what's found is only listed under Skills, the
+# pattern of a Skills line pasted from the JD (Stage K gate: 50% vs 36%).
+STUFFED_SKILLS_ONLY_CREDIT = 0.25
+STUFFED_SHARE = 0.5
 
 # Having the left term means having the right one (PySpark is Spark's Python API).
 IMPLIES: Dict[str, List[str]] = {
@@ -73,7 +77,9 @@ def _stem(token: str) -> str:
 def _alias(text: str) -> str:
     value = text.lower()
     for source, target in _ALIASES.items():
-        value = re.sub(r"(?<![a-z0-9])" + re.escape(source) + r"(?![a-z0-9])", target, value)
+        # A plural acronym too: "KPIs" -> "key performance indicators" (Stage K review).
+        value = re.sub(r"(?<![a-z0-9])" + re.escape(source) + r"(s?)(?![a-z0-9])",
+                       lambda m, t=target: t + m.group(1), value)
     return value
 
 
@@ -311,6 +317,13 @@ class KeywordMatcher:
                                    weight=KIND_WEIGHTS["title"] * REQUIRED_MULTIPLIER,
                                    found=credit >= 0.5, credit=round(credit, 2), where=where, jd_count=1))
 
+        found_weight = sum(r.weight for r in rows if r.where)
+        skills_only_weight = sum(r.weight for r in rows if r.skills_only)
+        if found_weight and skills_only_weight / found_weight > STUFFED_SHARE:
+            for r in rows:
+                if r.skills_only:
+                    r.credit = round(r.credit * STUFFED_SKILLS_ONLY_CREDIT / SKILLS_ONLY_CREDIT, 2)
+                    r.found = r.credit >= 0.25
         total = sum(r.weight for r in rows)
         rate = round(100.0 * sum(r.weight * r.credit for r in rows) / total, 1) if total else 0.0
         report = KeywordMatchReport(rate=rate, rows=rows, approximate=job.analysis_source != "llm")
@@ -370,12 +383,16 @@ def reconcile(matches, report: KeywordMatchReport):
         inside = [r for toks, r in rows if _contains_seq(line, toks)]
         if not inside:
             continue
-        found = [r for r in inside if r.found]
-        if len(found) == len(inside):
+        found = [r for r in inside if r.found and not r.skills_only]  # a Skills list entry shows nothing done
+        covered = set(t for toks, r in rows if r in inside for t in toks)
+        content = [t for t in line if len(t) > 3 and t not in _GENERIC_TAIL]
+        thin = (re.search(r"\d+\s*\+?\s*(?:years|yrs)", m.requirement_text, re.IGNORECASE)
+                or (content and len([t for t in content if t in covered]) / len(content) < 0.4))
+        if len(found) == len(inside) and not thin:
             m.status = "SUPPORTED"
             m.explanation = "Every job keyword in this line is on your resume: " + ", ".join(r.keyword for r in found)
             m.confidence = max(getattr(m, "confidence", 0.0) or 0.0, 0.8)
-        elif found and m.status == "MISSING":
+        elif found and m.status in ("MISSING", "UNCERTAIN"):
             m.status = "PARTIAL"
             m.explanation = ("Some of this line's job keywords are on your resume: "
                              + ", ".join(r.keyword for r in found))
