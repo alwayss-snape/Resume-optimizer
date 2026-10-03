@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "afc87efc50bc2164",
+  "source_hash": "2223420864275d8d",
   "stats": {
     "files": 157,
     "python_files": 134,
     "app_modules": 59,
     "test_files": 66,
-    "classes": 108,
-    "functions": 1012,
-    "lines_of_python": 20506
+    "classes": 109,
+    "functions": 1013,
+    "lines_of_python": 20549
   },
   "axes": {
     "x": "location (path)",
@@ -525,42 +525,42 @@
       "stages": [
         "5 Score"
       ],
-      "lines": 380,
+      "lines": 382,
       "doc": "Keyword-level match rate, the headline score (P1.2).",
       "classes": [
         {
           "name": "KeywordMatcher",
-          "line": 195,
+          "line": 196,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
-              "line": 196,
+              "line": 197,
               "doc": ""
             },
             {
               "name": "_slash_parts",
-              "line": 200,
+              "line": 201,
               "doc": "\"Compact/NLC\", \"English/Spanish\": words joined by a slash, each"
             },
             {
               "name": "_found_with_credit",
-              "line": 210,
+              "line": 211,
               "doc": ""
             },
             {
               "name": "_find",
-              "line": 232,
+              "line": 233,
               "doc": ""
             },
             {
               "name": "_title_credit",
-              "line": 259,
+              "line": 260,
               "doc": ""
             },
             {
               "name": "match",
-              "line": 269,
+              "line": 270,
               "doc": ""
             }
           ]
@@ -569,52 +569,52 @@
       "functions": [
         {
           "name": "_stem",
-          "line": 54,
+          "line": 55,
           "doc": "Plural- and verb-form-insensitive: \"communicate\", \"communicated\" and"
         },
         {
           "name": "_alias",
-          "line": 72,
+          "line": 73,
           "doc": ""
         },
         {
           "name": "tokens",
-          "line": 82,
+          "line": 83,
           "doc": "Lowercased, alias-canonical, plural- and verb-form-insensitive tokens."
         },
         {
           "name": "_contains_seq",
-          "line": 88,
+          "line": 89,
           "doc": ""
         },
         {
           "name": "resume_sections",
-          "line": 93,
+          "line": 94,
           "doc": "(label, text) for every part of the resume a recruiter or ATS reads."
         },
         {
           "name": "is_place",
-          "line": 141,
+          "line": 142,
           "doc": "A location the JD names, not a skill (P8.17: \"Arizona\" and \"DC\" were"
         },
         {
           "name": "definitions",
-          "line": 160,
+          "line": 161,
           "doc": "acronym -> expansion (both lowercase), from \"Full Name (ACR)\" in texts."
         },
         {
           "name": "alternatives_of",
-          "line": 178,
+          "line": 179,
           "doc": "Token sequences that count as the keyword: \"OSHA 10 or 30\" -> OSHA 10,"
         },
         {
           "name": "guidance",
-          "line": 325,
+          "line": 326,
           "doc": "What a low match means (P8.21): a nurse applying to a sales job scored"
         },
         {
           "name": "reconcile",
-          "line": 358,
+          "line": 360,
           "doc": "A requirement can't read \"not shown\" while every job keyword in it is"
         }
       ]
@@ -1366,7 +1366,7 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 589,
+      "lines": 593,
       "doc": "HTTP endpoints, one per step of the review flow (P5.1).",
       "classes": [
         {
@@ -1430,7 +1430,7 @@
         },
         {
           "name": "ArrangeIn",
-          "line": 505,
+          "line": 509,
           "doc": "",
           "methods": []
         }
@@ -1528,52 +1528,52 @@
         },
         {
           "name": "parse",
-          "line": 336,
+          "line": 340,
           "doc": "Step 1: read the resume and start a fresh session for this run."
         },
         {
           "name": "proposals",
-          "line": 372,
+          "line": 376,
           "doc": "Step 2: apply the user's fixes, then draft rewrites and gap"
         },
         {
           "name": "match_preview",
-          "line": 423,
+          "line": 427,
           "doc": "The match rate if the selected (and edited) proposals were applied."
         },
         {
           "name": "tailor",
-          "line": 433,
+          "line": 437,
           "doc": "Step 3: apply the review and generate the files. Streams progress."
         },
         {
           "name": "_results_out",
-          "line": 473,
+          "line": 477,
           "doc": "What the Results (and Arrange) screen gets after a run."
         },
         {
           "name": "arrange",
-          "line": 513,
+          "line": 517,
           "doc": "Re-render the tailored resume as the user arranged it (P8.13). No LLM"
         },
         {
           "name": "_result_path",
-          "line": 552,
+          "line": 556,
           "doc": ""
         },
         {
           "name": "download",
-          "line": 560,
+          "line": 564,
           "doc": ""
         },
         {
           "name": "preview",
-          "line": 568,
+          "line": 572,
           "doc": "One page of the tailored PDF as a PNG (Chrome blocks embedded PDFs)."
         },
         {
           "name": "reset",
-          "line": 577,
+          "line": 581,
           "doc": "Start over: delete this visitor's files and state. If a step is still"
         }
       ]
@@ -2503,7 +2503,7 @@
         "3 JD analysis",
         "7 Rewrite"
       ],
-      "lines": 650,
+      "lines": 683,
       "doc": "",
       "classes": [
         {
@@ -2518,106 +2518,117 @@
             },
             {
               "name": "is_available",
-              "line": 143,
+              "line": 147,
               "doc": "Whether the configured provider is reachable AND the configured"
             },
             {
               "name": "_check_available",
-              "line": 155,
+              "line": 163,
               "doc": ""
             },
             {
               "name": "_ollama_check",
-              "line": 162,
+              "line": 170,
               "doc": ""
             },
             {
               "name": "_groq_check",
-              "line": 174,
+              "line": 182,
               "doc": ""
             },
             {
               "name": "_anthropic_check",
-              "line": 195,
+              "line": 203,
               "doc": ""
             },
             {
               "name": "_record",
-              "line": 216,
+              "line": 224,
               "doc": ""
             },
             {
               "name": "generate",
-              "line": 234,
+              "line": 242,
               "doc": "Generate text from the LLM using the chat interface."
             },
             {
               "name": "get_usage_summary",
-              "line": 264,
+              "line": 272,
               "doc": "Aggregate every LLM call made on this client instance so far"
             },
             {
               "name": "_generate_ollama",
-              "line": 286,
+              "line": 294,
               "doc": ""
             },
             {
               "name": "_groq_supports_strict_schema",
-              "line": 331,
+              "line": 339,
               "doc": ""
             },
             {
               "name": "_generate_groq",
-              "line": 335,
+              "line": 343,
               "doc": ""
             },
             {
               "name": "_split_system",
-              "line": 419,
+              "line": 437,
               "doc": "The Messages API takes the system prompt as a top-level field,"
             },
             {
               "name": "_anthropic_request",
-              "line": 426,
+              "line": 444,
               "doc": ""
             },
             {
               "name": "_anthropic_response",
-              "line": 463,
+              "line": 481,
               "doc": ""
             },
             {
               "name": "_generate_anthropic",
-              "line": 480,
+              "line": 498,
               "doc": ""
             },
             {
               "name": "_generate_json_anthropic",
-              "line": 485,
+              "line": 503,
               "doc": "Structured outputs guarantee the response matches the schema, so"
             },
             {
               "name": "generate_json",
-              "line": 506,
+              "line": 524,
               "doc": "Generate structured JSON conforming to a Pydantic model."
             }
           ]
+        },
+        {
+          "name": "LLMDailyLimitError",
+          "line": 644,
+          "doc": "The provider's daily free limit is used up (P8.23).",
+          "methods": []
         }
       ],
       "functions": [
         {
           "name": "_requested_wait",
-          "line": 606,
+          "line": 624,
           "doc": "How long Groq asks us to wait: the retry-after header, else the"
         },
         {
+          "name": "daily_limit_message",
+          "line": 648,
+          "doc": ""
+        },
+        {
           "name": "_retry_after_seconds",
-          "line": 622,
+          "line": 655,
           "doc": "Seconds to wait before retrying a 429: the server's `retry-after`"
         },
         {
           "name": "strict_json_schema",
-          "line": 637,
+          "line": 670,
           "doc": "Adapt a Pydantic JSON schema for strict structured-output modes: every"
         }
       ]
@@ -3468,7 +3479,7 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 1421,
+      "lines": 1425,
       "doc": "",
       "classes": [
         {
@@ -3608,17 +3619,17 @@
             },
             {
               "name": "incorporate_user_addition",
-              "line": 694,
+              "line": 696,
               "doc": "Fold a user-supplied free-text addition (a project, an"
             },
             {
               "name": "tailor_resume",
-              "line": 773,
+              "line": 775,
               "doc": ""
             },
             {
               "name": "arrange",
-              "line": 1289,
+              "line": 1293,
               "doc": "Re-render the tailored resume as the user arranged it (P8.13\u2013P8.16):"
             }
           ]
@@ -3632,12 +3643,12 @@
         },
         {
           "name": "_hidden_text",
-          "line": 1385,
+          "line": 1389,
           "doc": "Text of the sections the user hid, so coverage counts it as their choice."
         },
         {
           "name": "_merge_usage",
-          "line": 1412,
+          "line": 1416,
           "doc": "Combine two LLMClient.get_usage_summary() dicts into one."
         }
       ]
@@ -9594,6 +9605,11 @@
     {
       "from": "app/llm/client.py",
       "to": "app/llm/client.py::LLMClient",
+      "type": "contains"
+    },
+    {
+      "from": "app/llm/client.py",
+      "to": "app/llm/client.py::LLMDailyLimitError",
       "type": "contains"
     },
     {

@@ -20,8 +20,9 @@ KIND_WEIGHTS = {"hard": 3.0, "title": 2.0, "education": 1.5, "certification": 1.
 REQUIRED_MULTIPLIER = 1.5
 # A skill or soft skill only listed under Skills, never shown in a bullet,
 # summary or project, earns this share of its weight (P8.19: one Skills line
-# pasted from the JD outscored a strong resume, 87.5% vs 37.5%).
-SKILLS_ONLY_CREDIT = 0.5
+# pasted from the JD outscored a strong resume, 87.5% vs 37.5%; at half
+# credit the Stage K gate's stuffed resume still won, 50% vs 36%).
+SKILLS_ONLY_CREDIT = 0.25
 
 # Having the left term means having the right one (PySpark is Spark's Python API).
 IMPLIES: Dict[str, List[str]] = {
@@ -328,8 +329,9 @@ def guidance(report: KeywordMatchReport, job: JobDescription) -> Optional[Dict]:
     to "aim for 75-85%". A different field gets a plain explanation and
     career-changer steps; a stretch gets its own; a fair match gets none."""
     title = next((r for r in report.rows if r.kind == "title"), None)
-    shares_title = bool(title and title.credit > 0)
-    if report.rate < DIFFERENT_FIELD_BELOW and not shares_title:
+    # Only a known title with nothing in common says "another field"; when the
+    # JD's title couldn't be read (offline), a low rate is just a stretch.
+    if report.rate < DIFFERENT_FIELD_BELOW and title is not None and title.credit == 0:
         return {
             "kind": "different_field",
             "headline": "This job looks like a different field from your experience.",

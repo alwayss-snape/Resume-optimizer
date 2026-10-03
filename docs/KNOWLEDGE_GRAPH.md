@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**59 app modules · 66 test files · 108 classes · 1012 functions/methods · 20,506 lines of Python** · source hash `afc87efc50bc2164`
+**59 app modules · 66 test files · 109 classes · 1013 functions/methods · 20,549 lines of Python** · source hash `2223420864275d8d`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -76,7 +76,7 @@ app/
     pdf.py                                       _Line, PdfParser
     text.py                                      Plain-text resumes: a .txt upload or text pasted in the app (P8.22).
   llm/
-    client.py                                    LLMClient
+    client.py                                    LLMClient, LLMDailyLimitError
     schemas.py                                   LLMResponse, LLMError, LLMConnectionError, LLMTimeoutError, LLMInvalid…
     prompts/
       final_review.txt
@@ -307,27 +307,27 @@ _Suggest-and-confirm gaps (P3.1): ask, never assume._
 
 ### `app/analysis/keyword_match.py`
 
-**Layer:** Analysis · **Stage:** 5 Score · **Lines:** 380
+**Layer:** Analysis · **Stage:** 5 Score · **Lines:** 382
 
 _Keyword-level match rate, the headline score (P1.2)._
 
-- class **`KeywordMatcher`** ([app/analysis/keyword_match.py:195](../app/analysis/keyword_match.py#L195))
-  - `__init__()` :196
-  - `_slash_parts()` :200 — "Compact/NLC", "English/Spanish": words joined by a slash, each
-  - `_found_with_credit()` :210
-  - `_find()` :232
-  - `_title_credit()` :259
-  - `match()` :269
-- function **`_stem()`** ([app/analysis/keyword_match.py:54](../app/analysis/keyword_match.py#L54)) — Plural- and verb-form-insensitive: "communicate", "communicated" and
-- function **`_alias()`** ([app/analysis/keyword_match.py:72](../app/analysis/keyword_match.py#L72))
-- function **`tokens()`** ([app/analysis/keyword_match.py:82](../app/analysis/keyword_match.py#L82)) — Lowercased, alias-canonical, plural- and verb-form-insensitive tokens.
-- function **`_contains_seq()`** ([app/analysis/keyword_match.py:88](../app/analysis/keyword_match.py#L88))
-- function **`resume_sections()`** ([app/analysis/keyword_match.py:93](../app/analysis/keyword_match.py#L93)) — (label, text) for every part of the resume a recruiter or ATS reads.
-- function **`is_place()`** ([app/analysis/keyword_match.py:141](../app/analysis/keyword_match.py#L141)) — A location the JD names, not a skill (P8.17: "Arizona" and "DC" were
-- function **`definitions()`** ([app/analysis/keyword_match.py:160](../app/analysis/keyword_match.py#L160)) — acronym -> expansion (both lowercase), from "Full Name (ACR)" in texts.
-- function **`alternatives_of()`** ([app/analysis/keyword_match.py:178](../app/analysis/keyword_match.py#L178)) — Token sequences that count as the keyword: "OSHA 10 or 30" -> OSHA 10,
-- function **`guidance()`** ([app/analysis/keyword_match.py:325](../app/analysis/keyword_match.py#L325)) — What a low match means (P8.21): a nurse applying to a sales job scored
-- function **`reconcile()`** ([app/analysis/keyword_match.py:358](../app/analysis/keyword_match.py#L358)) — A requirement can't read "not shown" while every job keyword in it is
+- class **`KeywordMatcher`** ([app/analysis/keyword_match.py:196](../app/analysis/keyword_match.py#L196))
+  - `__init__()` :197
+  - `_slash_parts()` :201 — "Compact/NLC", "English/Spanish": words joined by a slash, each
+  - `_found_with_credit()` :211
+  - `_find()` :233
+  - `_title_credit()` :260
+  - `match()` :270
+- function **`_stem()`** ([app/analysis/keyword_match.py:55](../app/analysis/keyword_match.py#L55)) — Plural- and verb-form-insensitive: "communicate", "communicated" and
+- function **`_alias()`** ([app/analysis/keyword_match.py:73](../app/analysis/keyword_match.py#L73))
+- function **`tokens()`** ([app/analysis/keyword_match.py:83](../app/analysis/keyword_match.py#L83)) — Lowercased, alias-canonical, plural- and verb-form-insensitive tokens.
+- function **`_contains_seq()`** ([app/analysis/keyword_match.py:89](../app/analysis/keyword_match.py#L89))
+- function **`resume_sections()`** ([app/analysis/keyword_match.py:94](../app/analysis/keyword_match.py#L94)) — (label, text) for every part of the resume a recruiter or ATS reads.
+- function **`is_place()`** ([app/analysis/keyword_match.py:142](../app/analysis/keyword_match.py#L142)) — A location the JD names, not a skill (P8.17: "Arizona" and "DC" were
+- function **`definitions()`** ([app/analysis/keyword_match.py:161](../app/analysis/keyword_match.py#L161)) — acronym -> expansion (both lowercase), from "Full Name (ACR)" in texts.
+- function **`alternatives_of()`** ([app/analysis/keyword_match.py:179](../app/analysis/keyword_match.py#L179)) — Token sequences that count as the keyword: "OSHA 10 or 30" -> OSHA 10,
+- function **`guidance()`** ([app/analysis/keyword_match.py:326](../app/analysis/keyword_match.py#L326)) — What a low match means (P8.21): a nurse applying to a sales job scored
+- function **`reconcile()`** ([app/analysis/keyword_match.py:360](../app/analysis/keyword_match.py#L360)) — A requirement can't read "not shown" while every job keyword in it is
 - **Imports:** `analysis/gap_questions.py`, `analysis/resume_normalizer.py`, `analysis/terminology.py`, `domain/job.py`, `domain/report.py`, `domain/resume.py`
 - **Imported by:** `analysis/gap_questions.py`, `analysis/skills_tailor.py`, `analysis/tailor_planner.py`, `eval/harness.py`, `services/tailor.py`
 - **Tested by:** `tests/unit/test_gap_questions.py`, `tests/unit/test_guidance_p821.py`, `tests/unit/test_jd_p818.py`, `tests/unit/test_keyword_match.py`, `tests/unit/test_matching_p817.py`, `tests/unit/test_parser_regressions_p42.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_stuffing_p819.py`, `tests/unit/test_summary_writer.py`
@@ -552,7 +552,7 @@ _The web app (P5.1): `uvicorn app.api.main:app`._
 
 ### `app/api/routes.py`
 
-**Layer:** Web API · **Stage:** all · **Lines:** 589
+**Layer:** Web API · **Stage:** all · **Lines:** 593
 
 _HTTP endpoints, one per step of the review flow (P5.1)._
 
@@ -566,7 +566,7 @@ _HTTP endpoints, one per step of the review flow (P5.1)._
 - class **`RateLimiter`** ([app/api/routes.py:100](../app/api/routes.py#L100)) — At most `limit` calls per `window` seconds per key (visitor IP).
   - `__init__()` :103
   - `check()` :108
-- class **`ArrangeIn`** ([app/api/routes.py:505](../app/api/routes.py#L505))
+- class **`ArrangeIn`** ([app/api/routes.py:509](../app/api/routes.py#L509))
 - function **`rate_limited()`** ([app/api/routes.py:119](../app/api/routes.py#L119))
 - function **`current_session()`** ([app/api/routes.py:123](../app/api/routes.py#L123))
 - function **`_require()`** ([app/api/routes.py:130](../app/api/routes.py#L130))
@@ -585,16 +585,16 @@ _HTTP endpoints, one per step of the review flow (P5.1)._
 - function **`config()`** ([app/api/routes.py:306](../app/api/routes.py#L306))
 - function **`_model()`** ([app/api/routes.py:313](../app/api/routes.py#L313))
 - function **`analyze()`** ([app/api/routes.py:320](../app/api/routes.py#L320)) — "Just check my match": score only, nothing kept.
-- function **`parse()`** ([app/api/routes.py:336](../app/api/routes.py#L336)) — Step 1: read the resume and start a fresh session for this run.
-- function **`proposals()`** ([app/api/routes.py:372](../app/api/routes.py#L372)) — Step 2: apply the user's fixes, then draft rewrites and gap
-- function **`match_preview()`** ([app/api/routes.py:423](../app/api/routes.py#L423)) — The match rate if the selected (and edited) proposals were applied.
-- function **`tailor()`** ([app/api/routes.py:433](../app/api/routes.py#L433)) — Step 3: apply the review and generate the files. Streams progress.
-- function **`_results_out()`** ([app/api/routes.py:473](../app/api/routes.py#L473)) — What the Results (and Arrange) screen gets after a run.
-- function **`arrange()`** ([app/api/routes.py:513](../app/api/routes.py#L513)) — Re-render the tailored resume as the user arranged it (P8.13). No LLM
-- function **`_result_path()`** ([app/api/routes.py:552](../app/api/routes.py#L552))
-- function **`download()`** ([app/api/routes.py:560](../app/api/routes.py#L560))
-- function **`preview()`** ([app/api/routes.py:568](../app/api/routes.py#L568)) — One page of the tailored PDF as a PNG (Chrome blocks embedded PDFs).
-- function **`reset()`** ([app/api/routes.py:577](../app/api/routes.py#L577)) — Start over: delete this visitor's files and state. If a step is still
+- function **`parse()`** ([app/api/routes.py:340](../app/api/routes.py#L340)) — Step 1: read the resume and start a fresh session for this run.
+- function **`proposals()`** ([app/api/routes.py:376](../app/api/routes.py#L376)) — Step 2: apply the user's fixes, then draft rewrites and gap
+- function **`match_preview()`** ([app/api/routes.py:427](../app/api/routes.py#L427)) — The match rate if the selected (and edited) proposals were applied.
+- function **`tailor()`** ([app/api/routes.py:437](../app/api/routes.py#L437)) — Step 3: apply the review and generate the files. Streams progress.
+- function **`_results_out()`** ([app/api/routes.py:477](../app/api/routes.py#L477)) — What the Results (and Arrange) screen gets after a run.
+- function **`arrange()`** ([app/api/routes.py:517](../app/api/routes.py#L517)) — Re-render the tailored resume as the user arranged it (P8.13). No LLM
+- function **`_result_path()`** ([app/api/routes.py:556](../app/api/routes.py#L556))
+- function **`download()`** ([app/api/routes.py:564](../app/api/routes.py#L564))
+- function **`preview()`** ([app/api/routes.py:572](../app/api/routes.py#L572)) — One page of the tailored PDF as a PNG (Chrome blocks embedded PDFs).
+- function **`reset()`** ([app/api/routes.py:581](../app/api/routes.py#L581)) — Start over: delete this visitor's files and state. If a step is still
 - **Imports:** `analysis/jd_analyzer.py`, `api/__init__.py`, `api/sessions.py`, `ingestion/errors.py`, `rendering/pdf_converter.py`, `rendering/review_view.py`, `services/arrange.py`
 - **Imported by:** `api/main.py`
 - **Tested by:** `tests/unit/test_api.py`
@@ -875,30 +875,32 @@ _Plain-text resumes: a .txt upload or text pasted in the app (P8.22)._
 
 ### `app/llm/client.py`
 
-**Layer:** LLM · **Stage:** 3 JD analysis, 7 Rewrite · **Lines:** 650
+**Layer:** LLM · **Stage:** 3 JD analysis, 7 Rewrite · **Lines:** 683
 
 - class **`LLMClient`** ([app/llm/client.py:58](../app/llm/client.py#L58)) — Unified client for text generation across three interchangeable providers:
   - `__init__()` :74
-  - `is_available()` :143 — Whether the configured provider is reachable AND the configured
-  - `_check_available()` :155
-  - `_ollama_check()` :162
-  - `_groq_check()` :174
-  - `_anthropic_check()` :195
-  - `_record()` :216
-  - `generate()` :234 — Generate text from the LLM using the chat interface.
-  - `get_usage_summary()` :264 — Aggregate every LLM call made on this client instance so far
-  - `_generate_ollama()` :286
-  - `_groq_supports_strict_schema()` :331
-  - `_generate_groq()` :335
-  - `_split_system()` :419 — The Messages API takes the system prompt as a top-level field,
-  - `_anthropic_request()` :426
-  - `_anthropic_response()` :463
-  - `_generate_anthropic()` :480
-  - `_generate_json_anthropic()` :485 — Structured outputs guarantee the response matches the schema, so
-  - `generate_json()` :506 — Generate structured JSON conforming to a Pydantic model.
-- function **`_requested_wait()`** ([app/llm/client.py:606](../app/llm/client.py#L606)) — How long Groq asks us to wait: the retry-after header, else the
-- function **`_retry_after_seconds()`** ([app/llm/client.py:622](../app/llm/client.py#L622)) — Seconds to wait before retrying a 429: the server's `retry-after`
-- function **`strict_json_schema()`** ([app/llm/client.py:637](../app/llm/client.py#L637)) — Adapt a Pydantic JSON schema for strict structured-output modes: every
+  - `is_available()` :147 — Whether the configured provider is reachable AND the configured
+  - `_check_available()` :163
+  - `_ollama_check()` :170
+  - `_groq_check()` :182
+  - `_anthropic_check()` :203
+  - `_record()` :224
+  - `generate()` :242 — Generate text from the LLM using the chat interface.
+  - `get_usage_summary()` :272 — Aggregate every LLM call made on this client instance so far
+  - `_generate_ollama()` :294
+  - `_groq_supports_strict_schema()` :339
+  - `_generate_groq()` :343
+  - `_split_system()` :437 — The Messages API takes the system prompt as a top-level field,
+  - `_anthropic_request()` :444
+  - `_anthropic_response()` :481
+  - `_generate_anthropic()` :498
+  - `_generate_json_anthropic()` :503 — Structured outputs guarantee the response matches the schema, so
+  - `generate_json()` :524 — Generate structured JSON conforming to a Pydantic model.
+- class **`LLMDailyLimitError`** ([app/llm/client.py:644](../app/llm/client.py#L644)) — The provider's daily free limit is used up (P8.23).
+- function **`_requested_wait()`** ([app/llm/client.py:624](../app/llm/client.py#L624)) — How long Groq asks us to wait: the retry-after header, else the
+- function **`daily_limit_message()`** ([app/llm/client.py:648](../app/llm/client.py#L648))
+- function **`_retry_after_seconds()`** ([app/llm/client.py:655](../app/llm/client.py#L655)) — Seconds to wait before retrying a 429: the server's `retry-after`
+- function **`strict_json_schema()`** ([app/llm/client.py:670](../app/llm/client.py#L670)) — Adapt a Pydantic JSON schema for strict structured-output modes: every
 - **Imports:** `config/settings.py`, `llm/schemas.py`, `validation/safety.py`
 - **Imported by:** `analysis/jd_analyzer.py`, `analysis/matcher.py`, `analysis/rewriter.py`, `analysis/structure_extractor.py`, `analysis/summary_writer.py`, `analysis/tailor_planner.py`, `api/main.py`, `cli.py`, `eval/harness.py`, `eval/judge.py`, `services/tailor.py`, `scripts/benchmark_model.py`
 - **Tested by:** `tests/unit/test_judge.py`, `tests/unit/test_llm_client.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_validation.py`
@@ -1125,7 +1127,7 @@ _Local profile of facts the user has confirmed (P3.2)._
 
 ### `app/services/tailor.py`
 
-**Layer:** Services · **Stage:** all · **Lines:** 1421
+**Layer:** Services · **Stage:** all · **Lines:** 1425
 
 - class **`TailorService`** ([app/services/tailor.py:60](../app/services/tailor.py#L60))
   - `__init__()` :61
@@ -1154,12 +1156,12 @@ _Local profile of facts the user has confirmed (P3.2)._
   - `apply_parse_corrections()` :494 — Apply the user's fixes from the "Check parsed resume" step (P3.5).
   - `analyze_only()` :591
   - `generate_proposals()` :619 — Generate rewrite proposals without applying them, plus questions
-  - `incorporate_user_addition()` :694 — Fold a user-supplied free-text addition (a project, an
-  - `tailor_resume()` :773
-  - `arrange()` :1289 — Re-render the tailored resume as the user arranged it (P8.13–P8.16):
+  - `incorporate_user_addition()` :696 — Fold a user-supplied free-text addition (a project, an
+  - `tailor_resume()` :775
+  - `arrange()` :1293 — Re-render the tailored resume as the user arranged it (P8.13–P8.16):
 - function **`_progress()`** ([app/services/tailor.py:49](../app/services/tailor.py#L49)) — A progress reporter that can never break a run (P3.6).
-- function **`_hidden_text()`** ([app/services/tailor.py:1385](../app/services/tailor.py#L1385)) — Text of the sections the user hid, so coverage counts it as their choice.
-- function **`_merge_usage()`** ([app/services/tailor.py:1412](../app/services/tailor.py#L1412)) — Combine two LLMClient.get_usage_summary() dicts into one.
+- function **`_hidden_text()`** ([app/services/tailor.py:1389](../app/services/tailor.py#L1389)) — Text of the sections the user hid, so coverage counts it as their choice.
+- function **`_merge_usage()`** ([app/services/tailor.py:1416](../app/services/tailor.py#L1416)) — Combine two LLMClient.get_usage_summary() dicts into one.
 - **Imports:** `analysis/checklist.py`, `analysis/experience.py`, `analysis/gap_questions.py`, `analysis/jd_analyzer.py`, `analysis/keyword_match.py`, `analysis/matcher.py`, `analysis/resume_normalizer.py`, `analysis/rewriter.py`, `analysis/scoring.py`, `analysis/semantic_matcher.py`, `analysis/skills_tailor.py`, `analysis/structure_extractor.py`, `analysis/summary_writer.py`, `analysis/tailor_planner.py`, `domain/evidence.py`, `domain/job.py`, `domain/report.py`, `domain/resume.py`, `domain/resume_document.py`, `domain/tailoring.py`, `ingestion/docx.py`, `ingestion/pdf.py`, `ingestion/text.py`, `llm/client.py`, `rendering/docx_patcher.py`, `rendering/html_renderer.py`, `rendering/layout.py`, `rendering/page_fit.py`, `rendering/pdf_converter.py`, `rendering/template_renderer.py`, `services/arrange.py`, `services/profile_store.py`, `services/run_manager.py`, `validation/content_lint.py`, `validation/coverage.py`, `validation/factual.py`, `validation/output.py`, `validation/safety.py`, `validation/structural.py`
 - **Imported by:** `api/main.py`, `cli.py`, `eval/harness.py`
 - **Tested by:** `tests/integration/test_arrange.py`, `tests/integration/test_coverage_tailor.py`, `tests/integration/test_end_to_end.py`, `tests/unit/test_api.py`, `tests/unit/test_check_parsed_resume.py`, `tests/unit/test_cli.py`, `tests/unit/test_cli_parity.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_new_role.py`, `tests/unit/test_profile_store.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_review_view.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_tailor_resume_flow.py`, `tests/unit/test_tailor_service_addition.py`, `tests/unit/test_uploads_p822.py`

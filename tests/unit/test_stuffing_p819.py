@@ -18,4 +18,4 @@ def test_stuffed_skills_line_scores_below_real_experience():
     m = KeywordMatcher()
     strong_rate, stuffed_report = m.match(JOB, strong).rate, m.match(JOB, stuffed)
     assert stuffed_report.rate < strong_rate
-    assert all(r.skills_only and r.credit == 0.5 for r in stuffed_report.rows if r.found)
+    assert all(r.skills_only and r.credit == 0.25 for r in stuffed_report.rows if r.found)

@@ -14,7 +14,7 @@ function Chip({ row }: { row: KeywordRow }) {
       {row.found ? <Icon name="check" size={13} strokeWidth={2.4} /> : <span aria-hidden="true" className="size-2.5 rounded-full border-[1.5px] border-field" />}
       {row.keyword}
       {row.required && !row.found && <span className="text-xs font-semibold text-muted">· required</span>}
-      {row.found && row.skills_only && <span className="text-xs text-muted">· Skills list only, half credit</span>}
+      {row.found && row.skills_only && <span className="text-xs text-muted">· Skills list only: a quarter of the credit until a bullet shows it</span>}
     </li>
   );
 }
