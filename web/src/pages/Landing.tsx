@@ -5,6 +5,7 @@ import { Button } from "../components/Button";
 import { FluidField } from "../components/hero/FluidField";
 import { ProofSheet } from "../components/hero/ProofSheet";
 import { UploadForm, type UploadValues } from "../components/UploadForm";
+import type { AppConfig } from "../lib/api";
 import type { Intent, Run } from "../lib/store";
 
 const HOW_IT_WORKS = [
@@ -19,13 +20,30 @@ const rise = {
 };
 
 /** First screen: the proof demonstration, the upload form, and how it works. */
-export function Landing({ onStart, busy, run, maxUploadMb, error, errorKey }: {
+/** Where the resume goes (P8.24): said before anything is uploaded. */
+export function PrivacyNote({ config }: { config?: AppConfig | null }) {
+  const minutes = config?.session_minutes ?? 60;
+  const ai = config?.provider_label ?? "an AI service";
+  return (
+    <p className="m-0 mt-6 max-w-[72ch] text-[13px] leading-relaxed text-muted">
+      <span className="font-semibold text-ink">Privacy: </span>
+      {config?.cloud === false
+        ? `Your resume and the job description are processed on this server, by ${ai}; nothing is sent to an outside AI service. `
+        : `To read the job description and draft rewrites, the text of your resume and the job description is sent to ${ai}, a cloud AI service. `}
+      Your file and results are kept only for this visit and deleted when you start over or after {minutes} minutes
+      without activity. Nothing is stored in your browser.
+    </p>
+  );
+}
+
+export function Landing({ onStart, busy, run, maxUploadMb, error, errorKey, config }: {
   onStart: (intent: Intent, values: UploadValues) => void;
   busy?: boolean;
   run: Run;
   maxUploadMb?: number;
   error?: string | null;
   errorKey?: number;
+  config?: AppConfig | null;
 }) {
   const [intent, setIntent] = useState<Intent>(run.intent);
   // Coming back to this page (a run exists): put focus on its heading.
@@ -91,6 +109,7 @@ export function Landing({ onStart, busy, run, maxUploadMb, error, errorKey }: {
         </h2>
         <UploadForm intent={intent} busy={busy} onSubmit={(values) => onStart(intent, values)} initial={run}
           maxUploadMb={maxUploadMb} serverError={error} serverErrorKey={errorKey} />
+        <PrivacyNote config={config} />
       </section>
 
       <section aria-labelledby="how-title" className="mx-auto flex max-w-[1240px] flex-col gap-10 px-4 pb-24 pt-28 md:px-8">

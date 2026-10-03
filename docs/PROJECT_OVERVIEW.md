@@ -6,7 +6,7 @@ see [CHANGE_LOG.md](CHANGE_LOG.md)._
 
 ## What it is
 
-A local-first resume tailoring app (Python package `resume-tailor`). You give it a resume (DOCX or PDF) and a pasted
+Tailores, a resume tailoring app (Python package `resume-tailor`; resume text goes to the configured AI provider, Groq's cloud by default). You give it a resume (DOCX or PDF) and a pasted
 job description, and it:
 
 1. scores how well the resume matches the JD (0–100, with a breakdown),
@@ -63,7 +63,9 @@ Semantic matching uses a local embedding model (`all-MiniLM-L6-v2`).
 | CLI | ✅ Works | `analyze`, `propose` (editable review file) and `tailor --proposals` with the UI's features: edits, gap answers, additions, a new job, strict mode; live progress (P3.6) |
 | Tests | ✅ 384 backend + 68 front-end passing | `pytest -q` (~50-80 s); the full offline eval of 8 anonymized cases runs with `pytest -m eval` |
 | Evaluation set | ✅ Works | 11 anonymized resume + JD cases with expected facts; `python -m app.eval run --tailor --check` (P4.1, P4.2); LLM-as-judge from another model family, rubric + position-swapped pairwise, `--judge` / `--replay` (P4.3) |
-| Arrange and edit after AI changes | ❌ Planned (P8.13–P8.16) | Reorder sections, entries and bullets, hide sections, edit text, restore trimmed bullets, choose the page target; re-rendered with no LLM |
+| Arrange and edit after AI changes | ✅ Works | From Results: reorder sections, jobs and each job's bullets (never across jobs), hide sections, reword a bullet, keep what page-fit trimmed, choose 1 / 2 / 3 pages or "don't trim"; re-rendered with no LLM, checked like a tailoring run (P8.13–P8.16) |
+| Resumes outside tech, outside the US, not in English | ✅ Works | Unknown sections kept verbatim under their own heading; header details kept; non-tech job-line formats, EU / US numeric dates, seasons, "Till Date"; phone formats worldwide; text boxes; .txt, pasted text, .doc / .odt / .rtf; a content coverage check fails any run that loses a line (P8.1–P8.8, P8.22). Non-English text is kept and named "English only for now" (P8.25) |
+| Fair score | ✅ Works | Alternatives, slash terms, acronyms, degree levels, places excluded, skills-only keywords at a quarter credit, perks never keywords, low scores explained, job conditions (licences, shifts, lifting…) as a separate checklist (P8.17–P8.21) |
 | Multiple JDs / history / cover letter | ❌ Not built | Backlog in Phase 8 |
 
 ## Open issues
@@ -84,7 +86,7 @@ and unused prompts (P0.8, P1.10) are all fixed. What remains:
 5. **Rewrites can borrow the job's wording** (was P1.15, now P8.9): a fact-checked rewrite added "batch pipeline",
    which appears only in the JD. **Report status vs keywords** (was P1.16, now P8.18): a requirement can read "not
    shown" while all its keywords are found.
-6. **Cross-domain user testing (2026-10-02), planned as Phase 8:** 39 findings (U1–U39) from 19 non-tech, non-US and
+6. **Cross-domain user testing (2026-10-02), Phase 8 (all 26 items done 2026-10-03, stages H–L):** 39 findings (U1–U39) from 19 non-tech, non-US and
    non-English personas, including silent section loss, misattributed facts, dropped phone numbers and an unfair
    score. See [user_testing/2026-10-02/FINDINGS.md](user_testing/2026-10-02/FINDINGS.md). Planned in
    [ACTION_ITEMS.md](ACTION_ITEMS.md) as P8.1–P8.26, stages H–L: never lose content (H), honest content (I), an

@@ -11,6 +11,8 @@ that exercise a specific provider pass provider=/api_key= explicitly.
 import os
 import tempfile
 
+import pytest
+
 os.environ["LLM_PROVIDER"] = "ollama"
 os.environ["LLM_HOST"] = "http://127.0.0.1:9"  # discard port: fails fast, never reachable
 os.environ["GROQ_API_KEY"] = ""
@@ -18,3 +20,13 @@ os.environ["ANTHROPIC_API_KEY"] = ""
 os.environ["SEMANTIC_MATCH_ENABLED"] = os.environ.get("SEMANTIC_MATCH_ENABLED", "true")
 # Never read or write the developer's real confirmed-facts profile (P3.2).
 os.environ["PROFILE_PATH"] = os.path.join(tempfile.mkdtemp(prefix="profile_test_"), "facts.json")
+
+
+@pytest.fixture(autouse=True)
+def _no_daily_limit_between_tests():
+    """The provider's daily-limit marker is process-wide (P8.23); one test
+    hitting it must not switch the AI off for the next."""
+    from app.llm import client as client_module
+    client_module._DAILY_LIMIT_UNTIL.clear()
+    yield
+    client_module._DAILY_LIMIT_UNTIL.clear()

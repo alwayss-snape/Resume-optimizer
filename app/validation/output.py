@@ -59,6 +59,15 @@ class OutputQAValidator:
     # -- ATS round trip (P2.5) ------------------------------------------------
 
     ROUND_TRIP_PREFIX = "ATS round-trip"
+    # Read-back problems an ATS would really trip on (P8.26). Others (a role's
+    # dates printed differently, a bullet re-wrapped) are minor differences,
+    # shown as advice: they made most runs say "ready, with warnings".
+    SERIOUS = ("name read as", "email not found", "phone not found", "could not be re-parsed", "job entries read",
+               "section was not recognised", "link(s) not found")
+
+    @classmethod
+    def is_serious(cls, warning: str) -> bool:
+        return warning.startswith(cls.ROUND_TRIP_PREFIX) and any(s in warning for s in cls.SERIOUS)
 
     def round_trip(self, path: str, expected) -> List[str]:
         """Re-parse a rendered DOCX / PDF the way an ATS would (our own

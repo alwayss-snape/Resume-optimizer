@@ -330,7 +330,7 @@ def test_groq_daily_limit_fails_fast_with_a_clear_message():
                            'Please try again in 15m43.488s."}}')
     with patch("httpx.Client.post", return_value=daily) as post, patch("time.sleep") as sleep:
         client = LLMClient(provider="groq", api_key="k", model="openai/gpt-oss-120b")
-        with pytest.raises(LLMError, match="daily token limit reached; try again in about 16 min"):
+        with pytest.raises(LLMError, match="Today's free AI limit is used up.*about 16 min"):
             client.generate("hi")
     assert post.call_count == 1 and not sleep.called
 
@@ -350,3 +350,30 @@ def test_groq_strict_json_validate_failed_is_retried():
         client = LLMClient(provider="groq", api_key="k", model="openai/gpt-oss-120b")
         assert client.generate_json([{"role": "user", "content": "x"}], Out).value == "ok"
     assert post.call_count == 2
+
+@patch("app.llm.client.time.sleep")
+@patch("httpx.Client.post")
+def test_waits_are_reported_and_a_daily_limit_is_remembered(mock_post, mock_sleep):
+    """P8.23: a back-off says so; a daily limit stops further calls with a plain message."""
+    from app.llm import client as client_module
+    client_module._DAILY_LIMIT_UNTIL.clear()
+    limited = MagicMock(status_code=429, text="rate limited", headers={"retry-after": "3"})
+    ok = MagicMock(status_code=200)
+    ok.json.return_value = {"choices": [{"message": {"content": "done"}}], "usage": {}}
+    mock_post.side_effect = [limited, ok]
+    client = LLMClient(provider="groq", api_key="test-key")
+    waits = []
+    client.on_wait = waits.append
+    client.generate([{"role": "user", "content": "Hi"}])
+    assert waits == ["The free AI service is busy; waiting 3 s and trying again"]
+
+    daily = MagicMock(status_code=429, text="Limit 200000, Used 199990 tokens per day (TPD)",
+                      headers={"retry-after": "5400"})
+    mock_post.side_effect = [daily]
+    client._available = True
+    with pytest.raises(client_module.LLMDailyLimitError, match="Today's free AI limit is used up"):
+        client.generate([{"role": "user", "content": "Hi"}])
+    other = LLMClient(provider="groq", api_key="test-key")
+    other._available = True
+    assert other.is_available() is False and "about 1 h 30 min" in other.last_error
+    client_module._DAILY_LIMIT_UNTIL.clear()

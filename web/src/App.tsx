@@ -47,7 +47,7 @@ export function App() {
   /** A new upload is a new run: earlier results and steps are gone at once,
    *  even if this one fails (the server has already reset its side). */
   const freshRun = (intent: Intent, file: File, jdText: string, template = run.template) => {
-    updateRun({ intent, file, jdText, template, report: null, details: null, parseIssues: [], drafted: null,
+    updateRun({ intent, file, jdText, template, report: null, details: null, parseIssues: [], unplaced: [], drafted: null,
       review: null, results: null });
     useApp.setState({ reached: 0 });
   };
@@ -55,7 +55,7 @@ export function App() {
   const readResume = async (file: File, jdText: string, isCurrent: () => boolean) => {
     const parsed = await parseResume(file, jdText, model);
     if (!isCurrent()) return;
-    updateRun({ details: parsed.details, parseIssues: parsed.parse_issues });
+    updateRun({ details: parsed.details, parseIssues: parsed.parse_issues, unplaced: parsed.unplaced ?? [] });
     advance("details");
   };
 
@@ -107,7 +107,7 @@ export function App() {
   }
   // A step whose data is gone (e.g. after a reload) falls back to the start.
   page ??= <Landing onStart={onStart} busy={busy} run={run} maxUploadMb={config?.max_upload_mb} error={error}
-    errorKey={errorKey} />;
+    errorKey={errorKey} config={config} />;
 
   return (
     <MotionConfig reducedMotion="user">

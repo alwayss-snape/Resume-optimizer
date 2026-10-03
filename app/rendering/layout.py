@@ -4,6 +4,7 @@ The DOCX and HTML renderers both read these, so the downloaded file and the
 browser preview show the same sections, in the same order, under the same
 standard headings, with dates written the same way.
 """
+import os
 import re
 from datetime import date
 from typing import Dict, List, Optional
@@ -159,8 +160,46 @@ def display_skills(skills: Dict[str, List[str]], max_categories: int = MAX_SKILL
 
 
 def output_basename(resume: Resume, company: Optional[str] = None) -> str:
-    """First_Last_Resume_<Company>, using only file-name-safe characters."""
-    safe = lambda s: re.sub(r"[^A-Za-z0-9]+", "_", s or "").strip("_")
+    """First_Last_Resume_<Company>: letters of any script kept ("Lucía
+    Fernández" stays, P8.25), unsafe characters replaced, and no company part
+    when the JD's company is unknown (was "..._Resume_Company")."""
+    safe = lambda s: re.sub(r"[^\w]+", "_", s or "", flags=re.UNICODE).strip("_")
     name = safe(resume.candidate.name if resume.candidate.name != "Candidate" else "")
+    company = "" if (company or "").strip().lower() in ("", "company", "target company") else company
     parts = [name, "Resume", safe(company)]
     return "_".join(p for p in parts if p)
+
+
+# Fonts that cover Chinese, Japanese, Korean, Cyrillic and other scripts,
+# best first (P8.25: a Chinese-script name rendered blank in the PDF because
+# Arial has no glyphs for it). Linux servers: install fonts-noto-cjk.
+_FALLBACK_FONTS = [
+    ("Noto Sans CJK SC", "NotoSansCJK"), ("Arial Unicode MS", "Arial Unicode"), ("PingFang SC", "PingFang"),
+    ("Hiragino Sans GB", "Hiragino Sans GB"), ("Microsoft YaHei", "msyh"), ("Noto Sans", "NotoSans-Regular"),
+]
+_FONT_DIRS = ["/System/Library/Fonts", "/Library/Fonts", os.path.expanduser("~/Library/Fonts"),
+              "/usr/share/fonts", "/usr/local/share/fonts", "C:/Windows/Fonts"]
+_fallback_cache: List[str] = []
+
+
+def fallback_font() -> str:
+    """The best installed font for scripts Arial lacks."""
+    if _fallback_cache:
+        return _fallback_cache[0]
+    found = "Noto Sans CJK SC"
+    names = []
+    for root in _FONT_DIRS:
+        if os.path.isdir(root):
+            for _dirpath, _dirs, files in os.walk(root):
+                names.extend(files)
+    for family, needle in _FALLBACK_FONTS:
+        if any(needle.lower() in n.lower() for n in names):
+            found = family
+            break
+    _fallback_cache.append(found)
+    return found
+
+
+def needs_fallback_font(text: str) -> bool:
+    """Characters outside Latin / Greek: CJK, Cyrillic, Arabic, Devanagari..."""
+    return any(ord(ch) > 0x24F and not 0x2000 <= ord(ch) <= 0x2BFF for ch in text or "")

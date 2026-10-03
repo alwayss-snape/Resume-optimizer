@@ -9,6 +9,7 @@ import json
 import logging
 import os
 import queue
+import re
 import shutil
 import tempfile
 import threading
@@ -27,6 +28,7 @@ from app.api import forms
 from app.api.sessions import Session, remove_path
 from app.rendering.pdf_converter import pdf_page_images
 from app.ingestion.errors import UnreadableFile
+from app.validation.output import OutputQAValidator
 from app.services.arrange import Layout
 from app.services.arrange import view as arrange_view
 from app.rendering.review_view import PROPOSAL_STATES, diff_spans, gap_table, proposal_state, score_breakdown
@@ -241,6 +243,60 @@ def _service(request: Request, session: Optional[Session] = None, model: Optiona
 # ---------------------------------------------------------------------------
 # Serialisation
 # ---------------------------------------------------------------------------
+_ISSUE_RULES = [
+    (r"^no candidate name$", "We couldn't find your name. Type it below."),
+    (r"^name looks wrong: '?(.*?)'?$", "Is \u201c{0}\u201d your name? If not, correct it below."),
+    (r"^bullets found but no experience or projects$",
+     "We found bullet points but couldn't tell which job they belong to. Check the jobs below, or add the job."),
+    (r"^experience without a company \((.*)\)$", "We couldn't find the employer for \u201c{0}\u201d. Add it below."),
+    (r"^experience without a title \((.*)\)$", "We couldn't find the job title for \u201c{0}\u201d. Add it below."),
+    (r"^experience without bullets \((.*)\)$",
+     "\u201c{0}\u201d has no bullet points under it. If it isn't a job, remove it."),
+    (r"^(\d+) lines outside any known section$",
+     "{0} lines didn't fit any section; see \u201cLines we couldn't place\u201d below."),
+]
+
+
+def plain_issue(issue: str) -> str:
+    """A parse issue in plain words (P8.26: "experience without a company
+    (exp_001)" was developer language)."""
+    for pattern, text in _ISSUE_RULES:
+        m = re.match(pattern, issue)
+        if m:
+            return text.format(*m.groups())
+    return issue
+
+
+def unplaced_lines(raw_doc, resume) -> List[Dict]:
+    """Lines of the file that ended up in no field the resume shows (P8.26),
+    for the user to assign on Check details."""
+    from app.validation.coverage import words
+    have = words(" ".join(_resume_texts(resume)))
+    out = []
+    for b in raw_doc.blocks:
+        line_words = words(b.text)
+        if line_words and len(line_words & have) / len(line_words) < 0.6:
+            out.append({"id": b.id, "text": b.text.strip()})
+    return out[:30]
+
+
+def _resume_texts(resume) -> List[str]:
+    c = resume.candidate
+    out = [c.name, c.headline or "", c.email or "", c.phone or "", c.location or "", *c.links, *c.details,
+           resume.summary or ""]
+    for e in resume.experience:
+        out += [e.company, e.location or "", *(f"{r.title} {r.start_date or ''} {r.end_date or ''}" for r in e.all_roles()),
+                *(b.text for b in e.bullets), *(b.group or "" for b in e.bullets), *e.details]
+    for p in resume.projects:
+        out += [p.name, p.description, *(b.text for b in p.bullets)]
+    out += [f"{e.degree} {e.institution} {e.location or ''} {e.dates or ''} {' '.join(e.details)}" for e in resume.education]
+    out += [f"{k} {' '.join(v)}" for k, v in resume.skills.items()]
+    out += [" ".join(str(x) for x in c.values()) for c in resume.certifications]
+    out += [*resume.achievements, *resume.interests]
+    out += [f"{s.heading} {' '.join(l.text for l in s.lines)}" for s in resume.other_sections]
+    return out
+
+
 def _details(resume) -> Dict:
     """What the "check details" step shows and edits (P3.5)."""
     cand = resume.candidate
@@ -254,6 +310,20 @@ def _details(resume) -> Dict:
             "roles": [{"title": r.title, "start_date": r.start_date or "", "end_date": r.end_date or ""}
                       for r in (exp.all_roles() or [])],
         } for exp in resume.experience],
+        # Everything else read from the file, shown so nothing is hidden (P8.26).
+        "also_read": [sec for sec in (
+            {"title": "Other header details", "lines": list(cand.details)},
+            {"title": "Summary", "lines": [resume.summary] if resume.summary else []},
+            {"title": "Education", "lines": [" · ".join(v for v in (e.degree, e.institution, e.dates or "") if v)
+                                              + "".join(f" ({d})" for d in e.details) for e in resume.education]},
+            {"title": "Skills", "lines": [f"{k}: {', '.join(v)}" for k, v in resume.skills.items()]},
+            {"title": "Projects", "lines": [f"{p.name} ({len(p.bullets)} bullet{'s' if len(p.bullets) != 1 else ''})"
+                                             for p in resume.projects]},
+            {"title": "Certifications and licences", "lines": [c.get("name", "") for c in resume.certifications]},
+            {"title": "Achievements", "lines": list(resume.achievements)},
+            {"title": "Interests", "lines": list(resume.interests)},
+            *({"title": s.heading, "lines": [l.text for l in s.lines]} for s in resume.other_sections),
+        ) if sec["lines"]],
     }
 
 
@@ -307,7 +377,10 @@ def config(request: Request) -> Dict:
     provider = forms.current_provider()
     return {"provider": provider, "provider_label": forms.PROVIDER_LABELS.get(provider, provider),
             "models": forms.model_options(provider),
-            "max_upload_mb": request.app.state.max_upload_bytes / (1024 * 1024)}
+            "max_upload_mb": request.app.state.max_upload_bytes / (1024 * 1024),
+            # For the privacy note (P8.24): where resume text goes, how long files live.
+            "cloud": provider != "ollama",
+            "session_minutes": request.app.state.sessions.ttl_seconds // 60}
 
 
 def _model(model: Optional[str]) -> Optional[str]:
@@ -323,13 +396,17 @@ async def analyze(request: Request, file: Optional[UploadFile] = File(None), jd_
     _check_jd(jd_text)
     model = _model(model)
     path = await _save_upload(request, file, resume_text)
+    service = _service(request, model=model)
     try:
-        report = await run_in_threadpool(_service(request, model=model).analyze_only, path, jd_text)
+        report = await run_in_threadpool(service.analyze_only, path, jd_text)
     except UnreadableFile as e:
         raise HTTPException(422, str(e))
     finally:
         os.remove(path)
-    return {**report.model_dump(), "keyword_match": _match_out(report.keyword_match)}
+    used = bool(report.keyword_match and not report.keyword_match.approximate)
+    # Whether the AI read the JD, and why not (P8.23): the score is then approximate.
+    ai = {"used": used, "reason": None if used else getattr(service.llm_client, "last_error", None)}
+    return {**report.model_dump(), "keyword_match": _match_out(report.keyword_match), "ai": ai}
 
 
 @router.post("/parse", dependencies=[Depends(rate_limited)])
@@ -353,8 +430,12 @@ async def parse(request: Request, response: Response, file: Optional[UploadFile]
         session.reset({"resume_path": path})
         service = _service(request, session, model)
         parsed = await run_in_threadpool(service.parse_resume, path)
-        session.data.update(parsed=parsed, jd_text=jd_text, model=model,
-                            parse_issues=list(service.last_parse_issues))
+        issues = list(service.last_parse_issues)
+        from app.analysis.language import english_only_note, other_language
+        jd_language = other_language(jd_text)
+        if jd_language:  # P8.25
+            issues.append(english_only_note("job description", jd_language))
+        session.data.update(parsed=parsed, jd_text=jd_text, model=model, parse_issues=issues)
     except BaseException as e:
         session.busy.release()
         if is_new:  # no cookie was sent, so nobody could reach it again
@@ -365,7 +446,8 @@ async def parse(request: Request, response: Response, file: Optional[UploadFile]
     session.busy.release()
     response.set_cookie(SESSION_COOKIE, session.id, httponly=True, samesite="lax",
                         max_age=store.ttl_seconds)
-    return {"details": _details(parsed[1].resume), "parse_issues": session.data["parse_issues"]}
+    return {"details": _details(parsed[1].resume), "parse_issues": [plain_issue(i) for i in session.data["parse_issues"]],
+            "unplaced": unplaced_lines(parsed[0], parsed[1].resume)}
 
 
 @router.post("/proposals", dependencies=[Depends(rate_limited)])
@@ -491,6 +573,13 @@ def _results_out(session: Session, results: Dict) -> Dict:
         "target_pages": results.get("target_pages"),
         "applied": results.get("applied"),
         "coverage": results.get("coverage"),
+        # Read-back checks split by weight (P8.26): serious ones fail the run.
+        "file_checks": {
+            "serious": [w for w in (results.get("docx_warnings") or []) + (results.get("pdf_warnings") or [])
+                        if OutputQAValidator.is_serious(w)],
+            "minor": [w for w in (results.get("docx_warnings") or []) + (results.get("pdf_warnings") or [])
+                      if w.startswith(OutputQAValidator.ROUND_TRIP_PREFIX) and not OutputQAValidator.is_serious(w)],
+        },
         "pages": pages,
         "files": {kind: bool(results.get(key)) and os.path.exists(results[key])
                   for kind, key in FILE_KINDS.items()},
@@ -544,9 +633,9 @@ def arrange(request: Request, body: ArrangeIn, session: Session = Depends(curren
         session.busy.release()
 
 
-FILE_KINDS = {"docx": "docx", "pdf": "pdf", "changes": "changes_md"}
+FILE_KINDS = {"docx": "docx", "pdf": "pdf", "changes": "changes_md", "html": "html"}
 MEDIA_TYPES = {"docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-               "pdf": "application/pdf", "changes": "text/markdown"}
+               "pdf": "application/pdf", "changes": "text/markdown", "html": "text/html"}
 
 
 def _result_path(session: Session, key: str) -> str:

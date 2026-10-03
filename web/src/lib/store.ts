@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import type { ReviewState } from "./review";
-import type { AnalysisReport, Details, ProposalsResult, TailorResult } from "./types";
+import type { AnalysisReport, Details, ProposalsResult, TailorResult, UnplacedLine } from "./types";
 
 export const STEPS = [
   { id: "upload", label: "Upload" },
@@ -25,6 +25,7 @@ export interface Run {
   template: Template;
   details: Details | null;
   parseIssues: string[];
+  unplaced: UnplacedLine[]; // lines the parse put nowhere (P8.26)
   report: AnalysisReport | null;
   drafted: ProposalsResult | null;
   review: ReviewState | null; // decisions on the drafted proposals, kept across Back
@@ -35,7 +36,7 @@ export interface Run {
 }
 
 export const EMPTY_RUN: Run = {
-  intent: "tailor", file: null, jdText: "", template: "ats", details: null, parseIssues: [],
+  intent: "tailor", file: null, jdText: "", template: "ats", details: null, parseIssues: [], unplaced: [],
   report: null, drafted: null, review: null, results: null, resultsVersion: 0, jumpTo: null,
 };
 export type Theme = "dark" | "light" | "system";

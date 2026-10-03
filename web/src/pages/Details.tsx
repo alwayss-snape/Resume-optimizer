@@ -24,6 +24,9 @@ export function Details() {
   // Jobs the file was missing (added here) or that were misread (removed).
   const [added, setAdded] = useState<{ key: number; job: NewJob }[]>([]);
   const [removed, setRemoved] = useState<string[]>([]);
+  // Where each line the parse couldn't place goes; kept under "Additional information" unless moved (P8.26).
+  const [placed, setPlaced] = useState<Record<string, string>>(() =>
+    Object.fromEntries((run.unplaced ?? []).map((l) => [l.id, "other"])));
   const nextKey = useRef(0);
   // Where focus goes after a job card appears or goes away (a CSS selector).
   const focusNext = useRef<string | null>(null);
@@ -92,11 +95,14 @@ export function Details() {
     setProgress([]);
     const fixed: Corrections = { ...form, candidate: { ...form.candidate, links: links.split("\n").map((l) => l.trim()).filter(Boolean) } };
     // Unchanged: send nothing, so the server keeps exactly what it read.
-    const changed = JSON.stringify(fixed) !== JSON.stringify(run.details) || removed.length > 0 || newJobs.length > 0;
+    const placements = Object.entries(placed).map(([id, target]) => ({ id, target }));
+    const changed = JSON.stringify(fixed) !== JSON.stringify(run.details) || removed.length > 0 || newJobs.length > 0
+      || placements.length > 0;
     const corrections: Corrections = {
       ...fixed, experience: fixed.experience.filter((e) => !removed.includes(e.id)),
       ...(removed.length ? { removed_jobs: removed } : {}),
       ...(newJobs.length ? { added_jobs: newJobs.map((a) => addedJob(a.job)) } : {}),
+      ...(placements.length ? { placed: placements } : {}),
     };
     const step = beginStep();
     try {
@@ -155,12 +161,12 @@ export function Details() {
         <h2 id="you" className="font-display text-[22px] font-bold tracking-[-0.02em]">You</h2>
         <div className="grid gap-4 md:grid-cols-2">
           <TextField label="Name" value={c.name} onChange={(e) => setCandidate("name", e.target.value)} autoComplete="name" />
-          <TextField label="Headline (optional)" value={c.headline} placeholder="e.g. Senior Data Scientist"
+          <TextField label="Headline (optional)" value={c.headline} placeholder="e.g. Registered Nurse, Sales Manager, Data Analyst"
             onChange={(e) => setCandidate("headline", e.target.value)} />
           <TextField label="Email" type="email" value={c.email} onChange={(e) => setCandidate("email", e.target.value)} autoComplete="email" />
           <TextField label="Phone" type="tel" value={c.phone} onChange={(e) => setCandidate("phone", e.target.value)} autoComplete="tel" />
           <TextField label="Location" value={c.location} onChange={(e) => setCandidate("location", e.target.value)} />
-          <TextArea label="Links (one per line)" rows={3} value={links} placeholder={"linkedin.com/in/you\ngithub.com/you"}
+          <TextArea label="Links (one per line)" rows={3} value={links} placeholder={"linkedin.com/in/you\nyour-portfolio.com"}
             onChange={(e) => setLinks(e.target.value)} />
         </div>
       </section>
@@ -226,6 +232,54 @@ export function Details() {
           {form.experience.length || added.length ? "Add a job we missed" : "Add a job"}
         </button>
       </section>
+
+      {(run.unplaced ?? []).length > 0 && (
+        <section aria-labelledby="unplaced" className="sheet flex flex-col gap-4 rounded-[3px] p-6 md:p-7">
+          <div className="flex flex-col gap-1">
+            <h2 id="unplaced" className="font-display text-[22px] font-bold tracking-[-0.02em]">Lines we couldn't place</h2>
+            <p className="m-0 text-sm text-muted">They stay on your resume under "Additional information" unless you move them.</p>
+          </div>
+          <ul className="m-0 flex flex-col p-0">
+            {(run.unplaced ?? []).map((line) => (
+              <li key={line.id} className="flex flex-col gap-2 border-t border-line py-3 first:border-t-0 sm:flex-row sm:items-center sm:justify-between">
+                <span className="min-w-0 font-serif text-[15px] leading-relaxed">{line.text}</span>
+                <label className="flex shrink-0 items-center gap-2 text-sm">
+                  <span className="text-muted">Put it under</span>
+                  <select value={placed[line.id] ?? "other"} onChange={(e) => setPlaced((p) => ({ ...p, [line.id]: e.target.value }))}
+                    className="h-11 rounded-[3px] border border-field bg-panel px-3 text-sm text-ink">
+                    <option value="other">Additional information</option>
+                    <option value="summary">Summary</option>
+                    <option value="skills">Skills</option>
+                    {form.experience.filter((e) => !removed.includes(e.id)).map((e) => (
+                      <option key={e.id} value={e.id}>A bullet of {e.company || e.roles[0]?.title || "a job"}</option>
+                    ))}
+                  </select>
+                </label>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {(form.also_read ?? []).length > 0 && (
+        <section aria-labelledby="also-read" className="flex flex-col gap-3">
+          <h2 id="also-read" className="font-display text-[22px] font-bold tracking-[-0.02em]">Also read from your file</h2>
+          <p className="m-0 text-sm text-muted">Kept as written. Reorder or hide any of it after tailoring, in Arrange.</p>
+          <div className="grid gap-3 md:grid-cols-2">
+            {(form.also_read ?? []).map((sec) => (
+              <div key={sec.title} className="rounded-[3px] border border-line bg-panel p-4">
+                <p className="m-0 text-sm font-semibold">{sec.title}</p>
+                <ul className="m-0 mt-1.5 flex flex-col gap-1 p-0">
+                  {sec.lines.slice(0, 5).map((l, i) => (
+                    <li key={i} className="list-none break-words font-serif text-[14px] leading-relaxed">{l}</li>
+                  ))}
+                  {sec.lines.length > 5 && <li className="list-none text-xs text-muted">+{sec.lines.length - 5} more</li>}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center">
         <Button onClick={() => goTo("upload")}>Back</Button>

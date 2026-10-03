@@ -3,7 +3,7 @@ import re
 import logging
 import time
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional, Tuple, Type, TypeVar
+from typing import Callable, Any, Dict, List, Optional, Tuple, Type, TypeVar
 
 # `ollama` is optional for tests and offline runs. Import lazily and tolerate failures.
 try:
@@ -85,6 +85,10 @@ class LLMClient:
         # run instead of an HTTP round-trip before every LLM call.
         self._available: Optional[bool] = None
         self.last_error: Optional[str] = None
+        # Told about each rate-limit wait, so a progress view can say why a
+        # step pauses (P8.23); set by the service for the length of a run.
+        self.on_wait: Optional[Callable[[str], None]] = None
+
 
         if self.provider == "anthropic":
             self.host = host or "https://api.anthropic.com"
@@ -144,6 +148,10 @@ class LLMClient:
         """Whether the configured provider is reachable AND the configured
         model exists there. Cached after the first check; pass refresh=True
         to re-check. On failure, `last_error` says why (shown in the UI)."""
+        until = _DAILY_LIMIT_UNTIL.get(self.provider)
+        if until and time.time() < until:  # shared by every client of this provider in the process
+            self.last_error = daily_limit_message(until - time.time())
+            return False
         if self._available is None or refresh:
             ok, reason = self._check_available()
             self._available = ok
@@ -388,14 +396,24 @@ class LLMClient:
                     break  # e.g. the daily token limit: retrying now can't succeed
                 wait = _retry_after_seconds(resp, attempt)
                 logger.warning(f"Groq rate limited (429); retrying in {wait:.1f}s")
+                if self.on_wait:
+                    try:
+                        self.on_wait(f"The free AI service is busy; waiting {max(1, round(wait))} s and trying again")
+                    except Exception:
+                        pass
                 time.sleep(wait)
                 continue
             break
 
         if resp.status_code == 429 and _requested_wait(resp) > GROQ_MAX_RETRY_WAIT:
-            minutes = max(1, round(_requested_wait(resp) / 60))
-            limit = "daily token limit" if "per day" in (resp.text or "") else "rate limit"
-            raise LLMError(f"Groq free-tier {limit} reached; try again in about {minutes} min. ({resp.text[:200]})")
+            wait_s = _requested_wait(resp)
+            minutes = max(1, round(wait_s / 60))
+            if "per day" in (resp.text or ""):
+                _DAILY_LIMIT_UNTIL[self.provider] = time.time() + wait_s
+                message = daily_limit_message(wait_s)
+                self.last_error = message
+                raise LLMDailyLimitError(message)
+            raise LLMError(f"Groq free-tier rate limit reached; try again in about {minutes} min. ({resp.text[:200]})")
         if resp.status_code != 200:
             raise LLMError(f"Groq API error ({resp.status_code}): {resp.text}")
 
@@ -617,6 +635,21 @@ def _requested_wait(resp: Any) -> float:
         return 0.0
     h, mnt, sec = (float(g) if g else 0.0 for g in m.groups())
     return h * 3600 + mnt * 60 + sec
+
+
+# provider -> time when its daily free limit resets (P8.23)
+_DAILY_LIMIT_UNTIL: Dict[str, float] = {}
+
+
+class LLMDailyLimitError(LLMError):
+    """The provider's daily free limit is used up (P8.23)."""
+
+
+def daily_limit_message(wait_seconds: float) -> str:
+    hours, mins = divmod(max(1, round(wait_seconds / 60)), 60)
+    when = f"about {hours} h {mins} min" if hours else f"about {mins} min"
+    return (f"Today's free AI limit is used up, so drafting rewrites isn't available for {when}. You can still "
+            "check your match, arrange your resume and download it; tailoring with AI works again after that.")
 
 
 def _retry_after_seconds(resp: Any, attempt: int) -> float:

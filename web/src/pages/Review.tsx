@@ -308,7 +308,7 @@ export function Review() {
               </summary>
               <div className="grid gap-4 border-t border-line p-5 md:grid-cols-[2fr_1fr]">
                 <TextArea label="A project, achievement or skill" rows={3} value={review.addition.text}
-                  placeholder="e.g. Led a migration to Kubernetes, cutting deploy time by 40%."
+                  placeholder="e.g. Trained 8 new staff on the scheduling system, or led a migration that cut costs by 20%."
                   onChange={(e) => { const text = e.target.value; update((r) => ({ ...r, addition: { ...r.addition, text } })); }} />
                 <TargetSelect label="Where should it go?" value={review.addition.target} options={targets}
                   onChange={(target) => update((r) => ({ ...r, addition: { ...r.addition, target } }))} />

@@ -98,7 +98,7 @@ def test_full_flow_parse_draft_preview_tailor_download(client):
     assert r.status_code == 200, r.text
     kind, final = _events(r)[-1]
     assert kind == "result", final
-    assert final["files"] == {"docx": True, "pdf": False, "changes": True}
+    assert final["files"] == {"docx": True, "pdf": False, "changes": True, "html": True}
     assert final["alignment_score"] >= 0
 
     docx = client.get("/api/files/docx")

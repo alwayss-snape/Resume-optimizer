@@ -8,7 +8,7 @@ from docx.shared import Inches, Mm, Pt, RGBColor
 from typing import Any
 
 from app.domain.resume_document import ResumePresentation
-from app.rendering.layout import (SECTION_TITLES, contact_parts, date_range, display_skills, format_date_text,
+from app.rendering.layout import (SECTION_TITLES, fallback_font, contact_parts, date_range, display_skills, format_date_text,
                                   ordered_sections, other_section)
 
 
@@ -228,8 +228,11 @@ class TemplateRenderer:
             except KeyError:
                 continue
             style.font.name = presentation.font_family
-            # East-Asian / complex-script fallbacks too, or Word substitutes a font.
-            style.element.get_or_add_rPr().get_or_add_rFonts().set(qn("w:eastAsia"), presentation.font_family)
+            # East-Asian and complex scripts in a font that has them (P8.25):
+            # Arial has no Chinese, so a CJK name rendered blank.
+            fonts = style.element.get_or_add_rPr().get_or_add_rFonts()
+            fonts.set(qn("w:eastAsia"), fallback_font())
+            fonts.set(qn("w:cs"), fallback_font())
             style.font.size = Pt(10 if presentation.compact else 10.5)
         normal = doc.styles["Normal"]
         normal.font.color.rgb = BODY_COLOR

@@ -1,6 +1,6 @@
 # Tailores
 
-Local-first, privacy-focused application for tailoring resumes to job descriptions using local LLMs (Ollama + Qwen3) and a local sentence-embedding model for semantic matching. Optionally, generation can be routed through [Groq](https://console.groq.com) (free cloud inference) instead of Ollama when a stronger model is needed — see `BUILD.md`; this is opt-in and sends resume/JD text off-device.
+Tailores tailors a resume to a job description: it reads the resume, scores it against the job's keywords, drafts fact-checked rewrites, and builds an ATS-friendly DOCX and PDF. **Where your data goes:** the text of the resume and the job description is sent to the configured AI provider to draft rewrites and read the job description. With `LLM_PROVIDER=groq` (the default setup) that is Groq's cloud service; with `LLM_PROVIDER=ollama` it stays on the machine running the server. Semantic matching uses a local embedding model. In the web app, uploads and results live only for the visit and are deleted when it ends (see `API_SESSION_TTL_MINUTES`).
 
 ## Key Features
 

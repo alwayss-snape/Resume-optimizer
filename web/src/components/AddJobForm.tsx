@@ -59,7 +59,7 @@ export function AddJobForm({ value, onChange }: { value: NewJob; onChange: (v: N
       <MonthYear label={value.current ? "End (not needed)" : "End *"} value={value.end} disabled={value.current}
         onChange={(end) => set({ end })} />
       <TextArea label="What did you do there? One point per line, in your own words *" rows={4} className="md:col-span-2"
-        value={value.description} placeholder="Built the billing service in Go; cut failed payments by 20%."
+        value={value.description} placeholder="One line per achievement, e.g. Managed a team of 6 on night shifts; cut stock losses by 15%."
         onChange={(e) => set({ description: e.target.value })} />
     </div>
   );

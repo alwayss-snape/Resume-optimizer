@@ -188,6 +188,10 @@ function ResultsView({ onArrange }: { onArrange: () => void }) {
   const applied = result.applied; // what the server really put in the files
   const issues = result.content_lint?.issues ?? [];
   const fileWarnings = [...result.docx_warnings.map((w) => `DOCX: ${w}`), ...result.pdf_warnings.map((w) => `PDF: ${w}`)];
+  // Serious read-back problems vs minor differences (P8.26); older results have no split.
+  const serious = result.file_checks ? result.file_checks.serious : fileWarnings;
+  const minor = result.file_checks?.minor ?? [];
+  const lost = result.coverage?.lost ?? [];
   const fileSet = new Set([...result.docx_warnings, ...result.pdf_warnings]);
   // tailor_resume repeats the file warnings in `warnings`; the rest are notes on the content.
   const notes = result.warnings.filter((w) => !fileSet.has(w) && !w.startsWith("Strict Factual Mode"));
@@ -229,6 +233,11 @@ function ResultsView({ onArrange }: { onArrange: () => void }) {
               <Icon name="alert" size={16} className="mt-0.5 shrink-0" /><span><span className="font-semibold">Error:</span> {downloadError.text}</span>
             </p>
           )}
+          {result.files.html && (
+            <a href={fileUrl("html")} download className="w-fit text-sm text-pencil underline-offset-4 hover:underline">
+              Download as a web page (HTML)
+            </a>
+          )}
           {!result.files.pdf && result.files.docx && (
             <p className="m-0 text-xs text-muted">A PDF couldn't be made on the server (it needs LibreOffice); the DOCX is ready.</p>
           )}
@@ -249,11 +258,13 @@ function ResultsView({ onArrange }: { onArrange: () => void }) {
       <section aria-label="Summary" className="sheet flex flex-col gap-2 rounded-[3px] px-6 py-5 md:flex-row md:items-start md:gap-10 md:px-8">
         <div className="flex shrink-0 items-center gap-2.5 md:w-44 md:flex-col md:items-start md:pt-3">
           {/* the editor's sign-off, drawn in pencil */}
-          <svg aria-hidden="true" viewBox="0 0 40 24" className={`h-6 w-10 ${fileWarnings.length ? "text-warning" : "text-pencil"}`}>
+          <svg aria-hidden="true" viewBox="0 0 40 24" className={`h-6 w-10 ${serious.length || lost.length ? "text-warning" : "text-pencil"}`}>
             <path d="M3 13.5 12 21 37 3" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
           <span className="font-serif text-[15px] italic text-muted">
-            {fileWarnings.length ? "Read back, with warnings: see File checks" : "Checked: the files read back cleanly"}
+            {lost.length ? "Content missing from the files: see File checks"
+              : serious.length ? "Read back, with problems: see File checks"
+              : minor.length ? "Checked: the files read back, with small differences" : "Checked: the files read back cleanly"}
           </span>
         </div>
         <ul className="m-0 grid flex-1 p-0 sm:grid-cols-2 sm:gap-x-10">
@@ -279,8 +290,9 @@ function ResultsView({ onArrange }: { onArrange: () => void }) {
               {t}
               {t === "Content checks" && issues.length ? <span className="text-muted"> ({issues.length})</span> : null}
               {t === "Notes" && notes.length ? <span className="text-muted"> ({notes.length})</span> : null}
-              {t === "File checks" && fileWarnings.length
-                ? <span className="text-danger"> ({fileWarnings.length})</span> : null}
+              {t === "File checks" && (serious.length + lost.length)
+                ? <span className="text-danger"> ({serious.length + lost.length})</span>
+                : t === "File checks" && minor.length ? <span className="text-muted"> ({minor.length})</span> : null}
             </button>
           ))}
         </div>
@@ -351,12 +363,34 @@ function ResultsView({ onArrange }: { onArrange: () => void }) {
 
           {tab === "File checks" && (
             <div className="flex max-w-[820px] flex-col gap-3 text-sm">
-              {fileWarnings.length === 0 ? (
+              {lost.length > 0 && (
+                <div className="flex flex-col gap-1">
+                  <p className="m-0 font-semibold text-danger">Lines from your resume missing from the files</p>
+                  <ul className="flex flex-col">
+                    {lost.map((w, i) => <li key={i} className="break-words border-t border-line py-3 font-serif leading-relaxed">{w}</li>)}
+                  </ul>
+                </div>
+              )}
+              {serious.length > 0 && (
+                <div className="flex flex-col gap-1">
+                  <p className="m-0 font-semibold">Needs attention: an ATS may misread this</p>
+                  <ul className="flex flex-col">
+                    {serious.map((w, i) => <li key={i} className="break-words border-t border-line py-3 leading-relaxed">{w}</li>)}
+                  </ul>
+                </div>
+              )}
+              {minor.length > 0 && (
+                <details className="rounded-[3px] border border-line bg-panel p-4">
+                  <summary className="min-h-6 cursor-pointer font-medium text-muted hover:text-ink">
+                    {minor.length} small difference{minor.length === 1 ? "" : "s"} when the files are read back (usually harmless)
+                  </summary>
+                  <ul className="mt-2 flex flex-col">
+                    {minor.map((w, i) => <li key={i} className="break-words border-t border-line py-3 leading-relaxed">{w}</li>)}
+                  </ul>
+                </details>
+              )}
+              {!lost.length && !serious.length && !minor.length && (
                 <p className="m-0 text-success">The files read back cleanly: no problems found.</p>
-              ) : (
-                <ul className="flex flex-col">
-                  {fileWarnings.map((w, i) => <li key={i} className="break-words border-t border-line py-3 leading-relaxed">{w}</li>)}
-                </ul>
               )}
             </div>
           )}

@@ -28,11 +28,20 @@ export interface CandidateDetails {
 export interface Details {
   candidate: CandidateDetails;
   experience: JobDetails[];
+  /** Everything else read from the file, shown read-only (P8.26). */
+  also_read?: { title: string; lines: string[] }[];
+}
+
+export interface UnplacedLine {
+  id: string;
+  text: string;
 }
 
 export interface ParseResult {
   details: Details;
   parse_issues: string[];
+  /** Lines of the file the parse put nowhere, for the user to assign (P8.26). */
+  unplaced?: UnplacedLine[];
 }
 
 export type KeywordKind = "hard" | "title" | "education" | "certification" | "soft";
@@ -94,6 +103,9 @@ export interface AnalysisReport {
   score_components: Record<string, number> | null;
   keyword_match: KeywordMatch | null;
   conditions?: Condition[];
+  /** Whether the AI read the job description, and why not (P8.23). */
+  ai?: { used: boolean; reason: string | null };
+  warnings?: string[];
 }
 
 export interface DiffSpan {
@@ -188,8 +200,10 @@ export interface TailorResult {
   applied: { bullets: number; bullets_edited: number; summary: boolean; skills: boolean; rejected: number;
     strict_withheld: boolean } | null;
   pages: number;
-  files: { docx: boolean; pdf: boolean; changes: boolean };
+  files: { docx: boolean; pdf: boolean; changes: boolean; html?: boolean };
   coverage?: { pct: number | null; counted: number; kept: number; reworded: number; trimmed: number; lost: string[] } | null;
+  /** Read-back checks by weight (P8.26): serious ones fail the run, minor ones are advice. */
+  file_checks?: { serious: string[]; minor: string[] };
   /** What the Arrange screen edits (P8.13); null for "keep my layout". */
   arrangement?: Arrangement | null;
 }

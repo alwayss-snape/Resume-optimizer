@@ -9,6 +9,8 @@ export interface AppConfig {
   provider_label: string;
   models: string[];
   max_upload_mb: number;
+  cloud?: boolean; // resume text goes to a cloud AI service (P8.24)
+  session_minutes?: number;
 }
 
 export class ApiError extends Error {
@@ -152,7 +154,8 @@ export interface AddedJob {
   end_date: string;
   description: string;
 }
-export type Corrections = Details & { removed_jobs?: string[]; added_jobs?: AddedJob[] };
+export type Corrections = Details & { removed_jobs?: string[]; added_jobs?: AddedJob[];
+  placed?: { id: string; target: string }[] }; // unplaced lines -> summary / skills / a job id / "other" (P8.26)
 
 export const draftProposals = (corrections: Corrections | null, onProgress: (m: string) => void, signal?: AbortSignal) =>
   streamStep<ProposalsResult>("/api/proposals", { corrections }, onProgress, signal);
@@ -193,7 +196,7 @@ export const arrangeResume = (layout: Layout, signal?: AbortSignal) =>
     method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ layout }), signal,
   });
 
-export const fileUrl = (kind: "docx" | "pdf" | "changes") => `/api/files/${kind}`;
+export const fileUrl = (kind: "docx" | "pdf" | "changes" | "html") => `/api/files/${kind}`;
 export const previewUrl = (page: number, version: string | number) => `/api/preview/${page}?v=${version}`;
 
 /** Fetch a result file and hand it to the browser as a download; throws

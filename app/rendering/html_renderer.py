@@ -131,7 +131,7 @@ class HtmlResumeRenderer:
 <style>
 @page {{ size: A4; margin: {presentation.margin_vertical_in}in {presentation.margin_side_in}in; }}
 * {{ box-sizing: border-box; }}
-body {{ font-family: {html.escape(presentation.font_family)}, Arial, sans-serif; color: #111827; font-size: 10.5pt; line-height: 1.4; max-width: 210mm; margin: 0 auto; padding: 24px 16px; background: #fff; }}
+body {{ font-family: {html.escape(presentation.font_family)}, Arial, "Noto Sans CJK SC", "Arial Unicode MS", "PingFang SC", sans-serif; color: #111827; font-size: 10.5pt; line-height: 1.4; max-width: 210mm; margin: 0 auto; padding: 24px 16px; background: #fff; }}
 header {{ border-bottom: 1px solid {html.escape(presentation.accent_color)}; padding-bottom: 8px; margin-bottom: 12px; }}
 h1 {{ margin: 0; font-size: 22pt; font-weight: 700; letter-spacing: .2px; color: {html.escape(presentation.accent_color)}; }}
 .contact {{ margin: 5px 0 0; color: #4b5563; font-size: 10pt; }}

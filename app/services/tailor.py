@@ -7,6 +7,7 @@ from typing import Callable, Dict, List, Optional, Tuple
 from uuid import uuid4
 
 from app.analysis.checklist import build_checklist
+from app.analysis.language import english_only_note, other_language
 from app.analysis.experience import future_dates, is_ongoing, parse_month, target_pages
 from app.analysis.gap_questions import GapAnswer, build_questions, infer_kind
 from app.analysis.jd_analyzer import JDAnalyzer
@@ -23,7 +24,7 @@ from app.analysis.tailor_planner import TailoringPlanner
 from app.domain.evidence import Evidence
 from app.domain.job import JobDescription
 from app.domain.report import TailoringReport
-from app.domain.resume import Experience, Project, Resume, ResumeBullet, Role
+from app.domain.resume import Experience, OtherSection, Project, Resume, ResumeBullet, Role, SectionLine
 from app.domain.resume_document import ResumeDocument, ResumeSource
 from app.domain.tailoring import TailoringPlan
 from app.ingestion.docx import DocxParser
@@ -460,6 +461,9 @@ class TailorService:
         )
         # Shown on "Check your details"; not a reason to ask the LLM (P8.6).
         self.last_parse_issues = list(self.last_parse_issues) + future_dates(resume_doc.resume)
+        language = other_language(raw_doc.raw_text)
+        if language:  # P8.25
+            self.last_parse_issues.append(english_only_note("resume", language))
         return resume_doc, evidence_list
 
     @staticmethod
@@ -584,6 +588,35 @@ class TailorService:
             self._insert_by_date(resume, exp)
             changed.append(f"{exp.id}.added")
 
+        # Lines the parse placed nowhere, assigned by the user (P8.26).
+        blocks = {b.id: b for b in raw_doc.blocks} if raw_doc is not None else {}
+        jobs = {e.id: e for e in resume.experience}
+        for item in corrections.get("placed") or []:
+            block, target = blocks.get(item.get("id")), item.get("target")
+            text = re.sub(r"\s+", " ", block.text).strip() if block else ""
+            if not text or not target:
+                continue
+            if target == "summary":
+                resume.summary = f"{resume.summary} {text}".strip() if resume.summary else text
+                evidence_list.append(Evidence(id=f"ev_user_{uuid4().hex[:6]}", source_type="summary",
+                                              source_id=block.id, source_location_id=block.id, text=text))
+            elif target == "skills":
+                items = [i.strip() for i in re.split(r"[,;|]", text) if i.strip()]
+                resume.skills.setdefault("Skills", []).extend(items)
+            elif target in jobs:
+                exp = jobs[target]
+                bid = f"{exp.id}_bp{len(exp.bullets) + 1:02d}"
+                exp.bullets.append(ResumeBullet(id=bid, text=text, source_location_id=block.id))
+                evidence_list.append(Evidence(id=f"ev_user_{uuid4().hex[:6]}", source_type="experience", source_id=bid,
+                                              source_location_id=block.id, text=f"{exp.company or exp.title}: {text}"))
+            else:  # "other": kept as written under its own heading
+                section = next((s for s in resume.other_sections if s.id == "sec_placed"), None)
+                if section is None:
+                    section = OtherSection(id="sec_placed", heading="Additional information")
+                    resume.other_sections.append(section)
+                section.lines.append(SectionLine(text=text, source_location_id=block.id))
+            changed.append(f"placed.{block.id}")
+
         if changed:
             resume_doc.record_revision("Parsed resume corrected by the user", changed, actor="user")
         return (raw_doc, resume_doc, evidence_list), bool(changed)
@@ -614,6 +647,8 @@ class TailorService:
             score_components=score_components,
             keyword_match=keyword_report,
             conditions=[c.model_dump() for c in build_checklist(job_desc, resume)],
+            warnings=[english_only_note(what, lang) for what, lang in (
+                ("resume", other_language(raw_doc.raw_text)), ("job description", other_language(jd_text))) if lang],
         )
 
     def generate_proposals(self, resume_path: str, jd_text: str, suggestion_limit: int = 5,
@@ -625,6 +660,8 @@ class TailorService:
         "alignment_score": float, ...}. Useful for UI review flows.
         """
         step = _progress(progress)
+        if self.llm_client is not None and progress is not None:
+            self.llm_client.on_wait = step  # say why a step pauses (P8.23)
         clean_jd_text = self.safety_guard.sanitize(jd_text)
 
         # `parsed`: the (raw, resume, evidence) the user checked in the UI.
@@ -804,6 +841,8 @@ class TailorService:
             f.write("## Progress Log\n\n")
         
         step = _progress(progress)
+        if self.llm_client is not None and progress is not None:
+            self.llm_client.on_wait = step  # say why a step pauses (P8.23)
 
         def _append_progress(msg: str) -> None:
             step(msg)
@@ -1228,11 +1267,11 @@ class TailorService:
             "Failed to parse rendered DOCX",
             "Failed to parse rendered PDF",
             "Expected candidate name",
-            OutputQAValidator.ROUND_TRIP_PREFIX,
         ]
 
         def has_critical(warnings_list):
-            return any(any(sig in w for sig in critical_signals) for w in warnings_list)
+            return any(any(sig in w for sig in critical_signals) or OutputQAValidator.is_serious(w)
+                       for w in warnings_list)
 
         # Content lost from the uploaded file fails the run, however clean
         # the file reads back (P8.2).
@@ -1369,7 +1408,7 @@ class TailorService:
                     f.write(f"- {w}\n")
         except Exception:
             pass
-        critical = any(OutputQAValidator.ROUND_TRIP_PREFIX in w for w in docx_warnings + pdf_warnings)
+        critical = any(OutputQAValidator.is_serious(w) for w in docx_warnings + pdf_warnings)
         state["trimmed"] = trimmed_items(before_fit, resume)
         return {
             "docx": docx_path, "pdf": fit.pdf_path or "", "html": html_path, "changes_md": state["changes_md"],

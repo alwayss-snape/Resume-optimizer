@@ -120,6 +120,7 @@ def lint(resume: Resume, today: Optional[date] = None) -> ContentReport:
                 add("dates", where, "End date is before the start date.")
 
     if report.bullets and report.metric_share < MIN_METRIC_SHARE:
-        add("metrics", "resume", f"Only {report.bullets_with_metrics} of {report.bullets} bullets include a number; "
-                                 "add real figures (scale, time saved, accuracy) where you have them.")
+        add("metrics", "resume", f"{report.bullets_with_metrics} of {report.bullets} bullets include a number. Where "
+                                 "you have a real one (people helped or trained, budget, volume, time saved) it "
+                                 "helps; many roles don't measure everything, and that's fine. Never invent one.")
     return report
