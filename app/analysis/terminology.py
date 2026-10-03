@@ -104,3 +104,42 @@ TECH_TERMS = frozenset({
     # product / compliance
     "jira", "figma", "hipaa", "gdpr", "sox", "pci dss", "okrs",
 })
+
+
+# Terms outside tech the offline JD analysis keeps even in lowercase (P8.18):
+# trades, care, warehouse, retail, finance, law, teaching. Ordinary words that
+# are also skills elsewhere ("scheduling" is generic) stay out.
+DOMAIN_TERMS = frozenset({
+    # trades and warehouse
+    "forklift", "pallet jack", "reach truck", "rf scanner", "conduit", "wiring", "blueprints", "plc", "plcs",
+    "vfd", "vfds", "lockout/tagout", "nec", "nfpa 70e", "osha", "hazmat", "cdl", "inventory control", "wms",
+    "bills of lading", "dot compliance", "preventive maintenance", "troubleshooting", "welding", "hvac",
+    # care
+    "telemetry", "wound care", "patient assessment", "care planning", "discharge teaching", "triage",
+    "phlebotomy", "medication administration", "iv insertion", "vital signs", "hemodynamics", "ventilators",
+    "infection control", "patient education", "charting", "epic", "cerner", "acls", "bls", "pals", "ccrn",
+    # finance and business
+    "month-end close", "reconciliations", "account reconciliations", "accruals", "journal entries",
+    "financial statements", "financial reporting", "variance analysis", "budgeting", "forecasting", "audit",
+    "sox", "asc 606", "revenue recognition", "accounts payable", "accounts receivable", "payroll", "netsuite",
+    "quickbooks", "pivot tables", "vlookup", "p&l", "s&op", "six sigma", "lean six sigma", "kaizen",
+    # sales and retail
+    "pipeline management", "prospecting", "cold calling", "quota", "forecasting accuracy", "negotiation",
+    "account management", "merchandising", "planograms", "loss prevention", "shrink", "cash handling",
+    "pos", "visual merchandising", "customer service",
+    # law
+    "litigation", "depositions", "motion practice", "legal research", "legal writing", "e-discovery",
+    "ediscovery", "contract drafting", "due diligence", "westlaw", "lexis", "relativity", "bar admission",
+    # teaching and learning
+    "lesson planning", "curriculum development", "classroom management", "differentiated instruction",
+    "instructional design", "e-learning", "storyboards", "lms", "scorm", "addie", "assessment design",
+})
+
+# Benefits, perks and equal-opportunity words are never job keywords (P8.18:
+# "Dental", "Vision", "ADA" and "PTO" were scored as skills).
+BENEFIT_TERMS = frozenset({
+    "dental", "vision", "medical", "pto", "paid time off", "401(k)", "401k", "403(b)", "403b", "health insurance",
+    "life insurance", "tuition reimbursement", "parental leave", "equity", "stock options", "commission",
+    "uncapped commission", "bonus", "wellness", "benefits", "perks", "eeo", "equal opportunity", "ada",
+    "remote", "hybrid", "relocation", "visa sponsorship", "salary", "pay", "holidays",
+})

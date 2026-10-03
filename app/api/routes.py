@@ -149,6 +149,10 @@ async def _save_upload(request: Request, file: UploadFile) -> str:
 def _check_jd(jd_text: str) -> None:
     if not jd_text.strip():
         raise HTTPException(422, "Please paste the job description.")
+    from app.analysis.jd_analyzer import JDAnalyzer
+    if JDAnalyzer.too_short(JDAnalyzer.clean_text(jd_text)):
+        raise HTTPException(422, "That job description is very short. Paste the whole posting, so the match "
+                                 "compares your resume with what the job really asks for.")
 
 
 def _event(kind: str, payload) -> str:

@@ -35,6 +35,8 @@ class KeywordMatchReport(BaseModel):
     rate: float  # 0..100, the headline score
     rows: List[KeywordRow] = Field(default_factory=list)
     target_band: Tuple[float, float] = TARGET_BAND
+    # The JD's keywords were picked by simple rules, not the AI (P8.18).
+    approximate: bool = False
 
     @property
     def matched(self) -> List[KeywordRow]:

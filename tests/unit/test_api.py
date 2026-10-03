@@ -346,3 +346,8 @@ def test_arrange_after_tailoring(client):
     out = r.json()
     assert out["files"]["docx"] and out["arrangement"]["layout"]["hidden_sections"] == ["summary"]
     assert client.post("/api/arrange", json={"layout": {**layout, "page_target": 9}}).status_code == 422
+
+
+def test_very_short_job_description_is_refused(client):
+    r = client.post("/api/analyze", files=_upload(SAMPLE_DOCX), data={"jd_text": "Data Analyst"})
+    assert r.status_code == 422 and "very short" in r.json()["detail"]

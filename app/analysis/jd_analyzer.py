@@ -90,6 +90,42 @@ class JDAnalyzer:
         "developer", "manager", "analyst", "scientist", "intern",
     }
     MAX_KEYWORDS = 40
+    # A line of perks or equal-opportunity text, wherever it stands.
+    _BOILERPLATE_LINE_RE = re.compile(
+        r"(?i)equal opportunity|regardless of|without regard to|benefits include|we offer|401\(k\)|paid time off"
+        r"|reasonable accommodation")
+
+    _TAG_BREAK_RE = re.compile(r"(?i)<\s*(?:br|/p|/li|/h[1-6]|/div|/tr)\s*/?>")
+    _TAG_ITEM_RE = re.compile(r"(?i)<\s*li[^>]*>")
+    _TAG_RE = re.compile(r"<[^>]{1,200}>")
+
+    @classmethod
+    def clean_text(cls, text: str) -> str:
+        """A pasted JD as plain text (P8.18): HTML tags and entities removed
+        (line breaks kept, list items as "- "), emoji and pictographs
+        dropped, spaces tidied. "🚀 Senior Accountant 💼" -> "Senior Accountant"."""
+        import html
+        import unicodedata
+        text = text or ""
+        if "<" in text and ">" in text:
+            text = cls._TAG_BREAK_RE.sub("\n", text)
+            text = cls._TAG_ITEM_RE.sub("\n- ", text)
+            text = cls._TAG_RE.sub(" ", text)
+        text = html.unescape(text)
+        keep = set("•●▪◦‣▸–—-*")
+        text = "".join(ch for ch in text if ch in keep or ch in "\n\t" or not (
+            unicodedata.category(ch) in ("So", "Cs", "Co") or ch in "\ufe0f\u200d"))
+        lines = [re.sub(r"[ \t\u00a0]+", " ", line).strip() for line in text.splitlines()]
+        return "\n".join(lines).strip()
+
+    @staticmethod
+    def too_short(text: str) -> bool:
+        """Too little to score against (P8.18: a two-word JD scored 100%)."""
+        return len(re.findall(r"\w+", text or "")) < 12
+
+    def _not_benefit(self, keywords: List[str]) -> List[str]:
+        from app.analysis.terminology import BENEFIT_TERMS
+        return [k for k in keywords if k.lower().strip() not in BENEFIT_TERMS]
 
     def extract_keywords_from_text(self, text: str) -> List[str]:
         """Stopgap keyword extraction: keep only technical-looking terms,
@@ -108,33 +144,65 @@ class JDAnalyzer:
             counts[key] = counts.get(key, 0) + 1
             display.setdefault(key, term)
 
+        from app.analysis.terminology import DOMAIN_TERMS
+        boilerplate = False
         for line in text.splitlines():
             line = self._clean_line(line)
             if self._is_heading(line) or line.lower().startswith(self.METADATA_PREFIXES):
+                # Lines under "Benefits", "What we offer", "Equal opportunity"...
+                boilerplate = bool(re.search(r"(?i)benefit|perk|what we offer|equal opportunity|about us", line))
+                continue
+            if boilerplate or self._BOILERPLATE_LINE_RE.search(line):
                 continue
             for sentence in re.split(r"(?<=[.!?;:])\s+", line):
+                run: List[str] = []  # adjacent capitalised words: "Six Sigma", "Supply Chain"
+                initial = [False]  # the run starts with the sentence's first word
+                last_end = -1
+
+                def flush() -> None:
+                    if len(run) >= 2:
+                        add(" ".join(run[:4]))
+                    elif run and not initial[0]:
+                        add(run[0])  # a lone sentence-initial capital is just a capital
+                    run.clear()
+                    initial[0] = False
+
                 for pos, match in enumerate(self.KEYWORD_TOKEN_RE.finditer(sentence)):
                     tok = match.group(0)
                     low = tok.lower()
+                    adjacent = match.start() == last_end + 1 and sentence[last_end:match.start()] == " "
+                    last_end = match.end()
                     if len(tok) < 2 or low in self.KEYWORD_NOISE:
+                        flush()
                         continue
                     has_symbol = bool(re.search(r"[+#./0-9]", tok))
                     is_acronym = tok.isupper() and tok.isalpha()
                     is_capitalised = tok[0].isupper() and pos > 0
-                    if low in TECH_TERMS:  # known tool/language, wherever it stands
+                    if low in TECH_TERMS or low in DOMAIN_TERMS:  # known term, wherever it stands
+                        flush()
                         add(tok)
                         continue
                     if "-" in tok and not has_symbol and not re.search(r"[A-Z]", tok[1:]):
+                        flush()
                         continue  # plain hyphenated English ("cross-functional")
-                    if has_symbol or is_acronym or is_capitalised:
+                    if tok[0].isupper() and not has_symbol and not is_acronym:
+                        if run and not adjacent:
+                            flush()
+                        if not run:
+                            initial[0] = pos == 0
+                        run.append(tok)
+                        continue
+                    flush()
+                    if has_symbol or is_acronym:
                         add(tok)
+                flush()
 
         lowered_text = text.lower()
         for canonical in ALIAS_MAP:
             if " " in canonical and re.search(rf"\b{re.escape(canonical)}\b", lowered_text):
                 add(canonical)
-        # Multi-word tech terms ("Power BI", "GitHub Actions"), in the JD's spelling.
-        for term in TECH_TERMS:
+        # Multi-word terms ("Power BI", "wound care", "month-end close"), in the JD's spelling.
+        for term in [*TECH_TERMS, *DOMAIN_TERMS]:
             if " " in term:
                 m = re.search(rf"(?<![\w/]){re.escape(term)}(?![\w/])", text, re.IGNORECASE)
                 if m:
@@ -324,6 +392,8 @@ class JDAnalyzer:
     # -- main entry -----------------------------------------------------
 
     def analyze(self, jd_text: str) -> JobDescription:
+        original = jd_text or ""
+        jd_text = self.clean_text(jd_text)  # HTML, entities, emoji (P8.18); spans still point into the original
         lines = self._reflow_lines(jd_text)
         llm = self._llm_analyze(lines)
         llm_lines = {}
@@ -369,7 +439,7 @@ class JDAnalyzer:
                 preferred_section or line_says_preferred or (item is not None and item.priority == "preferred")
             ) else "required"
             category = item.category if item is not None else self._category(clean_line)
-            start = jd_text.find(clean_line)
+            start = original.find(clean_line)
             requirements.append(Requirement(
                 id=f"req_{len(requirements) + 1:03d}",
                 text=clean_line, category=category, priority=priority, criticality=priority,
@@ -408,6 +478,8 @@ class JDAnalyzer:
                                            for k in keywords):
                 continue
             keywords.append(term)
+        keywords = self._not_benefit(keywords)
+        hard_skills, certifications = self._not_benefit(hard_skills), self._not_benefit(certifications)
         keyword_counts = {k: self.count_occurrences(k, jd_text) for k in keywords}
         # Most frequent first; ties keep the order the model/heuristic gave.
         keywords = sorted(keywords, key=lambda k: -keyword_counts[k])

@@ -9,7 +9,7 @@ from uuid import uuid4
 from app.analysis.experience import future_dates, is_ongoing, parse_month, target_pages
 from app.analysis.gap_questions import GapAnswer, build_questions, infer_kind
 from app.analysis.jd_analyzer import JDAnalyzer
-from app.analysis.keyword_match import KeywordMatcher, _contains_seq, resume_sections, tokens
+from app.analysis.keyword_match import KeywordMatcher, _contains_seq, reconcile, resume_sections, tokens
 from app.analysis.matcher import EvidenceMatcher
 from app.analysis.resume_normalizer import ResumeNormalizer
 from app.analysis.rewriter import FAILED_STATUSES, LLMRewriter, RewriteProposal
@@ -563,6 +563,7 @@ class TailorService:
         job_desc = self.jd_analyzer.analyze(clean_jd_text)
         matches = self.matcher.match(job_desc, evidence_list)
         matches = self.semantic_matcher.match(job_desc.requirements, evidence_list, matches)
+        matches = reconcile(matches, self.keyword_matcher.match(job_desc, resume))
         keyword_report = self.keyword_matcher.match(job_desc, resume)
         score = keyword_report.rate
         score_components = dict(self.scorer.calculate_components(matches, job_desc.requirements))
@@ -604,6 +605,7 @@ class TailorService:
         step("Matching your resume to the job's keywords")
         matches = self.matcher.match(job_desc, evidence_list)
         matches = self.semantic_matcher.match(job_desc.requirements, evidence_list, matches)
+        matches = reconcile(matches, self.keyword_matcher.match(job_desc, resume))
         keyword_report = self.keyword_matcher.match(job_desc, resume)
         score = keyword_report.rate
         plan = self.planner.create_plan(resume, job_desc, evidence_list, matches)
@@ -820,6 +822,7 @@ class TailorService:
         job_desc = job_desc or self.jd_analyzer.analyze(clean_jd_text)
         matches = self.matcher.match(job_desc, evidence_list)
         matches = self.semantic_matcher.match(job_desc.requirements, evidence_list, matches)
+        matches = reconcile(matches, self.keyword_matcher.match(job_desc, resume))
         initial_keywords = self.keyword_matcher.match(job_desc, resume)
         initial_score = initial_keywords.rate
         _append_progress(f"Analyzed JD and computed initial keyword match rate: {initial_score:.1f}%")
@@ -1002,6 +1005,7 @@ class TailorService:
 
         matches = self.matcher.match(job_desc, evidence_list)
         matches = self.semantic_matcher.match(job_desc.requirements, evidence_list, matches)
+        matches = reconcile(matches, self.keyword_matcher.match(job_desc, resume))
         keyword_report = self.keyword_matcher.match(job_desc, resume)
         score = keyword_report.rate
         evidence_score = self.scorer.calculate_score(matches, job_desc.requirements)

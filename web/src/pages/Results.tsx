@@ -102,6 +102,12 @@ function ScoreReveal({ result, beforeRows, asked, onAddKeywords }: {
         <ScoreRule value={after} before={before} band={band} />
         <span aria-hidden="true" className={`text-sm ${v.tone === "good" ? "font-medium text-success" : "text-muted"}`}>{v.text}</span>
       </div>
+      {result.keyword_match?.approximate && (
+        <p className="m-0 flex items-start gap-2 text-[13px] leading-relaxed text-warning">
+        <Icon name="alert" size={14} className="mt-0.5 shrink-0" />
+        <span>Approximate: the AI couldn't read this job description, so its keywords were picked by simple rules.</span>
+        </p>
+      )}
       {gained.length > 0 && (
         <p className="m-0 border-t border-line pt-4 text-sm leading-relaxed">
           <span className="text-muted">Now on your resume: </span>

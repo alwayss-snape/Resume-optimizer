@@ -148,6 +148,8 @@ def run_case(case: Case, *, live: bool = False, tailor: bool = False, out_dir: O
 
         matches = service.matcher.match(job, evidence)
         matches = service.semantic_matcher.match(job.requirements, evidence, matches)
+        from app.analysis.keyword_match import reconcile
+        matches = reconcile(matches, service.keyword_matcher.match(job, resume))
         keyword_report = service.keyword_matcher.match(job, resume)
         metrics["match"] = {
             "score": keyword_report.rate,  # headline: keyword match rate (P1.2)

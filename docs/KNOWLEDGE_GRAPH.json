@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "6d52b021c6673b5c",
+  "source_hash": "b7deaedb262f8aec",
   "stats": {
-    "files": 149,
-    "python_files": 126,
+    "files": 150,
+    "python_files": 127,
     "app_modules": 56,
-    "test_files": 61,
+    "test_files": 62,
     "classes": 105,
-    "functions": 985,
-    "lines_of_python": 19828
+    "functions": 994,
+    "lines_of_python": 20030
   },
   "axes": {
     "x": "location (path)",
@@ -385,7 +385,7 @@
       "stages": [
         "3 JD analysis"
       ],
-      "lines": 430,
+      "lines": 502,
       "doc": "",
       "classes": [
         {
@@ -399,78 +399,93 @@
               "doc": ""
             },
             {
+              "name": "clean_text",
+              "line": 103,
+              "doc": "A pasted JD as plain text (P8.18): HTML tags and entities removed"
+            },
+            {
+              "name": "too_short",
+              "line": 122,
+              "doc": "Too little to score against (P8.18: a two-word JD scored 100%)."
+            },
+            {
+              "name": "_not_benefit",
+              "line": 126,
+              "doc": ""
+            },
+            {
               "name": "extract_keywords_from_text",
-              "line": 94,
+              "line": 130,
               "doc": "Stopgap keyword extraction: keep only technical-looking terms,"
             },
             {
               "name": "_category",
-              "line": 148,
+              "line": 216,
               "doc": ""
             },
             {
               "name": "_clean_line",
-              "line": 161,
+              "line": 229,
               "doc": "Strip a bullet marker, including private-use glyphs pasted from Word/PDF."
             },
             {
               "name": "_is_heading",
-              "line": 166,
+              "line": 234,
               "doc": "A section heading: the known patterns, an ALL-CAPS short line"
             },
             {
               "name": "_is_requirement",
-              "line": 183,
+              "line": 251,
               "doc": ""
             },
             {
               "name": "_reflow_lines",
-              "line": 192,
+              "line": 260,
               "doc": "Undo hard line-wrapping from pasted JDs (job boards/PDFs often wrap"
             },
             {
               "name": "_verbatim",
-              "line": 230,
+              "line": 298,
               "doc": "The JD's own spelling of `value` if it occurs in the JD (case- and"
             },
             {
               "name": "_verbatim_list",
-              "line": 240,
+              "line": 308,
               "doc": ""
             },
             {
               "name": "_contains_term",
-              "line": 251,
+              "line": 319,
               "doc": "Whole-term containment: \"A/B\" is in \"A/B testing\", \"ML\" is not in \"MLflow\"."
             },
             {
               "name": "count_occurrences",
-              "line": 256,
+              "line": 324,
               "doc": "Whole-term, case-insensitive count (\"R\" doesn't match \"React\")."
             },
             {
               "name": "_heuristic_title_company",
-              "line": 262,
+              "line": 330,
               "doc": ""
             },
             {
               "name": "_seniority",
-              "line": 283,
+              "line": 351,
               "doc": ""
             },
             {
               "name": "_years",
-              "line": 290,
+              "line": 358,
               "doc": ""
             },
             {
               "name": "_llm_analyze",
-              "line": 298,
+              "line": 366,
               "doc": "One structured call: metadata, requirement lines by index, skills."
             },
             {
               "name": "analyze",
-              "line": 326,
+              "line": 394,
               "doc": ""
             }
           ]
@@ -485,7 +500,7 @@
       "stages": [
         "5 Score"
       ],
-      "lines": 307,
+      "lines": 332,
       "doc": "Keyword-level match rate, the headline score (P1.2).",
       "classes": [
         {
@@ -566,6 +581,11 @@
           "name": "alternatives_of",
           "line": 174,
           "doc": "Token sequences that count as the keyword: \"OSHA 10 or 30\" -> OSHA 10,"
+        },
+        {
+          "name": "reconcile",
+          "line": 310,
+          "doc": "A requirement can't read \"not shown\" while every job keyword in it is"
         }
       ]
     },
@@ -1188,7 +1208,7 @@
       "stages": [
         "4 Match"
       ],
-      "lines": 106,
+      "lines": 145,
       "doc": "",
       "classes": [],
       "functions": [
@@ -1316,7 +1336,7 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 542,
+      "lines": 546,
       "doc": "HTTP endpoints, one per step of the review flow (P5.1).",
       "classes": [
         {
@@ -1380,7 +1400,7 @@
         },
         {
           "name": "ArrangeIn",
-          "line": 458,
+          "line": 462,
           "doc": "",
           "methods": []
         }
@@ -1418,112 +1438,112 @@
         },
         {
           "name": "_event",
-          "line": 154,
+          "line": 158,
           "doc": ""
         },
         {
           "name": "_stream",
-          "line": 158,
+          "line": 162,
           "doc": "Run `work(progress)` in a thread (the session must already be"
         },
         {
           "name": "_service",
-          "line": 193,
+          "line": 197,
           "doc": "A TailorService for one step. With a session, saved gap answers come"
         },
         {
           "name": "_details",
-          "line": 205,
+          "line": 209,
           "doc": "What the \"check details\" step shows and edits (P3.5)."
         },
         {
           "name": "_sections",
-          "line": 221,
+          "line": 225,
           "doc": "Bullet id -> the job or project it belongs to, for grouping cards."
         },
         {
           "name": "_proposal_out",
-          "line": 233,
+          "line": 237,
           "doc": ""
         },
         {
           "name": "_match_out",
-          "line": 246,
+          "line": 250,
           "doc": ""
         },
         {
           "name": "_selected",
-          "line": 252,
+          "line": 256,
           "doc": ""
         },
         {
           "name": "health",
-          "line": 262,
+          "line": 266,
           "doc": ""
         },
         {
           "name": "config",
-          "line": 267,
+          "line": 271,
           "doc": ""
         },
         {
           "name": "_model",
-          "line": 274,
+          "line": 278,
           "doc": ""
         },
         {
           "name": "analyze",
-          "line": 281,
+          "line": 285,
           "doc": "\"Just check my match\": score only, nothing kept."
         },
         {
           "name": "parse",
-          "line": 295,
+          "line": 299,
           "doc": "Step 1: read the resume and start a fresh session for this run."
         },
         {
           "name": "proposals",
-          "line": 328,
+          "line": 332,
           "doc": "Step 2: apply the user's fixes, then draft rewrites and gap"
         },
         {
           "name": "match_preview",
-          "line": 377,
+          "line": 381,
           "doc": "The match rate if the selected (and edited) proposals were applied."
         },
         {
           "name": "tailor",
-          "line": 387,
+          "line": 391,
           "doc": "Step 3: apply the review and generate the files. Streams progress."
         },
         {
           "name": "_results_out",
-          "line": 426,
+          "line": 430,
           "doc": "What the Results (and Arrange) screen gets after a run."
         },
         {
           "name": "arrange",
-          "line": 466,
+          "line": 470,
           "doc": "Re-render the tailored resume as the user arranged it (P8.13). No LLM"
         },
         {
           "name": "_result_path",
-          "line": 505,
+          "line": 509,
           "doc": ""
         },
         {
           "name": "download",
-          "line": 513,
+          "line": 517,
           "doc": ""
         },
         {
           "name": "preview",
-          "line": 521,
+          "line": 525,
           "doc": "One page of the tailored PDF as a PNG (Chrome blocks embedded PDFs)."
         },
         {
           "name": "reset",
-          "line": 530,
+          "line": 534,
           "doc": "Start over: delete this visitor's files and state. If a step is still"
         }
       ]
@@ -1718,7 +1738,7 @@
         "4 Match",
         "5 Score"
       ],
-      "lines": 61,
+      "lines": 63,
       "doc": "",
       "classes": [
         {
@@ -1740,19 +1760,19 @@
           "methods": [
             {
               "name": "matched",
-              "line": 40,
+              "line": 42,
               "doc": ""
             },
             {
               "name": "missing",
-              "line": 44,
+              "line": 46,
               "doc": ""
             }
           ]
         },
         {
           "name": "TailoringReport",
-          "line": 49,
+          "line": 51,
           "doc": "",
           "methods": []
         }
@@ -1987,7 +2007,7 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 529,
+      "lines": 531,
       "doc": "Run evaluation cases through the pipeline and collect metrics (P4.1).",
       "classes": [
         {
@@ -2049,92 +2069,92 @@
         },
         {
           "name": "_tailor_metrics",
-          "line": 192,
+          "line": 194,
           "doc": ""
         },
         {
           "name": "attainable_coverage",
-          "line": 236,
+          "line": 238,
           "doc": "Of the JD keywords written verbatim somewhere in the resume, the share"
         },
         {
           "name": "_norm_number",
-          "line": 255,
+          "line": 257,
           "doc": ""
         },
         {
           "name": "fabricated_numbers",
-          "line": 260,
+          "line": 262,
           "doc": "Numbers (with their units) in the tailored resume that the original"
         },
         {
           "name": "stuffing",
-          "line": 270,
+          "line": 272,
           "doc": "Signs of keyword stuffing: tailoring pushed the rate above the target"
         },
         {
           "name": "_docx_text",
-          "line": 280,
+          "line": 282,
           "doc": ""
         },
         {
           "name": "is_content_failure",
-          "line": 295,
+          "line": 297,
           "doc": ""
         },
         {
           "name": "_same_text",
-          "line": 299,
+          "line": 301,
           "doc": ""
         },
         {
           "name": "check_job_details",
-          "line": 304,
+          "line": 306,
           "doc": "Each job's title, company, dates and bullet count as the file states"
         },
         {
           "name": "check_must_keep",
-          "line": 324,
+          "line": 326,
           "doc": "Source phrases that must survive into the rendered file."
         },
         {
           "name": "check_expected",
-          "line": 333,
+          "line": 335,
           "doc": "Compare a run with the case's expected.json; one message per miss."
         },
         {
           "name": "_judge",
-          "line": 402,
+          "line": 404,
           "doc": "Judge one tailored resume (P4.3) and record what the judge cost."
         },
         {
           "name": "replay_case",
-          "line": 413,
+          "line": 415,
           "doc": "Judge the tailored output a previous run saved in replay_dir/<case>/"
         },
         {
           "name": "run",
-          "line": 433,
+          "line": 435,
           "doc": ""
         },
         {
           "name": "_flatten",
-          "line": 453,
+          "line": 455,
           "doc": ""
         },
         {
           "name": "compare",
-          "line": 470,
+          "line": 472,
           "doc": "Human-readable differences per case between a report and a baseline."
         },
         {
           "name": "_judge_summary",
-          "line": 498,
+          "line": 500,
           "doc": ""
         },
         {
           "name": "summary_lines",
-          "line": 504,
+          "line": 506,
           "doc": ""
         }
       ]
@@ -3353,7 +3373,7 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 1375,
+      "lines": 1379,
       "doc": "",
       "classes": [
         {
@@ -3483,22 +3503,22 @@
             },
             {
               "name": "generate_proposals",
-              "line": 584,
+              "line": 585,
               "doc": "Generate rewrite proposals without applying them, plus questions"
             },
             {
               "name": "incorporate_user_addition",
-              "line": 657,
+              "line": 659,
               "doc": "Fold a user-supplied free-text addition (a project, an"
             },
             {
               "name": "tailor_resume",
-              "line": 736,
+              "line": 738,
               "doc": ""
             },
             {
               "name": "arrange",
-              "line": 1243,
+              "line": 1247,
               "doc": "Re-render the tailored resume as the user arranged it (P8.13\u2013P8.16):"
             }
           ]
@@ -3512,12 +3532,12 @@
         },
         {
           "name": "_hidden_text",
-          "line": 1339,
+          "line": 1343,
           "doc": "Text of the sections the user hid, so coverage counts it as their choice."
         },
         {
           "name": "_merge_usage",
-          "line": 1366,
+          "line": 1370,
           "doc": "Combine two LLMClient.get_usage_summary() dicts into one."
         }
       ]
@@ -4386,7 +4406,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 348,
+      "lines": 353,
       "doc": "Web API (P5.1): the full flow through HTTP, plus the shared form helpers.",
       "classes": [],
       "functions": [
@@ -4549,6 +4569,11 @@
           "name": "test_arrange_after_tailoring",
           "line": 329,
           "doc": "P8.13: the result carries what the Arrange screen edits; a layout"
+        },
+        {
+          "name": "test_very_short_job_description_is_refused",
+          "line": 351,
+          "doc": ""
         }
       ]
     },
@@ -5400,6 +5425,37 @@
           "name": "test_llm_keywords_are_topped_up_from_requirement_lines",
           "line": 112,
           "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "tests/unit/test_jd_p818.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 49,
+      "doc": "P8.18: JD cleanup, an honest offline fallback, and requirement statuses",
+      "classes": [],
+      "functions": [
+        {
+          "name": "test_clean_text_drops_html_entities_and_emoji",
+          "line": 19,
+          "doc": ""
+        },
+        {
+          "name": "test_offline_keywords_keep_phrases_and_trade_terms_but_no_perks",
+          "line": 24,
+          "doc": ""
+        },
+        {
+          "name": "test_too_short_and_approximate_flag",
+          "line": 34,
+          "doc": ""
+        },
+        {
+          "name": "test_requirement_status_agrees_with_the_keywords",
+          "line": 40,
+          "doc": "P1.16: all of the line's keywords found -> supported, some -> partly."
         }
       ]
     },
@@ -7643,6 +7699,11 @@
     },
     {
       "from": "app/analysis/jd_analyzer.py",
+      "to": "tests/unit/test_jd_p818.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/analysis/jd_analyzer.py",
       "to": "tests/unit/test_parser_regressions_p42.py",
       "type": "tested_by"
     },
@@ -7684,6 +7745,11 @@
     {
       "from": "app/analysis/keyword_match.py",
       "to": "tests/unit/test_gap_questions.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/analysis/keyword_match.py",
+      "to": "tests/unit/test_jd_p818.py",
       "type": "tested_by"
     },
     {
@@ -8238,6 +8304,11 @@
     },
     {
       "from": "app/api/routes.py",
+      "to": "app/analysis/jd_analyzer.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/api/routes.py",
       "to": "app/api/__init__.py",
       "type": "imports"
     },
@@ -8543,6 +8614,11 @@
     },
     {
       "from": "app/domain/report.py",
+      "to": "tests/unit/test_jd_p818.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/report.py",
       "to": "tests/unit/test_matcher.py",
       "type": "tested_by"
     },
@@ -8654,6 +8730,11 @@
     {
       "from": "app/domain/resume.py",
       "to": "tests/unit/test_html_renderer.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/resume.py",
+      "to": "tests/unit/test_jd_p818.py",
       "type": "tested_by"
     },
     {

@@ -58,6 +58,8 @@ export interface KeywordMatch {
   rows: KeywordRow[];
   target_band: [number, number];
   breakdown: BreakdownRow[];
+  /** The job's keywords were picked by simple rules, not the AI (P8.18). */
+  approximate?: boolean;
 }
 
 export type MatchStatus = "EXPLICIT" | "SUPPORTED" | "PARTIAL" | "SEMANTIC_PARTIAL" | "MISSING" | "UNCERTAIN";

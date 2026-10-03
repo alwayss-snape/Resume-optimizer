@@ -304,4 +304,29 @@ class KeywordMatcher:
 
         total = sum(r.weight for r in rows)
         rate = round(100.0 * sum(r.weight * r.credit for r in rows) / total, 1) if total else 0.0
-        return KeywordMatchReport(rate=rate, rows=rows)
+        return KeywordMatchReport(rate=rate, rows=rows, approximate=job.analysis_source != "llm")
+
+
+def reconcile(matches, report: KeywordMatchReport):
+    """A requirement can't read "not shown" while every job keyword in it is
+    found (P1.16 / P8.18): "Proficient in Python and libraries like PyTorch
+    and XGBoost" with all three on the resume is supported, and partly
+    supported when some are."""
+    rows = [(tokens(r.keyword), r) for r in report.rows if r.kind != "title" and tokens(r.keyword)]
+    for m in matches:
+        if m.status not in ("MISSING", "UNCERTAIN", "SEMANTIC_PARTIAL"):
+            continue
+        line = tokens(m.requirement_text)
+        inside = [r for toks, r in rows if _contains_seq(line, toks)]
+        if not inside:
+            continue
+        found = [r for r in inside if r.found]
+        if len(found) == len(inside):
+            m.status = "SUPPORTED"
+            m.explanation = "Every job keyword in this line is on your resume: " + ", ".join(r.keyword for r in found)
+            m.confidence = max(getattr(m, "confidence", 0.0) or 0.0, 0.8)
+        elif found and m.status == "MISSING":
+            m.status = "PARTIAL"
+            m.explanation = ("Some of this line's job keywords are on your resume: "
+                             + ", ".join(r.keyword for r in found))
+    return matches
