@@ -1,6 +1,7 @@
 import { type KeyboardEvent, useRef, useState } from "react";
 import { Button } from "../components/Button";
 import { ConditionList } from "../components/ConditionList";
+import { MatchGuidance } from "../components/MatchGuidance";
 import { Icon } from "../components/Icon";
 import { Breakdown, KeywordList } from "../components/KeywordList";
 import { ScoreDial, verdict } from "../components/ScoreDial";
@@ -83,7 +84,8 @@ export function Report({ report, onTailor, onStartOver, busy, error }: {
             How your resume reads for this job.
           </h1>
           <p className={`text-base ${v.tone === "good" ? "text-success" : "text-muted"}`}>
-            {match ? `${match.rows.filter((r) => r.found).length} of ${match.rows.length} keywords found. ` : ""}{v.text}
+            {match ? `${match.rows.filter((r) => r.found).length} of ${match.rows.length} keywords found. ` : ""}
+            {match?.guidance?.kind === "different_field" ? match.guidance.headline : v.text}
           </p>
           <div className="flex flex-col gap-3 sm:flex-row">
             <Button variant="primary" size="lg" onClick={onTailor} disabled={busy} aria-busy={busy}>
@@ -100,6 +102,7 @@ export function Report({ report, onTailor, onStartOver, busy, error }: {
         <div className="sheet flex flex-col gap-4 rounded-[3px] p-7">
           <span className="text-sm font-semibold">Keyword match</span>
           <ScoreDial value={report.alignment_score} band={band} size="lg" />
+          {match?.guidance && <MatchGuidance guidance={match.guidance} />}
           {match?.approximate && (
             <p className="m-0 flex items-start gap-2 text-[13px] leading-relaxed text-warning">
             <Icon name="alert" size={14} className="mt-0.5 shrink-0" />

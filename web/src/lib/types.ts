@@ -62,6 +62,8 @@ export interface KeywordMatch {
   breakdown: BreakdownRow[];
   /** The job's keywords were picked by simple rules, not the AI (P8.18). */
   approximate?: boolean;
+  /** What a low rate means here (P8.21). */
+  guidance?: { kind: "stretch" | "different_field"; headline: string; text: string; tips: string[] } | null;
 }
 
 export type MatchStatus = "EXPLICIT" | "SUPPORTED" | "PARTIAL" | "SEMANTIC_PARTIAL" | "MISSING" | "UNCERTAIN";

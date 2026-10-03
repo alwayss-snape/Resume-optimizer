@@ -39,6 +39,9 @@ class KeywordMatchReport(BaseModel):
     target_band: Tuple[float, float] = TARGET_BAND
     # The JD's keywords were picked by simple rules, not the AI (P8.18).
     approximate: bool = False
+    # What a low rate means for this resume (P8.21): None, "stretch" or
+    # "different_field", with a headline and honest next steps.
+    guidance: Optional[Dict] = None
 
     @property
     def matched(self) -> List[KeywordRow]:

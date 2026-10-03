@@ -2,6 +2,7 @@ import { motion, useReducedMotion, useScroll, useTransform } from "motion/react"
 import { type KeyboardEvent, useEffect, useRef, useState } from "react";
 import { Button } from "../components/Button";
 import { Icon } from "../components/Icon";
+import { MatchGuidance } from "../components/MatchGuidance";
 import { MiniMarkdown } from "../components/MiniMarkdown";
 import { CountUp, ScoreRule, verdict } from "../components/ScoreDial";
 import { downloadFile, fileUrl, friendlyError, getChangeLog, previewUrl } from "../lib/api";
@@ -116,6 +117,7 @@ function ScoreReveal({ result, beforeRows, asked, onAddKeywords }: {
           ))}
         </p>
       )}
+      {result.keyword_match?.guidance?.kind === "different_field" && <MatchGuidance guidance={result.keyword_match.guidance} />}
       {missing.length > 0 && (
         <div className="flex flex-col gap-3 border-t border-line pt-4">
           <p className="m-0 font-serif text-[15px] italic leading-relaxed text-muted">

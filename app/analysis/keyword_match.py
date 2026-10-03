@@ -312,7 +312,47 @@ class KeywordMatcher:
 
         total = sum(r.weight for r in rows)
         rate = round(100.0 * sum(r.weight * r.credit for r in rows) / total, 1) if total else 0.0
-        return KeywordMatchReport(rate=rate, rows=rows, approximate=job.analysis_source != "llm")
+        report = KeywordMatchReport(rate=rate, rows=rows, approximate=job.analysis_source != "llm")
+        report.guidance = guidance(report, job)
+        return report
+
+
+# Below this rate, with no title in common, the job is in another field.
+DIFFERENT_FIELD_BELOW = 30.0
+STRETCH_BELOW = 50.0
+
+
+def guidance(report: KeywordMatchReport, job: JobDescription) -> Optional[Dict]:
+    """What a low match means (P8.21): a nurse applying to a sales job scored
+    0 and a teacher moving into instructional design 16%, and both were told
+    to "aim for 75-85%". A different field gets a plain explanation and
+    career-changer steps; a stretch gets its own; a fair match gets none."""
+    title = next((r for r in report.rows if r.kind == "title"), None)
+    shares_title = bool(title and title.credit > 0)
+    if report.rate < DIFFERENT_FIELD_BELOW and not shares_title:
+        return {
+            "kind": "different_field",
+            "headline": "This job looks like a different field from your experience.",
+            "text": ("A low match is expected here, and rewording can't change it: Tailores never adds experience you "
+                     "don't have. Recruiters read a career change as a story, so make the story clear."),
+            "tips": [
+                "Tick the job keywords you really have in Review, and say where you used them in your own words.",
+                "Add courses, certificates or projects in the new field under \"Add anything else\".",
+                "Write the summary in your own words: what you're moving into and which of your skills carry over.",
+                "Keep the bullets that show transferable work (training others, budgets, client work, tools) near the top in Arrange.",
+            ],
+        }
+    if report.rate < STRETCH_BELOW:
+        return {
+            "kind": "stretch",
+            "headline": "A stretch: the job asks for a fair amount your resume doesn't show yet.",
+            "text": "The match only rises through keywords you really have; rewrites reword what's already there.",
+            "tips": [
+                "Tick the job keywords you really have in Review, with a line saying where.",
+                "Check the missing keywords: if one is true but phrased differently on your resume, add it in your words.",
+            ],
+        }
+    return None
 
 
 def reconcile(matches, report: KeywordMatchReport):

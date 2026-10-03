@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**57 app modules · 64 test files · 106 classes · 997 functions/methods · 20,176 lines of Python** · source hash `928e63aca1a3901c`
+**59 app modules · 66 test files · 108 classes · 1012 functions/methods · 20,501 lines of Python** · source hash `08ec058877aecdc4`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -71,8 +71,10 @@ app/
     judge.py                                     LLM-as-judge for the evaluation harness (P4.3).
   ingestion/
     docx.py                                      RawBlock, RawDocument, DocxParser
+    errors.py                                    A file the tool can't read, with a message the person can act on (P8.2…
     ocr.py                                       OCREngine
     pdf.py                                       _Line, PdfParser
+    text.py                                      Plain-text resumes: a .txt upload or text pasted in the app (P8.22).
   llm/
     client.py                                    LLMClient
     schemas.py                                   LLMResponse, LLMError, LLMConnectionError, LLMTimeoutError, LLMInvalid…
@@ -153,6 +155,7 @@ tests/
     test_experience.py                           P2.3: years of experience (overlaps merged) -> 1 or 2 target pages.
     test_fact_check_p89.py                       P8.9: the fact check catches wording borrowed from the job description,
     test_gap_questions.py                        Suggest-and-confirm gaps (P3.1).
+    test_guidance_p821.py                        P8.21: a low match is explained, not just "aim for 75-85%".
     test_html_renderer.py                        test_html_renderer_outputs_ats_sections_and_escapes_content()
     test_jd_analyzer.py                          test_jd_analyzer_heuristic(), test_heading_variants_are_not_extracted_…
     test_jd_analyzer_llm.py                      _FakeLLMClient
@@ -191,6 +194,7 @@ tests/
     test_tailor_service_addition.py              _service(), test_incorporate_user_addition_appends_bullet_to_most_rece…
     test_template_layout.py                      P2.1: the ATS template (A4, Arial, standard headings, section order,
     test_template_renderer_standalone.py         _full_text(), test_template_renderer_ats_mode(), test_template_rendere…
+    test_uploads_p822.py                         P8.22: every upload gets a result or a message the person can act on.
     test_validation.py                           test_factual_validator_preserves_grounded_claims(), test_factual_valid…
 ```
 
@@ -303,7 +307,7 @@ _Suggest-and-confirm gaps (P3.1): ask, never assume._
 
 ### `app/analysis/keyword_match.py`
 
-**Layer:** Analysis · **Stage:** 5 Score · **Lines:** 340
+**Layer:** Analysis · **Stage:** 5 Score · **Lines:** 380
 
 _Keyword-level match rate, the headline score (P1.2)._
 
@@ -322,10 +326,11 @@ _Keyword-level match rate, the headline score (P1.2)._
 - function **`is_place()`** ([app/analysis/keyword_match.py:141](../app/analysis/keyword_match.py#L141)) — A location the JD names, not a skill (P8.17: "Arizona" and "DC" were
 - function **`definitions()`** ([app/analysis/keyword_match.py:160](../app/analysis/keyword_match.py#L160)) — acronym -> expansion (both lowercase), from "Full Name (ACR)" in texts.
 - function **`alternatives_of()`** ([app/analysis/keyword_match.py:178](../app/analysis/keyword_match.py#L178)) — Token sequences that count as the keyword: "OSHA 10 or 30" -> OSHA 10,
-- function **`reconcile()`** ([app/analysis/keyword_match.py:318](../app/analysis/keyword_match.py#L318)) — A requirement can't read "not shown" while every job keyword in it is
+- function **`guidance()`** ([app/analysis/keyword_match.py:325](../app/analysis/keyword_match.py#L325)) — What a low match means (P8.21): a nurse applying to a sales job scored
+- function **`reconcile()`** ([app/analysis/keyword_match.py:358](../app/analysis/keyword_match.py#L358)) — A requirement can't read "not shown" while every job keyword in it is
 - **Imports:** `analysis/gap_questions.py`, `analysis/resume_normalizer.py`, `analysis/terminology.py`, `domain/job.py`, `domain/report.py`, `domain/resume.py`
 - **Imported by:** `analysis/gap_questions.py`, `analysis/skills_tailor.py`, `analysis/tailor_planner.py`, `eval/harness.py`, `services/tailor.py`
-- **Tested by:** `tests/unit/test_gap_questions.py`, `tests/unit/test_jd_p818.py`, `tests/unit/test_keyword_match.py`, `tests/unit/test_matching_p817.py`, `tests/unit/test_parser_regressions_p42.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_stuffing_p819.py`, `tests/unit/test_summary_writer.py`
+- **Tested by:** `tests/unit/test_gap_questions.py`, `tests/unit/test_guidance_p821.py`, `tests/unit/test_jd_p818.py`, `tests/unit/test_keyword_match.py`, `tests/unit/test_matching_p817.py`, `tests/unit/test_parser_regressions_p42.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_stuffing_p819.py`, `tests/unit/test_summary_writer.py`
 
 ### `app/analysis/matcher.py`
 
@@ -547,50 +552,50 @@ _The web app (P5.1): `uvicorn app.api.main:app`._
 
 ### `app/api/routes.py`
 
-**Layer:** Web API · **Stage:** all · **Lines:** 550
+**Layer:** Web API · **Stage:** all · **Lines:** 589
 
 _HTTP endpoints, one per step of the review flow (P5.1)._
 
-- class **`ProposalsIn`** ([app/api/routes.py:43](../app/api/routes.py#L43))
-- class **`SelectionItem`** ([app/api/routes.py:50](../app/api/routes.py#L50))
-- class **`MatchPreviewIn`** ([app/api/routes.py:55](../app/api/routes.py#L55))
-- class **`GapInput`** ([app/api/routes.py:59](../app/api/routes.py#L59))
-- class **`AdditionIn`** ([app/api/routes.py:65](../app/api/routes.py#L65))
-- class **`NewRoleIn`** ([app/api/routes.py:70](../app/api/routes.py#L70))
-- class **`TailorIn`** ([app/api/routes.py:80](../app/api/routes.py#L80))
-- class **`RateLimiter`** ([app/api/routes.py:94](../app/api/routes.py#L94)) — At most `limit` calls per `window` seconds per key (visitor IP).
-  - `__init__()` :97
-  - `check()` :102
-- class **`ArrangeIn`** ([app/api/routes.py:466](../app/api/routes.py#L466))
-- function **`rate_limited()`** ([app/api/routes.py:113](../app/api/routes.py#L113))
-- function **`current_session()`** ([app/api/routes.py:117](../app/api/routes.py#L117))
-- function **`_require()`** ([app/api/routes.py:124](../app/api/routes.py#L124))
-- function **`_claim()`** ([app/api/routes.py:129](../app/api/routes.py#L129))
-- function **`_save_upload()`** ([app/api/routes.py:134](../app/api/routes.py#L134)) — The upload as a temp file, after checking its type and size.
-- function **`_check_jd()`** ([app/api/routes.py:150](../app/api/routes.py#L150))
-- function **`_event()`** ([app/api/routes.py:159](../app/api/routes.py#L159))
-- function **`_stream()`** ([app/api/routes.py:163](../app/api/routes.py#L163)) — Run `work(progress)` in a thread (the session must already be
-- function **`_service()`** ([app/api/routes.py:198](../app/api/routes.py#L198)) — A TailorService for one step. With a session, saved gap answers come
-- function **`_details()`** ([app/api/routes.py:210](../app/api/routes.py#L210)) — What the "check details" step shows and edits (P3.5).
-- function **`_sections()`** ([app/api/routes.py:226](../app/api/routes.py#L226)) — Bullet id -> the job or project it belongs to, for grouping cards.
-- function **`_proposal_out()`** ([app/api/routes.py:238](../app/api/routes.py#L238))
-- function **`_match_out()`** ([app/api/routes.py:251](../app/api/routes.py#L251))
-- function **`_selected()`** ([app/api/routes.py:257](../app/api/routes.py#L257))
-- function **`health()`** ([app/api/routes.py:267](../app/api/routes.py#L267))
-- function **`config()`** ([app/api/routes.py:272](../app/api/routes.py#L272))
-- function **`_model()`** ([app/api/routes.py:279](../app/api/routes.py#L279))
-- function **`analyze()`** ([app/api/routes.py:286](../app/api/routes.py#L286)) — "Just check my match": score only, nothing kept.
-- function **`parse()`** ([app/api/routes.py:300](../app/api/routes.py#L300)) — Step 1: read the resume and start a fresh session for this run.
-- function **`proposals()`** ([app/api/routes.py:333](../app/api/routes.py#L333)) — Step 2: apply the user's fixes, then draft rewrites and gap
-- function **`match_preview()`** ([app/api/routes.py:384](../app/api/routes.py#L384)) — The match rate if the selected (and edited) proposals were applied.
-- function **`tailor()`** ([app/api/routes.py:394](../app/api/routes.py#L394)) — Step 3: apply the review and generate the files. Streams progress.
-- function **`_results_out()`** ([app/api/routes.py:434](../app/api/routes.py#L434)) — What the Results (and Arrange) screen gets after a run.
-- function **`arrange()`** ([app/api/routes.py:474](../app/api/routes.py#L474)) — Re-render the tailored resume as the user arranged it (P8.13). No LLM
-- function **`_result_path()`** ([app/api/routes.py:513](../app/api/routes.py#L513))
-- function **`download()`** ([app/api/routes.py:521](../app/api/routes.py#L521))
-- function **`preview()`** ([app/api/routes.py:529](../app/api/routes.py#L529)) — One page of the tailored PDF as a PNG (Chrome blocks embedded PDFs).
-- function **`reset()`** ([app/api/routes.py:538](../app/api/routes.py#L538)) — Start over: delete this visitor's files and state. If a step is still
-- **Imports:** `analysis/jd_analyzer.py`, `api/__init__.py`, `api/sessions.py`, `rendering/pdf_converter.py`, `rendering/review_view.py`, `services/arrange.py`
+- class **`ProposalsIn`** ([app/api/routes.py:49](../app/api/routes.py#L49))
+- class **`SelectionItem`** ([app/api/routes.py:56](../app/api/routes.py#L56))
+- class **`MatchPreviewIn`** ([app/api/routes.py:61](../app/api/routes.py#L61))
+- class **`GapInput`** ([app/api/routes.py:65](../app/api/routes.py#L65))
+- class **`AdditionIn`** ([app/api/routes.py:71](../app/api/routes.py#L71))
+- class **`NewRoleIn`** ([app/api/routes.py:76](../app/api/routes.py#L76))
+- class **`TailorIn`** ([app/api/routes.py:86](../app/api/routes.py#L86))
+- class **`RateLimiter`** ([app/api/routes.py:100](../app/api/routes.py#L100)) — At most `limit` calls per `window` seconds per key (visitor IP).
+  - `__init__()` :103
+  - `check()` :108
+- class **`ArrangeIn`** ([app/api/routes.py:505](../app/api/routes.py#L505))
+- function **`rate_limited()`** ([app/api/routes.py:119](../app/api/routes.py#L119))
+- function **`current_session()`** ([app/api/routes.py:123](../app/api/routes.py#L123))
+- function **`_require()`** ([app/api/routes.py:130](../app/api/routes.py#L130))
+- function **`_claim()`** ([app/api/routes.py:135](../app/api/routes.py#L135))
+- function **`_save_upload()`** ([app/api/routes.py:140](../app/api/routes.py#L140)) — The upload (or pasted text) as a temp file, after checking its type
+- function **`_check_jd()`** ([app/api/routes.py:184](../app/api/routes.py#L184))
+- function **`_event()`** ([app/api/routes.py:193](../app/api/routes.py#L193))
+- function **`_stream()`** ([app/api/routes.py:197](../app/api/routes.py#L197)) — Run `work(progress)` in a thread (the session must already be
+- function **`_service()`** ([app/api/routes.py:232](../app/api/routes.py#L232)) — A TailorService for one step. With a session, saved gap answers come
+- function **`_details()`** ([app/api/routes.py:244](../app/api/routes.py#L244)) — What the "check details" step shows and edits (P3.5).
+- function **`_sections()`** ([app/api/routes.py:260](../app/api/routes.py#L260)) — Bullet id -> the job or project it belongs to, for grouping cards.
+- function **`_proposal_out()`** ([app/api/routes.py:272](../app/api/routes.py#L272))
+- function **`_match_out()`** ([app/api/routes.py:285](../app/api/routes.py#L285))
+- function **`_selected()`** ([app/api/routes.py:291](../app/api/routes.py#L291))
+- function **`health()`** ([app/api/routes.py:301](../app/api/routes.py#L301))
+- function **`config()`** ([app/api/routes.py:306](../app/api/routes.py#L306))
+- function **`_model()`** ([app/api/routes.py:313](../app/api/routes.py#L313))
+- function **`analyze()`** ([app/api/routes.py:320](../app/api/routes.py#L320)) — "Just check my match": score only, nothing kept.
+- function **`parse()`** ([app/api/routes.py:336](../app/api/routes.py#L336)) — Step 1: read the resume and start a fresh session for this run.
+- function **`proposals()`** ([app/api/routes.py:372](../app/api/routes.py#L372)) — Step 2: apply the user's fixes, then draft rewrites and gap
+- function **`match_preview()`** ([app/api/routes.py:423](../app/api/routes.py#L423)) — The match rate if the selected (and edited) proposals were applied.
+- function **`tailor()`** ([app/api/routes.py:433](../app/api/routes.py#L433)) — Step 3: apply the review and generate the files. Streams progress.
+- function **`_results_out()`** ([app/api/routes.py:473](../app/api/routes.py#L473)) — What the Results (and Arrange) screen gets after a run.
+- function **`arrange()`** ([app/api/routes.py:513](../app/api/routes.py#L513)) — Re-render the tailored resume as the user arranged it (P8.13). No LLM
+- function **`_result_path()`** ([app/api/routes.py:552](../app/api/routes.py#L552))
+- function **`download()`** ([app/api/routes.py:560](../app/api/routes.py#L560))
+- function **`preview()`** ([app/api/routes.py:568](../app/api/routes.py#L568)) — One page of the tailored PDF as a PNG (Chrome blocks embedded PDFs).
+- function **`reset()`** ([app/api/routes.py:577](../app/api/routes.py#L577)) — Start over: delete this visitor's files and state. If a step is still
+- **Imports:** `analysis/jd_analyzer.py`, `api/__init__.py`, `api/sessions.py`, `ingestion/errors.py`, `rendering/pdf_converter.py`, `rendering/review_view.py`, `services/arrange.py`
 - **Imported by:** `api/main.py`
 - **Tested by:** `tests/unit/test_api.py`
 
@@ -649,18 +654,18 @@ _Per-visitor state for the web API (P5.1)._
 - class **`Requirement`** ([app/domain/job.py:4](../app/domain/job.py#L4))
 - class **`JobDescription`** ([app/domain/job.py:28](../app/domain/job.py#L28))
 - **Imported by:** `analysis/checklist.py`, `analysis/gap_questions.py`, `analysis/jd_analyzer.py`, `analysis/keyword_match.py`, `analysis/matcher.py`, `analysis/rewriter.py`, `analysis/scoring.py`, `analysis/semantic_matcher.py`, `analysis/summary_writer.py`, `analysis/tailor_planner.py`, `cli.py`, `services/tailor.py`
-- **Tested by:** `tests/unit/test_gap_questions.py`, `tests/unit/test_jd_analyzer.py`, `tests/unit/test_keyword_match.py`, `tests/unit/test_matcher.py`, `tests/unit/test_matching_p817.py`, `tests/unit/test_new_role.py`, `tests/unit/test_parser_regressions_p42.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_review_view.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_scoring.py`, `tests/unit/test_semantic_matcher.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_stuffing_p819.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_tailor_planner.py`, `tests/unit/test_tailor_service_addition.py`
+- **Tested by:** `tests/unit/test_gap_questions.py`, `tests/unit/test_guidance_p821.py`, `tests/unit/test_jd_analyzer.py`, `tests/unit/test_keyword_match.py`, `tests/unit/test_matcher.py`, `tests/unit/test_matching_p817.py`, `tests/unit/test_new_role.py`, `tests/unit/test_parser_regressions_p42.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_review_view.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_scoring.py`, `tests/unit/test_semantic_matcher.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_stuffing_p819.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_tailor_planner.py`, `tests/unit/test_tailor_service_addition.py`
 
 ### `app/domain/report.py`
 
-**Layer:** Domain models · **Stage:** 4 Match, 5 Score · **Lines:** 67
+**Layer:** Domain models · **Stage:** 4 Match, 5 Score · **Lines:** 70
 
 - class **`Match`** ([app/domain/report.py:8](../app/domain/report.py#L8))
 - class **`KeywordRow`** ([app/domain/report.py:23](../app/domain/report.py#L23))
 - class **`KeywordMatchReport`** ([app/domain/report.py:36](../app/domain/report.py#L36))
-  - `matched()` :44
-  - `missing()` :48
-- class **`TailoringReport`** ([app/domain/report.py:53](../app/domain/report.py#L53))
+  - `matched()` :47
+  - `missing()` :51
+- class **`TailoringReport`** ([app/domain/report.py:56](../app/domain/report.py#L56))
 - **Imported by:** `analysis/gap_questions.py`, `analysis/keyword_match.py`, `analysis/matcher.py`, `analysis/scoring.py`, `analysis/semantic_matcher.py`, `analysis/skills_tailor.py`, `analysis/summary_writer.py`, `analysis/tailor_planner.py`, `eval/harness.py`, `rendering/review_view.py`, `services/tailor.py`
 - **Tested by:** `tests/unit/test_jd_p818.py`, `tests/unit/test_matcher.py`, `tests/unit/test_review_view.py`, `tests/unit/test_scoring.py`, `tests/unit/test_semantic_matcher.py`, `tests/unit/test_tailor_planner.py`, `tests/unit/test_tailor_service_addition.py`
 
@@ -681,7 +686,7 @@ _Per-visitor state for the web API (P5.1)._
 - class **`OtherSection`** ([app/domain/resume.py:98](../app/domain/resume.py#L98)) — A section the resume model has no fields for (Publications, Bar
 - class **`Resume`** ([app/domain/resume.py:110](../app/domain/resume.py#L110))
 - **Imported by:** `analysis/checklist.py`, `analysis/experience.py`, `analysis/keyword_match.py`, `analysis/resume_normalizer.py`, `analysis/rewriter.py`, `analysis/skills_tailor.py`, `analysis/structure_extractor.py`, `analysis/summary_writer.py`, `analysis/tailor_planner.py`, `domain/resume_document.py`, `eval/golden.py`, `rendering/html_renderer.py`, `rendering/layout.py`, `rendering/page_fit.py`, `services/arrange.py`, `services/tailor.py`, `validation/content_lint.py`, `validation/structural.py`
-- **Tested by:** `tests/unit/test_ats_round_trip.py`, `tests/unit/test_check_parsed_resume.py`, `tests/unit/test_checklist_p820.py`, `tests/unit/test_content_lint.py`, `tests/unit/test_dates_p86.py`, `tests/unit/test_docx_renderer.py`, `tests/unit/test_experience.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_html_renderer.py`, `tests/unit/test_jd_p818.py`, `tests/unit/test_keyword_match.py`, `tests/unit/test_matching_p817.py`, `tests/unit/test_new_role.py`, `tests/unit/test_page_fit.py`, `tests/unit/test_parser_regressions_p42.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_resume_document.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_review_view.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_stuffing_p819.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_tailor_planner.py`, `tests/unit/test_tailor_service_addition.py`, `tests/unit/test_template_layout.py`, `tests/unit/test_template_renderer_standalone.py`
+- **Tested by:** `tests/unit/test_ats_round_trip.py`, `tests/unit/test_check_parsed_resume.py`, `tests/unit/test_checklist_p820.py`, `tests/unit/test_content_lint.py`, `tests/unit/test_dates_p86.py`, `tests/unit/test_docx_renderer.py`, `tests/unit/test_experience.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_guidance_p821.py`, `tests/unit/test_html_renderer.py`, `tests/unit/test_jd_p818.py`, `tests/unit/test_keyword_match.py`, `tests/unit/test_matching_p817.py`, `tests/unit/test_new_role.py`, `tests/unit/test_page_fit.py`, `tests/unit/test_parser_regressions_p42.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_resume_document.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_review_view.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_stuffing_p819.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_tailor_planner.py`, `tests/unit/test_tailor_service_addition.py`, `tests/unit/test_template_layout.py`, `tests/unit/test_template_renderer_standalone.py`
 
 ### `app/domain/resume_document.py`
 
@@ -773,7 +778,7 @@ _Run evaluation cases through the pipeline and collect metrics (P4.1)._
 - function **`summary_lines()`** ([app/eval/harness.py:506](../app/eval/harness.py#L506))
 - **Imports:** `analysis/experience.py`, `analysis/jd_analyzer.py`, `analysis/keyword_match.py`, `domain/report.py`, `eval/golden.py`, `eval/judge.py`, `llm/client.py`, `rendering/layout.py`, `services/tailor.py`
 - **Imported by:** `eval/__main__.py`
-- **Tested by:** `tests/integration/test_arrange.py`, `tests/integration/test_eval_cases.py`, `tests/integration/test_persona_cases.py`, `tests/unit/test_cli_parity.py`, `tests/unit/test_eval_harness.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_judge.py`, `tests/unit/test_profile_store.py`
+- **Tested by:** `tests/integration/test_arrange.py`, `tests/integration/test_eval_cases.py`, `tests/integration/test_persona_cases.py`, `tests/unit/test_cli_parity.py`, `tests/unit/test_eval_harness.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_judge.py`, `tests/unit/test_profile_store.py`, `tests/unit/test_uploads_p822.py`
 
 ### `app/eval/judge.py`
 
@@ -809,8 +814,18 @@ _LLM-as-judge for the evaluation harness (P4.3)._
   - `_hyperlinks()` :127 — Targets of every external hyperlink in the body, in rId order
   - `parse()` :138
 - **Imports:** `rendering/document_map.py`
-- **Imported by:** `analysis/resume_normalizer.py`, `analysis/structure_extractor.py`, `eval/golden.py`, `ingestion/pdf.py`, `services/tailor.py`, `validation/output.py`
+- **Imported by:** `analysis/resume_normalizer.py`, `analysis/structure_extractor.py`, `eval/golden.py`, `ingestion/pdf.py`, `ingestion/text.py`, `services/tailor.py`, `validation/output.py`
 - **Tested by:** `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_ats_round_trip.py`, `tests/unit/test_docx_parser.py`, `tests/unit/test_docx_renderer.py`, `tests/unit/test_education_p88.py`, `tests/unit/test_job_lines_p85.py`, `tests/unit/test_kept_sections_p83.py`, `tests/unit/test_layouts_p87.py`, `tests/unit/test_parser_regressions_p42.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_pdf_parser.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_stage_h_review.py`, `tests/unit/test_structure_extractor.py`, `tests/unit/test_tailor_resume_flow.py`
+
+### `app/ingestion/errors.py`
+
+**Layer:** Ingestion · **Stage:** — · **Lines:** 21
+
+_A file the tool can't read, with a message the person can act on (P8.22)._
+
+- class **`UnreadableFile`** ([app/ingestion/errors.py:8](../app/ingestion/errors.py#L8)) — `str(error)` is the user-facing explanation.
+- **Imported by:** `api/routes.py`, `ingestion/text.py`
+- **Tested by:** `tests/unit/test_uploads_p822.py`
 
 ### `app/ingestion/ocr.py`
 
@@ -845,6 +860,18 @@ _LLM-as-judge for the evaluation harness (P4.3)._
 - **Imports:** `ingestion/docx.py`, `ingestion/ocr.py`, `rendering/document_map.py`
 - **Imported by:** `eval/golden.py`, `services/tailor.py`, `validation/output.py`
 - **Tested by:** `tests/unit/test_layouts_p87.py`, `tests/unit/test_parser_regressions_p42.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_pdf_parser.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_structure_extractor.py`
+
+### `app/ingestion/text.py`
+
+**Layer:** Ingestion · **Stage:** — · **Lines:** 63
+
+_Plain-text resumes: a .txt upload or text pasted in the app (P8.22)._
+
+- class **`TextParser`** ([app/ingestion/text.py:34](../app/ingestion/text.py#L34))
+  - `parse()` :35
+- function **`read_text_file()`** ([app/ingestion/text.py:21](../app/ingestion/text.py#L21))
+- **Imports:** `ingestion/docx.py`, `ingestion/errors.py`, `rendering/document_map.py`
+- **Imported by:** `services/tailor.py`
 
 ### `app/llm/client.py`
 
@@ -904,7 +931,7 @@ _LLM-as-judge for the evaluation harness (P4.3)._
 - class **`DocumentMap`** ([app/rendering/document_map.py:15](../app/rendering/document_map.py#L15))
   - `add_location()` :18
   - `get_location()` :21
-- **Imported by:** `ingestion/docx.py`, `ingestion/pdf.py`, `rendering/docx_patcher.py`
+- **Imported by:** `ingestion/docx.py`, `ingestion/pdf.py`, `ingestion/text.py`, `rendering/docx_patcher.py`
 - **Tested by:** `tests/unit/test_docx_parser.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_structure_extractor.py`
 
 ### `app/rendering/docx_patcher.py`
@@ -982,12 +1009,15 @@ _Page-fit loop (P2.4): render, count pages, trim, render again._
 
 ### `app/rendering/pdf_converter.py`
 
-**Layer:** Rendering · **Stage:** 9 Render · **Lines:** 78
+**Layer:** Rendering · **Stage:** 9 Render · **Lines:** 120
 
-- class **`PdfConverter`** ([app/rendering/pdf_converter.py:11](../app/rendering/pdf_converter.py#L11))
-  - `find_libreoffice_binary()` :12
-  - `convert_docx_to_pdf()` :29
-- function **`pdf_page_images()`** ([app/rendering/pdf_converter.py:72](../app/rendering/pdf_converter.py#L72)) — Each PDF page as PNG bytes. Shown as images, a preview works in any
+- class **`PdfConverter`** ([app/rendering/pdf_converter.py:35](../app/rendering/pdf_converter.py#L35))
+  - `find_libreoffice_binary()` :36
+  - `convert_docx_to_pdf()` :53
+- function **`_take_profile()`** ([app/rendering/pdf_converter.py:21](../app/rendering/pdf_converter.py#L21))
+- function **`_give_back()`** ([app/rendering/pdf_converter.py:31](../app/rendering/pdf_converter.py#L31))
+- function **`convert_to_docx()`** ([app/rendering/pdf_converter.py:95](../app/rendering/pdf_converter.py#L95)) — A .doc / .odt / .rtf as .docx through LibreOffice (P8.22), or None.
+- function **`pdf_page_images()`** ([app/rendering/pdf_converter.py:114](../app/rendering/pdf_converter.py#L114)) — Each PDF page as PNG bytes. Shown as images, a preview works in any
 - **Imported by:** `api/routes.py`, `services/tailor.py`, `scripts/make_eval_cases.py`
 - **Tested by:** `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_ats_round_trip.py`, `tests/unit/test_pdf_converter.py`
 
@@ -1095,7 +1125,7 @@ _Local profile of facts the user has confirmed (P3.2)._
 
 ### `app/services/tailor.py`
 
-**Layer:** Services · **Stage:** all · **Lines:** 1389
+**Layer:** Services · **Stage:** all · **Lines:** 1419
 
 - class **`TailorService`** ([app/services/tailor.py:60](../app/services/tailor.py#L60))
   - `__init__()` :61
@@ -1117,21 +1147,22 @@ _Local profile of facts the user has confirmed (P3.2)._
   - `_coverage()` :372 — Content coverage of the rendered DOCX against the uploaded file (P8.2).
   - `_apply_bullet_order()` :399 — Reorder bullets as planned (most relevant first within each
   - `parse_resume()` :414 — File -> (raw document, ResumeDocument, evidence). The deterministic
-  - `normalize_raw()` :424
-  - `_copy_parsed()` :434 — Deep copies, so a parse kept in UI session state is never mutated.
-  - `preview_keyword_match()` :439 — Match rate if these proposals were applied (P3.4 "recalculate"):
-  - `apply_parse_corrections()` :462 — Apply the user's fixes from the "Check parsed resume" step (P3.5).
-  - `analyze_only()` :559
-  - `generate_proposals()` :587 — Generate rewrite proposals without applying them, plus questions
-  - `incorporate_user_addition()` :662 — Fold a user-supplied free-text addition (a project, an
-  - `tailor_resume()` :741
-  - `arrange()` :1257 — Re-render the tailored resume as the user arranged it (P8.13–P8.16):
+  - `read_file()` :421 — The uploaded file as raw blocks, or UnreadableFile with a message
+  - `normalize_raw()` :454
+  - `_copy_parsed()` :464 — Deep copies, so a parse kept in UI session state is never mutated.
+  - `preview_keyword_match()` :469 — Match rate if these proposals were applied (P3.4 "recalculate"):
+  - `apply_parse_corrections()` :492 — Apply the user's fixes from the "Check parsed resume" step (P3.5).
+  - `analyze_only()` :589
+  - `generate_proposals()` :617 — Generate rewrite proposals without applying them, plus questions
+  - `incorporate_user_addition()` :692 — Fold a user-supplied free-text addition (a project, an
+  - `tailor_resume()` :771
+  - `arrange()` :1287 — Re-render the tailored resume as the user arranged it (P8.13–P8.16):
 - function **`_progress()`** ([app/services/tailor.py:49](../app/services/tailor.py#L49)) — A progress reporter that can never break a run (P3.6).
-- function **`_hidden_text()`** ([app/services/tailor.py:1353](../app/services/tailor.py#L1353)) — Text of the sections the user hid, so coverage counts it as their choice.
-- function **`_merge_usage()`** ([app/services/tailor.py:1380](../app/services/tailor.py#L1380)) — Combine two LLMClient.get_usage_summary() dicts into one.
-- **Imports:** `analysis/checklist.py`, `analysis/experience.py`, `analysis/gap_questions.py`, `analysis/jd_analyzer.py`, `analysis/keyword_match.py`, `analysis/matcher.py`, `analysis/resume_normalizer.py`, `analysis/rewriter.py`, `analysis/scoring.py`, `analysis/semantic_matcher.py`, `analysis/skills_tailor.py`, `analysis/structure_extractor.py`, `analysis/summary_writer.py`, `analysis/tailor_planner.py`, `domain/evidence.py`, `domain/job.py`, `domain/report.py`, `domain/resume.py`, `domain/resume_document.py`, `domain/tailoring.py`, `ingestion/docx.py`, `ingestion/pdf.py`, `llm/client.py`, `rendering/docx_patcher.py`, `rendering/html_renderer.py`, `rendering/layout.py`, `rendering/page_fit.py`, `rendering/pdf_converter.py`, `rendering/template_renderer.py`, `services/arrange.py`, `services/profile_store.py`, `services/run_manager.py`, `validation/content_lint.py`, `validation/coverage.py`, `validation/factual.py`, `validation/output.py`, `validation/safety.py`, `validation/structural.py`
+- function **`_hidden_text()`** ([app/services/tailor.py:1383](../app/services/tailor.py#L1383)) — Text of the sections the user hid, so coverage counts it as their choice.
+- function **`_merge_usage()`** ([app/services/tailor.py:1410](../app/services/tailor.py#L1410)) — Combine two LLMClient.get_usage_summary() dicts into one.
+- **Imports:** `analysis/checklist.py`, `analysis/experience.py`, `analysis/gap_questions.py`, `analysis/jd_analyzer.py`, `analysis/keyword_match.py`, `analysis/matcher.py`, `analysis/resume_normalizer.py`, `analysis/rewriter.py`, `analysis/scoring.py`, `analysis/semantic_matcher.py`, `analysis/skills_tailor.py`, `analysis/structure_extractor.py`, `analysis/summary_writer.py`, `analysis/tailor_planner.py`, `domain/evidence.py`, `domain/job.py`, `domain/report.py`, `domain/resume.py`, `domain/resume_document.py`, `domain/tailoring.py`, `ingestion/docx.py`, `ingestion/pdf.py`, `ingestion/text.py`, `llm/client.py`, `rendering/docx_patcher.py`, `rendering/html_renderer.py`, `rendering/layout.py`, `rendering/page_fit.py`, `rendering/pdf_converter.py`, `rendering/template_renderer.py`, `services/arrange.py`, `services/profile_store.py`, `services/run_manager.py`, `validation/content_lint.py`, `validation/coverage.py`, `validation/factual.py`, `validation/output.py`, `validation/safety.py`, `validation/structural.py`
 - **Imported by:** `api/main.py`, `cli.py`, `eval/harness.py`
-- **Tested by:** `tests/integration/test_arrange.py`, `tests/integration/test_coverage_tailor.py`, `tests/integration/test_end_to_end.py`, `tests/unit/test_api.py`, `tests/unit/test_check_parsed_resume.py`, `tests/unit/test_cli.py`, `tests/unit/test_cli_parity.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_new_role.py`, `tests/unit/test_profile_store.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_review_view.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_tailor_resume_flow.py`, `tests/unit/test_tailor_service_addition.py`
+- **Tested by:** `tests/integration/test_arrange.py`, `tests/integration/test_coverage_tailor.py`, `tests/integration/test_end_to_end.py`, `tests/unit/test_api.py`, `tests/unit/test_check_parsed_resume.py`, `tests/unit/test_cli.py`, `tests/unit/test_cli_parity.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_new_role.py`, `tests/unit/test_profile_store.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_review_view.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_tailor_resume_flow.py`, `tests/unit/test_tailor_service_addition.py`, `tests/unit/test_uploads_p822.py`
 
 ### `app/validation/content_lint.py`
 
@@ -1257,8 +1288,10 @@ flowchart LR
   end
   subgraph Ingestion[Ingestion]
     ingestion_docx[docx]
+    ingestion_errors[errors]
     ingestion_ocr[ocr]
     ingestion_pdf[pdf]
+    ingestion_text[text]
   end
   subgraph LLM[LLM]
     llm_client[client]
@@ -1336,6 +1369,7 @@ flowchart LR
   api_routes --> analysis_jd_analyzer
   api_routes --> api___init__
   api_routes --> api_sessions
+  api_routes --> ingestion_errors
   api_routes --> rendering_pdf_converter
   api_routes --> rendering_review_view
   api_routes --> services_arrange
@@ -1364,6 +1398,9 @@ flowchart LR
   ingestion_pdf --> ingestion_docx
   ingestion_pdf --> ingestion_ocr
   ingestion_pdf --> rendering_document_map
+  ingestion_text --> ingestion_docx
+  ingestion_text --> ingestion_errors
+  ingestion_text --> rendering_document_map
   llm_client --> config_settings
   llm_client --> llm_schemas
   llm_client --> validation_safety
@@ -1392,6 +1429,7 @@ flowchart LR
   services_tailor --> analysis_tailor_planner
   services_tailor --> ingestion_docx
   services_tailor --> ingestion_pdf
+  services_tailor --> ingestion_text
   services_tailor --> llm_client
   services_tailor --> rendering_docx_patcher
   services_tailor --> rendering_html_renderer
@@ -1466,6 +1504,7 @@ From `app/config/settings.py`; each can be overridden by the env var of the same
 - `app/analysis/terminology.py`
 - `app/api/forms.py`
 - `app/ingestion/ocr.py`
+- `app/ingestion/text.py`
 
 **Not imported by any app code** (possibly dead code, or only used by tests/scripts):
 
@@ -1474,4 +1513,5 @@ From `app/config/settings.py`; each can be overridden by the env var of the same
 
 **Not in `STAGE_MAP`** (add them in `scripts/update_docs.py`):
 
-- none
+- `app/ingestion/errors.py`
+- `app/ingestion/text.py`

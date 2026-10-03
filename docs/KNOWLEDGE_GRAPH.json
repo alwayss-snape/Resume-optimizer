@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "928e63aca1a3901c",
+  "source_hash": "08ec058877aecdc4",
   "stats": {
-    "files": 153,
-    "python_files": 130,
-    "app_modules": 57,
-    "test_files": 64,
-    "classes": 106,
-    "functions": 997,
-    "lines_of_python": 20176
+    "files": 157,
+    "python_files": 134,
+    "app_modules": 59,
+    "test_files": 66,
+    "classes": 108,
+    "functions": 1012,
+    "lines_of_python": 20501
   },
   "axes": {
     "x": "location (path)",
@@ -525,7 +525,7 @@
       "stages": [
         "5 Score"
       ],
-      "lines": 340,
+      "lines": 380,
       "doc": "Keyword-level match rate, the headline score (P1.2).",
       "classes": [
         {
@@ -608,8 +608,13 @@
           "doc": "Token sequences that count as the keyword: \"OSHA 10 or 30\" -> OSHA 10,"
         },
         {
+          "name": "guidance",
+          "line": 325,
+          "doc": "What a low match means (P8.21): a nurse applying to a sales job scored"
+        },
+        {
           "name": "reconcile",
-          "line": 318,
+          "line": 358,
           "doc": "A requirement can't read \"not shown\" while every job keyword in it is"
         }
       ]
@@ -1361,71 +1366,71 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 550,
+      "lines": 589,
       "doc": "HTTP endpoints, one per step of the review flow (P5.1).",
       "classes": [
         {
           "name": "ProposalsIn",
-          "line": 43,
+          "line": 49,
           "doc": "",
           "methods": []
         },
         {
           "name": "SelectionItem",
-          "line": 50,
+          "line": 56,
           "doc": "",
           "methods": []
         },
         {
           "name": "MatchPreviewIn",
-          "line": 55,
+          "line": 61,
           "doc": "",
           "methods": []
         },
         {
           "name": "GapInput",
-          "line": 59,
-          "doc": "",
-          "methods": []
-        },
-        {
-          "name": "AdditionIn",
           "line": 65,
           "doc": "",
           "methods": []
         },
         {
+          "name": "AdditionIn",
+          "line": 71,
+          "doc": "",
+          "methods": []
+        },
+        {
           "name": "NewRoleIn",
-          "line": 70,
+          "line": 76,
           "doc": "",
           "methods": []
         },
         {
           "name": "TailorIn",
-          "line": 80,
+          "line": 86,
           "doc": "",
           "methods": []
         },
         {
           "name": "RateLimiter",
-          "line": 94,
+          "line": 100,
           "doc": "At most `limit` calls per `window` seconds per key (visitor IP).",
           "methods": [
             {
               "name": "__init__",
-              "line": 97,
+              "line": 103,
               "doc": ""
             },
             {
               "name": "check",
-              "line": 102,
+              "line": 108,
               "doc": ""
             }
           ]
         },
         {
           "name": "ArrangeIn",
-          "line": 466,
+          "line": 505,
           "doc": "",
           "methods": []
         }
@@ -1433,142 +1438,142 @@
       "functions": [
         {
           "name": "rate_limited",
-          "line": 113,
+          "line": 119,
           "doc": ""
         },
         {
           "name": "current_session",
-          "line": 117,
+          "line": 123,
           "doc": ""
         },
         {
           "name": "_require",
-          "line": 124,
+          "line": 130,
           "doc": ""
         },
         {
           "name": "_claim",
-          "line": 129,
+          "line": 135,
           "doc": ""
         },
         {
           "name": "_save_upload",
-          "line": 134,
-          "doc": "The upload as a temp file, after checking its type and size."
+          "line": 140,
+          "doc": "The upload (or pasted text) as a temp file, after checking its type"
         },
         {
           "name": "_check_jd",
-          "line": 150,
+          "line": 184,
           "doc": ""
         },
         {
           "name": "_event",
-          "line": 159,
+          "line": 193,
           "doc": ""
         },
         {
           "name": "_stream",
-          "line": 163,
+          "line": 197,
           "doc": "Run `work(progress)` in a thread (the session must already be"
         },
         {
           "name": "_service",
-          "line": 198,
+          "line": 232,
           "doc": "A TailorService for one step. With a session, saved gap answers come"
         },
         {
           "name": "_details",
-          "line": 210,
+          "line": 244,
           "doc": "What the \"check details\" step shows and edits (P3.5)."
         },
         {
           "name": "_sections",
-          "line": 226,
+          "line": 260,
           "doc": "Bullet id -> the job or project it belongs to, for grouping cards."
         },
         {
           "name": "_proposal_out",
-          "line": 238,
-          "doc": ""
-        },
-        {
-          "name": "_match_out",
-          "line": 251,
-          "doc": ""
-        },
-        {
-          "name": "_selected",
-          "line": 257,
-          "doc": ""
-        },
-        {
-          "name": "health",
-          "line": 267,
-          "doc": ""
-        },
-        {
-          "name": "config",
           "line": 272,
           "doc": ""
         },
         {
+          "name": "_match_out",
+          "line": 285,
+          "doc": ""
+        },
+        {
+          "name": "_selected",
+          "line": 291,
+          "doc": ""
+        },
+        {
+          "name": "health",
+          "line": 301,
+          "doc": ""
+        },
+        {
+          "name": "config",
+          "line": 306,
+          "doc": ""
+        },
+        {
           "name": "_model",
-          "line": 279,
+          "line": 313,
           "doc": ""
         },
         {
           "name": "analyze",
-          "line": 286,
+          "line": 320,
           "doc": "\"Just check my match\": score only, nothing kept."
         },
         {
           "name": "parse",
-          "line": 300,
+          "line": 336,
           "doc": "Step 1: read the resume and start a fresh session for this run."
         },
         {
           "name": "proposals",
-          "line": 333,
+          "line": 372,
           "doc": "Step 2: apply the user's fixes, then draft rewrites and gap"
         },
         {
           "name": "match_preview",
-          "line": 384,
+          "line": 423,
           "doc": "The match rate if the selected (and edited) proposals were applied."
         },
         {
           "name": "tailor",
-          "line": 394,
+          "line": 433,
           "doc": "Step 3: apply the review and generate the files. Streams progress."
         },
         {
           "name": "_results_out",
-          "line": 434,
+          "line": 473,
           "doc": "What the Results (and Arrange) screen gets after a run."
         },
         {
           "name": "arrange",
-          "line": 474,
+          "line": 513,
           "doc": "Re-render the tailored resume as the user arranged it (P8.13). No LLM"
         },
         {
           "name": "_result_path",
-          "line": 513,
+          "line": 552,
           "doc": ""
         },
         {
           "name": "download",
-          "line": 521,
+          "line": 560,
           "doc": ""
         },
         {
           "name": "preview",
-          "line": 529,
+          "line": 568,
           "doc": "One page of the tailored PDF as a PNG (Chrome blocks embedded PDFs)."
         },
         {
           "name": "reset",
-          "line": 538,
+          "line": 577,
           "doc": "Start over: delete this visitor's files and state. If a step is still"
         }
       ]
@@ -1763,7 +1768,7 @@
         "4 Match",
         "5 Score"
       ],
-      "lines": 67,
+      "lines": 70,
       "doc": "",
       "classes": [
         {
@@ -1785,19 +1790,19 @@
           "methods": [
             {
               "name": "matched",
-              "line": 44,
+              "line": 47,
               "doc": ""
             },
             {
               "name": "missing",
-              "line": 48,
+              "line": 51,
               "doc": ""
             }
           ]
         },
         {
           "name": "TailoringReport",
-          "line": 53,
+          "line": 56,
           "doc": "",
           "methods": []
         }
@@ -2309,6 +2314,23 @@
       "functions": []
     },
     {
+      "id": "app/ingestion/errors.py",
+      "type": "python",
+      "layer": "Ingestion",
+      "stages": [],
+      "lines": 21,
+      "doc": "A file the tool can't read, with a message the person can act on (P8.22).",
+      "classes": [
+        {
+          "name": "UnreadableFile",
+          "line": 8,
+          "doc": "`str(error)` is the user-facing explanation.",
+          "methods": []
+        }
+      ],
+      "functions": []
+    },
+    {
       "id": "app/ingestion/ocr.py",
       "type": "python",
       "layer": "Ingestion",
@@ -2437,6 +2459,35 @@
           "name": "_join_wrapped",
           "line": 64,
           "doc": "Join a wrapped line to the one before it. A line that breaks after"
+        }
+      ]
+    },
+    {
+      "id": "app/ingestion/text.py",
+      "type": "python",
+      "layer": "Ingestion",
+      "stages": [],
+      "lines": 63,
+      "doc": "Plain-text resumes: a .txt upload or text pasted in the app (P8.22).",
+      "classes": [
+        {
+          "name": "TextParser",
+          "line": 34,
+          "doc": "",
+          "methods": [
+            {
+              "name": "parse",
+              "line": 35,
+              "doc": ""
+            }
+          ]
+        }
+      ],
+      "functions": [
+        {
+          "name": "read_text_file",
+          "line": 21,
+          "doc": ""
         }
       ]
     },
@@ -2991,22 +3042,22 @@
       "stages": [
         "9 Render"
       ],
-      "lines": 78,
+      "lines": 120,
       "doc": "",
       "classes": [
         {
           "name": "PdfConverter",
-          "line": 11,
+          "line": 35,
           "doc": "",
           "methods": [
             {
               "name": "find_libreoffice_binary",
-              "line": 12,
+              "line": 36,
               "doc": ""
             },
             {
               "name": "convert_docx_to_pdf",
-              "line": 29,
+              "line": 53,
               "doc": ""
             }
           ]
@@ -3014,8 +3065,23 @@
       ],
       "functions": [
         {
+          "name": "_take_profile",
+          "line": 21,
+          "doc": ""
+        },
+        {
+          "name": "_give_back",
+          "line": 31,
+          "doc": ""
+        },
+        {
+          "name": "convert_to_docx",
+          "line": 95,
+          "doc": "A .doc / .odt / .rtf as .docx through LibreOffice (P8.22), or None."
+        },
+        {
           "name": "pdf_page_images",
-          "line": 72,
+          "line": 114,
           "doc": "Each PDF page as PNG bytes. Shown as images, a preview works in any"
         }
       ]
@@ -3398,7 +3464,7 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 1389,
+      "lines": 1419,
       "doc": "",
       "classes": [
         {
@@ -3502,48 +3568,53 @@
               "doc": "File -> (raw document, ResumeDocument, evidence). The deterministic"
             },
             {
+              "name": "read_file",
+              "line": 421,
+              "doc": "The uploaded file as raw blocks, or UnreadableFile with a message"
+            },
+            {
               "name": "normalize_raw",
-              "line": 424,
+              "line": 454,
               "doc": ""
             },
             {
               "name": "_copy_parsed",
-              "line": 434,
+              "line": 464,
               "doc": "Deep copies, so a parse kept in UI session state is never mutated."
             },
             {
               "name": "preview_keyword_match",
-              "line": 439,
+              "line": 469,
               "doc": "Match rate if these proposals were applied (P3.4 \"recalculate\"):"
             },
             {
               "name": "apply_parse_corrections",
-              "line": 462,
+              "line": 492,
               "doc": "Apply the user's fixes from the \"Check parsed resume\" step (P3.5)."
             },
             {
               "name": "analyze_only",
-              "line": 559,
+              "line": 589,
               "doc": ""
             },
             {
               "name": "generate_proposals",
-              "line": 587,
+              "line": 617,
               "doc": "Generate rewrite proposals without applying them, plus questions"
             },
             {
               "name": "incorporate_user_addition",
-              "line": 662,
+              "line": 692,
               "doc": "Fold a user-supplied free-text addition (a project, an"
             },
             {
               "name": "tailor_resume",
-              "line": 741,
+              "line": 771,
               "doc": ""
             },
             {
               "name": "arrange",
-              "line": 1257,
+              "line": 1287,
               "doc": "Re-render the tailored resume as the user arranged it (P8.13\u2013P8.16):"
             }
           ]
@@ -3557,12 +3628,12 @@
         },
         {
           "name": "_hidden_text",
-          "line": 1353,
+          "line": 1383,
           "doc": "Text of the sections the user hid, so coverage counts it as their choice."
         },
         {
           "name": "_merge_usage",
-          "line": 1380,
+          "line": 1410,
           "doc": "Combine two LLMClient.get_usage_summary() dicts into one."
         }
       ]
@@ -4431,7 +4502,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 353,
+      "lines": 368,
       "doc": "Web API (P5.1): the full flow through HTTP, plus the shared form helpers.",
       "classes": [],
       "functions": [
@@ -4599,6 +4670,11 @@
           "name": "test_very_short_job_description_is_refused",
           "line": 351,
           "doc": ""
+        },
+        {
+          "name": "test_upload_edge_cases",
+          "line": 356,
+          "doc": "P8.22: broken files get their own message, pasted text and a renamed .doc work."
         }
       ]
     },
@@ -5265,6 +5341,32 @@
         {
           "name": "test_stage_i_review_partly_shown_and_kinds",
           "line": 118,
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "tests/unit/test_guidance_p821.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 26,
+      "doc": "P8.21: a low match is explained, not just \"aim for 75-85%\".",
+      "classes": [],
+      "functions": [
+        {
+          "name": "_report",
+          "line": 7,
+          "doc": ""
+        },
+        {
+          "name": "test_a_nurse_applying_for_sales_is_told_it_is_another_field",
+          "line": 15,
+          "doc": ""
+        },
+        {
+          "name": "test_a_good_match_gets_no_guidance_and_a_partial_one_a_stretch_note",
+          "line": 21,
           "doc": ""
         }
       ]
@@ -7502,6 +7604,37 @@
       ]
     },
     {
+      "id": "tests/unit/test_uploads_p822.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 46,
+      "doc": "P8.22: every upload gets a result or a message the person can act on.",
+      "classes": [],
+      "functions": [
+        {
+          "name": "_service",
+          "line": 13,
+          "doc": ""
+        },
+        {
+          "name": "test_broken_files_get_specific_messages",
+          "line": 20,
+          "doc": ""
+        },
+        {
+          "name": "test_scanned_pdf_is_explained",
+          "line": 26,
+          "doc": ""
+        },
+        {
+          "name": "test_plain_text_resume_is_read",
+          "line": 39,
+          "doc": ""
+        }
+      ]
+    },
+    {
       "id": "tests/unit/test_validation.py",
       "type": "python",
       "layer": "Tests",
@@ -7832,6 +7965,11 @@
     {
       "from": "app/analysis/keyword_match.py",
       "to": "tests/unit/test_gap_questions.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/analysis/keyword_match.py",
+      "to": "tests/unit/test_guidance_p821.py",
       "type": "tested_by"
     },
     {
@@ -8456,6 +8594,11 @@
     },
     {
       "from": "app/api/routes.py",
+      "to": "app/ingestion/errors.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/api/routes.py",
       "to": "app/rendering/pdf_converter.py",
       "type": "imports"
     },
@@ -8607,6 +8750,11 @@
     {
       "from": "app/domain/job.py",
       "to": "tests/unit/test_gap_questions.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/job.py",
+      "to": "tests/unit/test_guidance_p821.py",
       "type": "tested_by"
     },
     {
@@ -8827,6 +8975,11 @@
     {
       "from": "app/domain/resume.py",
       "to": "tests/unit/test_gap_questions.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/resume.py",
+      "to": "tests/unit/test_guidance_p821.py",
       "type": "tested_by"
     },
     {
@@ -9200,6 +9353,11 @@
       "type": "tested_by"
     },
     {
+      "from": "app/eval/harness.py",
+      "to": "tests/unit/test_uploads_p822.py",
+      "type": "tested_by"
+    },
+    {
       "from": "app/eval/judge.py",
       "to": "app/config/settings.py",
       "type": "imports"
@@ -9335,6 +9493,16 @@
       "type": "tested_by"
     },
     {
+      "from": "app/ingestion/errors.py",
+      "to": "app/ingestion/errors.py::UnreadableFile",
+      "type": "contains"
+    },
+    {
+      "from": "app/ingestion/errors.py",
+      "to": "tests/unit/test_uploads_p822.py",
+      "type": "tested_by"
+    },
+    {
       "from": "app/ingestion/ocr.py",
       "to": "app/ingestion/ocr.py::OCREngine",
       "type": "contains"
@@ -9393,6 +9561,26 @@
       "from": "app/ingestion/pdf.py",
       "to": "tests/unit/test_structure_extractor.py",
       "type": "tested_by"
+    },
+    {
+      "from": "app/ingestion/text.py",
+      "to": "app/ingestion/docx.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/ingestion/text.py",
+      "to": "app/ingestion/errors.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/ingestion/text.py",
+      "to": "app/ingestion/text.py::TextParser",
+      "type": "contains"
+    },
+    {
+      "from": "app/ingestion/text.py",
+      "to": "app/rendering/document_map.py",
+      "type": "imports"
     },
     {
       "from": "app/llm/client.py",
@@ -10031,6 +10219,11 @@
     },
     {
       "from": "app/services/tailor.py",
+      "to": "app/ingestion/text.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/services/tailor.py",
       "to": "app/llm/client.py",
       "type": "imports"
     },
@@ -10192,6 +10385,11 @@
     {
       "from": "app/services/tailor.py",
       "to": "tests/unit/test_tailor_service_addition.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/services/tailor.py",
+      "to": "tests/unit/test_uploads_p822.py",
       "type": "tested_by"
     },
     {
