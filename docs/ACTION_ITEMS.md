@@ -22,8 +22,8 @@ JD-aligned rewrites, a Novoresume-style ATS layout that fits the right length, a
 | 6: UI redesign | 6 | 6 | 0 | 0 |
 | 7: Owner feedback on the flow | 2 | 2 | 0 | 0 |
 | 8: Cross-domain robustness and user control | 26 | 26 | 0 | 0 |
-| 9: Close-out and owner review | 6 | 0 | 0 | 6 |
-| **Total** | **88** | **79** | **0** | **7** |
+| 9: Close-out and owner review | 6 | 1 | 0 | 5 |
+| **Total** | **88** | **80** | **0** | **6** |
 
 Phase 1's two open items (P1.15, P1.16) are ➖, moved into P8.9 and P8.18, so its row no longer adds up to 16.
 
@@ -285,7 +285,7 @@ new items → P9.5–P9.6 when convenient.
 | ID | Item | Files | Status | Notes |
 |---|---|---|---|---|
 | P9.1 | **Stage L independent review:** a fresh review agent checks P8.22–P8.26 (upload errors, degraded states, privacy notice, global basics, Check details); every issue reproduced and fixed with a test | `ingestion/*`, `api/routes.py`, `llm/client.py`, `rendering/*`, `web/src/pages/Details.tsx` | ⬜ | The first review stalled on 2026-10-03 with no report |
-| P9.2 | **Edge-file API sweep:** corrupt, password-protected, scanned, empty and very large files, plus .doc / .odt / .rtf / .txt and pasted text, each sent to `/api/parse` and `/api/analyze`; each must give its own plain message and never a 500 | `api/routes.py`, `ingestion/*` | ⬜ | The 2026-10-03 sweep hung with no output. Re-run one file at a time with a timeout per request, to find which file or converter hangs |
+| P9.2 | **Edge-file API sweep:** corrupt, password-protected, scanned, empty and very large files, plus .doc / .odt / .rtf / .txt and pasted text, each sent to `/api/parse` and `/api/analyze`; each must give its own plain message and never a 500 | `api/routes.py`, `ingestion/*` | ✅ | 2026-10-04: 23 files + pasted / blank text, one request at a time with a 60 s cap, on a test server with a dead AI key. No hang reproduced (slowest 19 s, a corrupt .doc through LibreOffice); the 10-03 hang was most likely a stale server left on 8010. Found and fixed: a damaged .doc / .rtf came back as a 200 "resume" of garbage characters (LibreOffice fell back to its plain-text importer; now the import filter is forced and RTF / .txt full of control characters is refused as damaged); a 0-byte file said "not a real .docx" (now "This file is empty"); a .doc that is really RTF was refused (now converted as RTF); conversion capped at 60 s (was 120). Re-sweep: every file gets its own message, 0 × 500 |
 | P9.3 | **Final private real-resume run:** the owner's resume with the FOX JD, live Groq; check golden parse, rewrites, coverage, read-back, page count, then arrange and re-render | `data/eval/private/` (gitignored) | ⬜ | Needs Groq daily quota; results never committed |
 | P9.4 | **Browser walkthrough:** the whole flow plus Arrange, Check details ("Also read", "Lines we couldn't place") and the conditions checklist, at 1440 / 390 px, light and dark, by mouse and keyboard | `web/src/pages/*` | ⬜ | Not done in any Phase 8 stage (no browser automation in those sessions) |
 | P9.5 | **Minor matching notes from the Stage K review:** `definitions()` can take a connector word as an acronym; "X or Y" doesn't share a tail ("Java or Python developer"); keyword spans from `original.find` can be off when the JD had HTML; Results shows only the different-field guidance, not the others | `analysis/keyword_match.py`, `analysis/jd_analyzer.py`, `web/src/pages/Results.tsx` | ⬜ | Low impact; none changes a score much on the persona set |

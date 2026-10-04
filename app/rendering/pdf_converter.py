@@ -92,16 +92,25 @@ class PdfConverter:
             _give_back(profile)
 
 
+# The import filter per upload type. Forced, so a damaged file fails instead
+# of LibreOffice falling back to reading its bytes as plain text (P9.2: a
+# corrupt .doc came back as a resume full of garbage characters).
+IMPORT_FILTERS = {".doc": "MS Word 97", ".odt": "writer8", ".rtf": "Rich Text Format"}
+CONVERT_TIMEOUT_S = 60
+
+
 def convert_to_docx(path: str, output_dir: str) -> Optional[str]:
     """A .doc / .odt / .rtf as .docx through LibreOffice (P8.22), or None."""
     binary = PdfConverter().find_libreoffice_binary()
     if not binary:
         return None
+    in_filter = IMPORT_FILTERS.get(os.path.splitext(path)[1].lower())
     profile = _take_profile()
     try:
         result = subprocess.run([binary, f"-env:UserInstallation={Path(profile).as_uri()}", "--headless",
+                                 *([f"--infilter={in_filter}"] if in_filter else []),
                                  "--convert-to", "docx", "--outdir", output_dir, path],
-                                capture_output=True, text=True, timeout=120, stdin=subprocess.DEVNULL)
+                                capture_output=True, text=True, timeout=CONVERT_TIMEOUT_S, stdin=subprocess.DEVNULL)
         out = os.path.join(output_dir, os.path.splitext(os.path.basename(path))[0] + ".docx")
         return out if result.returncode == 0 and os.path.exists(out) else None
     except Exception as e:

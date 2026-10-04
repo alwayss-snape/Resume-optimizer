@@ -44,3 +44,32 @@ def test_plain_text_resume_is_read(tmp_path):
     assert resume.candidate.name == "Jane Doe" and resume.candidate.phone == "512-555-0199"
     assert [(e.company, e.title, len(e.bullets)) for e in resume.experience] == [("Acme", "Data Analyst", 1)]
     assert len(resume.education) == 1
+
+
+def test_conversion_forces_the_import_filter(monkeypatch, tmp_path):
+    """P9.2: LibreOffice is told the file's type, so a damaged file can't be
+    read as plain text, and a conversion never runs past its time cap."""
+    from app.rendering import pdf_converter
+    calls = []
+
+    def fake_run(cmd, **kw):
+        calls.append((cmd, kw["timeout"]))
+        raise pdf_converter.subprocess.TimeoutExpired(cmd, kw["timeout"])
+    monkeypatch.setattr(pdf_converter.PdfConverter, "find_libreoffice_binary", lambda self: "soffice")
+    monkeypatch.setattr(pdf_converter.subprocess, "run", fake_run)
+    for ext, name in (("doc", "MS Word 97"), ("odt", "writer8"), ("rtf", "Rich Text Format")):
+        assert pdf_converter.convert_to_docx(str(tmp_path / f"cv.{ext}"), str(tmp_path)) is None
+        assert f"--infilter={name}" in calls[-1][0] and calls[-1][1] <= 60
+
+
+@pytest.mark.skipif(not __import__("app.rendering.pdf_converter", fromlist=["x"]).PdfConverter()
+                    .find_libreoffice_binary(), reason="needs LibreOffice")
+@pytest.mark.parametrize("ext, magic", [("doc", b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1"), ("odt", b"PK\x03\x04")])
+def test_damaged_converted_files_are_refused(ext, magic, tmp_path):
+    """P9.2: a damaged .doc used to come back as a 'resume' of garbage characters."""
+    import random
+    from app.rendering.pdf_converter import convert_to_docx
+    rng = random.Random(7)
+    path = tmp_path / f"bad.{ext}"
+    path.write_bytes(magic + bytes(rng.randrange(256) for _ in range(20000)))
+    assert convert_to_docx(str(path), str(tmp_path)) is None

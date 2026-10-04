@@ -367,3 +367,33 @@ def test_upload_edge_cases(client, tmp_path):
     r = client.post("/api/analyze", files=_upload(UT + "renamed.doc"), data={"jd_text": SAMPLE_JD})
     assert r.status_code == 200, r.text
     assert client.post("/api/analyze", data={"jd_text": SAMPLE_JD}).status_code == 422  # nothing to read
+
+
+def test_edge_file_sweep_fixes(client, monkeypatch):
+    """P9.2: an empty file says so; a .doc that is really RTF is converted as RTF."""
+    for name in ("empty.docx", "empty.pdf", "empty.txt", "empty.doc"):
+        r = client.post("/api/analyze", files={"file": (name, b"")}, data={"jd_text": SAMPLE_JD})
+        assert r.status_code == 422 and "empty" in r.json()["detail"], (name, r.text)
+    seen = []
+
+    def fake_convert(path, out_dir):
+        seen.append(path.rsplit(".", 1)[-1])
+        return None
+    monkeypatch.setattr("app.rendering.pdf_converter.convert_to_docx", fake_convert)
+    r = client.post("/api/analyze", files={"file": ("cv.doc", b"{\\rtf1\\ansi Jane Doe}")}, data={"jd_text": SAMPLE_JD})
+    assert seen == ["rtf"]
+    assert r.status_code == 422 and "couldn't be converted" in r.json()["detail"]
+
+
+def test_binary_garbage_text_formats_are_refused(client):
+    """P9.2: RTF and .txt are text, so random bytes in one must not be read as a resume."""
+    import random
+    rng = random.Random(7)
+    junk = bytes(rng.randrange(256) for _ in range(20000)).replace(b"\x00", b"\x01")
+    r = client.post("/api/analyze", files={"file": ("cv.rtf", b"{\\rtf1 " + junk)}, data={"jd_text": SAMPLE_JD})
+    assert r.status_code == 422 and "damaged" in r.json()["detail"]
+    r = client.post("/api/analyze", files={"file": ("cv.txt", junk)}, data={"jd_text": SAMPLE_JD})
+    assert r.status_code == 415 and "plain text" in r.json()["detail"]
+    utf16 = "Jane Doe\nEXPERIENCE\nData Analyst | Acme | 2020 - Present\n- Built dashboards".encode("utf-16")
+    r = client.post("/api/analyze", files={"file": ("cv.txt", utf16)}, data={"jd_text": SAMPLE_JD})
+    assert r.status_code == 200, r.text

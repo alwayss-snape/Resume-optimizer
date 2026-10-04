@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**60 app modules · 68 test files · 109 classes · 1030 functions/methods · 20,906 lines of Python** · source hash `c5e0b0f1c2a5a779`
+**60 app modules · 68 test files · 109 classes · 1035 functions/methods · 20,993 lines of Python** · source hash `57edd1832fb90169`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -566,52 +566,53 @@ _The web app (P5.1): `uvicorn app.api.main:app`._
 
 ### `app/api/routes.py`
 
-**Layer:** Web API · **Stage:** all · **Lines:** 678
+**Layer:** Web API · **Stage:** all · **Lines:** 694
 
 _HTTP endpoints, one per step of the review flow (P5.1)._
 
-- class **`ProposalsIn`** ([app/api/routes.py:51](../app/api/routes.py#L51))
-- class **`SelectionItem`** ([app/api/routes.py:58](../app/api/routes.py#L58))
-- class **`MatchPreviewIn`** ([app/api/routes.py:63](../app/api/routes.py#L63))
-- class **`GapInput`** ([app/api/routes.py:67](../app/api/routes.py#L67))
-- class **`AdditionIn`** ([app/api/routes.py:73](../app/api/routes.py#L73))
-- class **`NewRoleIn`** ([app/api/routes.py:78](../app/api/routes.py#L78))
-- class **`TailorIn`** ([app/api/routes.py:88](../app/api/routes.py#L88))
-- class **`RateLimiter`** ([app/api/routes.py:102](../app/api/routes.py#L102)) — At most `limit` calls per `window` seconds per key (visitor IP).
-  - `__init__()` :105
-  - `check()` :110
-- class **`ArrangeIn`** ([app/api/routes.py:594](../app/api/routes.py#L594))
-- function **`rate_limited()`** ([app/api/routes.py:121](../app/api/routes.py#L121))
-- function **`current_session()`** ([app/api/routes.py:125](../app/api/routes.py#L125))
-- function **`_require()`** ([app/api/routes.py:132](../app/api/routes.py#L132))
-- function **`_claim()`** ([app/api/routes.py:137](../app/api/routes.py#L137))
-- function **`_save_upload()`** ([app/api/routes.py:142](../app/api/routes.py#L142)) — The upload (or pasted text) as a temp file, after checking its type
-- function **`_check_jd()`** ([app/api/routes.py:186](../app/api/routes.py#L186))
-- function **`_event()`** ([app/api/routes.py:195](../app/api/routes.py#L195))
-- function **`_stream()`** ([app/api/routes.py:199](../app/api/routes.py#L199)) — Run `work(progress)` in a thread (the session must already be
-- function **`_service()`** ([app/api/routes.py:234](../app/api/routes.py#L234)) — A TailorService for one step. With a session, saved gap answers come
-- function **`plain_issue()`** ([app/api/routes.py:260](../app/api/routes.py#L260)) — A parse issue in plain words (P8.26: "experience without a company
-- function **`unplaced_lines()`** ([app/api/routes.py:270](../app/api/routes.py#L270)) — Lines of the file that ended up in no field the resume shows (P8.26),
-- function **`_resume_texts()`** ([app/api/routes.py:283](../app/api/routes.py#L283))
-- function **`_details()`** ([app/api/routes.py:300](../app/api/routes.py#L300)) — What the "check details" step shows and edits (P3.5).
-- function **`_sections()`** ([app/api/routes.py:330](../app/api/routes.py#L330)) — Bullet id -> the job or project it belongs to, for grouping cards.
-- function **`_proposal_out()`** ([app/api/routes.py:342](../app/api/routes.py#L342))
-- function **`_match_out()`** ([app/api/routes.py:355](../app/api/routes.py#L355))
-- function **`_selected()`** ([app/api/routes.py:361](../app/api/routes.py#L361))
-- function **`health()`** ([app/api/routes.py:371](../app/api/routes.py#L371))
-- function **`config()`** ([app/api/routes.py:376](../app/api/routes.py#L376))
-- function **`_model()`** ([app/api/routes.py:386](../app/api/routes.py#L386))
-- function **`analyze()`** ([app/api/routes.py:393](../app/api/routes.py#L393)) — "Just check my match": score only, nothing kept.
-- function **`parse()`** ([app/api/routes.py:413](../app/api/routes.py#L413)) — Step 1: read the resume and start a fresh session for this run.
-- function **`proposals()`** ([app/api/routes.py:454](../app/api/routes.py#L454)) — Step 2: apply the user's fixes, then draft rewrites and gap
-- function **`match_preview()`** ([app/api/routes.py:505](../app/api/routes.py#L505)) — The match rate if the selected (and edited) proposals were applied.
-- function **`tailor()`** ([app/api/routes.py:515](../app/api/routes.py#L515)) — Step 3: apply the review and generate the files. Streams progress.
-- function **`_results_out()`** ([app/api/routes.py:555](../app/api/routes.py#L555)) — What the Results (and Arrange) screen gets after a run.
-- function **`arrange()`** ([app/api/routes.py:602](../app/api/routes.py#L602)) — Re-render the tailored resume as the user arranged it (P8.13). No LLM
-- function **`_result_path()`** ([app/api/routes.py:641](../app/api/routes.py#L641))
-- function **`download()`** ([app/api/routes.py:649](../app/api/routes.py#L649))
-- function **`preview()`** ([app/api/routes.py:657](../app/api/routes.py#L657)) — One page of the tailored PDF as a PNG (Chrome blocks embedded PDFs).
-- function **`reset()`** ([app/api/routes.py:666](../app/api/routes.py#L666)) — Start over: delete this visitor's files and state. If a step is still
+- class **`ProposalsIn`** ([app/api/routes.py:52](../app/api/routes.py#L52))
+- class **`SelectionItem`** ([app/api/routes.py:59](../app/api/routes.py#L59))
+- class **`MatchPreviewIn`** ([app/api/routes.py:64](../app/api/routes.py#L64))
+- class **`GapInput`** ([app/api/routes.py:68](../app/api/routes.py#L68))
+- class **`AdditionIn`** ([app/api/routes.py:74](../app/api/routes.py#L74))
+- class **`NewRoleIn`** ([app/api/routes.py:79](../app/api/routes.py#L79))
+- class **`TailorIn`** ([app/api/routes.py:89](../app/api/routes.py#L89))
+- class **`RateLimiter`** ([app/api/routes.py:103](../app/api/routes.py#L103)) — At most `limit` calls per `window` seconds per key (visitor IP).
+  - `__init__()` :106
+  - `check()` :111
+- class **`ArrangeIn`** ([app/api/routes.py:610](../app/api/routes.py#L610))
+- function **`rate_limited()`** ([app/api/routes.py:122](../app/api/routes.py#L122))
+- function **`current_session()`** ([app/api/routes.py:126](../app/api/routes.py#L126))
+- function **`_require()`** ([app/api/routes.py:133](../app/api/routes.py#L133))
+- function **`_claim()`** ([app/api/routes.py:138](../app/api/routes.py#L138))
+- function **`_save_upload()`** ([app/api/routes.py:143](../app/api/routes.py#L143)) — The upload (or pasted text) as a temp file, after checking its type
+- function **`_mostly_binary()`** ([app/api/routes.py:193](../app/api/routes.py#L193)) — Control characters (other than tabs and line breaks) in more than 2% of
+- function **`_check_jd()`** ([app/api/routes.py:202](../app/api/routes.py#L202))
+- function **`_event()`** ([app/api/routes.py:211](../app/api/routes.py#L211))
+- function **`_stream()`** ([app/api/routes.py:215](../app/api/routes.py#L215)) — Run `work(progress)` in a thread (the session must already be
+- function **`_service()`** ([app/api/routes.py:250](../app/api/routes.py#L250)) — A TailorService for one step. With a session, saved gap answers come
+- function **`plain_issue()`** ([app/api/routes.py:276](../app/api/routes.py#L276)) — A parse issue in plain words (P8.26: "experience without a company
+- function **`unplaced_lines()`** ([app/api/routes.py:286](../app/api/routes.py#L286)) — Lines of the file that ended up in no field the resume shows (P8.26),
+- function **`_resume_texts()`** ([app/api/routes.py:299](../app/api/routes.py#L299))
+- function **`_details()`** ([app/api/routes.py:316](../app/api/routes.py#L316)) — What the "check details" step shows and edits (P3.5).
+- function **`_sections()`** ([app/api/routes.py:346](../app/api/routes.py#L346)) — Bullet id -> the job or project it belongs to, for grouping cards.
+- function **`_proposal_out()`** ([app/api/routes.py:358](../app/api/routes.py#L358))
+- function **`_match_out()`** ([app/api/routes.py:371](../app/api/routes.py#L371))
+- function **`_selected()`** ([app/api/routes.py:377](../app/api/routes.py#L377))
+- function **`health()`** ([app/api/routes.py:387](../app/api/routes.py#L387))
+- function **`config()`** ([app/api/routes.py:392](../app/api/routes.py#L392))
+- function **`_model()`** ([app/api/routes.py:402](../app/api/routes.py#L402))
+- function **`analyze()`** ([app/api/routes.py:409](../app/api/routes.py#L409)) — "Just check my match": score only, nothing kept.
+- function **`parse()`** ([app/api/routes.py:429](../app/api/routes.py#L429)) — Step 1: read the resume and start a fresh session for this run.
+- function **`proposals()`** ([app/api/routes.py:470](../app/api/routes.py#L470)) — Step 2: apply the user's fixes, then draft rewrites and gap
+- function **`match_preview()`** ([app/api/routes.py:521](../app/api/routes.py#L521)) — The match rate if the selected (and edited) proposals were applied.
+- function **`tailor()`** ([app/api/routes.py:531](../app/api/routes.py#L531)) — Step 3: apply the review and generate the files. Streams progress.
+- function **`_results_out()`** ([app/api/routes.py:571](../app/api/routes.py#L571)) — What the Results (and Arrange) screen gets after a run.
+- function **`arrange()`** ([app/api/routes.py:618](../app/api/routes.py#L618)) — Re-render the tailored resume as the user arranged it (P8.13). No LLM
+- function **`_result_path()`** ([app/api/routes.py:657](../app/api/routes.py#L657))
+- function **`download()`** ([app/api/routes.py:665](../app/api/routes.py#L665))
+- function **`preview()`** ([app/api/routes.py:673](../app/api/routes.py#L673)) — One page of the tailored PDF as a PNG (Chrome blocks embedded PDFs).
+- function **`reset()`** ([app/api/routes.py:682](../app/api/routes.py#L682)) — Start over: delete this visitor's files and state. If a step is still
 - **Imports:** `analysis/jd_analyzer.py`, `analysis/language.py`, `api/__init__.py`, `api/sessions.py`, `ingestion/errors.py`, `rendering/pdf_converter.py`, `rendering/review_view.py`, `services/arrange.py`, `validation/coverage.py`, `validation/output.py`
 - **Imported by:** `api/main.py`
 - **Tested by:** `tests/unit/test_api.py`, `tests/unit/test_details_p826.py`
@@ -836,7 +837,7 @@ _LLM-as-judge for the evaluation harness (P4.3)._
 
 ### `app/ingestion/errors.py`
 
-**Layer:** Ingestion · **Stage:** 1 Ingest · **Lines:** 21
+**Layer:** Ingestion · **Stage:** 1 Ingest · **Lines:** 24
 
 _A file the tool can't read, with a message the person can act on (P8.22)._
 
@@ -1030,17 +1031,17 @@ _Page-fit loop (P2.4): render, count pages, trim, render again._
 
 ### `app/rendering/pdf_converter.py`
 
-**Layer:** Rendering · **Stage:** 9 Render · **Lines:** 120
+**Layer:** Rendering · **Stage:** 9 Render · **Lines:** 129
 
 - class **`PdfConverter`** ([app/rendering/pdf_converter.py:35](../app/rendering/pdf_converter.py#L35))
   - `find_libreoffice_binary()` :36
   - `convert_docx_to_pdf()` :53
 - function **`_take_profile()`** ([app/rendering/pdf_converter.py:21](../app/rendering/pdf_converter.py#L21))
 - function **`_give_back()`** ([app/rendering/pdf_converter.py:31](../app/rendering/pdf_converter.py#L31))
-- function **`convert_to_docx()`** ([app/rendering/pdf_converter.py:95](../app/rendering/pdf_converter.py#L95)) — A .doc / .odt / .rtf as .docx through LibreOffice (P8.22), or None.
-- function **`pdf_page_images()`** ([app/rendering/pdf_converter.py:114](../app/rendering/pdf_converter.py#L114)) — Each PDF page as PNG bytes. Shown as images, a preview works in any
+- function **`convert_to_docx()`** ([app/rendering/pdf_converter.py:102](../app/rendering/pdf_converter.py#L102)) — A .doc / .odt / .rtf as .docx through LibreOffice (P8.22), or None.
+- function **`pdf_page_images()`** ([app/rendering/pdf_converter.py:123](../app/rendering/pdf_converter.py#L123)) — Each PDF page as PNG bytes. Shown as images, a preview works in any
 - **Imported by:** `api/routes.py`, `services/tailor.py`, `scripts/make_eval_cases.py`
-- **Tested by:** `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_ats_round_trip.py`, `tests/unit/test_pdf_converter.py`
+- **Tested by:** `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_ats_round_trip.py`, `tests/unit/test_pdf_converter.py`, `tests/unit/test_uploads_p822.py`
 
 ### `app/rendering/review_view.py`
 

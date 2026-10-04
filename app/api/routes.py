@@ -27,6 +27,7 @@ from starlette.concurrency import run_in_threadpool
 from app.api import forms
 from app.api.sessions import Session, remove_path
 from app.rendering.pdf_converter import pdf_page_images
+from app.ingestion import errors
 from app.ingestion.errors import UnreadableFile
 from app.validation.output import OutputQAValidator
 from app.services.arrange import Layout
@@ -158,11 +159,17 @@ async def _save_upload(request: Request, file: Optional[UploadFile], resume_text
     data = await file.read(limit + 1)
     if len(data) > limit:
         raise HTTPException(413, f"The file is larger than {limit // (1024 * 1024)} MB.")
+    if not data.strip():
+        raise HTTPException(422, errors.EMPTY_FILE)
     if suffix == ".doc" and data.startswith(ALLOWED_TYPES[".docx"]):
         suffix = ".docx"  # a .docx renamed to .doc
+    elif suffix == ".doc" and data.startswith(CONVERTED_TYPES[".rtf"]):
+        suffix = ".rtf"  # Word's "save as .doc" can write RTF
     if suffix == ".txt":
-        if b"\x00" in data[:4096] and not data.startswith((b"\xff\xfe", b"\xfe\xff")):
+        if (b"\x00" in data[:4096] and not data.startswith((b"\xff\xfe", b"\xfe\xff"))) or _mostly_binary(data):
             raise HTTPException(415, "That file doesn't look like plain text.")
+    elif suffix == ".rtf" and _mostly_binary(data):
+        raise HTTPException(422, errors.DAMAGED_FILE)  # RTF is plain text, so LibreOffice would read the garbage
     elif not data.startswith({**ALLOWED_TYPES, **CONVERTED_TYPES}[suffix]):
         raise HTTPException(415, f"That file doesn't look like a real {suffix} file.")
     with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
@@ -181,6 +188,15 @@ async def _save_upload(request: Request, file: Optional[UploadFile], resume_text
         shutil.rmtree(out_dir, ignore_errors=True)
         return final
     return path
+
+
+def _mostly_binary(data: bytes) -> bool:
+    """Control characters (other than tabs and line breaks) in more than 2% of
+    the first 64 KB: random bytes have ~10%, real text and RTF none (P9.2)."""
+    head = data[:65536]
+    if head.startswith((b"\xff\xfe", b"\xfe\xff")):
+        return False  # UTF-16 text
+    return sum(b < 32 and b not in (9, 10, 12, 13) for b in head) > 0.02 * max(len(head), 1)
 
 
 def _check_jd(jd_text: str) -> None:

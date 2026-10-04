@@ -19,3 +19,6 @@ SCANNED_PDF = ("This PDF looks like a scanned image: there's no text in it to re
 NO_TEXT = "There's no text in this file to read. Check it's the right file."
 CONVERT_FAILED = ("This file couldn't be converted for reading. Save it as .docx or PDF in your word processor "
                   "and upload that.")
+DAMAGED_FILE = ("This file looks damaged: it's mostly unreadable characters. Save it again from the original "
+                "(as .docx or PDF if you can) and upload that.")
+EMPTY_FILE = "This file is empty. Check it's the right file, or paste your resume as text."
