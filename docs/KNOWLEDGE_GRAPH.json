@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "57edd1832fb90169",
+  "source_hash": "784c1d77307dd5ce",
   "stats": {
-    "files": 160,
-    "python_files": 137,
+    "files": 161,
+    "python_files": 138,
     "app_modules": 60,
-    "test_files": 68,
+    "test_files": 69,
     "classes": 109,
-    "functions": 1035,
-    "lines_of_python": 20993
+    "functions": 1038,
+    "lines_of_python": 21051
   },
   "axes": {
     "x": "location (path)",
@@ -410,7 +410,7 @@
       "stages": [
         "3 JD analysis"
       ],
-      "lines": 513,
+      "lines": 517,
       "doc": "",
       "classes": [
         {
@@ -525,42 +525,42 @@
       "stages": [
         "5 Score"
       ],
-      "lines": 399,
+      "lines": 416,
       "doc": "Keyword-level match rate, the headline score (P1.2).",
       "classes": [
         {
           "name": "KeywordMatcher",
-          "line": 202,
+          "line": 219,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
-              "line": 203,
+              "line": 220,
               "doc": ""
             },
             {
               "name": "_slash_parts",
-              "line": 207,
+              "line": 224,
               "doc": "\"Compact/NLC\", \"English/Spanish\": words joined by a slash, each"
             },
             {
               "name": "_found_with_credit",
-              "line": 217,
+              "line": 234,
               "doc": ""
             },
             {
               "name": "_find",
-              "line": 239,
+              "line": 256,
               "doc": ""
             },
             {
               "name": "_title_credit",
-              "line": 266,
+              "line": 283,
               "doc": ""
             },
             {
               "name": "match",
-              "line": 276,
+              "line": 293,
               "doc": ""
             }
           ]
@@ -594,27 +594,27 @@
         },
         {
           "name": "is_place",
-          "line": 148,
+          "line": 156,
           "doc": "A location the JD names, not a skill (P8.17: \"Arizona\" and \"DC\" were"
         },
         {
           "name": "definitions",
-          "line": 167,
+          "line": 175,
           "doc": "acronym -> expansion (both lowercase), from \"Full Name (ACR)\" in texts."
         },
         {
           "name": "alternatives_of",
-          "line": 185,
+          "line": 197,
           "doc": "Token sequences that count as the keyword: \"OSHA 10 or 30\" -> OSHA 10,"
         },
         {
           "name": "guidance",
-          "line": 339,
+          "line": 356,
           "doc": "What a low match means (P8.21): a nurse applying to a sales job scored"
         },
         {
           "name": "reconcile",
-          "line": 373,
+          "line": 390,
           "doc": "A requirement can't read \"not shown\" while every job keyword in it is"
         }
       ]
@@ -6227,6 +6227,32 @@
       ]
     },
     {
+      "id": "tests/unit/test_matching_p95.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 37,
+      "doc": "P9.5: minor matching notes from the Stage K review.",
+      "classes": [],
+      "functions": [
+        {
+          "name": "test_connector_word_is_never_an_acronym_letter",
+          "line": 6,
+          "doc": ""
+        },
+        {
+          "name": "test_or_shares_a_role_word_both_ways",
+          "line": 16,
+          "doc": ""
+        },
+        {
+          "name": "test_requirement_spans_point_into_the_cleaned_jd",
+          "line": 26,
+          "doc": ""
+        }
+      ]
+    },
+    {
       "id": "tests/unit/test_new_role.py",
       "type": "python",
       "layer": "Tests",
@@ -8083,6 +8109,11 @@
     },
     {
       "from": "app/analysis/jd_analyzer.py",
+      "to": "tests/unit/test_matching_p95.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/analysis/jd_analyzer.py",
       "to": "tests/unit/test_parser_regressions_p42.py",
       "type": "tested_by"
     },
@@ -8144,6 +8175,11 @@
     {
       "from": "app/analysis/keyword_match.py",
       "to": "tests/unit/test_matching_p817.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/analysis/keyword_match.py",
+      "to": "tests/unit/test_matching_p95.py",
       "type": "tested_by"
     },
     {

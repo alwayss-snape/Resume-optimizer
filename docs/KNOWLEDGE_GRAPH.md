@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**60 app modules · 68 test files · 109 classes · 1035 functions/methods · 20,993 lines of Python** · source hash `57edd1832fb90169`
+**60 app modules · 69 test files · 109 classes · 1038 functions/methods · 21,051 lines of Python** · source hash `784c1d77307dd5ce`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -172,6 +172,7 @@ tests/
     test_llm_client.py                           SampleSchema
     test_matcher.py                              test_evidence_matcher_exact_and_alias(), test_one_generic_word_cannot_…
     test_matching_p817.py                        P8.17: a fairer match for non-tech resumes.
+    test_matching_p95.py                         P9.5: minor matching notes from the Stage K review.
     test_new_role.py                             P3.3: add a job that isn't on the resume yet.
     test_page_fit.py                             P2.4: the page-fit loop trims in a fixed order, keeps minimums, reports
     test_parser_regressions_p42.py               Regression tests from the independent review of P4.2: inputs outside t…
@@ -281,7 +282,7 @@ _Suggest-and-confirm gaps (P3.1): ask, never assume._
 
 ### `app/analysis/jd_analyzer.py`
 
-**Layer:** Analysis · **Stage:** 3 JD analysis · **Lines:** 513
+**Layer:** Analysis · **Stage:** 3 JD analysis · **Lines:** 517
 
 - class **`JDAnalyzer`** ([app/analysis/jd_analyzer.py:11](../app/analysis/jd_analyzer.py#L11)) — Extract only text that is visibly present in the supplied job description.
   - `__init__()` :65
@@ -305,35 +306,35 @@ _Suggest-and-confirm gaps (P3.1): ask, never assume._
   - `analyze()` :405
 - **Imports:** `analysis/terminology.py`, `domain/job.py`, `llm/client.py`, `llm/schemas.py`
 - **Imported by:** `api/routes.py`, `eval/harness.py`, `services/tailor.py`
-- **Tested by:** `tests/unit/test_checklist_p820.py`, `tests/unit/test_jd_analyzer.py`, `tests/unit/test_jd_analyzer_llm.py`, `tests/unit/test_jd_analyzer_v2.py`, `tests/unit/test_jd_p818.py`, `tests/unit/test_parser_regressions_p42.py`
+- **Tested by:** `tests/unit/test_checklist_p820.py`, `tests/unit/test_jd_analyzer.py`, `tests/unit/test_jd_analyzer_llm.py`, `tests/unit/test_jd_analyzer_v2.py`, `tests/unit/test_jd_p818.py`, `tests/unit/test_matching_p95.py`, `tests/unit/test_parser_regressions_p42.py`
 - **Prompts:** `llm/prompts/jd_analysis.txt`
 
 ### `app/analysis/keyword_match.py`
 
-**Layer:** Analysis · **Stage:** 5 Score · **Lines:** 399
+**Layer:** Analysis · **Stage:** 5 Score · **Lines:** 416
 
 _Keyword-level match rate, the headline score (P1.2)._
 
-- class **`KeywordMatcher`** ([app/analysis/keyword_match.py:202](../app/analysis/keyword_match.py#L202))
-  - `__init__()` :203
-  - `_slash_parts()` :207 — "Compact/NLC", "English/Spanish": words joined by a slash, each
-  - `_found_with_credit()` :217
-  - `_find()` :239
-  - `_title_credit()` :266
-  - `match()` :276
+- class **`KeywordMatcher`** ([app/analysis/keyword_match.py:219](../app/analysis/keyword_match.py#L219))
+  - `__init__()` :220
+  - `_slash_parts()` :224 — "Compact/NLC", "English/Spanish": words joined by a slash, each
+  - `_found_with_credit()` :234
+  - `_find()` :256
+  - `_title_credit()` :283
+  - `match()` :293
 - function **`_stem()`** ([app/analysis/keyword_match.py:59](../app/analysis/keyword_match.py#L59)) — Plural- and verb-form-insensitive: "communicate", "communicated" and
 - function **`_alias()`** ([app/analysis/keyword_match.py:77](../app/analysis/keyword_match.py#L77))
 - function **`tokens()`** ([app/analysis/keyword_match.py:89](../app/analysis/keyword_match.py#L89)) — Lowercased, alias-canonical, plural- and verb-form-insensitive tokens.
 - function **`_contains_seq()`** ([app/analysis/keyword_match.py:95](../app/analysis/keyword_match.py#L95))
 - function **`resume_sections()`** ([app/analysis/keyword_match.py:100](../app/analysis/keyword_match.py#L100)) — (label, text) for every part of the resume a recruiter or ATS reads.
-- function **`is_place()`** ([app/analysis/keyword_match.py:148](../app/analysis/keyword_match.py#L148)) — A location the JD names, not a skill (P8.17: "Arizona" and "DC" were
-- function **`definitions()`** ([app/analysis/keyword_match.py:167](../app/analysis/keyword_match.py#L167)) — acronym -> expansion (both lowercase), from "Full Name (ACR)" in texts.
-- function **`alternatives_of()`** ([app/analysis/keyword_match.py:185](../app/analysis/keyword_match.py#L185)) — Token sequences that count as the keyword: "OSHA 10 or 30" -> OSHA 10,
-- function **`guidance()`** ([app/analysis/keyword_match.py:339](../app/analysis/keyword_match.py#L339)) — What a low match means (P8.21): a nurse applying to a sales job scored
-- function **`reconcile()`** ([app/analysis/keyword_match.py:373](../app/analysis/keyword_match.py#L373)) — A requirement can't read "not shown" while every job keyword in it is
+- function **`is_place()`** ([app/analysis/keyword_match.py:156](../app/analysis/keyword_match.py#L156)) — A location the JD names, not a skill (P8.17: "Arizona" and "DC" were
+- function **`definitions()`** ([app/analysis/keyword_match.py:175](../app/analysis/keyword_match.py#L175)) — acronym -> expansion (both lowercase), from "Full Name (ACR)" in texts.
+- function **`alternatives_of()`** ([app/analysis/keyword_match.py:197](../app/analysis/keyword_match.py#L197)) — Token sequences that count as the keyword: "OSHA 10 or 30" -> OSHA 10,
+- function **`guidance()`** ([app/analysis/keyword_match.py:356](../app/analysis/keyword_match.py#L356)) — What a low match means (P8.21): a nurse applying to a sales job scored
+- function **`reconcile()`** ([app/analysis/keyword_match.py:390](../app/analysis/keyword_match.py#L390)) — A requirement can't read "not shown" while every job keyword in it is
 - **Imports:** `analysis/gap_questions.py`, `analysis/resume_normalizer.py`, `analysis/terminology.py`, `domain/job.py`, `domain/report.py`, `domain/resume.py`
 - **Imported by:** `analysis/gap_questions.py`, `analysis/skills_tailor.py`, `analysis/tailor_planner.py`, `eval/harness.py`, `services/tailor.py`
-- **Tested by:** `tests/unit/test_gap_questions.py`, `tests/unit/test_guidance_p821.py`, `tests/unit/test_jd_p818.py`, `tests/unit/test_keyword_match.py`, `tests/unit/test_matching_p817.py`, `tests/unit/test_parser_regressions_p42.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_stuffing_p819.py`, `tests/unit/test_summary_writer.py`
+- **Tested by:** `tests/unit/test_gap_questions.py`, `tests/unit/test_guidance_p821.py`, `tests/unit/test_jd_p818.py`, `tests/unit/test_keyword_match.py`, `tests/unit/test_matching_p817.py`, `tests/unit/test_matching_p95.py`, `tests/unit/test_parser_regressions_p42.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_stuffing_p819.py`, `tests/unit/test_summary_writer.py`
 
 ### `app/analysis/language.py`
 

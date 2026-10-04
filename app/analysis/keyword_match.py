@@ -132,10 +132,18 @@ def resume_sections(resume: Resume) -> List[Tuple[str, str]]:
 # "Generally Accepted Accounting Principles (GAAP)" in the JD or the resume
 # defines an acronym for this run (P8.17).
 _DEFINITION_RE = re.compile(r"((?:[A-Z][\w'’-]*[\s/-]+(?:(?:of|and|for|the|&)[\s]+)?){1,7}[A-Z][\w'’-]*)\s*\(([A-Z][A-Za-z0-9&/-]{1,7})\)")
+# Small words that never start an acronym's expansion nor give it a letter
+# ("Or Associate (OA)" isn't a definition; P9.5).
+_CONNECTORS = {"of", "and", "for", "the", "&", "or", "in", "with", "a", "an", "to", "on", "at", "as", "by"}
 # A degree on the resume covers a lower one the JD asks for.
 _DEGREE_KEYWORD_RE = re.compile(r"(?i:degree|bachelor|master|diploma|\bged\b|ph\.?\s?d|doctorate|associate's)")
 # "Salesforce CRM" is shown by "Salesforce": a product name and a generic tail.
 _GENERIC_TAIL = {"crm", "platform", "suite", "software", "tool", "system", "studio", "cloud", "program"}
+# Role and credential words that "X or Y <word>" shares between X and Y.
+_SHARED_TAIL = {_stem(w) for w in {"developer", "developers", "engineer", "engineers", "engineering", "development", "programming",
+                "programmer", "experience", "skills", "analyst", "specialist", "designer", "administrator",
+                "certification", "certified", "license", "licence", "licensed", "degree", "nurse", "teacher",
+                "technician", "framework", "frameworks", "database", "databases", "language", "languages"}}
 _US_STATES = {"alabama", "alaska", "arizona", "arkansas", "california", "colorado", "connecticut", "delaware",
               "florida", "georgia", "hawaii", "idaho", "illinois", "indiana", "iowa", "kansas", "kentucky",
               "louisiana", "maine", "maryland", "massachusetts", "michigan", "minnesota", "mississippi", "missouri",
@@ -170,15 +178,19 @@ def definitions(*texts: str) -> Dict[str, str]:
     for text in texts:
         for long, short in _DEFINITION_RE.findall(text or ""):
             words = [w for w in re.split(r"[\s/-]+", long) if w]
-            initials = "".join(w[0] for w in words if w.lower() not in {"of", "and", "for", "the", "&"}).lower()
-            if initials.endswith(short.lower().replace("&", "").replace("/", "")[:len(initials)]) or \
-                    short.lower().replace("/", "").replace("&", "") in initials:
+            acronym = short.lower().replace("&", "").replace("/", "")
+            content = [w for w in words if w.lower() not in _CONNECTORS]
+            initials = "".join(w[0] for w in content).lower()
+            if content and (initials.endswith(acronym[:len(initials)]) or acronym in initials):
                 # keep only the words that spell the acronym (the regex may grab a few before)
-                need = len(short.replace("&", "").replace("/", ""))
-                content = [w for w in words if w.lower() not in {"of", "and", "for", "the", "&"}]
-                keep = content[-need:] if need <= len(content) else content
-                start = words.index(keep[0]) if keep else 0
-                out[short.lower()] = " ".join(words[start:]).lower()
+                keep = content[-len(acronym):] if len(acronym) <= len(content) else content
+                out[short.lower()] = " ".join(words[words.index(keep[0]):]).lower()
+                continue
+            # "Point Of Sale (POS)": the connector is one of the letters (P9.5)
+            span = words[-len(acronym):]
+            if len(span) == len(acronym) and span[0].lower() not in _CONNECTORS and \
+                    "".join(w[0] for w in span).lower() == acronym:
+                out[short.lower()] = " ".join(span).lower()
     return out
 
 
@@ -196,6 +208,11 @@ def alternatives_of(keyword: str) -> List[List[str]]:
             toks = prefix + toks
         if toks:
             out.append(toks)
+    # "Java or Python developer": the role word belongs to both, so Python
+    # alone counts just as Java alone does (P9.5)
+    last = out[-1] if out else []
+    if len(last) == 2 and last[-1] in _SHARED_TAIL and all(len(o) == 1 for o in out[:-1]):
+        out.append(last[:1])
     return out
 
 

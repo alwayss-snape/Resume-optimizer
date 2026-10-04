@@ -51,10 +51,10 @@ def test_heuristic_title_company_seniority_years_without_labels():
 def test_heuristic_whole_lines_no_and_splitting_and_no_intro_or_headings():
     jd = JDAnalyzer(None).analyze(JD)
     assert [r.text for r in jd.requirements] == REQUIREMENT_LINES
-    # Every requirement is a verbatim span of the JD.
+    # Every requirement is a verbatim span of the (cleaned) JD the job keeps (P9.5).
     for r in jd.requirements:
         start, end = r.source_spans[0]["start"], r.source_spans[0]["end"]
-        assert JD[start:end] == r.text
+        assert jd.raw_text[start:end] == r.text
 
 
 def test_nice_to_have_heading_and_is_a_plus_are_preferred():

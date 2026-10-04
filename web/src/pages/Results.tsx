@@ -117,7 +117,7 @@ function ScoreReveal({ result, beforeRows, asked, onAddKeywords }: {
           ))}
         </p>
       )}
-      {result.keyword_match?.guidance?.kind === "different_field" && <MatchGuidance guidance={result.keyword_match.guidance} />}
+      {result.keyword_match?.guidance && <MatchGuidance guidance={result.keyword_match.guidance} />}
       {missing.length > 0 && (
         <div className="flex flex-col gap-3 border-t border-line pt-4">
           <p className="m-0 font-serif text-[15px] italic leading-relaxed text-muted">

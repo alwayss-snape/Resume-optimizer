@@ -403,8 +403,8 @@ class JDAnalyzer:
     # -- main entry -----------------------------------------------------
 
     def analyze(self, jd_text: str) -> JobDescription:
-        original = jd_text or ""
-        jd_text = self.clean_text(jd_text)  # HTML, entities, emoji (P8.18); spans still point into the original
+        jd_text = self.clean_text(jd_text)  # HTML, entities, emoji (P8.18); spans point into this cleaned text
+        span_from = 0  # where the next requirement's span is searched from, so a repeated line maps to its own place
         lines = self._reflow_lines(jd_text)
         llm = self._llm_analyze(lines)
         llm_lines = {}
@@ -450,7 +450,11 @@ class JDAnalyzer:
                 preferred_section or line_says_preferred or (item is not None and item.priority == "preferred")
             ) else "required"
             category = item.category if item is not None else self._category(clean_line)
-            start = original.find(clean_line)
+            start = jd_text.find(clean_line, span_from)
+            if start < 0:
+                start = jd_text.find(clean_line)
+            if start >= 0:
+                span_from = start + len(clean_line)
             requirements.append(Requirement(
                 id=f"req_{len(requirements) + 1:03d}",
                 text=clean_line, category=category, priority=priority, criticality=priority,

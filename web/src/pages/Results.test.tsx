@@ -147,3 +147,10 @@ test("keywords gained by tailoring are named", () => {
   expect(screen.getByText("Now on your resume:").parentElement).toHaveTextContent("Now on your resume: Airflow");
   expect(screen.getByText("Still missing (1)")).toBeInTheDocument();
 });
+
+test("a stretch match gets its guidance too, not only a different field (P9.5)", () => {
+  const tips = ["Tick the job keywords you really have in Review, with a line saying where."];
+  show({ keyword_match: { ...MATCH, guidance: { kind: "stretch", headline: "A stretch: the job asks for more.", text: "Why.", tips } } });
+  expect(screen.getByText("A stretch: the job asks for more.")).toBeInTheDocument();
+  expect(screen.getByText(tips[0])).toBeInTheDocument();
+});
