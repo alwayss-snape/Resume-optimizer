@@ -53,6 +53,10 @@ ANTHROPIC_MAX_TOKENS = 16000
 
 GROQ_MAX_ATTEMPTS = 4          # 1 call + 3 retries on HTTP 429
 GROQ_MAX_RETRY_WAIT = 30.0     # seconds; never sleep longer than this per retry
+# A per-minute limit can ask for up to a minute; that's worth waiting for once
+# (P9.3: a 41 s tokens-per-minute wait failed the role rewrite of the real
+# resume). Only the daily limit, or a longer wait, fails fast.
+GROQ_MAX_MINUTE_WAIT = 65.0
 
 
 class LLMClient:
@@ -392,9 +396,9 @@ class LLMClient:
             # Free-tier rate limits (requests/tokens per minute) are routine:
             # wait as instructed and retry instead of failing the rewrite.
             if resp.status_code == 429 and attempt < GROQ_MAX_ATTEMPTS - 1:
-                if _requested_wait(resp) > GROQ_MAX_RETRY_WAIT:
+                if _too_long_to_wait(resp):
                     break  # e.g. the daily token limit: retrying now can't succeed
-                wait = _retry_after_seconds(resp, attempt)
+                wait = max(_retry_after_seconds(resp, attempt), min(_requested_wait(resp), GROQ_MAX_MINUTE_WAIT))
                 logger.warning(f"Groq rate limited (429); retrying in {wait:.1f}s")
                 if self.on_wait:
                     try:
@@ -405,7 +409,7 @@ class LLMClient:
                 continue
             break
 
-        if resp.status_code == 429 and _requested_wait(resp) > GROQ_MAX_RETRY_WAIT:
+        if resp.status_code == 429 and _too_long_to_wait(resp):
             wait_s = _requested_wait(resp)
             minutes = max(1, round(wait_s / 60))
             if "per day" in (resp.text or ""):
@@ -576,6 +580,11 @@ class LLMClient:
                     if "json_validate_failed" in str(e) and attempt < max_retries:
                         logger.warning(f"Groq strict JSON validation failed on attempt {attempt + 1}; retrying")
                         last_error = e
+                        # Reasoning used up the completion budget before the JSON
+                        # was written (P9.3: 5 of 12 bullets lost on the real
+                        # resume): think less on the next try.
+                        if "max completion tokens" in str(e) and effort in ("high", "medium"):
+                            effort = "medium" if effort == "high" else "low"
                         continue
                     raise
                 self._record(True, model=response.model_name, response=response)
@@ -650,6 +659,12 @@ def daily_limit_message(wait_seconds: float) -> str:
     when = f"about {hours} h {mins} min" if hours else f"about {mins} min"
     return (f"Today's free AI limit is used up, so drafting rewrites isn't available for {when}. You can still "
             "check your match, arrange your resume and download it; tailoring with AI works again after that.")
+
+
+def _too_long_to_wait(resp: Any) -> bool:
+    """A 429 not worth waiting for: the daily limit, or a wait over a minute."""
+    wait = _requested_wait(resp)
+    return wait > GROQ_MAX_RETRY_WAIT and ("per day" in (resp.text or "") or wait > GROQ_MAX_MINUTE_WAIT)
 
 
 def _retry_after_seconds(resp: Any, attempt: int) -> float:

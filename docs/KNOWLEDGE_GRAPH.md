@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**60 app modules · 69 test files · 109 classes · 1047 functions/methods · 21,199 lines of Python** · source hash `093fc4a1c11eb468`
+**60 app modules · 69 test files · 109 classes · 1050 functions/methods · 21,247 lines of Python** · source hash `2dfc849f32a539f9`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -899,32 +899,33 @@ _Plain-text resumes: a .txt upload or text pasted in the app (P8.22)._
 
 ### `app/llm/client.py`
 
-**Layer:** LLM · **Stage:** 3 JD analysis, 7 Rewrite · **Lines:** 683
+**Layer:** LLM · **Stage:** 3 JD analysis, 7 Rewrite · **Lines:** 698
 
-- class **`LLMClient`** ([app/llm/client.py:58](../app/llm/client.py#L58)) — Unified client for text generation across three interchangeable providers:
-  - `__init__()` :74
-  - `is_available()` :147 — Whether the configured provider is reachable AND the configured
-  - `_check_available()` :163
-  - `_ollama_check()` :170
-  - `_groq_check()` :182
-  - `_anthropic_check()` :203
-  - `_record()` :224
-  - `generate()` :242 — Generate text from the LLM using the chat interface.
-  - `get_usage_summary()` :272 — Aggregate every LLM call made on this client instance so far
-  - `_generate_ollama()` :294
-  - `_groq_supports_strict_schema()` :339
-  - `_generate_groq()` :343
-  - `_split_system()` :437 — The Messages API takes the system prompt as a top-level field,
-  - `_anthropic_request()` :444
-  - `_anthropic_response()` :481
-  - `_generate_anthropic()` :498
-  - `_generate_json_anthropic()` :503 — Structured outputs guarantee the response matches the schema, so
-  - `generate_json()` :524 — Generate structured JSON conforming to a Pydantic model.
-- class **`LLMDailyLimitError`** ([app/llm/client.py:644](../app/llm/client.py#L644)) — The provider's daily free limit is used up (P8.23).
-- function **`_requested_wait()`** ([app/llm/client.py:624](../app/llm/client.py#L624)) — How long Groq asks us to wait: the retry-after header, else the
-- function **`daily_limit_message()`** ([app/llm/client.py:648](../app/llm/client.py#L648))
-- function **`_retry_after_seconds()`** ([app/llm/client.py:655](../app/llm/client.py#L655)) — Seconds to wait before retrying a 429: the server's `retry-after`
-- function **`strict_json_schema()`** ([app/llm/client.py:670](../app/llm/client.py#L670)) — Adapt a Pydantic JSON schema for strict structured-output modes: every
+- class **`LLMClient`** ([app/llm/client.py:62](../app/llm/client.py#L62)) — Unified client for text generation across three interchangeable providers:
+  - `__init__()` :78
+  - `is_available()` :151 — Whether the configured provider is reachable AND the configured
+  - `_check_available()` :167
+  - `_ollama_check()` :174
+  - `_groq_check()` :186
+  - `_anthropic_check()` :207
+  - `_record()` :228
+  - `generate()` :246 — Generate text from the LLM using the chat interface.
+  - `get_usage_summary()` :276 — Aggregate every LLM call made on this client instance so far
+  - `_generate_ollama()` :298
+  - `_groq_supports_strict_schema()` :343
+  - `_generate_groq()` :347
+  - `_split_system()` :441 — The Messages API takes the system prompt as a top-level field,
+  - `_anthropic_request()` :448
+  - `_anthropic_response()` :485
+  - `_generate_anthropic()` :502
+  - `_generate_json_anthropic()` :507 — Structured outputs guarantee the response matches the schema, so
+  - `generate_json()` :528 — Generate structured JSON conforming to a Pydantic model.
+- class **`LLMDailyLimitError`** ([app/llm/client.py:653](../app/llm/client.py#L653)) — The provider's daily free limit is used up (P8.23).
+- function **`_requested_wait()`** ([app/llm/client.py:633](../app/llm/client.py#L633)) — How long Groq asks us to wait: the retry-after header, else the
+- function **`daily_limit_message()`** ([app/llm/client.py:657](../app/llm/client.py#L657))
+- function **`_too_long_to_wait()`** ([app/llm/client.py:664](../app/llm/client.py#L664)) — A 429 not worth waiting for: the daily limit, or a wait over a minute.
+- function **`_retry_after_seconds()`** ([app/llm/client.py:670](../app/llm/client.py#L670)) — Seconds to wait before retrying a 429: the server's `retry-after`
+- function **`strict_json_schema()`** ([app/llm/client.py:685](../app/llm/client.py#L685)) — Adapt a Pydantic JSON schema for strict structured-output modes: every
 - **Imports:** `config/settings.py`, `llm/schemas.py`, `validation/safety.py`
 - **Imported by:** `analysis/jd_analyzer.py`, `analysis/matcher.py`, `analysis/rewriter.py`, `analysis/structure_extractor.py`, `analysis/summary_writer.py`, `analysis/tailor_planner.py`, `api/main.py`, `cli.py`, `eval/harness.py`, `eval/judge.py`, `services/tailor.py`, `scripts/benchmark_model.py`
 - **Tested by:** `tests/unit/test_judge.py`, `tests/unit/test_llm_client.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_validation.py`

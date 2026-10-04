@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "093fc4a1c11eb468",
+  "source_hash": "2dfc849f32a539f9",
   "stats": {
     "files": 163,
     "python_files": 139,
     "app_modules": 60,
     "test_files": 69,
     "classes": 109,
-    "functions": 1047,
-    "lines_of_python": 21199
+    "functions": 1050,
+    "lines_of_python": 21247
   },
   "axes": {
     "x": "location (path)",
@@ -2554,109 +2554,109 @@
         "3 JD analysis",
         "7 Rewrite"
       ],
-      "lines": 683,
+      "lines": 698,
       "doc": "",
       "classes": [
         {
           "name": "LLMClient",
-          "line": 58,
+          "line": 62,
           "doc": "Unified client for text generation across three interchangeable providers:",
           "methods": [
             {
               "name": "__init__",
-              "line": 74,
+              "line": 78,
               "doc": ""
             },
             {
               "name": "is_available",
-              "line": 147,
+              "line": 151,
               "doc": "Whether the configured provider is reachable AND the configured"
             },
             {
               "name": "_check_available",
-              "line": 163,
+              "line": 167,
               "doc": ""
             },
             {
               "name": "_ollama_check",
-              "line": 170,
+              "line": 174,
               "doc": ""
             },
             {
               "name": "_groq_check",
-              "line": 182,
+              "line": 186,
               "doc": ""
             },
             {
               "name": "_anthropic_check",
-              "line": 203,
+              "line": 207,
               "doc": ""
             },
             {
               "name": "_record",
-              "line": 224,
+              "line": 228,
               "doc": ""
             },
             {
               "name": "generate",
-              "line": 242,
+              "line": 246,
               "doc": "Generate text from the LLM using the chat interface."
             },
             {
               "name": "get_usage_summary",
-              "line": 272,
+              "line": 276,
               "doc": "Aggregate every LLM call made on this client instance so far"
             },
             {
               "name": "_generate_ollama",
-              "line": 294,
+              "line": 298,
               "doc": ""
             },
             {
               "name": "_groq_supports_strict_schema",
-              "line": 339,
-              "doc": ""
-            },
-            {
-              "name": "_generate_groq",
               "line": 343,
               "doc": ""
             },
             {
+              "name": "_generate_groq",
+              "line": 347,
+              "doc": ""
+            },
+            {
               "name": "_split_system",
-              "line": 437,
+              "line": 441,
               "doc": "The Messages API takes the system prompt as a top-level field,"
             },
             {
               "name": "_anthropic_request",
-              "line": 444,
+              "line": 448,
               "doc": ""
             },
             {
               "name": "_anthropic_response",
-              "line": 481,
+              "line": 485,
               "doc": ""
             },
             {
               "name": "_generate_anthropic",
-              "line": 498,
+              "line": 502,
               "doc": ""
             },
             {
               "name": "_generate_json_anthropic",
-              "line": 503,
+              "line": 507,
               "doc": "Structured outputs guarantee the response matches the schema, so"
             },
             {
               "name": "generate_json",
-              "line": 524,
+              "line": 528,
               "doc": "Generate structured JSON conforming to a Pydantic model."
             }
           ]
         },
         {
           "name": "LLMDailyLimitError",
-          "line": 644,
+          "line": 653,
           "doc": "The provider's daily free limit is used up (P8.23).",
           "methods": []
         }
@@ -2664,22 +2664,27 @@
       "functions": [
         {
           "name": "_requested_wait",
-          "line": 624,
+          "line": 633,
           "doc": "How long Groq asks us to wait: the retry-after header, else the"
         },
         {
           "name": "daily_limit_message",
-          "line": 648,
+          "line": 657,
           "doc": ""
         },
         {
+          "name": "_too_long_to_wait",
+          "line": 664,
+          "doc": "A 429 not worth waiting for: the daily limit, or a wait over a minute."
+        },
+        {
           "name": "_retry_after_seconds",
-          "line": 655,
+          "line": 670,
           "doc": "Seconds to wait before retrying a 429: the server's `retry-after`"
         },
         {
           "name": "strict_json_schema",
-          "line": 670,
+          "line": 685,
           "doc": "Adapt a Pydantic JSON schema for strict structured-output modes: every"
         }
       ]
@@ -6073,7 +6078,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 379,
+      "lines": 412,
       "doc": "",
       "classes": [
         {
@@ -6215,8 +6220,18 @@
           "doc": "Groq's transient 'json_validate_failed' (empty generation) gets the"
         },
         {
+          "name": "test_groq_out_of_completion_tokens_retries_with_less_reasoning",
+          "line": 355,
+          "doc": "P9.3: gpt-oss spent its completion budget reasoning (\"max completion"
+        },
+        {
+          "name": "test_groq_per_minute_limit_is_waited_out",
+          "line": 373,
+          "doc": "P9.3: a tokens-per-minute 429 asking for 41 s used to fail the call at"
+        },
+        {
           "name": "test_waits_are_reported_and_a_daily_limit_is_remembered",
-          "line": 356,
+          "line": 389,
           "doc": "P8.23: a back-off says so; a daily limit stops further calls with a plain message."
         }
       ]

@@ -351,6 +351,39 @@ def test_groq_strict_json_validate_failed_is_retried():
         assert client.generate_json([{"role": "user", "content": "x"}], Out).value == "ok"
     assert post.call_count == 2
 
+
+def test_groq_out_of_completion_tokens_retries_with_less_reasoning():
+    """P9.3: gpt-oss spent its completion budget reasoning ("max completion
+    tokens reached before generating a valid document") and the role rewrite
+    failed on the real resume; each retry now asks for less reasoning."""
+    cut = MagicMock(status_code=400, headers={}, text='{"error":{"code":"json_validate_failed","failed_generation":'
+                                                     '"max completion tokens reached before generating a valid document"}}')
+    good = MagicMock(status_code=200, headers={})
+    good.json.return_value = {"choices": [{"message": {"content": '{"value": "ok"}'}}], "usage": {}}
+
+    class Out(BaseModel):
+        value: str
+
+    with patch("httpx.Client.post", side_effect=[cut, cut, good]) as post:
+        client = LLMClient(provider="groq", api_key="k", model="openai/gpt-oss-120b")
+        assert client.generate_json([{"role": "user", "content": "x"}], Out, effort="high").value == "ok"
+    assert [c.kwargs["json"]["reasoning_effort"] for c in post.call_args_list] == ["high", "medium", "low"]
+
+
+def test_groq_per_minute_limit_is_waited_out():
+    """P9.3: a tokens-per-minute 429 asking for 41 s used to fail the call at
+    once (only waits up to 30 s were retried); a minute is worth waiting."""
+    tpm = MagicMock(status_code=429, headers={},
+                    text='{"error":{"message":"Rate limit reached ... on tokens per minute (TPM): Limit 8000, '
+                         'Used 7467. Please try again in 41.2s."}}')
+    ok = MagicMock(status_code=200, headers={})
+    ok.json.return_value = {"choices": [{"message": {"content": "done"}}], "usage": {}}
+    with patch("httpx.Client.post", side_effect=[tpm, ok]) as post, patch("time.sleep") as sleep:
+        client = LLMClient(provider="groq", api_key="k", model="openai/gpt-oss-120b")
+        assert client.generate("hi").raw_text == "done"
+    assert post.call_count == 2 and sleep.call_args[0][0] == pytest.approx(41.2)
+
+
 @patch("app.llm.client.time.sleep")
 @patch("httpx.Client.post")
 def test_waits_are_reported_and_a_daily_limit_is_remembered(mock_post, mock_sleep):
