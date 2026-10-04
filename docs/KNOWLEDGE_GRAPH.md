@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**60 app modules · 69 test files · 109 classes · 1047 functions/methods · 21,189 lines of Python** · source hash `9b21ec70c4abb577`
+**60 app modules · 69 test files · 109 classes · 1047 functions/methods · 21,199 lines of Python** · source hash `093fc4a1c11eb468`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -117,6 +117,8 @@ scripts/
   make_eval_cases.py                             Generate the anonymized evaluation cases (P4.2).
   make_persona_cases.py                          Turn the 2026-10-02 user-testing personas into eval cases (P8.1).
   update_docs.py                                 Regenerate the repo's living docs: the knowledge graph and the change …
+  walkthrough.cjs
+  walkthrough_server.py                          The real web app with the offline eval LLM, for browser walkthroughs t…
 tests/
   conftest.py                                    Test-wide isolation from the developer's .env.
   fixtures/
@@ -565,6 +567,7 @@ _The web app (P5.1): `uvicorn app.api.main:app`._
 - function **`_sweeping()`** ([app/api/main.py:33](../app/api/main.py#L33)) — Expired sessions and their files are deleted on time even when no
 - function **`create_app()`** ([app/api/main.py:48](../app/api/main.py#L48))
 - **Imports:** `api/routes.py`, `api/sessions.py`, `config/settings.py`, `llm/client.py`, `services/tailor.py`
+- **Imported by:** `scripts/walkthrough_server.py`
 - **Tested by:** `tests/unit/test_api.py`
 
 ### `app/api/routes.py`
@@ -798,7 +801,7 @@ _Run evaluation cases through the pipeline and collect metrics (P4.1)._
 - function **`_judge_summary()`** ([app/eval/harness.py:500](../app/eval/harness.py#L500))
 - function **`summary_lines()`** ([app/eval/harness.py:506](../app/eval/harness.py#L506))
 - **Imports:** `analysis/experience.py`, `analysis/jd_analyzer.py`, `analysis/keyword_match.py`, `domain/report.py`, `eval/golden.py`, `eval/judge.py`, `llm/client.py`, `rendering/layout.py`, `services/tailor.py`
-- **Imported by:** `eval/__main__.py`
+- **Imported by:** `eval/__main__.py`, `scripts/walkthrough_server.py`
 - **Tested by:** `tests/integration/test_arrange.py`, `tests/integration/test_eval_cases.py`, `tests/integration/test_persona_cases.py`, `tests/unit/test_cli_parity.py`, `tests/unit/test_eval_harness.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_judge.py`, `tests/unit/test_profile_store.py`, `tests/unit/test_uploads_p822.py`
 
 ### `app/eval/judge.py`
@@ -1186,7 +1189,7 @@ _Local profile of facts the user has confirmed (P3.2)._
 - function **`_hidden_text()`** ([app/services/tailor.py:1424](../app/services/tailor.py#L1424)) — Text of the sections the user hid, so coverage counts it as their choice.
 - function **`_merge_usage()`** ([app/services/tailor.py:1451](../app/services/tailor.py#L1451)) — Combine two LLMClient.get_usage_summary() dicts into one.
 - **Imports:** `analysis/checklist.py`, `analysis/experience.py`, `analysis/gap_questions.py`, `analysis/jd_analyzer.py`, `analysis/keyword_match.py`, `analysis/language.py`, `analysis/matcher.py`, `analysis/resume_normalizer.py`, `analysis/rewriter.py`, `analysis/scoring.py`, `analysis/semantic_matcher.py`, `analysis/skills_tailor.py`, `analysis/structure_extractor.py`, `analysis/summary_writer.py`, `analysis/tailor_planner.py`, `domain/evidence.py`, `domain/job.py`, `domain/report.py`, `domain/resume.py`, `domain/resume_document.py`, `domain/tailoring.py`, `ingestion/docx.py`, `ingestion/pdf.py`, `ingestion/text.py`, `llm/client.py`, `rendering/docx_patcher.py`, `rendering/html_renderer.py`, `rendering/layout.py`, `rendering/page_fit.py`, `rendering/pdf_converter.py`, `rendering/template_renderer.py`, `services/arrange.py`, `services/profile_store.py`, `services/run_manager.py`, `validation/content_lint.py`, `validation/coverage.py`, `validation/factual.py`, `validation/output.py`, `validation/safety.py`, `validation/structural.py`
-- **Imported by:** `api/main.py`, `cli.py`, `eval/harness.py`
+- **Imported by:** `api/main.py`, `cli.py`, `eval/harness.py`, `scripts/walkthrough_server.py`
 - **Tested by:** `tests/integration/test_arrange.py`, `tests/integration/test_coverage_tailor.py`, `tests/integration/test_end_to_end.py`, `tests/unit/test_api.py`, `tests/unit/test_check_parsed_resume.py`, `tests/unit/test_cli.py`, `tests/unit/test_cli_parity.py`, `tests/unit/test_details_p826.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_global_p825.py`, `tests/unit/test_new_role.py`, `tests/unit/test_profile_store.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_review_view.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_tailor_resume_flow.py`, `tests/unit/test_tailor_service_addition.py`, `tests/unit/test_uploads_p822.py`
 
 ### `app/validation/content_lint.py`

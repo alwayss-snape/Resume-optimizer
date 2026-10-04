@@ -211,7 +211,7 @@ export function Review() {
           {!llm.available ? (
             <div role="alert" className="rounded-[3px] border-2 border-danger bg-panel p-4 text-sm leading-relaxed">
               The AI model isn't available ({llm.provider_label}{llm.model ? `, ${llm.model}` : ""}: {llm.reason || "unavailable"}).
-              No rewrites could be drafted, so the cards show your original text. {llm.fix_hint} Then start over.
+              No rewrites could be drafted, so the cards show your original text.{llm.fix_hint ? ` ${llm.fix_hint} Then start over.` : ""}
             </div>
           ) : llm.failed ? (
             <div role="status" className="rounded-[3px] border border-warning bg-panel p-4 text-sm">

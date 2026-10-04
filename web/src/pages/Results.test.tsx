@@ -153,4 +153,7 @@ test("a stretch match gets its guidance too, not only a different field (P9.5)",
   show({ keyword_match: { ...MATCH, guidance: { kind: "stretch", headline: "A stretch: the job asks for more.", text: "Why.", tips } } });
   expect(screen.getByText("A stretch: the job asks for more.")).toBeInTheDocument();
   expect(screen.getByText(tips[0])).toBeInTheDocument();
+  // said once, by the guidance, not again above the missing keywords (P9.4)
+  expect(screen.queryByText(/the match didn't/)).not.toBeInTheDocument();
+  expect(screen.queryByText(/To go further/)).not.toBeInTheDocument();
 });

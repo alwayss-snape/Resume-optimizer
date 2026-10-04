@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "9b21ec70c4abb577",
+  "source_hash": "093fc4a1c11eb468",
   "stats": {
-    "files": 161,
-    "python_files": 138,
+    "files": 163,
+    "python_files": 139,
     "app_modules": 60,
     "test_files": 69,
     "classes": 109,
     "functions": 1047,
-    "lines_of_python": 21189
+    "lines_of_python": 21199
   },
   "axes": {
     "x": "location (path)",
@@ -4292,6 +4292,23 @@
           "doc": ""
         }
       ]
+    },
+    {
+      "id": "scripts/walkthrough.cjs",
+      "type": "file",
+      "layer": "Tooling",
+      "stages": [],
+      "lines": 93
+    },
+    {
+      "id": "scripts/walkthrough_server.py",
+      "type": "python",
+      "layer": "Tooling",
+      "stages": [],
+      "lines": 10,
+      "doc": "The real web app with the offline eval LLM, for browser walkthroughs that",
+      "classes": [],
+      "functions": []
     },
     {
       "id": "tests/conftest.py",
@@ -10910,6 +10927,21 @@
     {
       "from": "scripts/make_eval_cases.py",
       "to": "app/rendering/pdf_converter.py",
+      "type": "imports"
+    },
+    {
+      "from": "scripts/walkthrough_server.py",
+      "to": "app/api/main.py",
+      "type": "imports"
+    },
+    {
+      "from": "scripts/walkthrough_server.py",
+      "to": "app/eval/harness.py",
+      "type": "imports"
+    },
+    {
+      "from": "scripts/walkthrough_server.py",
+      "to": "app/services/tailor.py",
       "type": "imports"
     },
     {

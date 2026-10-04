@@ -120,11 +120,14 @@ function ScoreReveal({ result, beforeRows, asked, onAddKeywords }: {
       {result.keyword_match?.guidance && <MatchGuidance guidance={result.keyword_match.guidance} />}
       {missing.length > 0 && (
         <div className="flex flex-col gap-3 border-t border-line pt-4">
-          <p className="m-0 font-serif text-[15px] italic leading-relaxed text-muted">
-            {flat
-              ? "The wording changed, but the match didn't: rewrites only reword what's already on your resume, so it moves when you add a job keyword you really have."
-              : "To go further, add the job keywords you really have."}
-          </p>
+          {/* The guidance above already says why the match stays put (P9.4) */}
+          {!result.keyword_match?.guidance && (
+            <p className="m-0 font-serif text-[15px] italic leading-relaxed text-muted">
+              {flat
+                ? "The wording changed, but the match didn't: rewrites only reword what's already on your resume, so it moves when you add a job keyword you really have."
+                : "To go further, add the job keywords you really have."}
+            </p>
+          )}
           <div>
             <span className="text-[13px] font-semibold">Still missing ({missing.length})</span>
             <ul className="m-0 mt-2 flex flex-wrap gap-1.5 p-0">
@@ -244,7 +247,7 @@ function ResultsView({ onArrange }: { onArrange: () => void }) {
           {result.addition_note && <p className="m-0 text-sm text-muted">Your addition was included: {result.addition_note}</p>}
           {result.arrangement && (
             <div className="flex flex-col gap-1.5 border-t border-line pt-4 sm:flex-row sm:items-center sm:gap-4">
-              <Button onClick={onArrange}>Arrange and edit</Button>
+              <Button onClick={onArrange} className="shrink-0 whitespace-nowrap">Arrange and edit</Button>
               <span className="text-sm text-muted">Reorder sections and bullets, hide what you don't need, reword a line, or bring back what was trimmed.</span>
             </div>
           )}
