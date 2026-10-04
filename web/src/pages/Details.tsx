@@ -95,7 +95,8 @@ export function Details() {
     setProgress([]);
     const fixed: Corrections = { ...form, candidate: { ...form.candidate, links: links.split("\n").map((l) => l.trim()).filter(Boolean) } };
     // Unchanged: send nothing, so the server keeps exactly what it read.
-    const placements = Object.entries(placed).map(([id, target]) => ({ id, target }));
+    // "Leave it out" (an empty target) isn't sent: the line stays off the resume (P9.1).
+    const placements = Object.entries(placed).filter(([, target]) => target).map(([id, target]) => ({ id, target }));
     const changed = JSON.stringify(fixed) !== JSON.stringify(run.details) || removed.length > 0 || newJobs.length > 0
       || placements.length > 0;
     const corrections: Corrections = {
@@ -237,7 +238,7 @@ export function Details() {
         <section aria-labelledby="unplaced" className="sheet flex flex-col gap-4 rounded-[3px] p-6 md:p-7">
           <div className="flex flex-col gap-1">
             <h2 id="unplaced" className="font-display text-[22px] font-bold tracking-[-0.02em]">Lines we couldn't place</h2>
-            <p className="m-0 text-sm text-muted">They stay on your resume under "Additional information" unless you move them.</p>
+            <p className="m-0 text-sm text-muted">They stay on your resume under "Additional information" unless you move them or leave them out.</p>
           </div>
           <ul className="m-0 flex flex-col p-0">
             {(run.unplaced ?? []).map((line) => (
@@ -253,6 +254,7 @@ export function Details() {
                     {form.experience.filter((e) => !removed.includes(e.id)).map((e) => (
                       <option key={e.id} value={e.id}>A bullet of {e.company || e.roles[0]?.title || "a job"}</option>
                     ))}
+                    <option value="">Leave it out</option>
                   </select>
                 </label>
               </li>

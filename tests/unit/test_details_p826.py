@@ -44,3 +44,31 @@ def test_read_back_problems_split_by_weight():
     assert OutputQAValidator.is_serious("ATS round-trip (PDF): 1 job entries read, 2 rendered")
     assert not OutputQAValidator.is_serious("ATS round-trip (DOCX): role titles or dates differ: x")
     assert not OutputQAValidator.is_serious("Content coverage: 1 line")
+
+
+def test_section_headings_are_never_unplaced_lines():
+    """P9.1 (review F1): every section heading was listed as a line "we
+    couldn't place", and so added to the output under "Additional information"."""
+    for path, expected in [("tests/fixtures/resumes/sample.docx", []),
+                           ("tests/fixtures/resumes/replica_layout.pdf", []),
+                           ("docs/user_testing/2026-10-02/resumes/teacher.docx", [])]:
+        raw, doc, _ = TailorService(llm_client=None).parse_resume(path)
+        assert [l["text"] for l in unplaced_lines(raw, doc.resume)] == expected, path
+
+
+def test_a_line_left_out_is_not_added():
+    raw = _raw("Jane Doe", "Fluent in Portuguese and Swahili")
+    resume = Resume(candidate=Candidate(name="Jane Doe"))
+    from app.domain.resume_document import ResumeDocument
+    (_, doc, _ev), changed = TailorService(llm_client=None).apply_parse_corrections(
+        (raw, ResumeDocument(resume=resume), []), {"placed": [{"id": "b1", "target": ""}]})
+    assert doc.resume.other_sections == [] and not changed
+
+
+def test_wrong_employer_and_lost_bullets_are_serious():
+    """P9.1 (review F6): an ATS reading the wrong employer or losing bullets was only minor advice."""
+    serious = OutputQAValidator.is_serious
+    assert serious('ATS round-trip (PDF): company read as "acme inc" instead of "northwind"')
+    assert serious('ATS round-trip (DOCX): 4 of 12 bullets not read back intact (e.g. "built")')
+    assert not serious('ATS round-trip (DOCX): 1 of 12 bullets not read back intact (e.g. "built")')
+    assert not serious("ATS round-trip (PDF): role titles or dates differ: Analyst Jan 2020 – Present")

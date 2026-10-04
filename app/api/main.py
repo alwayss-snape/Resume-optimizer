@@ -4,7 +4,9 @@ Serves the JSON/SSE API under /api and, once it's built, the React app
 from web/dist. The service factory is swappable so tests can run the full
 flow without an LLM or LibreOffice.
 """
+import asyncio
 import os
+from contextlib import asynccontextmanager
 from typing import Callable, Optional
 
 from fastapi import FastAPI, Request
@@ -24,11 +26,32 @@ def default_service(model: Optional[str] = None):
     return TailorService(llm_client=LLMClient(model=model) if model else None)
 
 
+SWEEP_EVERY_S = 60
+
+
+@asynccontextmanager
+async def _sweeping(app: FastAPI):
+    """Expired sessions and their files are deleted on time even when no
+    request comes in (P9.1: sweep() only ran inside a request, so an idle
+    server kept them past what the privacy note promises)."""
+    async def loop():
+        while True:
+            await asyncio.sleep(SWEEP_EVERY_S)
+            app.state.sessions.sweep()
+    task = asyncio.create_task(loop())
+    try:
+        yield
+    finally:
+        task.cancel()
+
+
 def create_app(make_service: Callable = default_service, sessions: Optional[SessionStore] = None,
                rate_limit: Optional[int] = None, serve_web: bool = True) -> FastAPI:
-    app = FastAPI(title="Tailores", docs_url="/api/docs", openapi_url="/api/openapi.json")
+    app = FastAPI(title="Tailores", docs_url="/api/docs", openapi_url="/api/openapi.json", lifespan=_sweeping)
     app.state.make_service = make_service
-    app.state.sessions = sessions or SessionStore(ttl_seconds=settings.api_session_ttl_minutes * 60)
+    # `is not None`: an empty store is falsy (it has a length), and was replaced
+    app.state.sessions = sessions if sessions is not None else SessionStore(
+        ttl_seconds=settings.api_session_ttl_minutes * 60)
     app.state.rate_limiter = RateLimiter(rate_limit if rate_limit is not None else settings.api_rate_limit_per_hour)
     app.state.max_upload_bytes = settings.api_max_upload_mb * 1024 * 1024
     app.include_router(router)

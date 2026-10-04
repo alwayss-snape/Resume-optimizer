@@ -20,15 +20,33 @@ _COMMON = {
 }
 
 
+# Small words inside a proper name: "Banco de España", "María de la Cruz",
+# "Hospital del Mar". An English resume full of such names isn't Spanish (P9.1).
+_NAME_PARTICLES_RE = re.compile(
+    r"(?<=[^\W\d_])(?:\s+(?:de|del|la|las|los|el|y|e|da|do|dos|das|di|du|des|le|les|von|van|der|den|zu|und))+"
+    r"(?=\s+[A-ZÀ-ÖØ-Þ])")
+_UPPER_WORD_END_RE = re.compile(r"\b[A-ZÀ-ÖØ-Þ][^\W\d_]*$")
+# At least this many function words of the other language, so a few names
+# in a short resume can't decide it.
+MIN_HITS = 3
+
+
+def _drop_name_particles(text: str) -> str:
+    def keep_unless_in_name(m: "re.Match") -> str:
+        return "" if _UPPER_WORD_END_RE.search(m.string[:m.start()]) else m.group(0)
+    return _NAME_PARTICLES_RE.sub(keep_unless_in_name, text)
+
+
 def other_language(text: str) -> Optional[str]:
     """"German" / "Spanish" / "French" when the text reads as that rather
     than English; None for English or too little text to tell."""
-    words = [w.lower() for w in re.findall(r"[^\W\d_]+", text or "")]
+    words = [w.lower() for w in re.findall(r"[^\W\d_]+", _drop_name_particles(text or ""))]
     if len(words) < 25:
         return None
-    share = {lang: sum(w in vocab for w in words) / len(words) for lang, vocab in _COMMON.items()}
+    hits = {lang: sum(w in vocab for w in words) for lang, vocab in _COMMON.items()}
+    share = {lang: n / len(words) for lang, n in hits.items()}
     best = max(share, key=share.get)
-    if best != "en" and share[best] > 2 * share["en"] and share[best] >= 0.04:
+    if best != "en" and hits[best] >= MIN_HITS and share[best] > 2 * share["en"] and share[best] >= 0.04:
         return {"de": "German", "es": "Spanish", "fr": "French"}[best]
     return None
 

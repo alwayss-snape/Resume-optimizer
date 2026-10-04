@@ -166,7 +166,10 @@ def output_basename(resume: Resume, company: Optional[str] = None) -> str:
     safe = lambda s: re.sub(r"[^\w]+", "_", s or "", flags=re.UNICODE).strip("_")
     name = safe(resume.candidate.name if resume.candidate.name != "Candidate" else "")
     company = "" if (company or "").strip().lower() in ("", "company", "target company") else company
-    parts = [name, "Resume", safe(company)]
+    # Each part capped, so a long name or JD company can't exceed the 255-byte
+    # file-name limit once ".docx" and the run folder are added (P9.1).
+    cap = lambda s, n: s.encode("utf-8")[:n].decode("utf-8", "ignore").rstrip("_")
+    parts = [cap(name, 80), "Resume", cap(safe(company), 60)]
     return "_".join(p for p in parts if p)
 
 

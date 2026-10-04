@@ -397,3 +397,37 @@ def test_binary_garbage_text_formats_are_refused(client):
     utf16 = "Jane Doe\nEXPERIENCE\nData Analyst | Acme | 2020 - Present\n- Built dashboards".encode("utf-16")
     r = client.post("/api/analyze", files={"file": ("cv.txt", utf16)}, data={"jd_text": SAMPLE_JD})
     assert r.status_code == 200, r.text
+
+
+def test_failed_conversion_leaves_no_temp_files(client, monkeypatch):
+    """P9.1 (review F5): the upload and the conversion folder were left behind when conversion failed or raised."""
+    import os
+    seen = []
+
+    def failing(path, out_dir):
+        seen.append((path, out_dir))
+        if len(seen) == 2:
+            raise RuntimeError("LibreOffice crashed")
+        return None
+    monkeypatch.setattr("app.rendering.pdf_converter.convert_to_docx", failing)
+    r = client.post("/api/analyze", files={"file": ("cv.odt", b"PK\x03\x04odt")}, data={"jd_text": SAMPLE_JD})
+    assert r.status_code == 422
+    with pytest.raises(RuntimeError):
+        client.post("/api/analyze", files={"file": ("cv.odt", b"PK\x03\x04odt")}, data={"jd_text": SAMPLE_JD})
+    assert len(seen) == 2 and not any(os.path.exists(p) or os.path.exists(d) for p, d in seen)
+
+
+def test_idle_sessions_are_swept_without_requests(monkeypatch):
+    """P9.1 (review F4): expired sessions were only dropped when a request came in."""
+    import time
+    from app.api import main
+    monkeypatch.setattr(main, "SWEEP_EVERY_S", 0.05)
+    store = SessionStore(ttl_seconds=0)
+    app = create_app(make_service=lambda model=None: TailorService(llm_client=None), sessions=store, serve_web=False)
+    with TestClient(app):
+        store.create()
+        assert len(store) == 1
+        deadline = time.time() + 3
+        while len(store) and time.time() < deadline:
+            time.sleep(0.05)
+        assert len(store) == 0

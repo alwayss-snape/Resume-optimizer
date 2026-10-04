@@ -7,6 +7,8 @@ test("says where the resume goes and when files are deleted", () => {
     max_upload_mb: 5, cloud: true, session_minutes: 60 }} />);
   expect(screen.getByText(/sent to Groq \(cloud\), a cloud AI service/)).toBeInTheDocument();
   expect(screen.getByText(/after 60 minutes/)).toBeInTheDocument();
+  // Settings are kept in the browser, so it can't say "nothing" is (P9.1).
+  expect(screen.getByText(/keeps only your settings, never your resume/)).toBeInTheDocument();
   rerender(<PrivacyNote config={{ provider: "ollama", provider_label: "Ollama (local)", models: [], max_upload_mb: 5,
     cloud: false, session_minutes: 30 }} />);
   expect(screen.getByText(/nothing is sent to an outside AI service/)).toBeInTheDocument();

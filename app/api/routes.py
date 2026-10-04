@@ -178,15 +178,16 @@ async def _save_upload(request: Request, file: Optional[UploadFile], resume_text
     if suffix in CONVERTED_TYPES:
         from app.rendering.pdf_converter import convert_to_docx
         out_dir = tempfile.mkdtemp(prefix="convert_")
-        converted = await run_in_threadpool(convert_to_docx, path, out_dir)
-        os.remove(path)
-        if not converted:
-            from app.ingestion.errors import CONVERT_FAILED
-            raise HTTPException(422, CONVERT_FAILED)
-        final = tempfile.NamedTemporaryFile(delete=False, suffix=".docx").name
-        shutil.move(converted, final)
-        shutil.rmtree(out_dir, ignore_errors=True)
-        return final
+        try:  # the upload and the conversion folder never outlive the request (P9.1)
+            converted = await run_in_threadpool(convert_to_docx, path, out_dir)
+            if not converted:
+                raise HTTPException(422, errors.CONVERT_FAILED)
+            final = tempfile.NamedTemporaryFile(delete=False, suffix=".docx").name
+            shutil.move(converted, final)
+            return final
+        finally:
+            os.remove(path)
+            shutil.rmtree(out_dir, ignore_errors=True)
     return path
 
 
@@ -290,6 +291,8 @@ def unplaced_lines(raw_doc, resume) -> List[Dict]:
     have = words(" ".join(_resume_texts(resume)))
     out = []
     for b in raw_doc.blocks:
+        if b.block_type == "heading" and (b.section or "").strip() == b.text.strip():
+            continue  # a heading that opens its section is structure, not a lost line (P9.1)
         line_words = words(b.text)
         if line_words and len(line_words & have) / len(line_words) < 0.6:
             out.append({"id": b.id, "text": b.text.strip()})

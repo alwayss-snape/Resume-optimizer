@@ -63,11 +63,19 @@ class OutputQAValidator:
     # dates printed differently, a bullet re-wrapped) are minor differences,
     # shown as advice: they made most runs say "ready, with warnings".
     SERIOUS = ("name read as", "email not found", "phone not found", "could not be re-parsed", "job entries read",
-               "section was not recognised", "link(s) not found")
+               "section was not recognised", "link(s) not found", "company read as")
+    # A quarter of the bullets lost on read-back is real loss, not a re-wrap (P9.1).
+    SERIOUS_BULLET_LOSS = 0.25
+    _BULLETS_LOST_RE = re.compile(r"(\d+) of (\d+) bullets not read back")
 
     @classmethod
     def is_serious(cls, warning: str) -> bool:
-        return warning.startswith(cls.ROUND_TRIP_PREFIX) and any(s in warning for s in cls.SERIOUS)
+        if not warning.startswith(cls.ROUND_TRIP_PREFIX):
+            return False
+        lost = cls._BULLETS_LOST_RE.search(warning)
+        if lost and int(lost.group(2)) and int(lost.group(1)) / int(lost.group(2)) >= cls.SERIOUS_BULLET_LOSS:
+            return True
+        return any(s in warning for s in cls.SERIOUS)
 
     def round_trip(self, path: str, expected) -> List[str]:
         """Re-parse a rendered DOCX / PDF the way an ATS would (our own

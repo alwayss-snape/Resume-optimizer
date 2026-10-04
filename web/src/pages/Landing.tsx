@@ -31,7 +31,7 @@ export function PrivacyNote({ config }: { config?: AppConfig | null }) {
         ? `Your resume and the job description are processed on this server, by ${ai}; nothing is sent to an outside AI service. `
         : `To read the job description and draft rewrites, the text of your resume and the job description is sent to ${ai}, a cloud AI service. `}
       Your file and results are kept only for this visit and deleted when you start over or after {minutes} minutes
-      without activity. Nothing is stored in your browser.
+      without activity. Your browser keeps only your settings, never your resume.
     </p>
   );
 }
