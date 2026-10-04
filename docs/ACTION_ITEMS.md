@@ -1,8 +1,8 @@
 # Action Items — Best Tailored Resume per JD
 
 _Living tracker. Update an item's **Status** in the same commit that changes it; add a short note (commit subject or
-what's left). Last updated: 2026-10-04 (P0–P8 done, P5.7 shelved; Phase 9 holds what's left of the Stage L gate and
-waits for the owner's review of the current state before more items are added)._
+what's left). Last updated: 2026-10-04 (P0–P8 done, P5.7 shelved; Phase 9's gate items P9.1–P9.6 done the same day;
+the owner's review of the current state comes next and becomes P9.7 onward)._
 
 **Goal:** every resume + JD run produces the best possible tailored resume: an accurate match score, strong
 JD-aligned rewrites, a Novoresume-style ATS layout that fits the right length, and nothing fabricated.
@@ -22,8 +22,8 @@ JD-aligned rewrites, a Novoresume-style ATS layout that fits the right length, a
 | 6: UI redesign | 6 | 6 | 0 | 0 |
 | 7: Owner feedback on the flow | 2 | 2 | 0 | 0 |
 | 8: Cross-domain robustness and user control | 26 | 26 | 0 | 0 |
-| 9: Close-out and owner review | 6 | 5 | 0 | 1 |
-| **Total** | **88** | **84** | **0** | **2** |
+| 9: Close-out and owner review | 6 | 6 | 0 | 0 |
+| **Total** | **88** | **85** | **0** | **1** |
 
 Phase 1's two open items (P1.15, P1.16) are ➖, moved into P8.9 and P8.18, so its row no longer adds up to 16.
 
@@ -280,7 +280,12 @@ are what's left. Before they run, the owner reviews the current state of the app
 findings (R1, R2…) and turned into new items (P9.7 onward) in the same way the user-testing findings became Phase 8.
 
 **Order:** owner review first → plan the review findings as items → P9.1–P9.4 (the Stage L gate) together with the
-new items → P9.5–P9.6 when convenient.
+new items → P9.5–P9.6 when convenient. _Changed by the owner on 2026-10-04: P9.1–P9.6 first (all ✅ that day,
+order P9.2 → P9.1 → P9.5 → P9.4 → P9.3 → P9.6), the owner's review next._
+
+**Stage L gate (2026-10-04): ✅** every edge file gets its own message with no 500s (P9.2); review issues fixed
+(P9.1); offline persona sweep 41 pass / 11 known xfail; browser walkthrough clean (P9.4); private real-resume run
+passes live (P9.3). Not re-run: the 5 live LLM persona runs (Groq quota kept for the private run).
 
 | ID | Item | Files | Status | Notes |
 |---|---|---|---|---|
@@ -289,7 +294,7 @@ new items → P9.5–P9.6 when convenient.
 | P9.3 | **Final private real-resume run:** the owner's resume with the FOX JD, live Groq; check golden parse, rewrites, coverage, read-back, page count, then arrange and re-render | `data/eval/private/` (gitignored) | ✅ | 2026-10-04, live Groq (`python -m app.eval run --live --tailor --case real-fox`). First run: parse = golden, 1 page, but **5 of 12 bullets lost to `llm_error`**. Two causes, both fixed in `llm/client.py` with tests: (1) gpt-oss used its completion budget reasoning ("max completion tokens reached before generating a valid document"), so a strict-JSON retry now asks for less reasoning (high → medium → low); (2) a tokens-per-minute 429 asking for 37–41 s failed at once (only waits ≤ 30 s were retried, meant to fail fast on the daily limit); per-minute waits up to 65 s are now waited out, the daily limit still fails fast. Final run: parse = golden match; JD 21 required / 4 preferred (LLM); 12/12 bullets handled (9 rewritten, 3 judged better unchanged, 0 errors), 11 PASS / 1 NEEDS_CONFIRM, 0 rejected; content coverage 100% of 28 lines (18 kept, 7 reworded, 3 trimmed for the page and reported, 0 lost); DOCX and PDF read-back 0 warnings; 1 A4 page; no keyword stuffing; keyword rate 26.9 → 27.6; 6 calls, 16K tokens, 5 × 429 all waited out. Arrange on the same resume (offline server, no LLM): moved Interests first, pinned all 5 trimmed items, reversed a job's bullets, edited one; re-render 1 page, pinned and edited lines kept (4 other bullets trimmed instead), 0 read-back problems, 100% coverage; then hid a section with "don't trim": 2 pages, nothing trimmed; DOCX and PDF download. Results kept only in `data/eval/private/` |
 | P9.4 | **Browser walkthrough:** the whole flow plus Arrange, Check details ("Also read", "Lines we couldn't place") and the conditions checklist, at 1440 / 390 px, light and dark, by mouse and keyboard | `web/src/pages/*` | ✅ | 2026-10-04: in real Chrome through playwright-core (`scripts/walkthrough.cjs` against `scripts/walkthrough_server.py`, the built app with the offline LLM so no Groq quota is spent), nurse persona + its JD, all four of 1440 / 390 × light / dark: upload → Check details ("Also read" shown, no unplaced lines: the P9.1 F1 fix seen in the browser) → Review (Job conditions shown; Generate pressed by keyboard) → Results → Arrange (a section moved by keyboard, focus kept on its control; Summary hidden by mouse and brought back with Undo). 0 console errors, 0 × 5xx, no horizontal overflow at 390 px, dark background applied. Fixed from the screenshots: "Arrange and edit" wrapped onto two lines at 1440; Results said "rewrites only reword what's there" twice once the stretch guidance showed (P9.5); the AI-unavailable banner ended in a stray "Then start over." when there is no fix hint. Not covered: live AI rewrites in the browser (offline run; the live path is P9.3), drag and drop by pointer, screen readers |
 | P9.5 | **Minor matching notes from the Stage K review:** `definitions()` can take a connector word as an acronym; "X or Y" doesn't share a tail ("Java or Python developer"); keyword spans from `original.find` can be off when the JD had HTML; Results shows only the different-field guidance, not the others | `analysis/keyword_match.py`, `analysis/jd_analyzer.py`, `web/src/pages/Results.tsx` | ✅ | 2026-10-04: connectors (or, in, with, a, to…) never give an acronym a letter or start its expansion ("Or Associate (OA)" was read as a definition), and an acronym that does spell one is now found ("Point Of Sale (POS)"); "Java or Python developer" / "RN or LPN license": a role or credential word at the end belongs to both, so the second head alone counts just like the first (sharing it strictly would have cost a nurse credit for RN); requirement spans now point into the cleaned JD the job keeps (`raw_text`), searched from the previous span so a repeated line maps to its own place; Results shows the stretch guidance too. `test_matching_p95.py`, a Results test. Persona eval: 40 pass, 11 xfail; `veteran` already passed its full check (stale xfail since Stage K, removed) |
-| P9.6 | **Docs catch-up:** PROJECT_OVERVIEW (test counts, open issue 6 "Next"), README and BUILD.md describe the state after Phase 8 | `docs/PROJECT_OVERVIEW.md`, `README.md`, `BUILD.md` | ⬜ | BUILD.md has an uncommitted owner edit; keep it |
+| P9.6 | **Docs catch-up:** PROJECT_OVERVIEW (test counts, open issue 6 "Next"), README and BUILD.md describe the state after Phase 8 | `docs/PROJECT_OVERVIEW.md`, `README.md`, `BUILD.md` | ✅ | 2026-10-04: PROJECT_OVERVIEW reviewed (inputs, upload messages, session sweep, test counts, open issue 6 closed out, new issues 7 "Phase 9 close-out / Next: owner review" and 8 "Groq per-minute waits"); README features (file types, ATS template vs your layout, Arrange, fair score) and the dev commands (tests, eval, browser walkthrough). BUILD.md left untouched on purpose: it holds the owner's uncommitted venv edit, so its run and test instructions are mirrored in README for now |
 
 ### Owner review of the current state (pending)
 

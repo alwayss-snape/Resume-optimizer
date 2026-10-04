@@ -1,13 +1,13 @@
 # Project Overview — Resume-optimizer
 
-_Start here. Last reviewed: 2026-10-02 (branch `fb_ksh`). Hand-maintained — update it when capabilities or open
+_Start here. Last reviewed: 2026-10-04 (branch `fb_ksh`). Hand-maintained — update it when capabilities or open
 issues change. For "where is X in the code" see [KNOWLEDGE_GRAPH.md](KNOWLEDGE_GRAPH.md); for "what changed when"
 see [CHANGE_LOG.md](CHANGE_LOG.md)._
 
 ## What it is
 
-Tailores, a resume tailoring app (Python package `resume-tailor`; resume text goes to the configured AI provider, Groq's cloud by default). You give it a resume (DOCX or PDF) and a pasted
-job description, and it:
+Tailores, a resume tailoring app (Python package `resume-tailor`; resume text goes to the configured AI provider, Groq's cloud by default). You give it a resume (DOCX, PDF, .doc / .odt / .rtf, .txt or pasted text) and a
+pasted job description, and it:
 
 1. scores how well the resume matches the JD (0–100, with a breakdown),
 2. proposes rewrites of your experience bullets that lean toward the JD, **using only facts already in your resume**,
@@ -58,10 +58,10 @@ Semantic matching uses a local embedding model (`all-MiniLM-L6-v2`).
 | Add a **new job role** | ✅ Works | Company, title, location, dates or "currently here", description → fact-checked bullets, placed in date order (P3.3) |
 | Strict Factual Mode | ⚠️ Cosmetic | See issue 4 |
 | DOCX / PDF / HTML output | ✅ Works | Re-parsed after rendering to prove it reads back intact (ATS round-trip, P2.5). ATS template (P2.1): A4, Arial, standard headings, section order by experience, "Jan 2022 – Present" dates; files named `First_Last_Resume_<Company>`. Auto page-fit to 1 page (< 8 years) or 2, trimming the least relevant content and reporting it (P2.3–P2.4). PDF and page-fit need LibreOffice installed |
-| Web API | ✅ Works | FastAPI (P5.1): one endpoint per step, SSE progress, per-visitor sessions with expiry, upload checks, rate limit. Public-hosting hardening is P5.7 |
+| Web API | ✅ Works | FastAPI (P5.1): one endpoint per step, SSE progress, per-visitor sessions with expiry (swept every minute, P9.1), upload checks, rate limit. Every broken upload gets its own plain message, never a 500: damaged, empty, password-protected, scanned, too large, wrong type (P8.22, P9.2). Public-hosting hardening is P5.7 |
 | Web UI (`web/`) | ✅ Works | React app (P5.2–P5.6) redesigned in Phase 6 as **Editor's Proof** (`DESIGN.md`): bright paper on a light desk with a matching dark mode that follows the system, blue pencil as the one action colour, proof marks for every change (struck, inserted, highlighted keywords, reasons in the margin), a landing hero of 3D proof sheets with self-drawing marks over a WebGL ink field, a score rule instead of a gauge, WCAG 2.2 AA. Flow unchanged: upload → check details → review → results, plus the match report |
 | CLI | ✅ Works | `analyze`, `propose` (editable review file) and `tailor --proposals` with the UI's features: edits, gap answers, additions, a new job, strict mode; live progress (P3.6) |
-| Tests | ✅ 384 backend + 68 front-end passing | `pytest -q` (~50-80 s); the full offline eval of 8 anonymized cases runs with `pytest -m eval` |
+| Tests | ✅ 553 backend + 83 front-end passing | `pytest -q` (~4 min); the offline eval and persona cases run with `pytest -m eval` (41 pass, 11 known xfail). A browser walkthrough in Chrome at 1440 / 390 px, light and dark: `scripts/walkthrough.cjs` (P9.4) |
 | Evaluation set | ✅ Works | 11 anonymized resume + JD cases with expected facts; `python -m app.eval run --tailor --check` (P4.1, P4.2); LLM-as-judge from another model family, rubric + position-swapped pairwise, `--judge` / `--replay` (P4.3) |
 | Arrange and edit after AI changes | ✅ Works | From Results: reorder sections, jobs and each job's bullets (never across jobs), hide sections, reword a bullet, keep what page-fit trimmed, choose 1 / 2 / 3 pages or "don't trim"; re-rendered with no LLM, checked like a tailoring run (P8.13–P8.16) |
 | Resumes outside tech, outside the US, not in English | ✅ Works | Unknown sections kept verbatim under their own heading; header details kept; non-tech job-line formats, EU / US numeric dates, seasons, "Till Date"; phone formats worldwide; text boxes; .txt, pasted text, .doc / .odt / .rtf; a content coverage check fails any run that loses a line (P8.1–P8.8, P8.22). Non-English text is kept and named "English only for now" (P8.25) |
@@ -89,9 +89,15 @@ and unused prompts (P0.8, P1.10) are all fixed. What remains:
 6. **Cross-domain user testing (2026-10-02), Phase 8 (all 26 items done 2026-10-03, stages H–L):** 39 findings (U1–U39) from 19 non-tech, non-US and
    non-English personas, including silent section loss, misattributed facts, dropped phone numbers and an unfair
    score. See [user_testing/2026-10-02/FINDINGS.md](user_testing/2026-10-02/FINDINGS.md). Planned in
-   [ACTION_ITEMS.md](ACTION_ITEMS.md) as P8.1–P8.26, stages H–L: never lose content (H), honest content (I), an
-   **arrange-and-edit step** after the AI changes (J, owner request), a fair score (K), and clear failures and privacy
-   (L). Next: the owner reviews the current state; that review and what is left of the Stage L gate are Phase 9 in ACTION_ITEMS.
+   [ACTION_ITEMS.md](ACTION_ITEMS.md) as P8.1–P8.26, stages H–L.
+7. **Phase 9 close-out (P9.1–P9.5 done 2026-10-04):** the Stage L gate is finished: an independent review of
+   P8.22–P8.26 (6 issues fixed, the worst being every section heading added to the output as "Additional
+   information"), a timed edge-file sweep with no 500s, a real-browser walkthrough, and a live private run of the
+   owner's resume (golden parse, 12/12 bullets handled, 100% coverage, clean read-back, 1 page; Groq per-minute
+   limits and reasoning cut-offs are now retried instead of losing bullets). **Next:** the owner reviews the current
+   state; findings go into ACTION_ITEMS as R1, R2… and become P9.7 onward.
+8. **Groq free tier, per minute:** 8K tokens per minute means role rewrites can wait 30–60 s each on a busy run.
+   That is now waited out (shown as progress), so a real run takes ~1–2 minutes of drafting.
 
 ## Repo map (docs)
 
@@ -100,7 +106,7 @@ and unused prompts (P0.8, P1.10) are all fixed. What remains:
 | `docs/PROJECT_OVERVIEW.md` | This file: what/status/issues/next | By hand |
 | `PRODUCT.md` / `DESIGN.md` | Product context and the built design system (Impeccable; `.impeccable/` holds the direction contract) | By hand / Impeccable |
 | `docs/user_testing/` | User-testing findings and fictional persona inputs to reproduce them | By hand |
-| `docs/ACTION_ITEMS.md` | Improvement roadmap with live status per item (P0–P8) | By hand, every change |
+| `docs/ACTION_ITEMS.md` | Improvement roadmap with live status per item (P0–P9) | By hand, every change |
 | `docs/KNOWLEDGE_GRAPH.md` / `.json` | Where everything is: tree, layer × stage matrix, module cards, deps | Auto (pre-commit) |
 | `docs/CHANGE_LOG.md` | Timestamped log of major commits | Auto (post-commit) |
 | `ARCHITECTURE.md` | Design principles, semantic-matching contract, privacy | By hand |

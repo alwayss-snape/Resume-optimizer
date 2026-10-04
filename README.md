@@ -6,7 +6,14 @@ Tailores tailors a resume to a job description: it reads the resume, scores it a
 
 - **Strict Factual Accuracy:** Never fabricates skills, dates, employers, metrics, or certifications.
 - **Evidence Ledger:** All rewrites reference verifiable source evidence.
-- **Layout Preservation:** Patches existing `.docx` elements preserving formatting, fonts, and styles.
+- **Any resume file:** `.docx`, `.pdf`, `.doc`, `.odt`, `.rtf`, `.txt` or pasted text. A damaged, empty,
+  password-protected or scanned file gets its own plain message instead of an error.
+- **ATS template or your own layout:** a clean A4 ATS template fitted to 1 or 2 pages by experience (the default), or
+  your original `.docx` patched in place, keeping its formatting (an advanced option).
+- **Arrange and edit:** after the AI changes, reorder sections, jobs and bullets, hide sections, reword a bullet and
+  bring back what page-fit trimmed; re-rendered with no AI call, and checked so no line is lost.
+- **A fair, explained score:** works outside tech (alternatives, acronyms, degree levels, licences and shifts as a
+  separate checklist), resists keyword stuffing, and says why a low match is low.
 - **Hybrid Matching Engine:** Exact, alias, and local embedding-based semantic matching. The semantic layer only considers requirements the deterministic layer leaves unmatched, is clearly labeled as an inferred (not exact) match wherever shown, and never overrides a deterministic match.
 - **Web app & CLI:** A React web app (`web/`) on a FastAPI backend (`app/api/`): upload, check what was read,
   review every rewrite with a live match score, then download DOCX/PDF. Also a command-line interface.
@@ -25,8 +32,13 @@ See [BUILD.md](BUILD.md) for installation and environment setup.
 
 ## Development
 
-- Create and activate a virtualenv, then install dependencies from `pyproject.toml`.
-- Use `pytest` to run tests.
+- Create and activate a virtualenv, then install dependencies from `pyproject.toml` (see [BUILD.md](BUILD.md)).
+- Backend tests: `.venv_py311/bin/python -m pytest -q` (~4 min; needs `sentence-transformers`).
+  The offline persona and eval cases: `pytest -q -m eval` (needs LibreOffice).
+- Front-end tests: `cd web && npm test`. Build the app with `npm run build`; uvicorn then serves it.
+- Browser walkthrough (1440 / 390 px, light and dark, in Chrome, no AI quota used):
+  `PYTHONPATH=. uvicorn scripts.walkthrough_server:app --port 8010`, then
+  `cd web && OUT=/tmp/shots node ../scripts/walkthrough.cjs`.
 
 Auto-commit helper
 
