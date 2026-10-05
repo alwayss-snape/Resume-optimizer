@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**60 app modules · 73 test files · 111 classes · 1080 functions/methods · 21,684 lines of Python** · source hash `6f6aefe144cdcd70`
+**60 app modules · 73 test files · 111 classes · 1083 functions/methods · 21,739 lines of Python** · source hash `e8dbe3b145ce134e`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -985,7 +985,7 @@ _Plain-text resumes: a .txt upload or text pasted in the app (P8.22)._
 
 ### `app/rendering/html_renderer.py`
 
-**Layer:** Rendering · **Stage:** 9 Render · **Lines:** 160
+**Layer:** Rendering · **Stage:** 9 Render · **Lines:** 162
 
 - class **`HtmlResumeRenderer`** ([app/rendering/html_renderer.py:10](../app/rendering/html_renderer.py#L10)) — Render an ATS-safe, printable résumé from the canonical document.
   - `_items()` :13
@@ -995,14 +995,14 @@ _Plain-text resumes: a .txt upload or text pasted in the app (P8.22)._
   - `_section()` :54
   - `_other()` :57 — A kept section (P8.3), each line as written.
   - `render()` :74 — Same sections, order and headings as the DOCX template (P2.1).
-  - `write_html()` :156
+  - `write_html()` :158
 - **Imports:** `domain/resume.py`, `domain/resume_document.py`, `rendering/layout.py`
 - **Imported by:** `services/tailor.py`
 - **Tested by:** `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_html_renderer.py`, `tests/unit/test_kept_sections_p83.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_template_layout.py`
 
 ### `app/rendering/layout.py`
 
-**Layer:** Rendering · **Stage:** 9 Render · **Lines:** 208
+**Layer:** Rendering · **Stage:** 9 Render · **Lines:** 221
 
 _Shared layout rules for the ATS template (P2.1)._
 
@@ -1015,9 +1015,10 @@ _Shared layout rules for the ATS template (P2.1)._
 - function **`format_date_text()`** ([app/rendering/layout.py:130](../app/rendering/layout.py#L130)) — A free-text range such as an education's '2016 - 2020' or
 - function **`contact_parts()`** ([app/rendering/layout.py:140](../app/rendering/layout.py#L140)) — email | phone | City, Country | linkedin | github | other links.
 - function **`display_skills()`** ([app/rendering/layout.py:148](../app/rendering/layout.py#L148)) — At most `max_categories` lines: the first ones as they are (JD-relevant
-- function **`output_basename()`** ([app/rendering/layout.py:162](../app/rendering/layout.py#L162)) — First_Last_Resume_<Company>: letters of any script kept ("Lucía
-- function **`fallback_font()`** ([app/rendering/layout.py:188](../app/rendering/layout.py#L188)) — The best installed font for scripts Arial lacks.
-- function **`needs_fallback_font()`** ([app/rendering/layout.py:206](../app/rendering/layout.py#L206)) — Characters outside Latin / Greek: CJK, Cyrillic, Arabic, Devanagari...
+- function **`skill_label()`** ([app/rendering/layout.py:167](../app/rendering/layout.py#L167)) — The label printed before a skills line, or None when the resume has a
+- function **`output_basename()`** ([app/rendering/layout.py:175](../app/rendering/layout.py#L175)) — First_Last_Resume_<Company>: letters of any script kept ("Lucía
+- function **`fallback_font()`** ([app/rendering/layout.py:201](../app/rendering/layout.py#L201)) — The best installed font for scripts Arial lacks.
+- function **`needs_fallback_font()`** ([app/rendering/layout.py:219](../app/rendering/layout.py#L219)) — Characters outside Latin / Greek: CJK, Cyrillic, Arabic, Devanagari...
 - **Imports:** `analysis/experience.py`, `domain/resume.py`, `domain/resume_document.py`
 - **Imported by:** `eval/harness.py`, `rendering/html_renderer.py`, `rendering/template_renderer.py`, `services/arrange.py`, `services/tailor.py`, `validation/output.py`
 - **Tested by:** `tests/unit/test_dates_p86.py`, `tests/unit/test_global_p825.py`, `tests/unit/test_kept_sections_p83.py`, `tests/unit/test_stage_h_review.py`, `tests/unit/test_template_layout.py`
@@ -1080,7 +1081,7 @@ _What the proposal review screen shows (P3.4, served by the web API since_
 
 ### `app/rendering/template_renderer.py`
 
-**Layer:** Rendering · **Stage:** 9 Render · **Lines:** 313
+**Layer:** Rendering · **Stage:** 9 Render · **Lines:** 315
 
 - class **`TemplateRenderer`** ([app/rendering/template_renderer.py:23](../app/rendering/template_renderer.py#L23)) — Standard single-column, ATS-safe DOCX renderer with support for ResumeDocument.
   - `render_ats_default()` :28 — Render the ATS template (P2.1): A4, single column, Arial,
@@ -1088,20 +1089,20 @@ _What the proposal review screen shows (P3.4, served by the web API since_
   - `_add_summary()` :98
   - `_add_experience()` :104
   - `_add_skills()` :139
-  - `_add_education()` :150
-  - `_add_projects()` :165
-  - `_add_certifications()` :188
-  - `_add_other()` :194 — A kept section (P8.3): its own heading, each line as written.
-  - `_add_achievements()` :205
-  - `_add_interests()` :210
-  - `_set_document_defaults()` :217 — A4, the template's margins and font, instead of python-docx's
-  - `_content_width()` :242
-  - `_add_section_heading()` :246 — A section label in the accent color with a rule underneath —
-  - `_role_dates()` :261
-  - `_add_meta_line()` :264 — 'Company · Location' in italic grey under a title line.
-  - `_add_bullets()` :273
-  - `_add_title_dates_line()` :278 — Title (bold) on the left, date range right-aligned on the same
-  - `_add_bottom_border()` :300 — Adds a single bottom border to a paragraph via raw OOXML — the
+  - `_add_education()` :152
+  - `_add_projects()` :167
+  - `_add_certifications()` :190
+  - `_add_other()` :196 — A kept section (P8.3): its own heading, each line as written.
+  - `_add_achievements()` :207
+  - `_add_interests()` :212
+  - `_set_document_defaults()` :219 — A4, the template's margins and font, instead of python-docx's
+  - `_content_width()` :244
+  - `_add_section_heading()` :248 — A section label in the accent color with a rule underneath —
+  - `_role_dates()` :263
+  - `_add_meta_line()` :266 — 'Company · Location' in italic grey under a title line.
+  - `_add_bullets()` :275
+  - `_add_title_dates_line()` :280 — Title (bold) on the left, date range right-aligned on the same
+  - `_add_bottom_border()` :302 — Adds a single bottom border to a paragraph via raw OOXML — the
 - **Imports:** `domain/resume_document.py`, `rendering/layout.py`
 - **Imported by:** `services/tailor.py`
 - **Tested by:** `tests/unit/test_ats_round_trip.py`, `tests/unit/test_docx_renderer.py`, `tests/unit/test_kept_sections_p83.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_template_layout.py`, `tests/unit/test_template_renderer_standalone.py`
@@ -1166,7 +1167,7 @@ _Local profile of facts the user has confirmed (P3.2)._
 
 ### `app/services/tailor.py`
 
-**Layer:** Services · **Stage:** all · **Lines:** 1485
+**Layer:** Services · **Stage:** all · **Lines:** 1492
 
 - class **`TailorService`** ([app/services/tailor.py:61](../app/services/tailor.py#L61))
   - `__init__()` :62 — `keep_run=False` (the web app): nothing is written to data/runs, so
@@ -1198,10 +1199,10 @@ _Local profile of facts the user has confirmed (P3.2)._
   - `generate_proposals()` :669 — Generate rewrite proposals without applying them, plus questions
   - `incorporate_user_addition()` :746 — Fold a user-supplied free-text addition (a project, an
   - `tailor_resume()` :825
-  - `arrange()` :1344 — Re-render the tailored resume as the user arranged it (P8.13–P8.16):
+  - `arrange()` :1351 — Re-render the tailored resume as the user arranged it (P8.13–P8.16):
 - function **`_progress()`** ([app/services/tailor.py:50](../app/services/tailor.py#L50)) — A progress reporter that can never break a run (P3.6).
-- function **`_hidden_text()`** ([app/services/tailor.py:1440](../app/services/tailor.py#L1440)) — Text of the sections the user hid, so coverage counts it as their choice.
-- function **`_merge_usage()`** ([app/services/tailor.py:1467](../app/services/tailor.py#L1467)) — Combine two LLMClient.get_usage_summary() dicts into one. When one
+- function **`_hidden_text()`** ([app/services/tailor.py:1447](../app/services/tailor.py#L1447)) — Text of the sections the user hid, so coverage counts it as their choice.
+- function **`_merge_usage()`** ([app/services/tailor.py:1474](../app/services/tailor.py#L1474)) — Combine two LLMClient.get_usage_summary() dicts into one. When one
 - **Imports:** `analysis/checklist.py`, `analysis/experience.py`, `analysis/gap_questions.py`, `analysis/jd_analyzer.py`, `analysis/keyword_match.py`, `analysis/language.py`, `analysis/matcher.py`, `analysis/resume_normalizer.py`, `analysis/rewriter.py`, `analysis/scoring.py`, `analysis/semantic_matcher.py`, `analysis/skills_tailor.py`, `analysis/structure_extractor.py`, `analysis/summary_writer.py`, `analysis/tailor_planner.py`, `domain/evidence.py`, `domain/job.py`, `domain/report.py`, `domain/resume.py`, `domain/resume_document.py`, `domain/tailoring.py`, `ingestion/docx.py`, `ingestion/pdf.py`, `ingestion/text.py`, `llm/client.py`, `rendering/docx_patcher.py`, `rendering/html_renderer.py`, `rendering/layout.py`, `rendering/page_fit.py`, `rendering/pdf_converter.py`, `rendering/template_renderer.py`, `services/arrange.py`, `services/profile_store.py`, `services/run_manager.py`, `validation/content_lint.py`, `validation/coverage.py`, `validation/factual.py`, `validation/output.py`, `validation/safety.py`, `validation/structural.py`
 - **Imported by:** `api/main.py`, `cli.py`, `eval/harness.py`, `scripts/walkthrough_server.py`
 - **Tested by:** `tests/integration/test_arrange.py`, `tests/integration/test_coverage_tailor.py`, `tests/integration/test_end_to_end.py`, `tests/unit/test_api.py`, `tests/unit/test_check_parsed_resume.py`, `tests/unit/test_cli.py`, `tests/unit/test_cli_parity.py`, `tests/unit/test_details_p826.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_global_p825.py`, `tests/unit/test_new_role.py`, `tests/unit/test_privacy_p98.py`, `tests/unit/test_profile_store.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_review_view.py`, `tests/unit/test_skill_placement_p912.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_tailor_resume_flow.py`, `tests/unit/test_tailor_service_addition.py`, `tests/unit/test_uploads_p822.py`

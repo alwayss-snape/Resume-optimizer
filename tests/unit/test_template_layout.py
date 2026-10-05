@@ -120,3 +120,19 @@ def test_html_matches_docx_sections():
     assert "size: A4" in html and "Arial" in html
     assert "Aug 2024 – Present" in html and "2015 – 2019" in html
     assert "avery@example.com | +1 555 0100" in html
+
+
+def test_a_lone_generic_skills_category_prints_no_label_p918(tmp_path):
+    """The live nurse run (P9.10) printed "SKILLS / Skills: Epic, Cerner, ...":
+    a single category named like the heading gets no label; real ones keep theirs."""
+    resume = _resume()
+    resume.skills = {"Skills": ["Epic", "Cerner"]}
+    document = ResumeDocument(resume=resume)
+    lines = [p.text for p in docx.Document(TemplateRenderer().render_ats_default(document, str(tmp_path / "r.docx"))).paragraphs]
+    assert "Epic, Cerner" in lines and not any(t.startswith("Skills:") for t in lines)
+    html = open(HtmlResumeRenderer().write_html(document, str(tmp_path / "r.html")), encoding="utf-8").read()
+    assert "<p>Epic, Cerner</p>" in html
+
+    resume.skills = {"Skills": ["Epic"], "Languages": ["Spanish"]}
+    lines = [p.text for p in docx.Document(TemplateRenderer().render_ats_default(document, str(tmp_path / "r2.docx"))).paragraphs]
+    assert "Skills: Epic" in lines and "Languages: Spanish" in lines

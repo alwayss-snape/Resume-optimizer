@@ -159,6 +159,19 @@ def display_skills(skills: Dict[str, List[str]], max_categories: int = MAX_SKILL
     return kept
 
 
+# A lone category with one of these names says nothing the SKILLS heading
+# doesn't (P9.18: "SKILLS / Skills: Epic, Cerner, ...").
+_GENERIC_SKILL_LABELS = {"skills", "skill", "key skills", "core skills", "general", "other", "skills & abilities"}
+
+
+def skill_label(category: str, skills: Dict[str, List[str]]) -> Optional[str]:
+    """The label printed before a skills line, or None when the resume has a
+    single, generically named category."""
+    if len(skills) == 1 and category.strip().lower().rstrip(":") in _GENERIC_SKILL_LABELS:
+        return None
+    return category
+
+
 def output_basename(resume: Resume, company: Optional[str] = None) -> str:
     """First_Last_Resume_<Company>: letters of any script kept ("Lucía
     Fernández" stays, P8.25), unsafe characters replaced, and no company part

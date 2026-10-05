@@ -9,7 +9,7 @@ from typing import Any
 
 from app.domain.resume_document import ResumePresentation
 from app.rendering.layout import (SECTION_TITLES, fallback_font, contact_parts, date_range, display_skills, format_date_text,
-                                  ordered_sections, other_section)
+                                  ordered_sections, other_section, skill_label)
 
 
 # Shared visual language with HtmlResumeRenderer's default accent (#1F4E79)
@@ -144,7 +144,9 @@ class TemplateRenderer:
         for category, skill_list in skills.items():
             p = doc.add_paragraph()
             p.paragraph_format.space_after = Pt(2)
-            p.add_run(f"{category}: ").bold = True
+            label = skill_label(category, skills)
+            if label:
+                p.add_run(f"{label}: ").bold = True
             p.add_run(", ".join(skill_list))
 
     def _add_education(self, doc, resume, content_width) -> None:

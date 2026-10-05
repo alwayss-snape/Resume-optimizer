@@ -5,7 +5,7 @@ from typing import Iterable
 from app.domain.resume import Resume
 from app.domain.resume_document import ResumeDocument
 from app.rendering.layout import (SECTION_TITLES, contact_parts, date_range, display_skills, format_date_text,
-                                  ordered_sections, other_section)
+                                  ordered_sections, other_section, skill_label)
 
 class HtmlResumeRenderer:
     """Render an ATS-safe, printable résumé from the canonical document."""
@@ -100,9 +100,11 @@ class HtmlResumeRenderer:
                 )
                 sections.append(self._section("projects", entries))
             elif section_name == "skills" and resume.skills:
+                shown = display_skills(resume.skills)
                 skills = "".join(
-                    f"<p><strong>{html.escape(category)}:</strong> {html.escape(', '.join(values))}</p>"
-                    for category, values in display_skills(resume.skills).items()
+                    "<p>" + (f"<strong>{html.escape(label)}:</strong> " if (label := skill_label(category, shown)) else "")
+                    + f"{html.escape(', '.join(values))}</p>"
+                    for category, values in shown.items()
                 )
                 sections.append(self._section("skills", skills))
             elif section_name == "education" and resume.education:

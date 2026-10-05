@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "6f6aefe144cdcd70",
+  "source_hash": "e8dbe3b145ce134e",
   "stats": {
     "files": 167,
     "python_files": 143,
     "app_modules": 60,
     "test_files": 73,
     "classes": 111,
-    "functions": 1080,
-    "lines_of_python": 21684
+    "functions": 1083,
+    "lines_of_python": 21739
   },
   "axes": {
     "x": "location (path)",
@@ -2939,7 +2939,7 @@
       "stages": [
         "9 Render"
       ],
-      "lines": 160,
+      "lines": 162,
       "doc": "",
       "classes": [
         {
@@ -2984,7 +2984,7 @@
             },
             {
               "name": "write_html",
-              "line": 156,
+              "line": 158,
               "doc": ""
             }
           ]
@@ -2999,7 +2999,7 @@
       "stages": [
         "9 Render"
       ],
-      "lines": 208,
+      "lines": 221,
       "doc": "Shared layout rules for the ATS template (P2.1).",
       "classes": [],
       "functions": [
@@ -3049,18 +3049,23 @@
           "doc": "At most `max_categories` lines: the first ones as they are (JD-relevant"
         },
         {
+          "name": "skill_label",
+          "line": 167,
+          "doc": "The label printed before a skills line, or None when the resume has a"
+        },
+        {
           "name": "output_basename",
-          "line": 162,
+          "line": 175,
           "doc": "First_Last_Resume_<Company>: letters of any script kept (\"Luc\u00eda"
         },
         {
           "name": "fallback_font",
-          "line": 188,
+          "line": 201,
           "doc": "The best installed font for scripts Arial lacks."
         },
         {
           "name": "needs_fallback_font",
-          "line": 206,
+          "line": 219,
           "doc": "Characters outside Latin / Greek: CJK, Cyrillic, Arabic, Devanagari..."
         }
       ]
@@ -3264,7 +3269,7 @@
       "stages": [
         "9 Render"
       ],
-      "lines": 313,
+      "lines": 315,
       "doc": "",
       "classes": [
         {
@@ -3299,72 +3304,72 @@
             },
             {
               "name": "_add_education",
-              "line": 150,
+              "line": 152,
               "doc": ""
             },
             {
               "name": "_add_projects",
-              "line": 165,
+              "line": 167,
               "doc": ""
             },
             {
               "name": "_add_certifications",
-              "line": 188,
+              "line": 190,
               "doc": ""
             },
             {
               "name": "_add_other",
-              "line": 194,
+              "line": 196,
               "doc": "A kept section (P8.3): its own heading, each line as written."
             },
             {
               "name": "_add_achievements",
-              "line": 205,
+              "line": 207,
               "doc": ""
             },
             {
               "name": "_add_interests",
-              "line": 210,
+              "line": 212,
               "doc": ""
             },
             {
               "name": "_set_document_defaults",
-              "line": 217,
+              "line": 219,
               "doc": "A4, the template's margins and font, instead of python-docx's"
             },
             {
               "name": "_content_width",
-              "line": 242,
+              "line": 244,
               "doc": ""
             },
             {
               "name": "_add_section_heading",
-              "line": 246,
+              "line": 248,
               "doc": "A section label in the accent color with a rule underneath \u2014"
             },
             {
               "name": "_role_dates",
-              "line": 261,
+              "line": 263,
               "doc": ""
             },
             {
               "name": "_add_meta_line",
-              "line": 264,
+              "line": 266,
               "doc": "'Company \u00b7 Location' in italic grey under a title line."
             },
             {
               "name": "_add_bullets",
-              "line": 273,
+              "line": 275,
               "doc": ""
             },
             {
               "name": "_add_title_dates_line",
-              "line": 278,
+              "line": 280,
               "doc": "Title (bold) on the left, date range right-aligned on the same"
             },
             {
               "name": "_add_bottom_border",
-              "line": 300,
+              "line": 302,
               "doc": "Adds a single bottom border to a paragraph via raw OOXML \u2014 the"
             }
           ]
@@ -3592,7 +3597,7 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 1485,
+      "lines": 1492,
       "doc": "",
       "classes": [
         {
@@ -3747,7 +3752,7 @@
             },
             {
               "name": "arrange",
-              "line": 1344,
+              "line": 1351,
               "doc": "Re-render the tailored resume as the user arranged it (P8.13\u2013P8.16):"
             }
           ]
@@ -3761,12 +3766,12 @@
         },
         {
           "name": "_hidden_text",
-          "line": 1440,
+          "line": 1447,
           "doc": "Text of the sections the user hid, so coverage counts it as their choice."
         },
         {
           "name": "_merge_usage",
-          "line": 1467,
+          "line": 1474,
           "doc": "Combine two LLMClient.get_usage_summary() dicts into one. When one"
         }
       ]
@@ -7855,7 +7860,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 227,
+      "lines": 242,
       "doc": "tailor_resume orchestration: pre-approved proposals and Strict Factual Mode.",
       "classes": [],
       "functions": [
@@ -7890,48 +7895,53 @@
           "doc": ""
         },
         {
+          "name": "test_report_lists_only_reworded_bullets_p919",
+          "line": 91,
+          "doc": "The live sales run (P9.10) listed 5 \"Accepted Rewrites\" whose text was"
+        },
+        {
           "name": "test_generate_proposals_reports_llm_status_when_unavailable",
-          "line": 90,
+          "line": 105,
           "doc": ""
         },
         {
           "name": "test_user_edited_text_is_kept_not_silently_dropped",
-          "line": 104,
+          "line": 119,
           "doc": "Regression (F17): the user's own wording went through the fact-checker"
         },
         {
           "name": "test_generate_proposals_attaches_validation_verdicts",
-          "line": 118,
+          "line": 133,
           "doc": ""
         },
         {
           "name": "test_jd_analysis_is_reused_and_scores_are_keyword_match_rates",
-          "line": 134,
+          "line": 149,
           "doc": "The JD analysed for the proposals is passed on, so Apply & Generate"
         },
         {
           "name": "test_page_fit_trims_are_reported_and_rendered",
-          "line": 152,
+          "line": 167,
           "doc": "P2.4: tailor_resume fits the template to the page target and reports"
         },
         {
           "name": "test_result_reports_what_was_applied",
-          "line": 178,
+          "line": 193,
           "doc": "P5.5: the results screen shows what really went into the files."
         },
         {
           "name": "test_result_reports_strict_mode_withholding",
-          "line": 192,
+          "line": 207,
           "doc": ""
         },
         {
           "name": "test_ats_template_is_the_default_output",
-          "line": 203,
+          "line": 218,
           "doc": "P2.2: the ATS template is the default; keeping the DOCX layout is opt-in."
         },
         {
           "name": "test_usage_merge_counts_each_call_once_p917",
-          "line": 209,
+          "line": 224,
           "doc": "One client made both steps (CLI, eval): its calls must not be counted"
         }
       ]
@@ -7982,7 +7992,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 122,
+      "lines": 138,
       "doc": "P2.1: the ATS template (A4, Arial, standard headings, section order,",
       "classes": [],
       "functions": [
@@ -8030,6 +8040,11 @@
           "name": "test_html_matches_docx_sections",
           "line": 114,
           "doc": ""
+        },
+        {
+          "name": "test_a_lone_generic_skills_category_prints_no_label_p918",
+          "line": 125,
+          "doc": "The live nurse run (P9.10) printed \"SKILLS / Skills: Epic, Cerner, ...\":"
         }
       ]
     },
