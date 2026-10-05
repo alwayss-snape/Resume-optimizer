@@ -35,7 +35,9 @@ class SummaryWriter:
         self.llm_client = llm_client
 
     # The resume's own claim of experience: "7 years", "5+ years", "10+ yrs".
-    _YEARS_CLAIM_RE = re.compile(r"\b(\d{1,2}(?:\.\d)?\+?)\s*(?:years?|yrs?)\b", re.IGNORECASE)
+    # "3.6 years", "5+ yrs", "3 years 7 months" (the months are kept, P9.9)
+    _YEARS_CLAIM_RE = re.compile(r"\b(\d{1,2}(?:\.\d)?\+?)\s*(?:years?|yrs?)\b"
+                                 r"(?:,?\s*(?:and\s+)?(\d{1,2})\s*(?:months?|mos?)\b)?", re.IGNORECASE)
 
     @staticmethod
     def sane_title(title: Optional[str]) -> bool:
@@ -59,13 +61,17 @@ class SummaryWriter:
                 after = (text or "")[m.end():m.end() + 25].lower()
                 career = bool(re.match(r"\s*(?:of\s+)?(?:professional\s+|total\s+|overall\s+)?(?:experience|in\b|across\b)",
                                         after))
-                claims.append((career, float(m.group(1).rstrip("+")), m.group(1)))
+                months = int(m.group(2)) if m.group(2) else 0
+                claims.append((career, float(m.group(1).rstrip("+")) + months / 12, m.group(1), months))
         if not claims:
             return None
-        career, value, n = max(claims)
+        career, value, n, months = max(claims)
         if computed and value < 0.5 * computed:
             return None
-        return f"{n} year" if n == "1" else f"{n} years"
+        claim = f"{n} year" if n == "1" else f"{n} years"
+        if months:
+            claim += f" {months} month" if months == 1 else f" {months} months"
+        return claim
 
     @classmethod
     def facts(cls, resume: Resume, keyword_report: KeywordMatchReport, today: Optional[date] = None) -> dict:

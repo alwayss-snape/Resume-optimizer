@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "65182241bbc449e9",
+  "source_hash": "e9c2c750953dea44",
   "stats": {
-    "files": 165,
-    "python_files": 141,
+    "files": 166,
+    "python_files": 142,
     "app_modules": 60,
-    "test_files": 71,
+    "test_files": 72,
     "classes": 110,
-    "functions": 1060,
-    "lines_of_python": 21341
+    "functions": 1062,
+    "lines_of_python": 21373
   },
   "axes": {
     "x": "location (path)",
@@ -1173,7 +1173,7 @@
       "stages": [
         "7 Rewrite"
       ],
-      "lines": 153,
+      "lines": 159,
       "doc": "Tailored professional summary (P1.5).",
       "classes": [
         {
@@ -1188,22 +1188,22 @@
             },
             {
               "name": "sane_title",
-              "line": 41,
+              "line": 43,
               "doc": "A title fit to print (P8.10: a misread \"03/\" became the summary's"
             },
             {
               "name": "years_claim",
-              "line": 50,
+              "line": 52,
               "doc": "The years of experience the resume itself states, if it states"
             },
             {
               "name": "facts",
-              "line": 71,
+              "line": 77,
               "doc": "The inputs code decides; the LLM only phrases them."
             },
             {
               "name": "propose",
-              "line": 92,
+              "line": 98,
               "doc": "A summary proposal, or None when there's nothing to write from"
             }
           ]
@@ -7660,6 +7660,27 @@
       ]
     },
     {
+      "id": "tests/unit/test_summary_years_p99.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 26,
+      "doc": "P9.9: the summary reuses the years the resume itself states (\"3.6 years\"),",
+      "classes": [],
+      "functions": [
+        {
+          "name": "test_summary_years_reuse_the_resumes_own_figure",
+          "line": 19,
+          "doc": ""
+        },
+        {
+          "name": "test_summary_years_far_below_the_dated_roles_are_not_a_career_claim",
+          "line": 24,
+          "doc": ""
+        }
+      ]
+    },
+    {
       "id": "tests/unit/test_tailor_planner.py",
       "type": "python",
       "layer": "Tests",
@@ -8799,6 +8820,11 @@
       "type": "tested_by"
     },
     {
+      "from": "app/analysis/summary_writer.py",
+      "to": "tests/unit/test_summary_years_p99.py",
+      "type": "tested_by"
+    },
+    {
       "from": "app/analysis/tailor_planner.py",
       "to": "app/analysis/keyword_match.py",
       "type": "imports"
@@ -9471,6 +9497,11 @@
     {
       "from": "app/domain/resume.py",
       "to": "tests/unit/test_summary_writer.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/resume.py",
+      "to": "tests/unit/test_summary_years_p99.py",
       "type": "tested_by"
     },
     {

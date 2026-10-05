@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**60 app modules · 71 test files · 110 classes · 1060 functions/methods · 21,341 lines of Python** · source hash `65182241bbc449e9`
+**60 app modules · 72 test files · 110 classes · 1062 functions/methods · 21,373 lines of Python** · source hash `e9c2c750953dea44`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -197,6 +197,7 @@ tests/
     test_structure_extractor.py                  LLM-assisted structure extraction with a verbatim guard (P1.13).
     test_stuffing_p819.py                        P8.19: a Skills line pasted from the JD no longer beats real experienc…
     test_summary_writer.py                       Summary tailoring (P1.5) and years of experience from dates.
+    test_summary_years_p99.py                    P9.9: the summary reuses the years the resume itself states ("3.6 year…
     test_tailor_planner.py                       test_tailor_planner(), test_semantic_only_match_produces_rewrite_with_…
     test_tailor_resume_flow.py                   tailor_resume orchestration: pre-approved proposals and Strict Factual…
     test_tailor_service_addition.py              _service(), test_incorporate_user_addition_appends_bullet_to_most_rece…
@@ -499,19 +500,19 @@ _LLM-assisted resume structure extraction with a verbatim guard (P1.13)._
 
 ### `app/analysis/summary_writer.py`
 
-**Layer:** Analysis · **Stage:** 7 Rewrite · **Lines:** 153
+**Layer:** Analysis · **Stage:** 7 Rewrite · **Lines:** 159
 
 _Tailored professional summary (P1.5)._
 
 - class **`SummaryWriter`** ([app/analysis/summary_writer.py:33](../app/analysis/summary_writer.py#L33))
   - `__init__()` :34
-  - `sane_title()` :41 — A title fit to print (P8.10: a misread "03/" became the summary's
-  - `years_claim()` :50 — The years of experience the resume itself states, if it states
-  - `facts()` :71 — The inputs code decides; the LLM only phrases them.
-  - `propose()` :92 — A summary proposal, or None when there's nothing to write from
+  - `sane_title()` :43 — A title fit to print (P8.10: a misread "03/" became the summary's
+  - `years_claim()` :52 — The years of experience the resume itself states, if it states
+  - `facts()` :77 — The inputs code decides; the LLM only phrases them.
+  - `propose()` :98 — A summary proposal, or None when there's nothing to write from
 - **Imports:** `analysis/change_proposal.py`, `analysis/experience.py`, `analysis/rewriter.py`, `domain/evidence.py`, `domain/job.py`, `domain/report.py`, `domain/resume.py`, `llm/client.py`, `llm/schemas.py`
 - **Imported by:** `services/tailor.py`
-- **Tested by:** `tests/unit/test_summary_writer.py`
+- **Tested by:** `tests/unit/test_summary_writer.py`, `tests/unit/test_summary_years_p99.py`
 - **Prompts:** `llm/prompts/summary.txt`
 
 ### `app/analysis/tailor_planner.py`
@@ -714,7 +715,7 @@ _Per-visitor state for the web API (P5.1)._
 - class **`OtherSection`** ([app/domain/resume.py:98](../app/domain/resume.py#L98)) — A section the resume model has no fields for (Publications, Bar
 - class **`Resume`** ([app/domain/resume.py:110](../app/domain/resume.py#L110))
 - **Imported by:** `analysis/checklist.py`, `analysis/experience.py`, `analysis/keyword_match.py`, `analysis/resume_normalizer.py`, `analysis/rewriter.py`, `analysis/skills_tailor.py`, `analysis/structure_extractor.py`, `analysis/summary_writer.py`, `analysis/tailor_planner.py`, `domain/resume_document.py`, `eval/golden.py`, `rendering/html_renderer.py`, `rendering/layout.py`, `rendering/page_fit.py`, `services/arrange.py`, `services/tailor.py`, `validation/content_lint.py`, `validation/structural.py`
-- **Tested by:** `tests/unit/test_ats_round_trip.py`, `tests/unit/test_check_parsed_resume.py`, `tests/unit/test_checklist_p820.py`, `tests/unit/test_content_lint.py`, `tests/unit/test_dates_p86.py`, `tests/unit/test_details_p826.py`, `tests/unit/test_docx_renderer.py`, `tests/unit/test_experience.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_global_p825.py`, `tests/unit/test_guidance_p821.py`, `tests/unit/test_html_renderer.py`, `tests/unit/test_jd_p818.py`, `tests/unit/test_keyword_match.py`, `tests/unit/test_matching_p817.py`, `tests/unit/test_new_role.py`, `tests/unit/test_page_fit.py`, `tests/unit/test_parser_regressions_p42.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_resume_document.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_review_view.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_stuffing_p819.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_tailor_planner.py`, `tests/unit/test_tailor_service_addition.py`, `tests/unit/test_template_layout.py`, `tests/unit/test_template_renderer_standalone.py`
+- **Tested by:** `tests/unit/test_ats_round_trip.py`, `tests/unit/test_check_parsed_resume.py`, `tests/unit/test_checklist_p820.py`, `tests/unit/test_content_lint.py`, `tests/unit/test_dates_p86.py`, `tests/unit/test_details_p826.py`, `tests/unit/test_docx_renderer.py`, `tests/unit/test_experience.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_global_p825.py`, `tests/unit/test_guidance_p821.py`, `tests/unit/test_html_renderer.py`, `tests/unit/test_jd_p818.py`, `tests/unit/test_keyword_match.py`, `tests/unit/test_matching_p817.py`, `tests/unit/test_new_role.py`, `tests/unit/test_page_fit.py`, `tests/unit/test_parser_regressions_p42.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_resume_document.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_review_view.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_stuffing_p819.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_summary_years_p99.py`, `tests/unit/test_tailor_planner.py`, `tests/unit/test_tailor_service_addition.py`, `tests/unit/test_template_layout.py`, `tests/unit/test_template_renderer_standalone.py`
 
 ### `app/domain/resume_document.py`
 

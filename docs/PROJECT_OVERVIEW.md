@@ -80,7 +80,9 @@ and unused prompts (P0.8, P1.10) are all fixed. What remains:
 2. **Groq free-tier daily limit (200K tokens/day)** is shared by all development runs; a full real-resume run costs
    ~13K. Live gate runs can be blocked for hours. Local Ollama (`qwen3:4b`) is too heavy for the 8 GB development
    machine; its config fixes are parked in `git stash` ("ollama backup").
-3. **Summary years:** the summary states years computed from role dates ("4+ years"), which can differ from a figure written in the resume ("3.6 years"); the judge flags that as a mismatch. Decide whether to keep the computed figure.
+3. **Summary years** (resolved 2026-10-05, P9.9): the summary reuses the years the resume itself states ("3.6 years",
+   "3 years 7 months"); the figure computed from role dates ("4+ years") is used only when the resume states none.
+   The user can still edit the summary in Review.
 4. **User's source resume** has "LinkedIn | Email | Leetcode" placeholder text with no hyperlinks (to fix in their
    own file).
 5. **Rewrites can borrow the job's wording** (was P1.15, now P8.9): a fact-checked rewrite added "batch pipeline",
