@@ -83,3 +83,17 @@ def test_change_log_is_rewritten_not_appended(tmp_path):
         out = service.arrange(state, state["default_layout"], str(tmp_path))
     with open(out["changes_md"], encoding="utf-8") as f:
         assert f.read().count("## Arranged by you") == 1
+
+
+def test_a_project_inside_a_job_is_never_split():
+    """R3: whatever bullet order arrives, a sub-heading's bullets stay together."""
+    from app.domain.resume import Candidate, Experience, Resume, ResumeBullet
+    from app.services.arrange import Layout, apply_layout
+    full = Resume(candidate=Candidate(name="A"), experience=[Experience(id="e1", company="Epsilon", title="DS", bullets=[
+        ResumeBullet(id="m1", text="MLOps 1", group="MLOps"), ResumeBullet(id="m2", text="MLOps 2", group="MLOps"),
+        ResumeBullet(id="h1", text="CRM 1", group="CRM"), ResumeBullet(id="h2", text="CRM 2", group="CRM")])])
+    out = apply_layout(full, Layout(bullet_order={"e1": ["m1", "h1", "m2", "h2"]}))
+    assert [b.id for b in out.experience[0].bullets] == ["m1", "m2", "h1", "h2"]
+    assert [g for g, _ in out.experience[0].bullet_groups()] == ["MLOps", "CRM"]
+    out = apply_layout(full, Layout(bullet_order={"e1": ["h2", "h1", "m1", "m2"]}))  # a project moved up
+    assert [g for g, _ in out.experience[0].bullet_groups()] == ["CRM", "MLOps"]

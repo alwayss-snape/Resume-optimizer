@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "2ca5bc6d91a887c6",
+  "source_hash": "35abbd52013c29e1",
   "stats": {
     "files": 167,
     "python_files": 143,
     "app_modules": 60,
     "test_files": 73,
     "classes": 111,
-    "functions": 1076,
-    "lines_of_python": 21592
+    "functions": 1078,
+    "lines_of_python": 21616
   },
   "axes": {
     "x": "location (path)",
@@ -3379,7 +3379,7 @@
       "stages": [
         "9 Render"
       ],
-      "lines": 227,
+      "lines": 237,
       "doc": "Arrange and edit before download (P8.13\u2013P8.16).",
       "classes": [
         {
@@ -3406,48 +3406,53 @@
           "doc": "Items in `order`; any not listed keep their place after the listed ones."
         },
         {
-          "name": "apply_layout",
+          "name": "_keep_groups_together",
           "line": 65,
+          "doc": "A sub-heading's bullets stay together (R3): whatever order arrives, a"
+        },
+        {
+          "name": "apply_layout",
+          "line": 75,
           "doc": "A copy of `full` arranged as `layout` says. Unknown ids are ignored;"
         },
         {
           "name": "_had_bullets",
-          "line": 97,
+          "line": 107,
           "doc": ""
         },
         {
           "name": "emptied",
-          "line": 101,
+          "line": 111,
           "doc": "Jobs and projects the user took every bullet out of."
         },
         {
           "name": "section_order",
-          "line": 107,
+          "line": 117,
           "doc": "The render order: the user's order, then anything it doesn't list."
         },
         {
           "name": "notes_for",
-          "line": 115,
+          "line": 125,
           "doc": "Things worth pointing out about the user's arrangement. Advice only."
         },
         {
           "name": "_today",
-          "line": 143,
+          "line": 153,
           "doc": ""
         },
         {
           "name": "_all_text",
-          "line": 148,
+          "line": 158,
           "doc": ""
         },
         {
           "name": "view",
-          "line": 155,
+          "line": 165,
           "doc": "What the Arrange screen shows: every section with its entries and"
         },
         {
           "name": "trimmed_items",
-          "line": 212,
+          "line": 222,
           "doc": "What page-fit removed: bullets (with their job), projects, Interests."
         }
       ]
@@ -4474,7 +4479,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 85,
+      "lines": 99,
       "doc": "P8.13\u2013P8.16: arrange and edit after tailoring, with no LLM call.",
       "classes": [],
       "functions": [
@@ -4507,6 +4512,11 @@
           "name": "test_change_log_is_rewritten_not_appended",
           "line": 80,
           "doc": ""
+        },
+        {
+          "name": "test_a_project_inside_a_job_is_never_split",
+          "line": 88,
+          "doc": "R3: whatever bullet order arrives, a sub-heading's bullets stay together."
         }
       ]
     },
@@ -9467,6 +9477,11 @@
       "from": "app/domain/resume.py",
       "to": "app/domain/resume.py::SectionLine",
       "type": "contains"
+    },
+    {
+      "from": "app/domain/resume.py",
+      "to": "tests/integration/test_arrange.py",
+      "type": "tested_by"
     },
     {
       "from": "app/domain/resume.py",

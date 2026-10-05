@@ -62,6 +62,16 @@ def _ordered(items: list, order: List[str]) -> list:
     return sorted(items, key=lambda it: rank.get(it.id, len(rank) + items.index(it)))
 
 
+def _keep_groups_together(bullets: List) -> List:
+    """A sub-heading's bullets stay together (R3): whatever order arrives, a
+    group sits where its first bullet is, so a project heading is never split
+    in two by a bullet moved out of it."""
+    groups: Dict = {}
+    for b in bullets:
+        groups.setdefault(b.group or "", []).append(b)
+    return [b for group in groups.values() for b in group]
+
+
 def apply_layout(full: Resume, layout: Layout) -> Resume:
     """A copy of `full` arranged as `layout` says. Unknown ids are ignored;
     a bullet listed under another owner stays with its own owner."""
@@ -70,7 +80,7 @@ def apply_layout(full: Resume, layout: Layout) -> Resume:
     for owner in _owners(resume):
         own = {b.id for b in owner.bullets}
         order = [bid for bid in layout.bullet_order.get(owner.id, []) if bid in own]
-        owner.bullets = [b for b in _ordered(owner.bullets, order) if b.id not in removed]
+        owner.bullets = [b for b in _keep_groups_together(_ordered(owner.bullets, order)) if b.id not in removed]
         for b in owner.bullets:
             text = (layout.edits.get(b.id) or "").strip()
             if text:

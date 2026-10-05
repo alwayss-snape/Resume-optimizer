@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**60 app modules · 73 test files · 111 classes · 1076 functions/methods · 21,592 lines of Python** · source hash `2ca5bc6d91a887c6`
+**60 app modules · 73 test files · 111 classes · 1078 functions/methods · 21,616 lines of Python** · source hash `35abbd52013c29e1`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -720,7 +720,7 @@ _Per-visitor state for the web API (P5.1)._
 - class **`OtherSection`** ([app/domain/resume.py:98](../app/domain/resume.py#L98)) — A section the resume model has no fields for (Publications, Bar
 - class **`Resume`** ([app/domain/resume.py:110](../app/domain/resume.py#L110))
 - **Imported by:** `analysis/checklist.py`, `analysis/experience.py`, `analysis/keyword_match.py`, `analysis/resume_normalizer.py`, `analysis/rewriter.py`, `analysis/skills_tailor.py`, `analysis/structure_extractor.py`, `analysis/summary_writer.py`, `analysis/tailor_planner.py`, `domain/resume_document.py`, `eval/golden.py`, `rendering/html_renderer.py`, `rendering/layout.py`, `rendering/page_fit.py`, `services/arrange.py`, `services/tailor.py`, `validation/content_lint.py`, `validation/structural.py`
-- **Tested by:** `tests/unit/test_ats_round_trip.py`, `tests/unit/test_check_parsed_resume.py`, `tests/unit/test_checklist_p820.py`, `tests/unit/test_content_lint.py`, `tests/unit/test_dates_p86.py`, `tests/unit/test_details_p826.py`, `tests/unit/test_docx_renderer.py`, `tests/unit/test_experience.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_global_p825.py`, `tests/unit/test_guidance_p821.py`, `tests/unit/test_html_renderer.py`, `tests/unit/test_jd_p818.py`, `tests/unit/test_keyword_match.py`, `tests/unit/test_matching_p817.py`, `tests/unit/test_new_role.py`, `tests/unit/test_page_fit.py`, `tests/unit/test_parser_regressions_p42.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_resume_document.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_review_view.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_skill_placement_p912.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_stuffing_p819.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_summary_years_p99.py`, `tests/unit/test_tailor_planner.py`, `tests/unit/test_tailor_service_addition.py`, `tests/unit/test_template_layout.py`, `tests/unit/test_template_renderer_standalone.py`
+- **Tested by:** `tests/integration/test_arrange.py`, `tests/unit/test_ats_round_trip.py`, `tests/unit/test_check_parsed_resume.py`, `tests/unit/test_checklist_p820.py`, `tests/unit/test_content_lint.py`, `tests/unit/test_dates_p86.py`, `tests/unit/test_details_p826.py`, `tests/unit/test_docx_renderer.py`, `tests/unit/test_experience.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_global_p825.py`, `tests/unit/test_guidance_p821.py`, `tests/unit/test_html_renderer.py`, `tests/unit/test_jd_p818.py`, `tests/unit/test_keyword_match.py`, `tests/unit/test_matching_p817.py`, `tests/unit/test_new_role.py`, `tests/unit/test_page_fit.py`, `tests/unit/test_parser_regressions_p42.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_resume_document.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_review_view.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_skill_placement_p912.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_stuffing_p819.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_summary_years_p99.py`, `tests/unit/test_tailor_planner.py`, `tests/unit/test_tailor_service_addition.py`, `tests/unit/test_template_layout.py`, `tests/unit/test_template_renderer_standalone.py`
 
 ### `app/domain/resume_document.py`
 
@@ -1108,7 +1108,7 @@ _What the proposal review screen shows (P3.4, served by the web API since_
 
 ### `app/services/arrange.py`
 
-**Layer:** Services · **Stage:** 9 Render · **Lines:** 227
+**Layer:** Services · **Stage:** 9 Render · **Lines:** 237
 
 _Arrange and edit before download (P8.13–P8.16)._
 
@@ -1116,15 +1116,16 @@ _Arrange and edit before download (P8.13–P8.16)._
 - function **`_owners()`** ([app/services/arrange.py:45](../app/services/arrange.py#L45))
 - function **`default_layout()`** ([app/services/arrange.py:49](../app/services/arrange.py#L49)) — The layout tailoring produced: everything shown, in its current order.
 - function **`_ordered()`** ([app/services/arrange.py:59](../app/services/arrange.py#L59)) — Items in `order`; any not listed keep their place after the listed ones.
-- function **`apply_layout()`** ([app/services/arrange.py:65](../app/services/arrange.py#L65)) — A copy of `full` arranged as `layout` says. Unknown ids are ignored;
-- function **`_had_bullets()`** ([app/services/arrange.py:97](../app/services/arrange.py#L97))
-- function **`emptied()`** ([app/services/arrange.py:101](../app/services/arrange.py#L101)) — Jobs and projects the user took every bullet out of.
-- function **`section_order()`** ([app/services/arrange.py:107](../app/services/arrange.py#L107)) — The render order: the user's order, then anything it doesn't list.
-- function **`notes_for()`** ([app/services/arrange.py:115](../app/services/arrange.py#L115)) — Things worth pointing out about the user's arrangement. Advice only.
-- function **`_today()`** ([app/services/arrange.py:143](../app/services/arrange.py#L143))
-- function **`_all_text()`** ([app/services/arrange.py:148](../app/services/arrange.py#L148))
-- function **`view()`** ([app/services/arrange.py:155](../app/services/arrange.py#L155)) — What the Arrange screen shows: every section with its entries and
-- function **`trimmed_items()`** ([app/services/arrange.py:212](../app/services/arrange.py#L212)) — What page-fit removed: bullets (with their job), projects, Interests.
+- function **`_keep_groups_together()`** ([app/services/arrange.py:65](../app/services/arrange.py#L65)) — A sub-heading's bullets stay together (R3): whatever order arrives, a
+- function **`apply_layout()`** ([app/services/arrange.py:75](../app/services/arrange.py#L75)) — A copy of `full` arranged as `layout` says. Unknown ids are ignored;
+- function **`_had_bullets()`** ([app/services/arrange.py:107](../app/services/arrange.py#L107))
+- function **`emptied()`** ([app/services/arrange.py:111](../app/services/arrange.py#L111)) — Jobs and projects the user took every bullet out of.
+- function **`section_order()`** ([app/services/arrange.py:117](../app/services/arrange.py#L117)) — The render order: the user's order, then anything it doesn't list.
+- function **`notes_for()`** ([app/services/arrange.py:125](../app/services/arrange.py#L125)) — Things worth pointing out about the user's arrangement. Advice only.
+- function **`_today()`** ([app/services/arrange.py:153](../app/services/arrange.py#L153))
+- function **`_all_text()`** ([app/services/arrange.py:158](../app/services/arrange.py#L158))
+- function **`view()`** ([app/services/arrange.py:165](../app/services/arrange.py#L165)) — What the Arrange screen shows: every section with its entries and
+- function **`trimmed_items()`** ([app/services/arrange.py:222](../app/services/arrange.py#L222)) — What page-fit removed: bullets (with their job), projects, Interests.
 - **Imports:** `analysis/experience.py`, `domain/resume.py`, `rendering/layout.py`
 - **Imported by:** `api/routes.py`, `services/tailor.py`
 - **Tested by:** `tests/integration/test_arrange.py`

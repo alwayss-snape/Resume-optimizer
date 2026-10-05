@@ -1,6 +1,7 @@
 import { expect, test } from "vitest";
 import {
-  dropBullet, editBullet, keepTrimmed, moveBullet, moveId, orderedBullets, placeBefore, reordered, restoreOriginalOrder,
+  dropBullet, editBullet, keepTrimmed, moveBullet, moveGroup, moveId, orderedBullets, orderedGroups, placeBefore, reordered,
+  restoreOriginalOrder,
   setPageTarget, toggleSection,
 } from "./arrange";
 import type { Arrangement, Layout } from "./types";
@@ -47,4 +48,37 @@ test("original order, sorted marker, edits, hiding, keeping trimmed, page length
   expect(keepTrimmed(LAYOUT, ARRANGEMENT.trimmed[0]).pinned).toEqual(["b9"]);
   expect(setPageTarget(LAYOUT, null, false)).toMatchObject({ page_target: null, trim: false });
   expect(LAYOUT.hidden_sections).toEqual([]); // never mutated
+});
+
+
+// A job with projects inside it, like the owner's resume (R3).
+const PROJECTS = { id: "exp_009", title: "Data Scientist", subtitle: "Epsilon", bullets: [
+  { id: "m1", text: "MLOps 1", file_text: "MLOps 1", group: "Scalable MLOps Framework" },
+  { id: "m2", text: "MLOps 2", file_text: "MLOps 2", group: "Scalable MLOps Framework" },
+  { id: "h1", text: "CRM 1", file_text: "CRM 1", group: "Healthcare CRM" },
+  { id: "h2", text: "CRM 2", file_text: "CRM 2", group: "Healthcare CRM" },
+  { id: "f1", text: "Fraud", file_text: "Fraud", group: "Fraud Detection" }] };
+const P_LAYOUT: Layout = { ...LAYOUT, bullet_order: { exp_009: ["m1", "m2", "h1", "h2", "f1"] } };
+const order = (l: Layout) => l.bullet_order.exp_009;
+
+test("a job's projects are blocks: a project moves with all its bullets (R3)", () => {
+  expect(orderedGroups(PROJECTS, P_LAYOUT).map((g) => g.name)).toEqual(["Scalable MLOps Framework", "Healthcare CRM", "Fraud Detection"]);
+  const down = moveGroup(P_LAYOUT, PROJECTS, "Scalable MLOps Framework", 1);
+  expect(order(down)).toEqual(["h1", "h2", "m1", "m2", "f1"]);
+  expect(order(moveGroup(down, PROJECTS, "Fraud Detection", -1))).toEqual(["h1", "h2", "f1", "m1", "m2"]);
+});
+
+test("a bullet moves within its own project only", () => {
+  expect(order(moveBullet(P_LAYOUT, PROJECTS, "h1", 1))).toEqual(["m1", "m2", "h2", "h1", "f1"]);
+  // At the end of its project it stays put rather than joining the next one.
+  expect(order(moveBullet(P_LAYOUT, PROJECTS, "h2", 1))).toEqual(["m1", "m2", "h1", "h2", "f1"]);
+  expect(order(moveBullet(P_LAYOUT, PROJECTS, "h1", -1))).toEqual(["m1", "m2", "h1", "h2", "f1"]);
+  // Dragged onto another project's bullet: refused.
+  expect(dropBullet(P_LAYOUT, PROJECTS, "f1", "m1")).toBe(P_LAYOUT);
+  expect(order(dropBullet(P_LAYOUT, PROJECTS, "m2", "m1"))).toEqual(["m2", "m1", "h1", "h2", "f1"]);
+});
+
+test("an order that split a project is read back with the project together", () => {
+  const split = { ...P_LAYOUT, bullet_order: { exp_009: ["m1", "h1", "m2", "h2", "f1"] } };
+  expect(orderedGroups(PROJECTS, split).map((g) => g.bullets.map((b) => b.id))).toEqual([["m1", "m2"], ["h1", "h2"], ["f1"]]);
 });

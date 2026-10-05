@@ -1,7 +1,7 @@
 /** Arrange and edit (P8.13–P8.16): pure changes to a Layout. The server
  *  applies a layout to the tailored resume and re-renders; nothing here
  *  talks to it. A bullet only ever moves within its own job or project. */
-import type { ArrangeEntry, ArrangeSection, Arrangement, Layout, TrimmedItem } from "./types";
+import type { ArrangeBullet, ArrangeEntry, ArrangeSection, Arrangement, Layout, TrimmedItem } from "./types";
 
 const clone = (l: Layout): Layout => JSON.parse(JSON.stringify(l)) as Layout;
 
@@ -72,18 +72,59 @@ export function moveEntry(layout: Layout, section: ArrangeSection, id: string, d
   return l;
 }
 
-/** Moves a bullet within its own entry only. */
+/** A project inside a job ("Scalable MLOps Framework") and its bullets, or
+ *  the job's bullets without a sub-heading (`name` null). A group moves as
+ *  one block, and its bullets stay together and inside it (R3). */
+export interface BulletGroup {
+  key: string;
+  name: string | null;
+  bullets: ArrangeBullet[];
+}
+
+/** The entry's bullets in layout order, kept together by sub-heading: a
+ *  group sits where its first bullet is. */
+export function orderedGroups(entry: ArrangeEntry, layout: Layout): BulletGroup[] {
+  const groups = new Map<string, BulletGroup>();
+  for (const b of orderedBullets(entry, layout)) {
+    const key = b.group ?? "";
+    if (!groups.has(key)) groups.set(key, { key, name: b.group, bullets: [] });
+    groups.get(key)!.bullets.push(b);
+  }
+  return [...groups.values()];
+}
+
+const flatten = (groups: BulletGroup[]) => groups.flatMap((g) => g.bullets.map((b) => b.id));
+
+/** Moves a bullet within its own group (so within its own job) only. */
 export function moveBullet(layout: Layout, entry: ArrangeEntry, bulletId: string, delta: number): Layout {
   const l = clone(layout);
-  const order = orderedBullets(entry, layout).map((b) => b.id);
-  l.bullet_order[entry.id] = moveId(order, bulletId, delta);
+  const groups = orderedGroups(entry, layout).map((g) => {
+    const ids = g.bullets.map((b) => b.id);
+    if (!ids.includes(bulletId)) return g;
+    const byId = new Map(g.bullets.map((b) => [b.id, b]));
+    return { ...g, bullets: moveId(ids, bulletId, delta).map((id) => byId.get(id)!) };
+  });
+  l.bullet_order[entry.id] = flatten(groups);
+  return l;
+}
+
+/** Moves a project (a group and all its bullets) past its neighbour. */
+export function moveGroup(layout: Layout, entry: ArrangeEntry, key: string, delta: number): Layout {
+  const l = clone(layout);
+  const groups = orderedGroups(entry, layout);
+  const byKey = new Map(groups.map((g) => [g.key, g]));
+  l.bullet_order[entry.id] = flatten(moveId(groups.map((g) => g.key), key, delta).map((k) => byKey.get(k)!));
   return l;
 }
 
 export function dropBullet(layout: Layout, entry: ArrangeEntry, bulletId: string, beforeId: string): Layout {
-  if (!entry.bullets.some((b) => b.id === bulletId)) return layout; // never across jobs
+  const moving = entry.bullets.find((b) => b.id === bulletId);
+  const target = entry.bullets.find((b) => b.id === beforeId);
+  // never across jobs, and never out of its own project
+  if (!moving || !target || (moving.group ?? "") !== (target.group ?? "")) return layout;
   const l = clone(layout);
-  l.bullet_order[entry.id] = placeBefore(orderedBullets(entry, layout).map((b) => b.id), bulletId, beforeId);
+  const placed = placeBefore(orderedBullets(entry, layout).map((b) => b.id), bulletId, beforeId);
+  l.bullet_order[entry.id] = flatten(orderedGroups(entry, { ...layout, bullet_order: { ...layout.bullet_order, [entry.id]: placed } }));
   return l;
 }
 

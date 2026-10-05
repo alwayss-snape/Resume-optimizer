@@ -3,7 +3,7 @@ import { Button } from "../components/Button";
 import { Icon } from "../components/Icon";
 import { arrangeResume, friendlyError, previewUrl } from "../lib/api";
 import {
-  dropBullet, editBullet, keepTrimmed, moveBullet, moveEntry, moveSection, orderedBullets, orderedEntries,
+  dropBullet, editBullet, keepTrimmed, moveBullet, moveEntry, moveGroup, moveSection, orderedEntries, orderedGroups,
   orderedSections, placeBefore, reordered, restoreOriginalOrder, sameLayout, setPageTarget, toggleBullet, toggleSection,
 } from "../lib/arrange";
 import type { ArrangeBullet, ArrangeEntry, ArrangeSection, Arrangement, Layout, TailorResult } from "../lib/types";
@@ -104,7 +104,8 @@ function EntryBlock({ section, entry, index, count, layout, arrangement, trimmed
   section: ArrangeSection; entry: ArrangeEntry; index: number; count: number; layout: Layout; arrangement: Arrangement;
   trimmedIds: Set<string>; onChange: (l: Layout) => void; onAnnounce: (m: string) => void;
 }) {
-  const bullets = orderedBullets(entry, layout);
+  const groups = orderedGroups(entry, layout);
+  const grouped = groups.some((g) => g.name);
   const dragged = useRef<string | null>(null);
   const drag = {
     start: (e: DragEvent, id: string) => { dragged.current = id; e.dataTransfer.effectAllowed = "move"; },
@@ -127,12 +128,40 @@ function EntryBlock({ section, entry, index, count, layout, arrangement, trimmed
         {count > 1 && <MoveButtons id={entry.id} label={`"${short(entry.title)}"`} first={index === 0} last={index === count - 1}
           onMove={(d) => { rememberMove(entry.id, d); onChange(moveEntry(layout, section, entry.id, d)); onAnnounce(`Moved "${short(entry.title)}" ${d < 0 ? "up" : "down"}.`); }} />}
       </div>
-      {bullets.length > 0 && (
+      {!grouped && groups.length > 0 && (
         <ul className="m-0 flex flex-col p-0" aria-label={`Bullets of ${entry.title}`}>
-          {bullets.map((b, i) => (
-            <BulletRow key={b.id} bullet={b} entry={entry} index={i} count={bullets.length} layout={layout}
+          {groups[0].bullets.map((b, i) => (
+            <BulletRow key={b.id} bullet={b} entry={entry} index={i} count={groups[0].bullets.length} layout={layout}
               onChange={onChange} onAnnounce={onAnnounce} drag={drag} trimmed={trimmedIds.has(b.id)} />
           ))}
+        </ul>
+      )}
+      {grouped && (
+        // Projects inside a job move as one block with their bullets (R3).
+        <ul className="m-0 flex flex-col gap-3 p-0" aria-label={`Projects in ${entry.title}`}>
+          {groups.map((g, gi) => {
+            const name = g.name ?? "Bullets without a sub-heading";
+            const label = g.name ? `project "${short(g.name)}"` : "the bullets without a sub-heading";
+            return (
+              <li key={g.key} className="flex flex-col gap-1 rounded-[3px] border border-line p-3">
+                <div className="flex items-center justify-between gap-3">
+                  <p className={`m-0 text-sm font-semibold ${g.name ? "" : "text-muted"}`}>{name}</p>
+                  {groups.length > 1 && <MoveButtons id={`${entry.id}:${g.key}`} label={label} first={gi === 0} last={gi === groups.length - 1}
+                    onMove={(d) => {
+                      rememberMove(`${entry.id}:${g.key}`, d);
+                      onChange(moveGroup(layout, entry, g.key, d));
+                      onAnnounce(`Moved ${label} ${d < 0 ? "up" : "down"}, with its bullets.`);
+                    }} />}
+                </div>
+                <ul className="m-0 flex flex-col p-0" aria-label={`Bullets of ${name}`}>
+                  {g.bullets.map((b, i) => (
+                    <BulletRow key={b.id} bullet={b} entry={entry} index={i} count={g.bullets.length} layout={layout}
+                      onChange={onChange} onAnnounce={onAnnounce} drag={drag} trimmed={trimmedIds.has(b.id)} />
+                  ))}
+                </ul>
+              </li>
+            );
+          })}
         </ul>
       )}
     </li>
