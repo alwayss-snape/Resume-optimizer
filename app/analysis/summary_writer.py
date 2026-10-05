@@ -69,7 +69,7 @@ class SummaryWriter:
         if computed and value < 0.5 * computed:
             return None
         claim = f"{n} year" if n == "1" else f"{n} years"
-        if months:
+        if months and not n.endswith("+"):  # "5+ years 2 months" reads oddly: "5+ years"
             claim += f" {months} month" if months == 1 else f" {months} months"
         return claim
 

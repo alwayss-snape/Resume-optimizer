@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "e9c2c750953dea44",
+  "source_hash": "c9b9db096aa80daa",
   "stats": {
     "files": 166,
     "python_files": 142,
     "app_modules": 60,
     "test_files": 72,
-    "classes": 110,
-    "functions": 1062,
-    "lines_of_python": 21373
+    "classes": 111,
+    "functions": 1064,
+    "lines_of_python": 21409
   },
   "axes": {
     "x": "location (path)",
@@ -4337,9 +4337,22 @@
       "type": "python",
       "layer": "Tooling",
       "stages": [],
-      "lines": 10,
+      "lines": 36,
       "doc": "The real web app with the offline eval LLM, for browser walkthroughs that",
-      "classes": [],
+      "classes": [
+        {
+          "name": "WalkthroughService",
+          "line": 20,
+          "doc": "",
+          "methods": [
+            {
+              "name": "generate_proposals",
+              "line": 21,
+              "doc": ""
+            }
+          ]
+        }
+      ],
       "functions": []
     },
     {
@@ -4347,7 +4360,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 32,
+      "lines": 41,
       "doc": "Test-wide isolation from the developer's .env.",
       "classes": [],
       "functions": [
@@ -4355,6 +4368,11 @@
           "name": "_no_daily_limit_between_tests",
           "line": 26,
           "doc": "The provider's daily-limit marker is process-wide (P8.23); one test"
+        },
+        {
+          "name": "_runs_in_tmp",
+          "line": 36,
+          "doc": "A TailorService built with the default run folder (the CLI path) writes"
         }
       ]
     },
@@ -7664,18 +7682,18 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 26,
+      "lines": 27,
       "doc": "P9.9: the summary reuses the years the resume itself states (\"3.6 years\"),",
       "classes": [],
       "functions": [
         {
           "name": "test_summary_years_reuse_the_resumes_own_figure",
-          "line": 19,
+          "line": 20,
           "doc": ""
         },
         {
           "name": "test_summary_years_far_below_the_dated_roles_are_not_a_career_claim",
-          "line": 24,
+          "line": 25,
           "doc": ""
         }
       ]
@@ -10541,6 +10559,11 @@
     },
     {
       "from": "app/services/run_manager.py",
+      "to": "tests/conftest.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/services/run_manager.py",
       "to": "tests/unit/test_api.py",
       "type": "tested_by"
     },
@@ -11111,8 +11134,18 @@
     },
     {
       "from": "scripts/walkthrough_server.py",
+      "to": "app/llm/client.py",
+      "type": "imports"
+    },
+    {
+      "from": "scripts/walkthrough_server.py",
       "to": "app/services/tailor.py",
       "type": "imports"
+    },
+    {
+      "from": "scripts/walkthrough_server.py",
+      "to": "scripts/walkthrough_server.py::WalkthroughService",
+      "type": "contains"
     },
     {
       "from": "tests/unit/test_jd_analyzer_llm.py",

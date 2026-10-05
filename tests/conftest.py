@@ -30,3 +30,12 @@ def _no_daily_limit_between_tests():
     client_module._DAILY_LIMIT_UNTIL.clear()
     yield
     client_module._DAILY_LIMIT_UNTIL.clear()
+
+
+@pytest.fixture(autouse=True)
+def _runs_in_tmp(tmp_path, monkeypatch):
+    """A TailorService built with the default run folder (the CLI path) writes
+    to this test's tmp dir, never to the real data/runs, which would keep
+    copies of fixture resumes and JDs (P9.8 review)."""
+    from app.services.run_manager import RunManager
+    monkeypatch.setattr(RunManager.__init__, "__defaults__", (str(tmp_path / "runs"),))

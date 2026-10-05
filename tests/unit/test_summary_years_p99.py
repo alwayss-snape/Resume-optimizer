@@ -13,6 +13,7 @@ from app.domain.resume import Candidate, Resume
     ("Engineer with 3 years 7 months of experience", "", "3 years 7 months"),
     ("Engineer with 3 years and 7 months of experience", "", "3 years 7 months"),
     ("5+ yrs in sales", "", "5+ years"),
+    ("5+ years 2 months of experience", "", "5+ years"),  # review F3
     ("3 years of Python, 6 years of experience", "", "6 years"),  # the career claim wins
     ("Built dashboards for 12 teams", "", None),  # nothing stated: the computed figure is used
 ])
