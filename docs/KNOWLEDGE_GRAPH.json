@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "source_hash": "f0648d21c4d8c703",
+  "source_hash": "cf202070758e2d49",
   "stats": {
     "files": 167,
     "python_files": 143,
@@ -4365,7 +4365,7 @@
       "type": "file",
       "layer": "Tooling",
       "stages": [],
-      "lines": 98
+      "lines": 123
     },
     {
       "id": "scripts/walkthrough_server.py",
