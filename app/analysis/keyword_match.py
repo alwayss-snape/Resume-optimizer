@@ -278,8 +278,8 @@ class KeywordMatcher:
             hit = any(_contains_seq(toks, alt) or _contains_seq(split, alt) for alt in alternatives)
             # A multi-word term also counts when all its words appear in one
             # sentence ("recommendation systems" vs "systems for recommendation").
-            if not hit and len(needle) >= 2:
-                hit = all(t in token_set for t in needle)
+            if not hit and len(needle) >= 2:  # with slash parts too: "Oracle PL/SQL" shows Oracle SQL (P9.20)
+                hit = all(t in token_set or t in split for t in needle)
             if not hit:
                 # The resume side may imply the keyword ("PySpark" -> "Spark").
                 hit = any(" ".join(needle) in [" ".join(tokens(i)) for i in IMPLIES.get(t, [])] for t in token_set)

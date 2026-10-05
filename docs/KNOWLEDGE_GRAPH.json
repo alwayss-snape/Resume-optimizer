@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "e8dbe3b145ce134e",
+  "source_hash": "b22bcfcc1836f2a7",
   "stats": {
     "files": 167,
     "python_files": 143,
     "app_modules": 60,
     "test_files": 73,
     "classes": 111,
-    "functions": 1083,
-    "lines_of_python": 21739
+    "functions": 1084,
+    "lines_of_python": 21749
   },
   "axes": {
     "x": "location (path)",
@@ -6051,7 +6051,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 130,
+      "lines": 140,
       "doc": "Keyword-level match rate as the headline score (P1.2).",
       "classes": [],
       "functions": [
@@ -6124,6 +6124,11 @@
           "name": "test_custom_sections_and_slash_joined_words_count_p915",
           "line": 111,
           "doc": "The live nurse run (P9.10): \"ICU\" under Clinical Rotations and \"NLC\" in"
+        },
+        {
+          "name": "test_slash_parts_count_for_multi_word_terms_p920",
+          "line": 133,
+          "doc": "The live india run (P9.10): \"Oracle SQL\" was missing next to \"Maintained"
         }
       ]
     },

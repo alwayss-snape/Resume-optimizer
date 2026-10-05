@@ -23,9 +23,9 @@ JD-aligned rewrites, a Novoresume-style ATS layout that fits the right length, a
 | 6: UI redesign | 6 | 6 | 0 | 0 |
 | 7: Owner feedback on the flow | 2 | 2 | 0 | 0 |
 | 8: Cross-domain robustness and user control | 26 | 26 | 0 | 0 |
-| 9: Close-out and owner review | 19 | 16 | 1 | 2 |
+| 9: Close-out and owner review | 20 | 17 | 1 | 2 |
 | 10: Inputs, outputs, cover letter and history | 9 | 0 | 0 | 9 |
-| **Total** | **110** | **95** | **1** | **12** |
+| **Total** | **111** | **96** | **1** | **12** |
 
 Phase 1's two open items (P1.15, P1.16) are ➖, moved into P8.9 and P8.18, so its row no longer adds up to 16.
 
@@ -323,6 +323,7 @@ passes live (P9.3). Not re-run: the 5 live LLM persona runs (Groq quota kept for
 | P9.17 | **LLM usage counted twice in changes.md** (live nurse run, P9.10): the report said 8 calls / 20.4K tokens where the run made 4 / 10.2K. When one client drafts and generates (CLI, eval), `_merge_usage` added the proposal step's calls to a summary that already held them | `services/tailor.py` | ✅ | 2026-10-05: `_merge_usage` joins the two call lists by identity and recomputes the totals from the joined list, so a shared client's calls count once and two clients' (the web's two requests) still add up. `test_usage_merge_counts_each_call_once_p917` |
 | P9.18 | **"SKILLS / Skills: Epic, …"** (live nurse run, P9.10): a resume whose skills sit in one category named like the heading printed that name again as a label | `rendering/layout.py`, `template_renderer.py`, `html_renderer.py` | ✅ | 2026-10-05: `skill_label()`: a lone category called Skills, Key Skills, Core Skills, General or Other prints no label (DOCX and HTML); two or more categories keep theirs. `test_a_lone_generic_skills_category_prints_no_label_p918`; full suite and eval unchanged |
 | P9.19 | **The change log listed untouched bullets as rewrites** (live sales-pdf run, P9.10): the AI kept 5 strong bullets as they were, and the downloadable `changes.md` showed "Accepted Rewrites (5)" with the same text as Original and Tailored | `services/tailor.py` | ✅ | 2026-10-05: only reworded items are listed under Accepted Rewrites; the rest are counted as "Kept as written (N): the AI found nothing to improve" (whitespace-only changes count as kept). Review already said "Kept as is". `test_report_lists_only_reworded_bullets_p919` |
+| P9.20 | **"Oracle SQL" missed next to "Oracle PL/SQL"** (live india run, P9.10): a multi-word term whose words sit in one sentence counts (P8), but the slash parts from P9.15 weren't used for that check | `analysis/keyword_match.py` | ✅ | 2026-10-05: the one-sentence check also looks at slash parts, so "Maintained Oracle PL/SQL procedures" shows Oracle SQL; "SQL Server" still doesn't match. `test_slash_parts_count_for_multi_word_terms_p920` |
 
 ### Owner review of the current state
 

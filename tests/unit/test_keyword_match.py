@@ -128,3 +128,13 @@ def test_custom_sections_and_slash_joined_words_count_p915():
     assert not rows["CI"].found  # whole words only, still
     text = "Arizona State Board of Nursing (Compact/NLC)\nICU - Mayo Clinic Hospital"
     assert attainable_coverage(job.keywords, text, report, job.raw_text) == {"pct": 100.0, "attainable": 2, "missed": []}
+
+
+def test_slash_parts_count_for_multi_word_terms_p920():
+    """The live india run (P9.10): "Oracle SQL" was missing next to "Maintained
+    Oracle PL/SQL procedures"."""
+    report = KeywordMatcher().match(_job(["Oracle SQL", "SQL Server"], required_lines=["Oracle SQL, SQL Server"]),
+                                    _resume(["Maintained Oracle PL/SQL procedures"]))
+    rows = _rows(report)
+    assert rows["Oracle SQL"].found
+    assert not rows["SQL Server"].found
