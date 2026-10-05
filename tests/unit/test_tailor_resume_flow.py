@@ -87,6 +87,21 @@ def test_strict_mode_is_decided_before_rendering(tmp_path, strict):
     assert report.count("## Final Summary") == 1
 
 
+
+def test_report_lists_only_reworded_bullets_p919(tmp_path):
+    """The live sales run (P9.10) listed 5 "Accepted Rewrites" whose text was
+    the original's: a kept bullet is counted, not shown as a rewrite."""
+    service = _service(tmp_path)
+    (good_b, good_ev), (same_b, same_ev) = _bullets_with_evidence()[:2]
+    result = service.tailor_resume(
+        SAMPLE_DOCX, SAMPLE_JD, str(tmp_path / "out"), mode="ATS_DEFAULT",
+        preapproved_proposals=[_proposal(good_b, good_ev, "Successfully " + good_b.text),
+                               _proposal(same_b, same_ev, same_b.text)],
+    )
+    report = open(result["changes_md"], encoding="utf-8").read()
+    assert "## Accepted Rewrites (1)" in report and "Kept as written (1)" in report
+    assert f"- **Original:** {same_b.text}" not in report
+
 def test_generate_proposals_reports_llm_status_when_unavailable(tmp_path):
     service = _service(tmp_path)  # conftest pins an unreachable local provider
     out = service.generate_proposals(SAMPLE_DOCX, SAMPLE_JD)

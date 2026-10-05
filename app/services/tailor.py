@@ -1231,8 +1231,15 @@ class TailorService:
                 for issue in content_report.issues:
                     f.write(f"- **{issue.check}** ({issue.where}): {issue.message}\n")
                 f.write("\n")
-                f.write(f"## Accepted Rewrites ({len(approved_proposals)})\n\n")
-                for prop in approved_proposals:
+                # Only real changes are listed; a bullet the AI left as it was is
+                # counted, not shown as a "rewrite" with the same text twice (P9.19).
+                reworded = [p for p in approved_proposals
+                            if " ".join(_prop_text(p).split()) != " ".join((p.original_text or "").split())]
+                f.write(f"## Accepted Rewrites ({len(reworded)})\n\n")
+                kept = len(approved_proposals) - len(reworded)
+                if kept:
+                    f.write(f"Kept as written ({kept}): the AI found nothing to improve.\n\n")
+                for prop in reworded:
                     f.write(f"### Bullet ({_prop_key(prop) or 'unknown'})\n")
                     f.write(f"- **Original:** {prop.original_text}\n")
                     f.write(f"- **Tailored:** {_prop_text(prop)}\n")
