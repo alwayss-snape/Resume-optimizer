@@ -33,6 +33,8 @@ def test_fabricated_numbers_and_stuffing_detectors():
     assert fabricated_numbers("Cut costs 12% across teams.", "Led 12 teams.") == ["12%"]  # units matter
     assert fabricated_numbers("2021 - 2025\nB.S. in CS", "2021 - 2025 B.S. in CS") == []
     assert stuffing("Python " * 6, ["Python"], 60.0, 50.0)["repeated"] == {"Python": 6}
+    assert stuffing("SAP " * 7, ["SAP"], 60.0, 50.0, source_text="SAP " * 7)["ok"]  # the resume had them (P9.16)
+    assert stuffing("SAP " * 8, ["SAP"], 60.0, 50.0, source_text="SAP " * 7)["repeated"] == {"SAP": 8}
     assert stuffing("", [], 90.0, 95.0)["ok"]  # already above the band before tailoring: not stuffing
     assert not stuffing("", [], 90.0, 70.0)["ok"]
 

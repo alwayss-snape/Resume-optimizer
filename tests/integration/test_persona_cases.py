@@ -26,7 +26,6 @@ CONTENT_XFAIL = {}
 FULL_XFAIL = {
     'academic': '3 pages for a 2-page target and "Ecology" counted 46 times: needs the academic CV template (P10.6)',
     'federal': 'GS-12 not matched: needs the federal template\'s field parsing (P10.7)',
-    'executive': 'DOCX read-back takes a bullet heading as the company; "SAP"/"OP" counted as stuffing',
 }
 
 _RESULTS = {}

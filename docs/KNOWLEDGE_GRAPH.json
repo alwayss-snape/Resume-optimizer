@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "11f66a3a235ea341",
+  "source_hash": "f0648d21c4d8c703",
   "stats": {
     "files": 167,
     "python_files": 143,
     "app_modules": 60,
     "test_files": 73,
     "classes": 111,
-    "functions": 1084,
-    "lines_of_python": 21780
+    "functions": 1086,
+    "lines_of_python": 21806
   },
   "axes": {
     "x": "location (path)",
@@ -702,7 +702,7 @@
       "stages": [
         "2 Normalize"
       ],
-      "lines": 1262,
+      "lines": 1278,
       "doc": "",
       "classes": [
         {
@@ -816,93 +816,98 @@
               "doc": "The ATS template prints 'Company \u00b7 Location' under the title line."
             },
             {
+              "name": "_next_is_company_line",
+              "line": 434,
+              "doc": "The ATS template prints just the company under \"Title<tab>dates\""
+            },
+            {
               "name": "_trim",
-              "line": 441,
+              "line": 456,
               "doc": "Strip separators left around removed dates, keeping a closing"
             },
             {
               "name": "_split_skill_line",
-              "line": 457,
+              "line": 472,
               "doc": "'Languages: Python, SQL<tab>Frameworks: Pandas, and XGBoost' ->"
             },
             {
               "name": "_skill_items",
-              "line": 478,
+              "line": 493,
               "doc": ""
             },
             {
               "name": "_split_education_line",
-              "line": 496,
+              "line": 511,
               "doc": "'B.S. Biology, University of Texas at Austin, 2016' -> (degree,"
             },
             {
               "name": "_looks_like_degree",
-              "line": 542,
+              "line": 557,
               "doc": "'B.Tech in Computer Science' yes; 'State University' no."
             },
             {
               "name": "_split_middle_dot",
-              "line": 548,
+              "line": 563,
               "doc": "'Acme Corp \u00b7 Pune, India' -> ('Acme Corp', 'Pune, India'), the"
             },
             {
               "name": "_is_dated_line",
-              "line": 557,
+              "line": 572,
               "doc": "A job title/company line carrying a date range or year. A date"
             },
             {
               "name": "_header_range",
-              "line": 572,
+              "line": 587,
               "doc": "A date range inside a job header line, or None. Trailing ranges"
             },
             {
               "name": "_experience_line_kind",
-              "line": 589,
+              "line": 604,
               "doc": "'dated' (title and/or company with dates), 'header_line' (a short"
             },
             {
               "name": "_add_role",
-              "line": 608,
+              "line": 623,
               "doc": "Record a role; the first one also fills the entry's title/dates."
             },
             {
               "name": "_merge_links",
-              "line": 618,
+              "line": 633,
               "doc": "Profile links from the file's hyperlinks and from URLs written in"
             },
             {
               "name": "_trailing_dates",
-              "line": 632,
+              "line": 647,
               "doc": "(match, start, end) for a trailing date range or single date."
             },
             {
               "name": "_extract_date_range",
-              "line": 642,
+              "line": 657,
               "doc": ""
             },
             {
               "name": "_strip_date_range",
-              "line": 648,
+              "line": 663,
               "doc": ""
             },
             {
               "name": "_parse_title_and_dates",
-              "line": 652,
+              "line": 667,
               "doc": "'Data Scientist II | August 2024 - Present' ->"
             },
             {
               "name": "_split_list_items",
-              "line": 667,
+              "line": 682,
               "doc": "Items of a certification / award line. ';' always separates"
             },
             {
               "name": "_split_respecting_parens",
-              "line": 686,
+              "line": 701,
               "doc": "Split on sep_chars, but never inside ( ) or [ ] groups \u2014 so"
             },
             {
               "name": "normalize",
-              "line": 709,
+              "line": 724,
               "doc": ""
             }
           ]
@@ -5898,7 +5903,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 100,
+      "lines": 110,
       "doc": "P8.5: job-line formats outside tech: title / company / location / dates",
       "classes": [],
       "functions": [
@@ -5936,6 +5941,11 @@
           "name": "test_role_words_outside_tech",
           "line": 98,
           "doc": ""
+        },
+        {
+          "name": "test_a_title_with_a_comma_over_a_company_line_p916",
+          "line": 102,
+          "doc": "The ATS template's own output, read back: \"SVP, Global Supply Chain<tab>dates\""
         }
       ]
     },

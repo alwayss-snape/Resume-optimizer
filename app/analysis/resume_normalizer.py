@@ -431,6 +431,21 @@ class ResumeNormalizer:
         return bool(following and following.block_type != "bullet" and " · " in following.text
                     and not self._is_dated_line(following))
 
+    def _next_is_company_line(self, blocks, idx: int) -> bool:
+        """The ATS template prints just the company under "Title<tab>dates"
+        when there's no location: "SVP, Global Supply Chain" then "Meridian
+        Consumer Products" is a title with a comma, not "Title, Company" (P9.16).
+        Only a short Title-Case name followed by a bullet counts, so a plain
+        sentence under a job line is never taken for the company."""
+        rest = [b for b in blocks[idx + 1:] if b.text.strip()]
+        if len(rest) < 2 or rest[0].block_type == "bullet" or rest[1].block_type != "bullet":
+            return False
+        text = rest[0].text.strip()
+        words = text.split()
+        return (len(words) <= 6 and len(text) <= 60 and not text.endswith(".") and "," not in text
+                and not self._is_dated_line(rest[0]) and self._title_score(text) == 0
+                and all(w[:1].isupper() or w.lower() in ("of", "and", "&", "the", "for") for w in words))
+
     # Chars trimmed off a title/company fragment once the trailing date range
     # (and whatever separated it, e.g. "Title | Aug 2024 - Present") has been
     # removed. Missing "|" here left literal pipes baked into every title
@@ -939,7 +954,8 @@ class ResumeNormalizer:
                                              and self._looks_like_location(seg.strip())), None)
                         current_exp = new_experience(company_part, location)
                         self._add_role(current_exp, Role(title=title_part, start_date=start, end_date=end))
-                    elif comma_job and not self._next_is_meta_line(blocks, idx):
+                    elif comma_job and not self._next_is_meta_line(blocks, idx) \
+                            and not self._next_is_company_line(blocks, idx):
                         # "Title, Company, City, dates" (P8.5).
                         title_part, company_part, location = comma_job
                         current_exp = new_experience(company_part, right_col or location)

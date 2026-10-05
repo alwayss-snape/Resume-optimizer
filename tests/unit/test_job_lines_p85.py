@@ -98,3 +98,13 @@ def test_later_role_never_inherits_a_date_column(tmp_path):
 def test_role_words_outside_tech(title):
     assert ResumeNormalizer()._looks_like_title(title)
 
+
+def test_a_title_with_a_comma_over_a_company_line_p916(tmp_path):
+    """The ATS template's own output, read back: "SVP, Global Supply Chain<tab>dates"
+    then the company alone (no location) is one title, not "Title, Company"."""
+    jobs, _ = _jobs([("bold", "SVP, Global Supply Chain\t2013 – 2018"), ("p", "Meridian Consumer Products"),
+                     ("b", "Led S&OP redesign across 4 sites."),
+                     ("bold", "Shift Supervisor, Starbucks, Atlanta GA\t2021 – Present"),
+                     ("p", "Opened and closed the store"), ("b", "Trained 6 baristas.")], tmp_path)
+    assert jobs[0][:3] == ("SVP, Global Supply Chain", "Meridian Consumer Products", None)
+    assert jobs[1][:3] == ("Shift Supervisor", "Starbucks", "Atlanta GA")  # a sentence is never the company

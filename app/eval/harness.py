@@ -230,7 +230,7 @@ def _tailor_metrics(service, case: Case, jd_text: str, parsed, generated: Dict, 
         "coverage": result.get("coverage"),
         # P4.2: keyword stuffing: above the target band, or a JD keyword repeated too often
         "stuffing": stuffing(output_text, job.keywords if job else [], rate_after,
-                             float(result.get("initial_alignment_score") or 0.0)),
+                             float(result.get("initial_alignment_score") or 0.0), source_text),
         "output_dir": case_dir,
     }, result
 
@@ -270,12 +270,17 @@ def fabricated_numbers(output_text: str, source_text: str) -> List[str]:
 STUFFING_MAX_REPEATS = 5
 
 
-def stuffing(output_text: str, keywords: List[str], rate_after: float, rate_before: float) -> Dict:
+def stuffing(output_text: str, keywords: List[str], rate_after: float, rate_before: float,
+             source_text: str = "") -> Dict:
     """Signs of keyword stuffing: tailoring pushed the rate above the target
     band (a resume that already matched that well isn't stuffed), or one JD
-    keyword is repeated more than STUFFING_MAX_REPEATS times."""
+    keyword is repeated more than STUFFING_MAX_REPEATS times and more often
+    than the resume itself had it (P9.16: an executive whose seven jobs each
+    name SAP isn't stuffed by keeping them)."""
     from app.domain.report import TARGET_BAND
-    repeated = {k: n for k in keywords if (n := JDAnalyzer.count_occurrences(k, output_text or "")) > STUFFING_MAX_REPEATS}
+    count = JDAnalyzer.count_occurrences
+    repeated = {k: n for k in keywords
+                if (n := count(k, output_text or "")) > STUFFING_MAX_REPEATS and n > count(k, source_text or "")}
     pushed_over = rate_after > TARGET_BAND[1] and rate_after > rate_before
     return {"pushed_over_band": pushed_over, "repeated": repeated, "ok": not pushed_over and not repeated}
 
