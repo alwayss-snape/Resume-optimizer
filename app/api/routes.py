@@ -213,6 +213,15 @@ def _event(kind: str, payload) -> str:
     return f"event: {kind}\ndata: {json.dumps(jsonable_encoder(payload))}\n\n"
 
 
+def _progress_event(message: str):
+    """A step's progress line, or an AI wait as its own event so the page
+    shows a countdown rather than a finished step (P9.7)."""
+    from app.llm.client import WaitNotice
+    if isinstance(message, WaitNotice):
+        return "wait", {"message": str(message), "seconds": message.seconds}
+    return "progress", {"message": message}
+
+
 def _stream(session: Session, work: Callable[[Callable[[str], None]], Dict]) -> StreamingResponse:
     """Run `work(progress)` in a thread (the session must already be
     claimed) and stream its progress, then its result, as SSE."""
@@ -220,7 +229,7 @@ def _stream(session: Session, work: Callable[[Callable[[str], None]], Dict]) -> 
 
     def run():
         try:
-            events.put(("result", work(lambda message: events.put(("progress", {"message": message})))))
+            events.put(("result", work(lambda message: events.put(_progress_event(message)))))
         except HTTPException as e:
             events.put(("error", {"message": e.detail}))
         except Exception:

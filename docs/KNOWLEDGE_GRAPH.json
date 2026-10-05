@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "cb912514704e5b2d",
+  "source_hash": "60d7bdf3e083ac4d",
   "stats": {
-    "files": 163,
-    "python_files": 139,
+    "files": 164,
+    "python_files": 140,
     "app_modules": 60,
-    "test_files": 69,
-    "classes": 109,
-    "functions": 1050,
-    "lines_of_python": 21247
+    "test_files": 70,
+    "classes": 110,
+    "functions": 1056,
+    "lines_of_python": 21295
   },
   "axes": {
     "x": "location (path)",
@@ -917,37 +917,37 @@
       "stages": [
         "7 Rewrite"
       ],
-      "lines": 293,
+      "lines": 298,
       "doc": "",
       "classes": [
         {
           "name": "LLMRewriter",
-          "line": 69,
+          "line": 74,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
-              "line": 70,
+              "line": 75,
               "doc": ""
             },
             {
               "name": "rewrite_bullet",
-              "line": 73,
+              "line": 78,
               "doc": "Rewrite (or, given a single free-text `original_text` with no"
             },
             {
               "name": "rewrite_bullet_with_status",
-              "line": 93,
+              "line": 98,
               "doc": "Like rewrite_bullet, plus what happened, so failures are visible"
             },
             {
               "name": "rewrite_role",
-              "line": 151,
+              "line": 156,
               "doc": "Rewrite several bullets of one role in ONE call (P1.4)."
             },
             {
               "name": "execute_plan",
-              "line": 210,
+              "line": 215,
               "doc": "One LLM call per role (P1.4): all of a job's bullets that the"
             }
           ]
@@ -968,6 +968,11 @@
           "name": "breaks_bullet_rules",
           "line": 50,
           "doc": "True when a bullet is over the word limit or uses a filler word."
+        },
+        {
+          "name": "_count",
+          "line": 63,
+          "doc": "\"1 bullet\", \"10 bullets\" (P9.7: was \"10 bullet(s)\")."
         }
       ]
     },
@@ -1397,7 +1402,7 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 697,
+      "lines": 706,
       "doc": "HTTP endpoints, one per step of the review flow (P5.1).",
       "classes": [
         {
@@ -1461,7 +1466,7 @@
         },
         {
           "name": "ArrangeIn",
-          "line": 613,
+          "line": 622,
           "doc": "",
           "methods": []
         }
@@ -1508,123 +1513,128 @@
           "doc": ""
         },
         {
-          "name": "_stream",
+          "name": "_progress_event",
           "line": 216,
+          "doc": "A step's progress line, or an AI wait as its own event so the page"
+        },
+        {
+          "name": "_stream",
+          "line": 225,
           "doc": "Run `work(progress)` in a thread (the session must already be"
         },
         {
           "name": "_service",
-          "line": 251,
+          "line": 260,
           "doc": "A TailorService for one step. With a session, saved gap answers come"
         },
         {
           "name": "plain_issue",
-          "line": 277,
+          "line": 286,
           "doc": "A parse issue in plain words (P8.26: \"experience without a company"
         },
         {
           "name": "unplaced_lines",
-          "line": 287,
+          "line": 296,
           "doc": "Lines of the file that ended up in no field the resume shows (P8.26),"
         },
         {
           "name": "_resume_texts",
-          "line": 302,
+          "line": 311,
           "doc": ""
         },
         {
           "name": "_details",
-          "line": 319,
+          "line": 328,
           "doc": "What the \"check details\" step shows and edits (P3.5)."
         },
         {
           "name": "_sections",
-          "line": 349,
+          "line": 358,
           "doc": "Bullet id -> the job or project it belongs to, for grouping cards."
         },
         {
           "name": "_proposal_out",
-          "line": 361,
+          "line": 370,
           "doc": ""
         },
         {
           "name": "_match_out",
-          "line": 374,
+          "line": 383,
           "doc": ""
         },
         {
           "name": "_selected",
-          "line": 380,
+          "line": 389,
           "doc": ""
         },
         {
           "name": "health",
-          "line": 390,
+          "line": 399,
           "doc": ""
         },
         {
           "name": "config",
-          "line": 395,
+          "line": 404,
           "doc": ""
         },
         {
           "name": "_model",
-          "line": 405,
+          "line": 414,
           "doc": ""
         },
         {
           "name": "analyze",
-          "line": 412,
+          "line": 421,
           "doc": "\"Just check my match\": score only, nothing kept."
         },
         {
           "name": "parse",
-          "line": 432,
+          "line": 441,
           "doc": "Step 1: read the resume and start a fresh session for this run."
         },
         {
           "name": "proposals",
-          "line": 473,
+          "line": 482,
           "doc": "Step 2: apply the user's fixes, then draft rewrites and gap"
         },
         {
           "name": "match_preview",
-          "line": 524,
+          "line": 533,
           "doc": "The match rate if the selected (and edited) proposals were applied."
         },
         {
           "name": "tailor",
-          "line": 534,
+          "line": 543,
           "doc": "Step 3: apply the review and generate the files. Streams progress."
         },
         {
           "name": "_results_out",
-          "line": 574,
+          "line": 583,
           "doc": "What the Results (and Arrange) screen gets after a run."
         },
         {
           "name": "arrange",
-          "line": 621,
+          "line": 630,
           "doc": "Re-render the tailored resume as the user arranged it (P8.13). No LLM"
         },
         {
           "name": "_result_path",
-          "line": 660,
+          "line": 669,
           "doc": ""
         },
         {
           "name": "download",
-          "line": 668,
+          "line": 677,
           "doc": ""
         },
         {
           "name": "preview",
-          "line": 676,
+          "line": 685,
           "doc": "One page of the tailored PDF as a PNG (Chrome blocks embedded PDFs)."
         },
         {
           "name": "reset",
-          "line": 685,
+          "line": 694,
           "doc": "Start over: delete this visitor's files and state. If a step is still"
         }
       ]
@@ -2554,109 +2564,121 @@
         "3 JD analysis",
         "7 Rewrite"
       ],
-      "lines": 698,
+      "lines": 710,
       "doc": "",
       "classes": [
         {
-          "name": "LLMClient",
+          "name": "WaitNotice",
           "line": 62,
+          "doc": "A progress message saying the AI service asked us to wait (P9.7). It is",
+          "methods": [
+            {
+              "name": "__new__",
+              "line": 67,
+              "doc": ""
+            }
+          ]
+        },
+        {
+          "name": "LLMClient",
+          "line": 73,
           "doc": "Unified client for text generation across three interchangeable providers:",
           "methods": [
             {
               "name": "__init__",
-              "line": 78,
+              "line": 89,
               "doc": ""
             },
             {
               "name": "is_available",
-              "line": 151,
+              "line": 162,
               "doc": "Whether the configured provider is reachable AND the configured"
             },
             {
               "name": "_check_available",
-              "line": 167,
+              "line": 178,
               "doc": ""
             },
             {
               "name": "_ollama_check",
-              "line": 174,
+              "line": 185,
               "doc": ""
             },
             {
               "name": "_groq_check",
-              "line": 186,
+              "line": 197,
               "doc": ""
             },
             {
               "name": "_anthropic_check",
-              "line": 207,
+              "line": 218,
               "doc": ""
             },
             {
               "name": "_record",
-              "line": 228,
+              "line": 239,
               "doc": ""
             },
             {
               "name": "generate",
-              "line": 246,
+              "line": 257,
               "doc": "Generate text from the LLM using the chat interface."
             },
             {
               "name": "get_usage_summary",
-              "line": 276,
+              "line": 287,
               "doc": "Aggregate every LLM call made on this client instance so far"
             },
             {
               "name": "_generate_ollama",
-              "line": 298,
+              "line": 309,
               "doc": ""
             },
             {
               "name": "_groq_supports_strict_schema",
-              "line": 343,
+              "line": 354,
               "doc": ""
             },
             {
               "name": "_generate_groq",
-              "line": 347,
+              "line": 358,
               "doc": ""
             },
             {
               "name": "_split_system",
-              "line": 441,
+              "line": 453,
               "doc": "The Messages API takes the system prompt as a top-level field,"
             },
             {
               "name": "_anthropic_request",
-              "line": 448,
+              "line": 460,
               "doc": ""
             },
             {
               "name": "_anthropic_response",
-              "line": 485,
+              "line": 497,
               "doc": ""
             },
             {
               "name": "_generate_anthropic",
-              "line": 502,
+              "line": 514,
               "doc": ""
             },
             {
               "name": "_generate_json_anthropic",
-              "line": 507,
+              "line": 519,
               "doc": "Structured outputs guarantee the response matches the schema, so"
             },
             {
               "name": "generate_json",
-              "line": 528,
+              "line": 540,
               "doc": "Generate structured JSON conforming to a Pydantic model."
             }
           ]
         },
         {
           "name": "LLMDailyLimitError",
-          "line": 653,
+          "line": 665,
           "doc": "The provider's daily free limit is used up (P8.23).",
           "methods": []
         }
@@ -2664,27 +2686,27 @@
       "functions": [
         {
           "name": "_requested_wait",
-          "line": 633,
+          "line": 645,
           "doc": "How long Groq asks us to wait: the retry-after header, else the"
         },
         {
           "name": "daily_limit_message",
-          "line": 657,
+          "line": 669,
           "doc": ""
         },
         {
           "name": "_too_long_to_wait",
-          "line": 664,
+          "line": 676,
           "doc": "A 429 not worth waiting for: the daily limit, or a wait over a minute."
         },
         {
           "name": "_retry_after_seconds",
-          "line": 670,
+          "line": 682,
           "doc": "Seconds to wait before retrying a 429: the server's `retry-after`"
         },
         {
           "name": "strict_json_schema",
-          "line": 685,
+          "line": 697,
           "doc": "Adapt a Pydantic JSON schema for strict structured-output modes: every"
         }
       ]
@@ -6078,7 +6100,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 412,
+      "lines": 413,
       "doc": "",
       "classes": [
         {
@@ -6825,6 +6847,32 @@
         {
           "name": "test_forget_on_empty_profile_writes_nothing",
           "line": 115,
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "tests/unit/test_progress_p97.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 21,
+      "doc": "P9.7: AI waits are their own progress event; step lines say \"1 bullet\" / \"10 bullets\".",
+      "classes": [],
+      "functions": [
+        {
+          "name": "test_a_wait_is_its_own_event_with_seconds",
+          "line": 7,
+          "doc": ""
+        },
+        {
+          "name": "test_wait_notice_is_still_a_plain_string_for_the_cli",
+          "line": 13,
+          "doc": ""
+        },
+        {
+          "name": "test_counts_are_pluralised",
+          "line": 18,
           "doc": ""
         }
       ]
@@ -8486,6 +8534,11 @@
     },
     {
       "from": "app/analysis/rewriter.py",
+      "to": "tests/unit/test_progress_p97.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/analysis/rewriter.py",
       "to": "tests/unit/test_project_rewrites.py",
       "type": "tested_by"
     },
@@ -8881,6 +8934,11 @@
     },
     {
       "from": "app/api/routes.py",
+      "to": "app/llm/client.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/api/routes.py",
       "to": "app/rendering/pdf_converter.py",
       "type": "imports"
     },
@@ -8912,6 +8970,11 @@
     {
       "from": "app/api/routes.py",
       "to": "tests/unit/test_details_p826.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/api/routes.py",
+      "to": "tests/unit/test_progress_p97.py",
       "type": "tested_by"
     },
     {
@@ -9916,6 +9979,11 @@
     },
     {
       "from": "app/llm/client.py",
+      "to": "app/llm/client.py::WaitNotice",
+      "type": "contains"
+    },
+    {
+      "from": "app/llm/client.py",
       "to": "app/llm/schemas.py",
       "type": "imports"
     },
@@ -9932,6 +10000,11 @@
     {
       "from": "app/llm/client.py",
       "to": "tests/unit/test_llm_client.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/llm/client.py",
+      "to": "tests/unit/test_progress_p97.py",
       "type": "tested_by"
     },
     {

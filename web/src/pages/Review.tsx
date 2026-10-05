@@ -6,7 +6,7 @@ import { ConditionList } from "../components/ConditionList";
 import { GapQuestionCard, type TargetOption, TargetSelect } from "../components/GapQuestionCard";
 import { Icon } from "../components/Icon";
 import { KeywordList } from "../components/KeywordList";
-import { ProgressPanel } from "../components/ProgressPanel";
+import { ProgressPanel, progressHandler, type Wait } from "../components/ProgressPanel";
 import { type ProofView, ProposalCard } from "../components/ProposalCard";
 import { ProofStack } from "../components/ProofStack";
 import { ScoreDial, verdict } from "../components/ScoreDial";
@@ -39,6 +39,7 @@ export function Review() {
   const [live, setLive] = useState<MatchPreview | null>(null);
   const [liveError, setLiveError] = useState<string | null>(null);
   const [progress, setProgress] = useState<string[] | null>(null);
+  const [wait, setWait] = useState<Wait | null>(null);
   const [error, setError] = useState<{ text: string; n: number } | null>(null);
   const [jobOpen, setJobOpen] = useState(() => anyJobField(review.newJob));
   const [view, setView] = useState<ProofView>("proof");
@@ -121,17 +122,19 @@ export function Review() {
     }
     setError(null);
     setProgress([]);
+    setWait(null);
     // The server deletes the previous files before generating, so the old
     // results must not stay reachable if this run fails.
     updateRun({ results: null });
     useApp.setState((s) => ({ reached: Math.min(s.reached, 2) }));
     const step = beginStep();
+    const onProgress = progressHandler(setProgress, setWait);
     try {
       const results = await tailorResume(
         tailorRequest(drafted.proposals, current, {
           keepLayout: run.template === "keep", strictFactual: settings.strictFactual, rememberAnswers: settings.rememberAnswers,
         }),
-        (m) => step.isCurrent() && setProgress((p) => [...(p ?? []), m]),
+        (m, w) => step.isCurrent() && onProgress(m, w),
         step.signal,
       );
       if (!step.isCurrent()) return;
@@ -153,7 +156,7 @@ export function Review() {
           Generating your resume
         </h1>
         <p className="text-muted">Applying your choices, laying out the pages and checking the files read back cleanly.</p>
-        <ProgressPanel title="Working…" messages={progress.length ? progress : ["Starting"]} />
+        <ProgressPanel title="Working…" messages={progress.length ? progress : ["Starting"]} wait={wait} />
       </section>
     );
   }

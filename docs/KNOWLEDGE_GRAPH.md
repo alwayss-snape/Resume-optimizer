@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**60 app modules · 69 test files · 109 classes · 1050 functions/methods · 21,247 lines of Python** · source hash `cb912514704e5b2d`
+**60 app modules · 70 test files · 110 classes · 1056 functions/methods · 21,295 lines of Python** · source hash `60d7bdf3e083ac4d`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -77,7 +77,7 @@ app/
     pdf.py                                       _Line, PdfParser
     text.py                                      Plain-text resumes: a .txt upload or text pasted in the app (P8.22).
   llm/
-    client.py                                    LLMClient, LLMDailyLimitError
+    client.py                                    WaitNotice, LLMClient, LLMDailyLimitError
     schemas.py                                   LLMResponse, LLMError, LLMConnectionError, LLMTimeoutError, LLMInvalid…
     prompts/
       final_review.txt
@@ -182,6 +182,7 @@ tests/
     test_pdf_converter.py                        test_pdf_converter_find_binary_or_graceful_none(), test_output_qa_vali…
     test_pdf_parser.py                           test_pdf_parser_text_layer(), test_pdf_parser_file_not_found(), test_m…
     test_profile_store.py                        P3.2: confirmed gap answers are saved locally and offered on the next …
+    test_progress_p97.py                         P9.7: AI waits are their own progress event; step lines say "1 bullet"…
     test_project_rewrites.py                     Project bullets go through the same plan -> rewrite -> validate flow (…
     test_resume_document.py                      test_resume_document_has_versioned_json_snapshot(), test_resume_docume…
     test_resume_model_v2.py                      Resume model v2 (P1.12): several roles at one company, project
@@ -415,20 +416,21 @@ _Is this text in English? (P8.25)_
 
 ### `app/analysis/rewriter.py`
 
-**Layer:** Analysis · **Stage:** 7 Rewrite · **Lines:** 293
+**Layer:** Analysis · **Stage:** 7 Rewrite · **Lines:** 298
 
-- class **`LLMRewriter`** ([app/analysis/rewriter.py:69](../app/analysis/rewriter.py#L69))
-  - `__init__()` :70
-  - `rewrite_bullet()` :73 — Rewrite (or, given a single free-text `original_text` with no
-  - `rewrite_bullet_with_status()` :93 — Like rewrite_bullet, plus what happened, so failures are visible
-  - `rewrite_role()` :151 — Rewrite several bullets of one role in ONE call (P1.4).
-  - `execute_plan()` :210 — One LLM call per role (P1.4): all of a job's bullets that the
+- class **`LLMRewriter`** ([app/analysis/rewriter.py:74](../app/analysis/rewriter.py#L74))
+  - `__init__()` :75
+  - `rewrite_bullet()` :78 — Rewrite (or, given a single free-text `original_text` with no
+  - `rewrite_bullet_with_status()` :98 — Like rewrite_bullet, plus what happened, so failures are visible
+  - `rewrite_role()` :156 — Rewrite several bullets of one role in ONE call (P1.4).
+  - `execute_plan()` :215 — One LLM call per role (P1.4): all of a job's bullets that the
 - function **`normalize_llm_text()`** ([app/analysis/rewriter.py:27](../app/analysis/rewriter.py#L27))
 - function **`_same_wording()`** ([app/analysis/rewriter.py:34](../app/analysis/rewriter.py#L34)) — Equal apart from case, whitespace and closing punctuation, so adding a
 - function **`breaks_bullet_rules()`** ([app/analysis/rewriter.py:50](../app/analysis/rewriter.py#L50)) — True when a bullet is over the word limit or uses a filler word.
+- function **`_count()`** ([app/analysis/rewriter.py:63](../app/analysis/rewriter.py#L63)) — "1 bullet", "10 bullets" (P9.7: was "10 bullet(s)").
 - **Imports:** `analysis/change_proposal.py`, `domain/evidence.py`, `domain/job.py`, `domain/resume.py`, `domain/tailoring.py`, `llm/client.py`, `llm/schemas.py`
 - **Imported by:** `analysis/summary_writer.py`, `rendering/docx_patcher.py`, `services/tailor.py`, `validation/content_lint.py`, `validation/factual.py`
-- **Tested by:** `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_docx_renderer.py`, `tests/unit/test_fact_check_p89.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_tailor_planner.py`, `tests/unit/test_tailor_resume_flow.py`, `tests/unit/test_validation.py`
+- **Tested by:** `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_docx_renderer.py`, `tests/unit/test_fact_check_p89.py`, `tests/unit/test_progress_p97.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_tailor_planner.py`, `tests/unit/test_tailor_resume_flow.py`, `tests/unit/test_validation.py`
 - **Prompts:** `llm/prompts/rewrite_bullet.txt`, `llm/prompts/rewrite_role.txt`
 
 ### `app/analysis/scoring.py`
@@ -572,7 +574,7 @@ _The web app (P5.1): `uvicorn app.api.main:app`._
 
 ### `app/api/routes.py`
 
-**Layer:** Web API · **Stage:** all · **Lines:** 697
+**Layer:** Web API · **Stage:** all · **Lines:** 706
 
 _HTTP endpoints, one per step of the review flow (P5.1)._
 
@@ -586,7 +588,7 @@ _HTTP endpoints, one per step of the review flow (P5.1)._
 - class **`RateLimiter`** ([app/api/routes.py:103](../app/api/routes.py#L103)) — At most `limit` calls per `window` seconds per key (visitor IP).
   - `__init__()` :106
   - `check()` :111
-- class **`ArrangeIn`** ([app/api/routes.py:613](../app/api/routes.py#L613))
+- class **`ArrangeIn`** ([app/api/routes.py:622](../app/api/routes.py#L622))
 - function **`rate_limited()`** ([app/api/routes.py:122](../app/api/routes.py#L122))
 - function **`current_session()`** ([app/api/routes.py:126](../app/api/routes.py#L126))
 - function **`_require()`** ([app/api/routes.py:133](../app/api/routes.py#L133))
@@ -595,33 +597,34 @@ _HTTP endpoints, one per step of the review flow (P5.1)._
 - function **`_mostly_binary()`** ([app/api/routes.py:194](../app/api/routes.py#L194)) — Control characters (other than tabs and line breaks) in more than 2% of
 - function **`_check_jd()`** ([app/api/routes.py:203](../app/api/routes.py#L203))
 - function **`_event()`** ([app/api/routes.py:212](../app/api/routes.py#L212))
-- function **`_stream()`** ([app/api/routes.py:216](../app/api/routes.py#L216)) — Run `work(progress)` in a thread (the session must already be
-- function **`_service()`** ([app/api/routes.py:251](../app/api/routes.py#L251)) — A TailorService for one step. With a session, saved gap answers come
-- function **`plain_issue()`** ([app/api/routes.py:277](../app/api/routes.py#L277)) — A parse issue in plain words (P8.26: "experience without a company
-- function **`unplaced_lines()`** ([app/api/routes.py:287](../app/api/routes.py#L287)) — Lines of the file that ended up in no field the resume shows (P8.26),
-- function **`_resume_texts()`** ([app/api/routes.py:302](../app/api/routes.py#L302))
-- function **`_details()`** ([app/api/routes.py:319](../app/api/routes.py#L319)) — What the "check details" step shows and edits (P3.5).
-- function **`_sections()`** ([app/api/routes.py:349](../app/api/routes.py#L349)) — Bullet id -> the job or project it belongs to, for grouping cards.
-- function **`_proposal_out()`** ([app/api/routes.py:361](../app/api/routes.py#L361))
-- function **`_match_out()`** ([app/api/routes.py:374](../app/api/routes.py#L374))
-- function **`_selected()`** ([app/api/routes.py:380](../app/api/routes.py#L380))
-- function **`health()`** ([app/api/routes.py:390](../app/api/routes.py#L390))
-- function **`config()`** ([app/api/routes.py:395](../app/api/routes.py#L395))
-- function **`_model()`** ([app/api/routes.py:405](../app/api/routes.py#L405))
-- function **`analyze()`** ([app/api/routes.py:412](../app/api/routes.py#L412)) — "Just check my match": score only, nothing kept.
-- function **`parse()`** ([app/api/routes.py:432](../app/api/routes.py#L432)) — Step 1: read the resume and start a fresh session for this run.
-- function **`proposals()`** ([app/api/routes.py:473](../app/api/routes.py#L473)) — Step 2: apply the user's fixes, then draft rewrites and gap
-- function **`match_preview()`** ([app/api/routes.py:524](../app/api/routes.py#L524)) — The match rate if the selected (and edited) proposals were applied.
-- function **`tailor()`** ([app/api/routes.py:534](../app/api/routes.py#L534)) — Step 3: apply the review and generate the files. Streams progress.
-- function **`_results_out()`** ([app/api/routes.py:574](../app/api/routes.py#L574)) — What the Results (and Arrange) screen gets after a run.
-- function **`arrange()`** ([app/api/routes.py:621](../app/api/routes.py#L621)) — Re-render the tailored resume as the user arranged it (P8.13). No LLM
-- function **`_result_path()`** ([app/api/routes.py:660](../app/api/routes.py#L660))
-- function **`download()`** ([app/api/routes.py:668](../app/api/routes.py#L668))
-- function **`preview()`** ([app/api/routes.py:676](../app/api/routes.py#L676)) — One page of the tailored PDF as a PNG (Chrome blocks embedded PDFs).
-- function **`reset()`** ([app/api/routes.py:685](../app/api/routes.py#L685)) — Start over: delete this visitor's files and state. If a step is still
-- **Imports:** `analysis/jd_analyzer.py`, `analysis/language.py`, `api/__init__.py`, `api/sessions.py`, `ingestion/errors.py`, `rendering/pdf_converter.py`, `rendering/review_view.py`, `services/arrange.py`, `validation/coverage.py`, `validation/output.py`
+- function **`_progress_event()`** ([app/api/routes.py:216](../app/api/routes.py#L216)) — A step's progress line, or an AI wait as its own event so the page
+- function **`_stream()`** ([app/api/routes.py:225](../app/api/routes.py#L225)) — Run `work(progress)` in a thread (the session must already be
+- function **`_service()`** ([app/api/routes.py:260](../app/api/routes.py#L260)) — A TailorService for one step. With a session, saved gap answers come
+- function **`plain_issue()`** ([app/api/routes.py:286](../app/api/routes.py#L286)) — A parse issue in plain words (P8.26: "experience without a company
+- function **`unplaced_lines()`** ([app/api/routes.py:296](../app/api/routes.py#L296)) — Lines of the file that ended up in no field the resume shows (P8.26),
+- function **`_resume_texts()`** ([app/api/routes.py:311](../app/api/routes.py#L311))
+- function **`_details()`** ([app/api/routes.py:328](../app/api/routes.py#L328)) — What the "check details" step shows and edits (P3.5).
+- function **`_sections()`** ([app/api/routes.py:358](../app/api/routes.py#L358)) — Bullet id -> the job or project it belongs to, for grouping cards.
+- function **`_proposal_out()`** ([app/api/routes.py:370](../app/api/routes.py#L370))
+- function **`_match_out()`** ([app/api/routes.py:383](../app/api/routes.py#L383))
+- function **`_selected()`** ([app/api/routes.py:389](../app/api/routes.py#L389))
+- function **`health()`** ([app/api/routes.py:399](../app/api/routes.py#L399))
+- function **`config()`** ([app/api/routes.py:404](../app/api/routes.py#L404))
+- function **`_model()`** ([app/api/routes.py:414](../app/api/routes.py#L414))
+- function **`analyze()`** ([app/api/routes.py:421](../app/api/routes.py#L421)) — "Just check my match": score only, nothing kept.
+- function **`parse()`** ([app/api/routes.py:441](../app/api/routes.py#L441)) — Step 1: read the resume and start a fresh session for this run.
+- function **`proposals()`** ([app/api/routes.py:482](../app/api/routes.py#L482)) — Step 2: apply the user's fixes, then draft rewrites and gap
+- function **`match_preview()`** ([app/api/routes.py:533](../app/api/routes.py#L533)) — The match rate if the selected (and edited) proposals were applied.
+- function **`tailor()`** ([app/api/routes.py:543](../app/api/routes.py#L543)) — Step 3: apply the review and generate the files. Streams progress.
+- function **`_results_out()`** ([app/api/routes.py:583](../app/api/routes.py#L583)) — What the Results (and Arrange) screen gets after a run.
+- function **`arrange()`** ([app/api/routes.py:630](../app/api/routes.py#L630)) — Re-render the tailored resume as the user arranged it (P8.13). No LLM
+- function **`_result_path()`** ([app/api/routes.py:669](../app/api/routes.py#L669))
+- function **`download()`** ([app/api/routes.py:677](../app/api/routes.py#L677))
+- function **`preview()`** ([app/api/routes.py:685](../app/api/routes.py#L685)) — One page of the tailored PDF as a PNG (Chrome blocks embedded PDFs).
+- function **`reset()`** ([app/api/routes.py:694](../app/api/routes.py#L694)) — Start over: delete this visitor's files and state. If a step is still
+- **Imports:** `analysis/jd_analyzer.py`, `analysis/language.py`, `api/__init__.py`, `api/sessions.py`, `ingestion/errors.py`, `llm/client.py`, `rendering/pdf_converter.py`, `rendering/review_view.py`, `services/arrange.py`, `validation/coverage.py`, `validation/output.py`
 - **Imported by:** `api/main.py`
-- **Tested by:** `tests/unit/test_api.py`, `tests/unit/test_details_p826.py`
+- **Tested by:** `tests/unit/test_api.py`, `tests/unit/test_details_p826.py`, `tests/unit/test_progress_p97.py`
 
 ### `app/api/sessions.py`
 
@@ -899,36 +902,37 @@ _Plain-text resumes: a .txt upload or text pasted in the app (P8.22)._
 
 ### `app/llm/client.py`
 
-**Layer:** LLM · **Stage:** 3 JD analysis, 7 Rewrite · **Lines:** 698
+**Layer:** LLM · **Stage:** 3 JD analysis, 7 Rewrite · **Lines:** 710
 
-- class **`LLMClient`** ([app/llm/client.py:62](../app/llm/client.py#L62)) — Unified client for text generation across three interchangeable providers:
-  - `__init__()` :78
-  - `is_available()` :151 — Whether the configured provider is reachable AND the configured
-  - `_check_available()` :167
-  - `_ollama_check()` :174
-  - `_groq_check()` :186
-  - `_anthropic_check()` :207
-  - `_record()` :228
-  - `generate()` :246 — Generate text from the LLM using the chat interface.
-  - `get_usage_summary()` :276 — Aggregate every LLM call made on this client instance so far
-  - `_generate_ollama()` :298
-  - `_groq_supports_strict_schema()` :343
-  - `_generate_groq()` :347
-  - `_split_system()` :441 — The Messages API takes the system prompt as a top-level field,
-  - `_anthropic_request()` :448
-  - `_anthropic_response()` :485
-  - `_generate_anthropic()` :502
-  - `_generate_json_anthropic()` :507 — Structured outputs guarantee the response matches the schema, so
-  - `generate_json()` :528 — Generate structured JSON conforming to a Pydantic model.
-- class **`LLMDailyLimitError`** ([app/llm/client.py:653](../app/llm/client.py#L653)) — The provider's daily free limit is used up (P8.23).
-- function **`_requested_wait()`** ([app/llm/client.py:633](../app/llm/client.py#L633)) — How long Groq asks us to wait: the retry-after header, else the
-- function **`daily_limit_message()`** ([app/llm/client.py:657](../app/llm/client.py#L657))
-- function **`_too_long_to_wait()`** ([app/llm/client.py:664](../app/llm/client.py#L664)) — A 429 not worth waiting for: the daily limit, or a wait over a minute.
-- function **`_retry_after_seconds()`** ([app/llm/client.py:670](../app/llm/client.py#L670)) — Seconds to wait before retrying a 429: the server's `retry-after`
-- function **`strict_json_schema()`** ([app/llm/client.py:685](../app/llm/client.py#L685)) — Adapt a Pydantic JSON schema for strict structured-output modes: every
+- class **`WaitNotice`** ([app/llm/client.py:62](../app/llm/client.py#L62)) — A progress message saying the AI service asked us to wait (P9.7). It is
+- class **`LLMClient`** ([app/llm/client.py:73](../app/llm/client.py#L73)) — Unified client for text generation across three interchangeable providers:
+  - `__init__()` :89
+  - `is_available()` :162 — Whether the configured provider is reachable AND the configured
+  - `_check_available()` :178
+  - `_ollama_check()` :185
+  - `_groq_check()` :197
+  - `_anthropic_check()` :218
+  - `_record()` :239
+  - `generate()` :257 — Generate text from the LLM using the chat interface.
+  - `get_usage_summary()` :287 — Aggregate every LLM call made on this client instance so far
+  - `_generate_ollama()` :309
+  - `_groq_supports_strict_schema()` :354
+  - `_generate_groq()` :358
+  - `_split_system()` :453 — The Messages API takes the system prompt as a top-level field,
+  - `_anthropic_request()` :460
+  - `_anthropic_response()` :497
+  - `_generate_anthropic()` :514
+  - `_generate_json_anthropic()` :519 — Structured outputs guarantee the response matches the schema, so
+  - `generate_json()` :540 — Generate structured JSON conforming to a Pydantic model.
+- class **`LLMDailyLimitError`** ([app/llm/client.py:665](../app/llm/client.py#L665)) — The provider's daily free limit is used up (P8.23).
+- function **`_requested_wait()`** ([app/llm/client.py:645](../app/llm/client.py#L645)) — How long Groq asks us to wait: the retry-after header, else the
+- function **`daily_limit_message()`** ([app/llm/client.py:669](../app/llm/client.py#L669))
+- function **`_too_long_to_wait()`** ([app/llm/client.py:676](../app/llm/client.py#L676)) — A 429 not worth waiting for: the daily limit, or a wait over a minute.
+- function **`_retry_after_seconds()`** ([app/llm/client.py:682](../app/llm/client.py#L682)) — Seconds to wait before retrying a 429: the server's `retry-after`
+- function **`strict_json_schema()`** ([app/llm/client.py:697](../app/llm/client.py#L697)) — Adapt a Pydantic JSON schema for strict structured-output modes: every
 - **Imports:** `config/settings.py`, `llm/schemas.py`, `validation/safety.py`
-- **Imported by:** `analysis/jd_analyzer.py`, `analysis/matcher.py`, `analysis/rewriter.py`, `analysis/structure_extractor.py`, `analysis/summary_writer.py`, `analysis/tailor_planner.py`, `api/main.py`, `cli.py`, `eval/harness.py`, `eval/judge.py`, `services/tailor.py`, `scripts/benchmark_model.py`
-- **Tested by:** `tests/unit/test_judge.py`, `tests/unit/test_llm_client.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_validation.py`
+- **Imported by:** `analysis/jd_analyzer.py`, `analysis/matcher.py`, `analysis/rewriter.py`, `analysis/structure_extractor.py`, `analysis/summary_writer.py`, `analysis/tailor_planner.py`, `api/main.py`, `api/routes.py`, `cli.py`, `eval/harness.py`, `eval/judge.py`, `services/tailor.py`, `scripts/benchmark_model.py`
+- **Tested by:** `tests/unit/test_judge.py`, `tests/unit/test_llm_client.py`, `tests/unit/test_progress_p97.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_validation.py`
 
 ### `app/llm/schemas.py`
 
@@ -1402,6 +1406,7 @@ flowchart LR
   api_routes --> api___init__
   api_routes --> api_sessions
   api_routes --> ingestion_errors
+  api_routes --> llm_client
   api_routes --> rendering_pdf_converter
   api_routes --> rendering_review_view
   api_routes --> services_arrange

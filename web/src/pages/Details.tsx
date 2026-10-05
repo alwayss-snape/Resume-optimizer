@@ -3,7 +3,7 @@ import { AddJobForm } from "../components/AddJobForm";
 import { Button } from "../components/Button";
 import { TextArea, TextField } from "../components/Field";
 import { Icon } from "../components/Icon";
-import { ProgressPanel } from "../components/ProgressPanel";
+import { ProgressPanel, progressHandler, type Wait } from "../components/ProgressPanel";
 import { type Corrections, draftProposals, friendlyError } from "../lib/api";
 import { beginStep, isAbort } from "../lib/inflight";
 import { EMPTY_JOB, type NewJob, addedJob, anyJobField, newJobProblem } from "../lib/review";
@@ -31,6 +31,7 @@ export function Details() {
   // Where focus goes after a job card appears or goes away (a CSS selector).
   const focusNext = useRef<string | null>(null);
   const [progress, setProgress] = useState<string[] | null>(null);
+  const [wait, setWait] = useState<Wait | null>(null);
   const [error, setError] = useState<string | null>(null);
   const progressHeading = useRef<HTMLHeadingElement>(null);
   const errorRef = useRef<HTMLParagraphElement>(null);
@@ -93,6 +94,7 @@ export function Details() {
       return;
     }
     setProgress([]);
+    setWait(null);
     const fixed: Corrections = { ...form, candidate: { ...form.candidate, links: links.split("\n").map((l) => l.trim()).filter(Boolean) } };
     // Unchanged: send nothing, so the server keeps exactly what it read.
     // "Leave it out" (an empty target) isn't sent: the line stays off the resume (P9.1).
@@ -107,8 +109,9 @@ export function Details() {
     };
     const step = beginStep();
     try {
+      const onProgress = progressHandler(setProgress, setWait);
       const drafted = await draftProposals(changed ? corrections : null,
-        (m) => step.isCurrent() && setProgress((p) => [...(p ?? []), m]), step.signal);
+        (m, w) => step.isCurrent() && onProgress(m, w), step.signal);
       if (!step.isCurrent()) return; // the user left this run
       // The server's own read-back, so added jobs come back as ordinary ones.
       updateRun({ details: drafted.details ?? fixed, drafted, results: null, review: null });
@@ -128,8 +131,9 @@ export function Details() {
         <h1 ref={progressHeading} tabIndex={-1} className="font-display text-[40px] font-bold leading-tight tracking-[-0.03em] outline-none">
           Drafting your rewrites
         </h1>
-        <p className="text-muted">Every rewrite is fact-checked against your resume. This usually takes under a minute.</p>
-        <ProgressPanel title="Working…" messages={progress.length ? progress : ["Starting"]} />
+        <p className="text-muted">Every rewrite is fact-checked against your resume. This usually takes 1–2 minutes, longer
+          when the free AI service asks us to wait.</p>
+        <ProgressPanel title="Working…" messages={progress.length ? progress : ["Starting"]} wait={wait} />
       </section>
     );
   }

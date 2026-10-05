@@ -106,9 +106,13 @@ export function parseSse(buffer: string): { events: { event: string; data: unkno
   return { events, rest };
 }
 
+/** A step's progress line; `waitSeconds` is set when the AI service asked us
+ *  to wait (P9.7), shown as a countdown rather than a finished step. */
+export type OnProgress = (message: string, waitSeconds?: number) => void;
+
 /** POST a JSON body to a streaming step: calls onProgress for each progress
  *  message and resolves with the final result (rejects on an error event). */
-export async function streamStep<T>(path: string, body: unknown, onProgress: (message: string) => void,
+export async function streamStep<T>(path: string, body: unknown, onProgress: OnProgress,
   signal?: AbortSignal): Promise<T> {
   let response: Response;
   try {
@@ -135,8 +139,9 @@ export async function streamStep<T>(path: string, body: unknown, onProgress: (me
     const { events, rest } = parseSse(done ? buffer + "\n\n" : buffer);
     buffer = rest;
     for (const { event, data } of events) {
-      const payload = data as { message?: string } | null;
+      const payload = data as { message?: string; seconds?: number } | null;
       if (event === "progress" && payload?.message) onProgress(payload.message);
+      if (event === "wait" && payload?.message) onProgress(payload.message, payload.seconds ?? 0);
       if (event === "error") throw new ApiError(500, payload?.message || "Something went wrong. Please try again.");
       if (event === "result") return data as T;
     }
@@ -157,7 +162,7 @@ export interface AddedJob {
 export type Corrections = Details & { removed_jobs?: string[]; added_jobs?: AddedJob[];
   placed?: { id: string; target: string }[] }; // unplaced lines -> summary / skills / a job id / "other" (P8.26)
 
-export const draftProposals = (corrections: Corrections | null, onProgress: (m: string) => void, signal?: AbortSignal) =>
+export const draftProposals = (corrections: Corrections | null, onProgress: OnProgress, signal?: AbortSignal) =>
   streamStep<ProposalsResult>("/api/proposals", { corrections }, onProgress, signal);
 
 export interface Selection {
@@ -187,7 +192,7 @@ export interface TailorRequest {
   remember_answers: boolean;
 }
 
-export const tailorResume = (body: TailorRequest, onProgress: (m: string) => void, signal?: AbortSignal) =>
+export const tailorResume = (body: TailorRequest, onProgress: OnProgress, signal?: AbortSignal) =>
   streamStep<TailorResult>("/api/tailor", body, onProgress, signal);
 
 /** Re-render with the user's arrangement (P8.13). No AI call. */

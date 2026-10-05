@@ -59,6 +59,17 @@ GROQ_MAX_RETRY_WAIT = 30.0     # seconds; never sleep longer than this per retry
 GROQ_MAX_MINUTE_WAIT = 65.0
 
 
+class WaitNotice(str):
+    """A progress message saying the AI service asked us to wait (P9.7). It is
+    a plain string for the CLI log; the web stream sends it as its own event
+    with `seconds`, shown as a countdown instead of a finished step."""
+
+    def __new__(cls, message: str, seconds: float):
+        notice = super().__new__(cls, message)
+        notice.seconds = seconds
+        return notice
+
+
 class LLMClient:
     """Unified client for text generation across three interchangeable providers:
 
@@ -402,7 +413,8 @@ class LLMClient:
                 logger.warning(f"Groq rate limited (429); retrying in {wait:.1f}s")
                 if self.on_wait:
                     try:
-                        self.on_wait(f"The free AI service is busy; waiting {max(1, round(wait))} s and trying again")
+                        self.on_wait(WaitNotice(f"The free AI service asked us to wait; trying again in "
+                                                f"{max(1, round(wait))} s", max(1, round(wait))))
                     except Exception:
                         pass
                 time.sleep(wait)

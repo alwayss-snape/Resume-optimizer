@@ -398,7 +398,8 @@ def test_waits_are_reported_and_a_daily_limit_is_remembered(mock_post, mock_slee
     waits = []
     client.on_wait = waits.append
     client.generate([{"role": "user", "content": "Hi"}])
-    assert waits == ["The free AI service is busy; waiting 3 s and trying again"]
+    assert waits == ["The free AI service asked us to wait; trying again in 3 s"]
+    assert waits[0].seconds == 3  # a WaitNotice: the web shows it as a countdown (P9.7)
 
     daily = MagicMock(status_code=429, text="Limit 200000, Used 199990 tokens per day (TPD)",
                       headers={"retry-after": "5400"})
