@@ -204,3 +204,24 @@ def test_ats_template_is_the_default_output():
     """P2.2: the ATS template is the default; keeping the DOCX layout is opt-in."""
     import inspect
     assert inspect.signature(TailorService.tailor_resume).parameters["mode"].default == "ATS_DEFAULT"
+
+
+def test_usage_merge_counts_each_call_once_p917():
+    """One client made both steps (CLI, eval): its calls must not be counted
+    twice. Two clients (the web's two requests): both are added up."""
+    from app.llm.client import LLMClient
+    from app.services.tailor import _merge_usage
+
+    client = LLMClient(provider="ollama", model="m")
+    for tokens in (100, 300):
+        client.usage_log.append({"success": True, "prompt_tokens": tokens, "completion_tokens": 10,
+                                 "duration_seconds": 1.0})
+    early = client.get_usage_summary()
+    client.usage_log.append({"success": False, "prompt_tokens": None, "completion_tokens": None})
+    same = _merge_usage(early, client.get_usage_summary())
+    assert (same["call_count"], same["failure_count"], same["total_tokens"]) == (3, 1, 420)
+
+    other = LLMClient(provider="ollama", model="m")
+    other.usage_log.append({"success": True, "prompt_tokens": 50, "completion_tokens": 5, "duration_seconds": 0.5})
+    both = _merge_usage(early, other.get_usage_summary())  # early's calls are the live log: 3 by now
+    assert (both["call_count"], both["total_tokens"], both["total_duration_seconds"]) == (4, 475, 2.5)

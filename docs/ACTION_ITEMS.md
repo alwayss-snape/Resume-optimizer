@@ -23,9 +23,9 @@ JD-aligned rewrites, a Novoresume-style ATS layout that fits the right length, a
 | 6: UI redesign | 6 | 6 | 0 | 0 |
 | 7: Owner feedback on the flow | 2 | 2 | 0 | 0 |
 | 8: Cross-domain robustness and user control | 26 | 26 | 0 | 0 |
-| 9: Close-out and owner review | 16 | 13 | 1 | 2 |
+| 9: Close-out and owner review | 17 | 14 | 1 | 2 |
 | 10: Inputs, outputs, cover letter and history | 9 | 0 | 0 | 9 |
-| **Total** | **107** | **92** | **1** | **12** |
+| **Total** | **108** | **93** | **1** | **12** |
 
 Phase 1's two open items (P1.15, P1.16) are ➖, moved into P8.9 and P8.18, so its row no longer adds up to 16.
 
@@ -320,6 +320,7 @@ passes live (P9.3). Not re-run: the 5 live LLM persona runs (Groq quota kept for
 | P9.14 | **Landing: the two actions after the inputs (R4):** "Tailor my resume" and "Just check my match" sit above the resume and JD boxes, as a mode switch, while the button that starts the run is at the bottom of the form, so it reads as a choice made before there's anything to act on. Move the choice below both boxes as the form's two actions (tailor / check the match), one click each, and drop the separate mode switch at the top | `web/src/pages/Landing.tsx`, `web/src/components/UploadForm.tsx` | ✅ | 2026-10-05: `UploadForm` ends with the two actions, **Tailor my resume** (the form's submit, so Enter still tailors) and **Just check my match**, after the resume and JD boxes and the output format (now always shown, marked "for the tailored resume; checking your match doesn't need it"); `onSubmit(values, intent)`. Only the pressed action shows its busy text; both are locked while it runs. The hero's two mode buttons became one **Get started** that scrolls to the form and focuses the file input. Same error messages, focus on the missing field, privacy note under the form. `UploadForm.test.tsx` (keyboard order: resume → JD → format → tailor → check; the intent passed; busy state), `App.test.tsx` updated. `scripts/walkthrough.cjs` clicks the new button and checks the actions come after the inputs: clean at 1440/390, light/dark |
 | P9.15 | **Keyword match missed custom sections and slash-joined words** (found by the live nurse run, P9.10): "ICU" under Clinical Rotations and "NLC" in "(Compact/NLC)" were reported missing, and the eval counted "Arizona" as attainable though the matcher skips places (P8.17) | `analysis/keyword_match.py`, `eval/harness.py` | ✅ | 2026-10-05: `resume_sections` also reads the verbatim sections (`other_sections`, labelled by their heading); `_find` also looks at each part of a slash-joined word ("Compact/NLC" → NLC; whole words only still); `attainable_coverage` skips places (`is_place`). Offline, this clears 8 of the 11 strict persona xfails (teacher 0 → 19.1, india 57.9 → 68.4); academic, federal and executive keep their own reasons. `test_custom_sections_and_slash_joined_words_count_p915` |
 | P9.16 | **Executive persona: read-back and stuffing** (seen in the P9.15 eval run): the DOCX read-back takes a bullet heading ("Global Supply Chain") as the company, and "SAP" / "OP" are counted as stuffing (7 each) | `validation/`, `eval/harness.py` | ⬜ | Stage N. Find whether the output or the check is wrong; fix with a test and take executive off `FULL_XFAIL` |
+| P9.17 | **LLM usage counted twice in changes.md** (live nurse run, P9.10): the report said 8 calls / 20.4K tokens where the run made 4 / 10.2K. When one client drafts and generates (CLI, eval), `_merge_usage` added the proposal step's calls to a summary that already held them | `services/tailor.py` | ✅ | 2026-10-05: `_merge_usage` joins the two call lists by identity and recomputes the totals from the joined list, so a shared client's calls count once and two clients' (the web's two requests) still add up. `test_usage_merge_counts_each_call_once_p917` |
 
 ### Owner review of the current state
 

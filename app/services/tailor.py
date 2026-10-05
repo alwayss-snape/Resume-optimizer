@@ -1465,12 +1465,21 @@ def _hidden_text(full: Resume, layout) -> str:
 
 
 def _merge_usage(first: Dict, second: Dict) -> Dict:
-    """Combine two LLMClient.get_usage_summary() dicts into one."""
+    """Combine two LLMClient.get_usage_summary() dicts into one. When one
+    client made both steps (the CLI and the eval), both summaries hold the same
+    calls: each call is counted once (P9.17: the nurse run's changes.md showed
+    8 calls / 20.4K tokens for 4 / 10.2K)."""
+    calls = list(second.get("calls") or [])
+    seen = {id(c) for c in calls}
+    calls = [c for c in first.get("calls") or [] if id(c) not in seen] + calls
+    ok = [c for c in calls if c.get("success")]
     merged = dict(second)
-    for key in ("call_count", "success_count", "failure_count",
-                "total_prompt_tokens", "total_completion_tokens", "total_tokens"):
-        merged[key] = (first.get(key) or 0) + (second.get(key) or 0)
-    merged["total_duration_seconds"] = round(
-        (first.get("total_duration_seconds") or 0) + (second.get("total_duration_seconds") or 0), 3)
-    merged["calls"] = list(first.get("calls") or []) + list(second.get("calls") or [])
+    merged.update({
+        "call_count": len(calls), "success_count": len(ok), "failure_count": len(calls) - len(ok),
+        "total_prompt_tokens": sum(c.get("prompt_tokens") or 0 for c in ok),
+        "total_completion_tokens": sum(c.get("completion_tokens") or 0 for c in ok),
+        "total_duration_seconds": round(sum(c.get("duration_seconds") or 0 for c in ok), 3),
+        "calls": calls,
+    })
+    merged["total_tokens"] = merged["total_prompt_tokens"] + merged["total_completion_tokens"]
     return merged

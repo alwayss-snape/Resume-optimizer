@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "ead536cb52025462",
+  "source_hash": "6f6aefe144cdcd70",
   "stats": {
     "files": 167,
     "python_files": 143,
     "app_modules": 60,
     "test_files": 73,
     "classes": 111,
-    "functions": 1079,
-    "lines_of_python": 21654
+    "functions": 1080,
+    "lines_of_python": 21684
   },
   "axes": {
     "x": "location (path)",
@@ -3592,7 +3592,7 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 1476,
+      "lines": 1485,
       "doc": "",
       "classes": [
         {
@@ -3767,7 +3767,7 @@
         {
           "name": "_merge_usage",
           "line": 1467,
-          "doc": "Combine two LLMClient.get_usage_summary() dicts into one."
+          "doc": "Combine two LLMClient.get_usage_summary() dicts into one. When one"
         }
       ]
     },
@@ -7855,7 +7855,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 206,
+      "lines": 227,
       "doc": "tailor_resume orchestration: pre-approved proposals and Strict Factual Mode.",
       "classes": [],
       "functions": [
@@ -7928,6 +7928,11 @@
           "name": "test_ats_template_is_the_default_output",
           "line": 203,
           "doc": "P2.2: the ATS template is the default; keeping the DOCX layout is opt-in."
+        },
+        {
+          "name": "test_usage_merge_counts_each_call_once_p917",
+          "line": 209,
+          "doc": "One client made both steps (CLI, eval): its calls must not be counted"
         }
       ]
     },
@@ -10226,6 +10231,11 @@
     {
       "from": "app/llm/client.py",
       "to": "tests/unit/test_rewriter.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/llm/client.py",
+      "to": "tests/unit/test_tailor_resume_flow.py",
       "type": "tested_by"
     },
     {
