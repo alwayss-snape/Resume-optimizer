@@ -79,6 +79,9 @@ def infer_kind(keyword: str, kind: str, requirement: str = "") -> str:
     calls everything "hard"): a degree or a credential (Stage I review)."""
     if kind not in ("hard", "", None):
         return kind
+    from app.analysis.skills_tailor import is_trait
+    if is_trait(keyword):  # "Fast learner" labelled hard by the JD analysis (P9.12)
+        return "soft"
     if re.search(r"(?i:degree|bachelor|master|diploma|\bged\b|ph\.?\s?d|doctorate)", keyword):
         return "education"
     if re.search(r"(?i:certif|licen[cs]|credential)", keyword):

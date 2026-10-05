@@ -18,7 +18,7 @@ from app.analysis.rewriter import FAILED_STATUSES, LLMRewriter, RewriteProposal
 from app.analysis.scoring import AlignmentScorer
 from app.analysis.semantic_matcher import SemanticMatcher
 from app.analysis.structure_extractor import StructureExtractor
-from app.analysis.skills_tailor import SkillsTailor, parse_skills
+from app.analysis.skills_tailor import SkillsTailor, is_trait, jd_spelling, parse_skills, skill_category
 from app.analysis.summary_writer import SummaryWriter
 from app.analysis.tailor_planner import TailoringPlanner
 from app.domain.evidence import Evidence
@@ -165,9 +165,6 @@ class TailorService:
                 }))
         return out
 
-    # Where a newly confirmed skill goes when the resume has such a category.
-    SKILL_CATEGORY_RE = re.compile(r"tool|framework|librar|technolog|platform|skill", re.IGNORECASE)
-
     def _apply_gap_answers(self, resume: Resume, evidence_list: List, job_desc: JobDescription,
                            answers: List, questions: Optional[List] = None) -> List[str]:
         """Ticked keywords join the skills section; a typed answer becomes a
@@ -187,6 +184,13 @@ class TailorService:
             confirmed = [k for k in ans.confirmed_keywords if k.strip()]
             certs = [k for k in confirmed if kinds.get(k.lower()) == "certification" and k.lower() not in held]
             degrees = [k for k in confirmed if kinds.get(k.lower()) == "education"]
+            # A trait or soft skill shows through an example, never as a skill (P9.12).
+            traits = [k for k in confirmed if k not in certs and k not in degrees
+                      and is_trait(k, kinds.get(k.lower(), ""))]
+            if traits:
+                notes.append(f"Not listed under Skills: {', '.join(traits)}. A trait shows through your work"
+                             + (" (your example was added as a bullet)." if ans.answer.strip()
+                                else "; write a line with a real example to include it."))
             for k in certs:
                 resume.certifications.append({"name": k})
                 held.add(k.lower())
@@ -197,19 +201,23 @@ class TailorService:
             if degrees:
                 notes.append(f"You have {', '.join(degrees)}: if it isn't listed, add it under Education on "
                              "Check your details (a degree isn't added to Skills).")
-            unexplained = [k for k in confirmed if k not in certs and k not in degrees]
+            unexplained = [k for k in confirmed if k not in certs and k not in degrees and k not in traits]
             if unexplained and not ans.answer.strip():
                 notes.append(f"Ticked without a line saying where: {', '.join(unexplained)}. A recruiter or "
                              "interviewer will ask where you used it.")
-            added = [k for k in confirmed if k.lower() not in known and k not in certs and k not in degrees]
-            if added:
-                category = next((c for c in resume.skills if self.SKILL_CATEGORY_RE.search(c)), None) or "Skills"
-                resume.skills.setdefault(category, []).extend(added)
-                known.update(k.lower() for k in added)
-                for k in added:
-                    evidence_list.append(Evidence(id=f"ev_user_{uuid4().hex[:6]}", source_type="skill",
-                                                  source_id="user_confirmed", text=k))
-                notes.append(f"You confirmed: {', '.join(added)} (added to {category})")
+            jd_text = job_desc.raw_text if job_desc else ""
+            added = [jd_spelling(k, jd_text) for k in confirmed
+                     if k.lower() not in known and k not in certs and k not in degrees and k not in traits]
+            placed: Dict[str, List[str]] = {}
+            for k in added:  # each under a category of its own type (P9.12)
+                category = skill_category(resume.skills, k)
+                resume.skills.setdefault(category, []).append(k)
+                placed.setdefault(category, []).append(k)
+                known.add(k.lower())
+                evidence_list.append(Evidence(id=f"ev_user_{uuid4().hex[:6]}", source_type="skill",
+                                              source_id="user_confirmed", text=k))
+            if placed:
+                notes.append("You confirmed: " + "; ".join(f"{', '.join(v)} (added to {c})" for c, v in placed.items()))
             if ans.answer.strip():
                 _, updated, text = self._draft_from_answer(resume, evidence_list, ans)
                 evidence_list[:] = updated

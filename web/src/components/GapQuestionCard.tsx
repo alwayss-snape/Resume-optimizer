@@ -84,7 +84,9 @@ export function GapQuestionCard({ question: q, value, onChange, targets }: {
               className="resize-y rounded-[3px] border border-field bg-panel px-3.5 py-2.5 text-sm leading-relaxed text-ink focus-visible:border-pencil" />
             {value.ticked.some((k) => !["certification", "education"].includes(q.kinds?.[k] ?? "")) && !value.answer.trim() && (
               <p id={`${answerId}-hint`} className="m-0 text-xs text-muted">
-                Where did you use it? Without a line saying where, it's only listed, and an interviewer will ask.
+                {value.ticked.some((k) => q.kinds?.[k] === "soft")
+                  ? "A trait like this isn't listed under Skills; it shows through your work. Describe a real example and it becomes a bullet."
+                  : "Where did you use it? Without a line saying where, it's only listed, and an interviewer will ask."}
               </p>
             )}
           </div>

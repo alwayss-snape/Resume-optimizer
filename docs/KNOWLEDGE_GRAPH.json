@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "c9b9db096aa80daa",
+  "source_hash": "2ca5bc6d91a887c6",
   "stats": {
-    "files": 166,
-    "python_files": 142,
+    "files": 167,
+    "python_files": 143,
     "app_modules": 60,
-    "test_files": 72,
+    "test_files": 73,
     "classes": 111,
-    "functions": 1064,
-    "lines_of_python": 21409
+    "functions": 1076,
+    "lines_of_python": 21592
   },
   "axes": {
     "x": "location (path)",
@@ -359,7 +359,7 @@
       "stages": [
         "6 Plan"
       ],
-      "lines": 163,
+      "lines": 166,
       "doc": "Suggest-and-confirm gaps (P3.1): ask, never assume.",
       "classes": [
         {
@@ -388,17 +388,17 @@
         },
         {
           "name": "partly_shown",
-          "line": 91,
+          "line": 94,
           "doc": "The resume already shows this, or one of its alternatives (P8.12):"
         },
         {
           "name": "_wording",
-          "line": 116,
+          "line": 119,
           "doc": "(question, tick label) for what is being asked."
         },
         {
           "name": "build_questions",
-          "line": 130,
+          "line": 133,
           "doc": ""
         }
       ]
@@ -1065,7 +1065,7 @@
       "stages": [
         "7 Rewrite"
       ],
-      "lines": 91,
+      "lines": 186,
       "doc": "Skills tailoring (P1.6), deterministic: no LLM, nothing added.",
       "classes": [
         {
@@ -1106,6 +1106,26 @@
           "name": "unknown_skills",
           "line": 88,
           "doc": "Skills in `proposed` that aren't in `original` under any spelling."
+        },
+        {
+          "name": "is_trait",
+          "line": 155,
+          "doc": "A soft skill or trait (\"Fast learner\", \"deep curiosity about AI\"):"
+        },
+        {
+          "name": "skill_type",
+          "line": 161,
+          "doc": "language / framework / tool / practice / expertise, or None if unknown."
+        },
+        {
+          "name": "jd_spelling",
+          "line": 170,
+          "doc": "The keyword as the JD writes it (\"CI\" for \"ci\"), else as given."
+        },
+        {
+          "name": "skill_category",
+          "line": 176,
+          "doc": "The category a confirmed skill belongs under: an existing one of its"
         }
       ]
     },
@@ -3567,7 +3587,7 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 1468,
+      "lines": 1476,
       "doc": "",
       "classes": [
         {
@@ -3597,132 +3617,132 @@
             },
             {
               "name": "_apply_gap_answers",
-              "line": 171,
+              "line": 168,
               "doc": "Ticked keywords join the skills section; a typed answer becomes a"
             },
             {
               "name": "_prefill_from_profile",
-              "line": 219,
+              "line": 227,
               "doc": "Answers confirmed for an earlier JD pre-fill the same questions"
             },
             {
               "name": "_draft_from_answer",
-              "line": 231,
+              "line": 239,
               "doc": "Polish the candidate's answer into one bullet that may use only"
             },
             {
               "name": "_split_description",
-              "line": 250,
+              "line": 258,
               "doc": "Pasted role description -> bullet-sized chunks: one per line (list"
             },
             {
               "name": "validate_new_role",
-              "line": 260,
+              "line": 268,
               "doc": "Check a new job before any work is done; raises ValueError with a"
             },
             {
               "name": "_new_experience",
-              "line": 285,
+              "line": 293,
               "doc": "An empty job from the \"add a job\" fields, validated."
             },
             {
               "name": "_insert_by_date",
-              "line": 293,
+              "line": 301,
               "doc": "Place a job in date order: current jobs first, then most recent start."
             },
             {
               "name": "add_new_role",
-              "line": 306,
+              "line": 314,
               "doc": "Add a job the resume doesn't have yet (P3.3). Each chunk of the"
             },
             {
               "name": "_skills_proposals",
-              "line": 343,
+              "line": 351,
               "doc": "The skills section with the JD's skills first, when that changes it (P1.6)."
             },
             {
               "name": "_summary_proposals",
-              "line": 348,
+              "line": 356,
               "doc": "The tailored summary as a proposal, when one was written (P1.5)."
             },
             {
               "name": "_embed",
-              "line": 353,
+              "line": 361,
               "doc": "Sentence embeddings for the planner, loaded lazily; raises when the"
             },
             {
               "name": "_fit_relevance",
-              "line": 362,
+              "line": 370,
               "doc": "Planner relevance per bullet for the page-fit loop. Bullets the user"
             },
             {
               "name": "_render_template",
-              "line": 372,
+              "line": 380,
               "doc": "One template render plus PDF conversion (the page-fit loop's step)."
             },
             {
               "name": "_coverage",
-              "line": 380,
+              "line": 388,
               "doc": "Content coverage of the rendered DOCX against the uploaded file (P8.2)."
             },
             {
               "name": "_apply_bullet_order",
-              "line": 407,
+              "line": 415,
               "doc": "Reorder bullets as planned (most relevant first within each"
             },
             {
               "name": "parse_resume",
-              "line": 422,
+              "line": 430,
               "doc": "File -> (raw document, ResumeDocument, evidence). The deterministic"
             },
             {
               "name": "read_file",
-              "line": 429,
+              "line": 437,
               "doc": "The uploaded file as raw blocks, or UnreadableFile with a message"
             },
             {
               "name": "normalize_raw",
-              "line": 464,
+              "line": 472,
               "doc": ""
             },
             {
               "name": "_copy_parsed",
-              "line": 477,
+              "line": 485,
               "doc": "Deep copies, so a parse kept in UI session state is never mutated."
             },
             {
               "name": "preview_keyword_match",
-              "line": 482,
+              "line": 490,
               "doc": "Match rate if these proposals were applied (P3.4 \"recalculate\"):"
             },
             {
               "name": "apply_parse_corrections",
-              "line": 505,
+              "line": 513,
               "doc": "Apply the user's fixes from the \"Check parsed resume\" step (P3.5)."
             },
             {
               "name": "analyze_only",
-              "line": 631,
+              "line": 639,
               "doc": ""
             },
             {
               "name": "generate_proposals",
-              "line": 661,
+              "line": 669,
               "doc": "Generate rewrite proposals without applying them, plus questions"
             },
             {
               "name": "incorporate_user_addition",
-              "line": 738,
+              "line": 746,
               "doc": "Fold a user-supplied free-text addition (a project, an"
             },
             {
               "name": "tailor_resume",
-              "line": 817,
+              "line": 825,
               "doc": ""
             },
             {
               "name": "arrange",
-              "line": 1336,
+              "line": 1344,
               "doc": "Re-render the tailored resume as the user arranged it (P8.13\u2013P8.16):"
             }
           ]
@@ -3736,12 +3756,12 @@
         },
         {
           "name": "_hidden_text",
-          "line": 1432,
+          "line": 1440,
           "doc": "Text of the sections the user hid, so coverage counts it as their choice."
         },
         {
           "name": "_merge_usage",
-          "line": 1459,
+          "line": 1467,
           "doc": "Combine two LLMClient.get_usage_summary() dicts into one."
         }
       ]
@@ -5504,7 +5524,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 131,
+      "lines": 133,
       "doc": "Suggest-and-confirm gaps (P3.1).",
       "classes": [],
       "functions": [
@@ -5535,32 +5555,32 @@
         },
         {
           "name": "test_answer_becomes_a_bullet_and_an_embellished_polish_is_refused",
-          "line": 56,
+          "line": 58,
           "doc": ""
         },
         {
           "name": "test_faithful_polish_is_used",
-          "line": 69,
+          "line": 71,
           "doc": ""
         },
         {
           "name": "test_generate_proposals_asks_instead_of_suggesting",
-          "line": 77,
+          "line": 79,
           "doc": ""
         },
         {
           "name": "test_questions_are_worded_by_kind_and_skip_what_the_resume_shows",
-          "line": 86,
+          "line": 88,
           "doc": "P8.12: no \"Have you worked with Bachelor's degree?\", nothing already on the resume."
         },
         {
           "name": "test_a_ticked_licence_goes_to_certifications",
-          "line": 105,
+          "line": 107,
           "doc": ""
         },
         {
           "name": "test_stage_i_review_partly_shown_and_kinds",
-          "line": 118,
+          "line": 120,
           "doc": ""
         }
       ]
@@ -7390,6 +7410,57 @@
       ]
     },
     {
+      "id": "tests/unit/test_skill_placement_p912.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 75,
+      "doc": "P9.12: a confirmed skill goes under a category of its own type, a trait is",
+      "classes": [],
+      "functions": [
+        {
+          "name": "_resume",
+          "line": 18,
+          "doc": ""
+        },
+        {
+          "name": "_job",
+          "line": 25,
+          "doc": ""
+        },
+        {
+          "name": "test_the_owners_case_lands_in_the_right_places",
+          "line": 32,
+          "doc": ""
+        },
+        {
+          "name": "test_skill_types",
+          "line": 47,
+          "doc": ""
+        },
+        {
+          "name": "test_a_skill_never_goes_into_a_category_of_another_type",
+          "line": 51,
+          "doc": ""
+        },
+        {
+          "name": "test_traits_are_never_skills",
+          "line": 62,
+          "doc": ""
+        },
+        {
+          "name": "test_skills_that_look_like_traits_are_not",
+          "line": 68,
+          "doc": ""
+        },
+        {
+          "name": "test_jd_spelling",
+          "line": 72,
+          "doc": ""
+        }
+      ]
+    },
+    {
       "id": "tests/unit/test_skills_tailor.py",
       "type": "python",
       "layer": "Tests",
@@ -8224,6 +8295,11 @@
     },
     {
       "from": "app/analysis/gap_questions.py",
+      "to": "app/analysis/skills_tailor.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/analysis/gap_questions.py",
       "to": "app/domain/job.py",
       "type": "imports"
     },
@@ -8245,6 +8321,11 @@
     {
       "from": "app/analysis/gap_questions.py",
       "to": "tests/unit/test_profile_store.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/analysis/gap_questions.py",
+      "to": "tests/unit/test_skill_placement_p912.py",
       "type": "tested_by"
     },
     {
@@ -8716,6 +8797,11 @@
       "from": "app/analysis/skills_tailor.py",
       "to": "app/domain/resume.py",
       "type": "imports"
+    },
+    {
+      "from": "app/analysis/skills_tailor.py",
+      "to": "tests/unit/test_skill_placement_p912.py",
+      "type": "tested_by"
     },
     {
       "from": "app/analysis/skills_tailor.py",
@@ -9254,6 +9340,11 @@
     },
     {
       "from": "app/domain/job.py",
+      "to": "tests/unit/test_skill_placement_p912.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/job.py",
       "to": "tests/unit/test_skills_tailor.py",
       "type": "tested_by"
     },
@@ -9500,6 +9591,11 @@
     {
       "from": "app/domain/resume.py",
       "to": "tests/unit/test_rewriter.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/resume.py",
+      "to": "tests/unit/test_skill_placement_p912.py",
       "type": "tested_by"
     },
     {
@@ -9815,6 +9911,11 @@
     {
       "from": "app/eval/harness.py",
       "to": "tests/unit/test_profile_store.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/eval/harness.py",
+      "to": "tests/unit/test_skill_placement_p912.py",
       "type": "tested_by"
     },
     {
@@ -10895,6 +10996,11 @@
     {
       "from": "app/services/tailor.py",
       "to": "tests/unit/test_review_view.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/services/tailor.py",
+      "to": "tests/unit/test_skill_placement_p912.py",
       "type": "tested_by"
     },
     {

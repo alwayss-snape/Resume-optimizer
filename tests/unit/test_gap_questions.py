@@ -48,9 +48,11 @@ def test_only_ticked_keywords_are_added_to_skills(tmp_path):
         GapAnswer(question_id="gap_1", confirmed_keywords=["PyTorch"]),
         {"question_id": "gap_2", "confirmed_keywords": [], "answer": ""},
     ])
-    assert resume.skills["Tools"] == ["Excel", "PyTorch"] and "TensorFlow" not in str(resume.skills)
+    # A framework goes under a category of its own type, not "Tools" (P9.12).
+    assert resume.skills["Frameworks & Libraries"] == ["PyTorch"] and resume.skills["Tools"] == ["Excel"]
+    assert "TensorFlow" not in str(resume.skills)
     assert any(e.text == "PyTorch" and e.source_id == "user_confirmed" for e in evidence)
-    assert "You confirmed: PyTorch (added to Tools)" in notes  # plus a nudge to say where (P8.12)
+    assert "You confirmed: PyTorch (added to Frameworks & Libraries)" in notes  # plus a nudge to say where (P8.12)
 
 
 def test_answer_becomes_a_bullet_and_an_embellished_polish_is_refused(tmp_path):
