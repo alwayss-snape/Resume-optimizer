@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "source_hash": "35abbd52013c29e1",
+  "source_hash": "ac7f234d063c067c",
   "stats": {
     "files": 167,
     "python_files": 143,
@@ -8,7 +8,7 @@
     "test_files": 73,
     "classes": 111,
     "functions": 1078,
-    "lines_of_python": 21616
+    "lines_of_python": 21621
   },
   "axes": {
     "x": "location (path)",
@@ -3548,7 +3548,7 @@
       "stages": [
         "10 Report"
       ],
-      "lines": 40,
+      "lines": 42,
       "doc": "",
       "classes": [
         {
@@ -3563,12 +3563,12 @@
             },
             {
               "name": "create_run",
-              "line": 12,
+              "line": 14,
               "doc": ""
             },
             {
               "name": "save_json",
-              "line": 30,
+              "line": 32,
               "doc": ""
             }
           ]
@@ -4385,18 +4385,18 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 41,
+      "lines": 44,
       "doc": "Test-wide isolation from the developer's .env.",
       "classes": [],
       "functions": [
         {
           "name": "_no_daily_limit_between_tests",
-          "line": 26,
+          "line": 29,
           "doc": "The provider's daily-limit marker is process-wide (P8.23); one test"
         },
         {
           "name": "_runs_in_tmp",
-          "line": 36,
+          "line": 39,
           "doc": "A TailorService built with the default run folder (the CLI path) writes"
         }
       ]

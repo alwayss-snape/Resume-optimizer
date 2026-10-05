@@ -18,6 +18,9 @@ os.environ["LLM_HOST"] = "http://127.0.0.1:9"  # discard port: fails fast, never
 os.environ["GROQ_API_KEY"] = ""
 os.environ["ANTHROPIC_API_KEY"] = ""
 os.environ["SEMANTIC_MATCH_ENABLED"] = os.environ.get("SEMANTIC_MATCH_ENABLED", "true")
+# Never write run folders (copies of fixture resumes) into the real data/runs,
+# also from the CLI the tests start as a subprocess (P9.8 review).
+os.environ["RUNS_DIR"] = tempfile.mkdtemp(prefix="runs_test_")
 # Never read or write the developer's real confirmed-facts profile (P3.2).
 os.environ["PROFILE_PATH"] = os.path.join(tempfile.mkdtemp(prefix="profile_test_"), "facts.json")
 

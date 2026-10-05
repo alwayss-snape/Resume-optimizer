@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**60 app modules · 73 test files · 111 classes · 1078 functions/methods · 21,616 lines of Python** · source hash `35abbd52013c29e1`
+**60 app modules · 73 test files · 111 classes · 1078 functions/methods · 21,621 lines of Python** · source hash `ac7f234d063c067c`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -1155,12 +1155,12 @@ _Local profile of facts the user has confirmed (P3.2)._
 
 ### `app/services/run_manager.py`
 
-**Layer:** Services · **Stage:** 10 Report · **Lines:** 40
+**Layer:** Services · **Stage:** 10 Report · **Lines:** 42
 
 - class **`RunManager`** ([app/services/run_manager.py:8](../app/services/run_manager.py#L8))
   - `__init__()` :9
-  - `create_run()` :12
-  - `save_json()` :30
+  - `create_run()` :14
+  - `save_json()` :32
 - **Imported by:** `services/tailor.py`
 - **Tested by:** `tests/conftest.py`, `tests/unit/test_api.py`, `tests/unit/test_cli_parity.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_new_role.py`, `tests/unit/test_privacy_p98.py`, `tests/unit/test_profile_store.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_tailor_resume_flow.py`, `tests/unit/test_validation.py`
 

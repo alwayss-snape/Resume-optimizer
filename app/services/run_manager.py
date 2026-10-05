@@ -3,11 +3,13 @@ import hashlib
 import json
 import os
 import shutil
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 class RunManager:
-    def __init__(self, base_runs_dir: str = "data/runs"):
-        self.base_runs_dir = base_runs_dir
+    def __init__(self, base_runs_dir: Optional[str] = None):
+        # RUNS_DIR lets the test suite (and the CLI it starts as a subprocess)
+        # keep run folders out of the real data/runs.
+        self.base_runs_dir = base_runs_dir or os.environ.get("RUNS_DIR") or "data/runs"
 
     def create_run(self, resume_path: str, jd_text: str) -> str:
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")
