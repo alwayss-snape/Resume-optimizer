@@ -39,7 +39,12 @@ const T = 60000;
       notes.push(`body background ${bg}`);
       await page.locator('input[type="file"]').setInputFiles(RESUME);
       await page.getByLabel("The job description").fill(JD);
-      await page.getByRole("button", { name: "Read my resume" }).click();
+      // P9.14: the form's two actions sit after both inputs
+      notes.push("landing: actions after inputs=" + await page.evaluate(() => {
+        const jd = document.querySelector("textarea:not([id$=-paste])"), b = [...document.querySelectorAll("button")].find((x) => x.textContent.trim() === "Just check my match");
+        return Boolean(jd && b && (jd.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING));
+      }));
+      await page.getByRole("button", { name: "Tailor my resume", exact: true }).click();
       await page.getByRole("button", { name: /Looks right, draft rewrites/ }).waitFor();
       notes.push("details: also-read=" + await page.getByText("Also read from your file").count()
         + " unplaced=" + await page.getByText("Lines we couldn't place").count());

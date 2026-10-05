@@ -60,11 +60,11 @@ function TemplateCard({ value, current, onSelect, title, badge, text, disabled, 
   );
 }
 
-/** Resume + job description + output format. Validates locally; the
- *  parent decides what submitting does. */
-export function UploadForm({ intent, onSubmit, busy = false, initial, maxUploadMb = MAX_UPLOAD_MB, serverError, serverErrorKey }: {
-  intent: Intent;
-  onSubmit: (values: UploadValues) => void;
+/** Resume + job description + output format, then the two actions (P9.14):
+ *  tailor the resume, or just check the match. Validates locally; the parent
+ *  decides what each action does. */
+export function UploadForm({ onSubmit, busy = false, initial, maxUploadMb = MAX_UPLOAD_MB, serverError, serverErrorKey }: {
+  onSubmit: (values: UploadValues, intent: Intent) => void;
   busy?: boolean;
   initial?: { file: File | null; jdText: string; template: Template };
   maxUploadMb?: number;
@@ -76,6 +76,8 @@ export function UploadForm({ intent, onSubmit, busy = false, initial, maxUploadM
   const [jdText, setJdText] = useState(initial?.jdText ?? "");
   const [template, setTemplate] = useState<Template>(initial?.template ?? "ats");
   const [dragging, setDragging] = useState(false);
+  // The action last pressed, so only its button says what is running.
+  const [pressed, setPressed] = useState<Intent>("tailor");
   // field: which input the message is about, so it can be marked invalid
   // and focused; n: re-mounts the alert so a repeated message is announced.
   const [error, setError] = useState<{ text: string; field: "file" | "jd"; n: number } | null>(null);
@@ -120,18 +122,19 @@ export function UploadForm({ intent, onSubmit, busy = false, initial, maxUploadM
     choose(e.dataTransfer.files);
   };
 
-  const submit = () => {
+  const submit = (intent: Intent) => {
+    setPressed(intent);
     const pasted = pasteText.trim();
     if (!file && pasted) {
       // Pasted text goes up as a plain-text file; the server reads it like any upload (P8.22).
       if (!jdText.trim()) return fail("Paste the job description.", "jd");
       setError(null);
-      return onSubmit({ file: new File([pasted], "resume.txt", { type: "text/plain" }), jdText, template: "ats" });
+      return onSubmit({ file: new File([pasted], "resume.txt", { type: "text/plain" }), jdText, template: "ats" }, intent);
     }
     if (!file) return fail("Add your resume first, or paste it as text.", "file");
     if (!jdText.trim()) return fail("Paste the job description.", "jd");
     setError(null);
-    onSubmit({ file, jdText, template });
+    onSubmit({ file, jdText, template }, intent);
   };
 
   const invalid = (field: "file" | "jd") =>
@@ -140,7 +143,7 @@ export function UploadForm({ intent, onSubmit, busy = false, initial, maxUploadM
   const isPdf = file ? NO_LAYOUT.includes(extension(file.name)) : pasteText.trim().length > 0;
 
   return (
-    <form className="flex flex-col gap-10" onSubmit={(e) => { e.preventDefault(); submit(); }} noValidate>
+    <form className="flex flex-col gap-10" onSubmit={(e) => { e.preventDefault(); submit("tailor"); }} noValidate>
       <div className="grid gap-6 md:grid-cols-2">
         <section className="sheet flex flex-col gap-4 rounded-[3px] p-6 md:p-7">
           <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
@@ -202,43 +205,48 @@ export function UploadForm({ intent, onSubmit, busy = false, initial, maxUploadM
         </section>
       </div>
 
-      {intent === "tailor" && (
-        <fieldset className="flex flex-col gap-4">
-          <legend className="mb-4 font-display text-lg font-bold tracking-[-0.01em]">Output format</legend>
-          <div className="grid gap-6 md:grid-cols-2">
-            <TemplateCard value="ats" current={template} onSelect={setTemplate} title="ATS template" badge="Recommended"
-              text="Clean single-column A4 layout. Sections are ordered for the role and fitted to one or two pages.">
-              <span aria-hidden="true" className="flex h-[120px] w-[92px] shrink-0 flex-col gap-[5px] border border-line bg-paper p-2.5 shadow-sheet">
-                <span className="h-1.5 w-3/5 bg-[#1b1b1f]" />
-                <span className="h-[3px] w-4/5 bg-[#9a9ba2]" />
-                <span className="my-0.5 h-px bg-[#2f62d8]" />
-                {[95, 88, 92, 40, 90, 70].map((w, i) => (
-                  <span key={i} className={`h-[3px] ${i === 3 ? "bg-[#1b1b1f]" : "bg-[#c9c9c3]"}`} style={{ width: `${w}%` }} />
+      <fieldset className="flex flex-col gap-4">
+        <legend className="mb-4 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+          <span className="font-display text-lg font-bold tracking-[-0.01em]">Output format</span>
+          <span className="text-[13px] text-muted">For the tailored resume; checking your match doesn't need it</span>
+        </legend>
+        <div className="grid gap-6 md:grid-cols-2">
+          <TemplateCard value="ats" current={template} onSelect={setTemplate} title="ATS template" badge="Recommended"
+            text="Clean single-column A4 layout. Sections are ordered for the role and fitted to one or two pages.">
+            <span aria-hidden="true" className="flex h-[120px] w-[92px] shrink-0 flex-col gap-[5px] border border-line bg-paper p-2.5 shadow-sheet">
+              <span className="h-1.5 w-3/5 bg-[#1b1b1f]" />
+              <span className="h-[3px] w-4/5 bg-[#9a9ba2]" />
+              <span className="my-0.5 h-px bg-[#2f62d8]" />
+              {[95, 88, 92, 40, 90, 70].map((w, i) => (
+                <span key={i} className={`h-[3px] ${i === 3 ? "bg-[#1b1b1f]" : "bg-[#c9c9c3]"}`} style={{ width: `${w}%` }} />
+              ))}
+            </span>
+          </TemplateCard>
+          <TemplateCard value="keep" current={template} onSelect={setTemplate} title="Keep my layout" disabled={isPdf}
+            text={isPdf ? "Only for Word uploads. PDFs and text always use the ATS template."
+              : "Rewrites go into your own DOCX design. Order and page length stay as they are."}>
+            <span aria-hidden="true" className="flex h-[120px] w-[92px] shrink-0 gap-1.5 bg-line p-2.5">
+              <span className="w-[26px] bg-line-strong" />
+              <span className="flex flex-1 flex-col gap-[5px]">
+                {[80, 100, 85, 100, 70].map((w, i) => (
+                  <span key={i} className="h-[3px] bg-line-strong" style={{ width: `${w}%` }} />
                 ))}
               </span>
-            </TemplateCard>
-            <TemplateCard value="keep" current={template} onSelect={setTemplate} title="Keep my layout" disabled={isPdf}
-              text={isPdf ? "Only for Word uploads. PDFs and text always use the ATS template."
-                : "Rewrites go into your own DOCX design. Order and page length stay as they are."}>
-              <span aria-hidden="true" className="flex h-[120px] w-[92px] shrink-0 gap-1.5 bg-line p-2.5">
-                <span className="w-[26px] bg-line-strong" />
-                <span className="flex flex-1 flex-col gap-[5px]">
-                  {[80, 100, 85, 100, 70].map((w, i) => (
-                    <span key={i} className="h-[3px] bg-line-strong" style={{ width: `${w}%` }} />
-                  ))}
-                </span>
-              </span>
-            </TemplateCard>
-          </div>
-        </fieldset>
-      )}
+            </span>
+          </TemplateCard>
+        </div>
+      </fieldset>
 
-      <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center">
-        <Button type="submit" variant="primary" size="lg" disabled={busy} aria-busy={busy}>
-          {busy ? (intent === "tailor" ? "Reading your resume…" : "Checking your match…")
-            : intent === "tailor" ? "Read my resume" : "Check my match"}
-          {!busy && <Icon name="arrow-right" />}
-        </Button>
+      <div className="flex flex-col gap-3">
+        <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
+          <Button type="submit" variant="primary" size="lg" disabled={busy} aria-busy={busy && pressed === "tailor"}>
+            {busy && pressed === "tailor" ? "Reading your resume…" : "Tailor my resume"}
+            {!(busy && pressed === "tailor") && <Icon name="arrow-right" />}
+          </Button>
+          <Button size="lg" disabled={busy} aria-busy={busy && pressed === "check"} onClick={() => submit("check")}>
+            {busy && pressed === "check" ? "Checking your match…" : "Just check my match"}
+          </Button>
+        </div>
         <div>
           {error ? <p key={error.n} id={errorId} role="alert" className="flex items-center gap-2 text-sm font-medium text-danger"><Icon name="alert" size={16} /><span><span className="font-semibold">Error:</span> {error.text}</span></p>
             : serverError && <p key={serverErrorKey} role="alert" className="flex items-center gap-2 text-sm font-medium text-danger"><Icon name="alert" size={16} /><span><span className="font-semibold">Error:</span> {serverError}</span></p>}

@@ -1,7 +1,8 @@
 import { motion, useMotionValue } from "motion/react";
-import { type PointerEvent, useRef, useState } from "react";
+import { type PointerEvent, useRef } from "react";
 import { useFocusHeading } from "../lib/useFocusHeading";
 import { Button } from "../components/Button";
+import { Icon } from "../components/Icon";
 import { FluidField } from "../components/hero/FluidField";
 import { ProofSheet } from "../components/hero/ProofSheet";
 import { UploadForm, type UploadValues } from "../components/UploadForm";
@@ -45,7 +46,6 @@ export function Landing({ onStart, busy, run, maxUploadMb, error, errorKey, conf
   errorKey?: number;
   config?: AppConfig | null;
 }) {
-  const [intent, setIntent] = useState<Intent>(run.intent);
   // Coming back to this page (a run exists): put focus on its heading.
   const heading = useFocusHeading(Boolean(run.file));
   const start = useRef<HTMLElement>(null);
@@ -54,8 +54,9 @@ export function Landing({ onStart, busy, run, maxUploadMb, error, errorKey, conf
   const tiltY = useMotionValue(0);
   const pointer = useRef({ x: 0.7, y: 0.5 });
 
-  const begin = (next: Intent) => {
-    setIntent(next);
+  // The hero only leads to the form; what to do with it (tailor or check) is
+  // chosen by the form's own actions, once both inputs are filled in (P9.14).
+  const begin = () => {
     const still = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
     start.current?.scrollIntoView?.({ behavior: still ? "auto" : "smooth", block: "start" });
     start.current?.querySelector<HTMLElement>("input, textarea")?.focus({ preventScroll: true });
@@ -90,10 +91,10 @@ export function Landing({ onStart, busy, run, maxUploadMb, error, errorKey, conf
               Upload your resume and paste the job description. Every rewrite is built from what is already on your
               resume. Nothing is invented.
             </motion.p>
-            <motion.div variants={rise} initial="hidden" animate="shown" custom={2}
-              className="mt-2 flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
-              <Button variant="primary" size="lg" onClick={() => begin("tailor")}>Tailor my resume</Button>
-              <Button size="lg" onClick={() => begin("check")}>Just check my match</Button>
+            <motion.div variants={rise} initial="hidden" animate="shown" custom={2} className="mt-2 w-full sm:w-auto">
+              <Button variant="primary" size="lg" onClick={begin} className="w-full sm:w-auto">
+                Get started <Icon name="arrow-right" />
+              </Button>
             </motion.div>
           </div>
           <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }}
@@ -104,10 +105,8 @@ export function Landing({ onStart, busy, run, maxUploadMb, error, errorKey, conf
       </section>
 
       <section ref={start} id="start" aria-labelledby="start-title" className="mx-auto max-w-[1240px] scroll-mt-6 px-4 pt-4 md:px-8">
-        <h2 id="start-title" className="sr-only">
-          {intent === "tailor" ? "Tailor your resume" : "Check your match"}
-        </h2>
-        <UploadForm intent={intent} busy={busy} onSubmit={(values) => onStart(intent, values)} initial={run}
+        <h2 id="start-title" className="sr-only">Your resume and the job</h2>
+        <UploadForm busy={busy} onSubmit={(values, intent) => onStart(intent, values)} initial={run}
           maxUploadMb={maxUploadMb} serverError={error} serverErrorKey={errorKey} />
         <PrivacyNote config={config} />
       </section>

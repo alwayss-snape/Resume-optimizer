@@ -35,7 +35,7 @@ test("tailor: upload -> check details -> drafting with progress -> review", asyn
   const user = userEvent.setup();
   render(<App />);
   await fillUpload(user);
-  await user.click(screen.getByRole("button", { name: /Read my resume/ }));
+  await user.click(screen.getByRole("button", { name: /^Tailor my resume$/ }));
 
   expect(await screen.findByRole("heading", { name: "Check your details" })).toHaveFocus();
   expect(screen.getByText(/No phone number found/)).toBeInTheDocument();
@@ -62,9 +62,8 @@ test("check my match: shows the report, then can go on to tailor with the same f
   });
   const user = userEvent.setup();
   render(<App />);
-  await user.click(screen.getByRole("button", { name: "Just check my match" }));
   await fillUpload(user);
-  await user.click(screen.getByRole("button", { name: /Check my match/ }));
+  await user.click(screen.getByRole("button", { name: "Just check my match" }));
 
   expect(await screen.findByRole("heading", { name: /How your resume reads/ })).toBeInTheDocument();
   expect(screen.getByText(/1 of 3 keywords found/)).toBeInTheDocument();
@@ -84,7 +83,7 @@ test("a server error stays on the upload form with its message", async () => {
   const user = userEvent.setup();
   render(<App />);
   await fillUpload(user);
-  await user.click(screen.getByRole("button", { name: /Read my resume/ }));
+  await user.click(screen.getByRole("button", { name: /^Tailor my resume$/ }));
   expect(await screen.findByRole("alert")).toHaveTextContent("doesn't look like a real .docx");
   expect(useApp.getState().step).toBe("upload");
 });
@@ -100,7 +99,7 @@ test("the chosen model is sent only if the provider offers it", async () => {
   await waitFor(() => expect(calls.some((c) => c.url === "/api/config")).toBe(true));
   await screen.findByText(/Tailor my resume/);
   await fillUpload(user);
-  await user.click(screen.getByRole("button", { name: /Read my resume/ }));
+  await user.click(screen.getByRole("button", { name: /^Tailor my resume$/ }));
   await screen.findByRole("heading", { name: "Check your details" });
   expect((calls.find((c) => c.url === "/api/parse")!.init!.body as FormData).get("model")).toBe("m2");
 });
@@ -121,7 +120,7 @@ test("Start over while drafting: the late result is ignored and the server is to
   const user = userEvent.setup();
   render(<App />);
   await fillUpload(user);
-  await user.click(screen.getByRole("button", { name: /Read my resume/ }));
+  await user.click(screen.getByRole("button", { name: /^Tailor my resume$/ }));
   await screen.findByRole("heading", { name: "Check your details" });
   await user.click(screen.getByRole("button", { name: /draft rewrites/ }));
   expect(await screen.findByRole("heading", { name: "Drafting your rewrites" })).toHaveFocus();
@@ -143,7 +142,7 @@ test("an untouched details form sends no corrections", async () => {
   const user = userEvent.setup();
   render(<App />);
   await fillUpload(user);
-  await user.click(screen.getByRole("button", { name: /Read my resume/ }));
+  await user.click(screen.getByRole("button", { name: /^Tailor my resume$/ }));
   await screen.findByRole("heading", { name: "Check your details" });
   await user.click(screen.getByRole("button", { name: /draft rewrites/ }));
   await screen.findByRole("heading", { name: "Review changes" });
@@ -159,7 +158,7 @@ test("details: a missed job is added, a misread one removed, and both are sent",
   const user = userEvent.setup();
   render(<App />);
   await fillUpload(user);
-  await user.click(screen.getByRole("button", { name: /Read my resume/ }));
+  await user.click(screen.getByRole("button", { name: /^Tailor my resume$/ }));
   await screen.findByRole("heading", { name: "Check your details" });
   // Remove and Undo keep focus on the control that replaced the one clicked.
   await user.click(screen.getByRole("button", { name: "Remove job 1, Northwind" }));
@@ -204,9 +203,8 @@ test("report tabs move with the arrow keys", async () => {
   stubApi({ "/api/config": () => jsonResponse(CONFIG), "/api/analyze": () => jsonResponse(REPORT) });
   const user = userEvent.setup();
   render(<App />);
-  await user.click(screen.getByRole("button", { name: "Just check my match" }));
   await fillUpload(user);
-  await user.click(screen.getByRole("button", { name: /Check my match/ }));
+  await user.click(screen.getByRole("button", { name: "Just check my match" }));
   const first = await screen.findByRole("tab", { name: /Must have/ });
   first.focus();
   await user.keyboard("{ArrowLeft}");
@@ -219,7 +217,7 @@ test("report tabs move with the arrow keys", async () => {
 async function toReview(user: ReturnType<typeof userEvent.setup>) {
   render(<App />);
   await fillUpload(user);
-  await user.click(screen.getByRole("button", { name: /Read my resume/ }));
+  await user.click(screen.getByRole("button", { name: /^Tailor my resume$/ }));
   await screen.findByRole("heading", { name: "Check your details" });
   await user.click(screen.getByRole("button", { name: /draft rewrites/ }));
   return screen.findByRole("heading", { name: "Review changes" });

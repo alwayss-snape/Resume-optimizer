@@ -17,8 +17,8 @@ test("fileProblem mirrors the server's checks", () => {
 test("submits the file, job description and template once both are given", async () => {
   const user = userEvent.setup({ applyAccept: false });
   const onSubmit = vi.fn();
-  render(<UploadForm intent="tailor" onSubmit={onSubmit} />);
-  const submit = screen.getByRole("button", { name: /Read my resume/ });
+  render(<UploadForm onSubmit={onSubmit} />);
+  const submit = screen.getByRole("button", { name: /Tailor my resume/ });
   const anyFile = userEvent.setup({ applyAccept: false }); // the form checks the type itself
 
   await user.click(submit);
@@ -34,13 +34,13 @@ test("submits the file, job description and template once both are given", async
 
   await user.type(screen.getByLabelText("The job description"), "Senior Data Scientist");
   await user.click(submit);
-  expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({ jdText: "Senior Data Scientist", template: "keep" }));
+  expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({ jdText: "Senior Data Scientist", template: "keep" }), "tailor");
   expect(onSubmit.mock.calls[0][0].file.name).toBe("cv.docx");
 });
 
 test("a PDF can't keep its layout, and replaces an earlier 'keep' choice", async () => {
   const user = userEvent.setup();
-  render(<UploadForm intent="tailor" onSubmit={vi.fn()} />);
+  render(<UploadForm onSubmit={vi.fn()} />);
   await user.upload(screen.getByLabelText(/Drop your resume here/), file("cv.docx"));
   await user.click(screen.getByRole("radio", { name: /Keep my layout/ }));
   await user.upload(screen.getByLabelText(/Drop your resume here/), file("cv.pdf"));
@@ -50,7 +50,7 @@ test("a PDF can't keep its layout, and replaces an earlier 'keep' choice", async
 
 test("drag and drop: one file is taken, several are refused, and the error marks the field", async () => {
   const onSubmit = vi.fn();
-  render(<UploadForm intent="check" onSubmit={onSubmit} />);
+  render(<UploadForm onSubmit={onSubmit} />);
   const zone = screen.getByText("Drop your resume here").closest("label")!;
   fireEvent.drop(zone, { dataTransfer: { files: [file("a.pdf"), file("b.pdf")], types: ["Files"] } });
   expect(screen.getByRole("alert")).toHaveTextContent("one file");
@@ -63,28 +63,45 @@ test("drag and drop: one file is taken, several are refused, and the error marks
 
 test("a missing job description focuses the box", async () => {
   const user = userEvent.setup();
-  render(<UploadForm intent="check" onSubmit={vi.fn()} />);
+  render(<UploadForm onSubmit={vi.fn()} />);
   await user.upload(screen.getByLabelText(/Drop your resume here/), file("cv.docx"));
-  await user.click(screen.getByRole("button", { name: /Check my match/ }));
+  await user.click(screen.getByRole("button", { name: "Just check my match" }));
   expect(screen.getByLabelText("The job description")).toHaveFocus();
   expect(screen.getByLabelText("The job description")).toHaveAccessibleDescription("Error: Paste the job description.");
 });
 
-test("the match check needs no output format", () => {
-  render(<UploadForm intent="check" onSubmit={vi.fn()} />);
-  expect(screen.queryByText("Output format")).toBeNull();
-  expect(screen.getByRole("button", { name: /Check my match/ })).toBeInTheDocument();
-});
+test("the two actions come after both inputs and say which one was chosen (P9.14)", async () => {
+  const onSubmit = vi.fn();
+  const user = userEvent.setup();
+  const { rerender } = render(<UploadForm onSubmit={onSubmit} />);
+  const tailor = screen.getByRole("button", { name: /Tailor my resume/ });
+  const check = screen.getByRole("button", { name: "Just check my match" });
+  // Keyboard order: resume, job description, output format, then the actions.
+  const jd = screen.getByLabelText("The job description");
+  const ats = screen.getByRole("radio", { name: /^ATS template/ });
+  expect(jd.compareDocumentPosition(ats) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  expect(ats.compareDocumentPosition(tailor) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  expect(tailor.compareDocumentPosition(check) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
 
+  await user.upload(screen.getByLabelText(/Drop your resume here/), file("cv.docx"));
+  await user.type(jd, "Data analyst with SQL");
+  await user.click(check);
+  expect(onSubmit).toHaveBeenLastCalledWith(expect.objectContaining({ jdText: "Data analyst with SQL" }), "check");
+
+  // Only the pressed action says it is running; both are locked meanwhile.
+  rerender(<UploadForm onSubmit={onSubmit} busy />);
+  expect(screen.getByRole("button", { name: "Checking your match…" })).toBeDisabled();
+  expect(screen.getByRole("button", { name: /Tailor my resume/ })).toBeDisabled();
+});
 
 test("pasted text is sent as a plain-text resume with the ATS template", async () => {
   const onSubmit = vi.fn();
   const user = userEvent.setup();
-  render(<UploadForm intent="tailor" onSubmit={onSubmit} />);
+  render(<UploadForm onSubmit={onSubmit} />);
   await user.click(screen.getByText("No file? Paste your resume as text"));
   await user.type(screen.getByLabelText("Your resume as text"), "Jane Doe\njane@example.com");
   await user.type(screen.getByLabelText("The job description"), "Data analyst with SQL");
-  await user.click(screen.getByRole("button", { name: /Read my resume/ }));
+  await user.click(screen.getByRole("button", { name: /Tailor my resume/ }));
   const values = onSubmit.mock.calls[0][0];
   expect(values.file.name).toBe("resume.txt");
   expect(values.template).toBe("ats");
