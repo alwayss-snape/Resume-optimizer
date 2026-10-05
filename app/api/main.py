@@ -23,7 +23,8 @@ def default_service(model: Optional[str] = None):
     from app.llm.client import LLMClient
     from app.services.tailor import TailorService
 
-    return TailorService(llm_client=LLMClient(model=model) if model else None)
+    # keep_run=False: a visitor's resume must not outlive their session (P9.8)
+    return TailorService(llm_client=LLMClient(model=model) if model else None, keep_run=False)
 
 
 SWEEP_EVERY_S = 60

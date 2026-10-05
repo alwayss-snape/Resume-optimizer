@@ -59,7 +59,9 @@ def _progress(callback: Optional[Callable[[str], None]]) -> Callable[[str], None
 
 
 class TailorService:
-    def __init__(self, llm_client: Optional[LLMClient] = None):
+    def __init__(self, llm_client: Optional[LLMClient] = None, keep_run: bool = True):
+        """`keep_run=False` (the web app): nothing is written to data/runs, so
+        an upload lives only in the visitor's session files (P9.8)."""
         self.llm_client = llm_client or LLMClient()
         self.docx_parser = DocxParser()
         self.pdf_parser = PdfParser()
@@ -90,7 +92,12 @@ class TailorService:
         self.pdf_converter = PdfConverter()
         self.qa_validator = OutputQAValidator()
         self.safety_guard = SafetyGuard()
-        self.run_manager = RunManager()
+        self.run_manager: Optional[RunManager] = RunManager() if keep_run else None
+
+    def _save_run(self, run_dir: Optional[str], filename: str, data) -> None:
+        """A run artifact for the CLI / eval; nothing when no run is kept (P9.8)."""
+        if run_dir and self.run_manager:
+            self.run_manager.save_json(run_dir, filename, data)
 
     def generate_preview_md(self, resume: Resume) -> str:
         lines = [f"# {resume.candidate.name}\n"]
@@ -828,7 +835,7 @@ class TailorService:
         progress: Optional[Callable[[str], None]] = None,
         conditions_confirmed: Optional[List[str]] = None,
     ) -> Dict[str, str]:
-        run_dir = self.run_manager.create_run(resume_path, jd_text)
+        run_dir = self.run_manager.create_run(resume_path, jd_text) if self.run_manager else None
         clean_jd_text = self.safety_guard.sanitize(jd_text)
         
         # Prepare incremental change log so callers (and UI) can tail it in
@@ -854,7 +861,8 @@ class TailorService:
                 # Never fail tailoring flow due to progress logging
                 pass
         
-        _append_progress("Run created: " + run_dir)
+        if run_dir:  # the CLI log; the web keeps no run folder (P9.8)
+            _append_progress("Run created: " + run_dir)
 
         is_pdf = resume_path.lower().endswith((".pdf", ".txt"))  # nothing to patch in place
         if is_pdf:
@@ -1170,15 +1178,15 @@ class TailorService:
         # Save artifacts to run folder
         # Save the ResumeDocument as canonical SOT
         try:
-            self.run_manager.save_json(run_dir, "resume_document.json", resume_doc)
+            self._save_run(run_dir, "resume_document.json", resume_doc)
         except Exception:
             pass
         # Also save the legacy resume.json for compatibility
-        self.run_manager.save_json(run_dir, "resume.json", resume)
+        self._save_run(run_dir, "resume.json", resume)
         # (Note: `resume_doc` already saved above as resume_document canonical SOT)
-        self.run_manager.save_json(run_dir, "jd.json", job_desc)
-        self.run_manager.save_json(run_dir, "plan.json", plan)
-        self.run_manager.save_json(run_dir, "rewrites.json", approved_proposals)
+        self._save_run(run_dir, "jd.json", job_desc)
+        self._save_run(run_dir, "plan.json", plan)
+        self._save_run(run_dir, "rewrites.json", approved_proposals)
 
         # Groq/Ollama token usage for this run (every LLMClient.generate()
         # call made anywhere in the pipeline is recorded on the client
@@ -1191,7 +1199,7 @@ class TailorService:
             usage_summary = self.llm_client.get_usage_summary()
             if proposal_usage:
                 usage_summary = _merge_usage(proposal_usage, usage_summary)
-            self.run_manager.save_json(run_dir, "llm_usage.json", usage_summary)
+            self._save_run(run_dir, "llm_usage.json", usage_summary)
         except Exception:
             pass
 

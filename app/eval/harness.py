@@ -106,7 +106,7 @@ def run_case(case: Case, *, live: bool = False, tailor: bool = False, out_dir: O
     from app.services.tailor import TailorService
 
     llm = LLMClient() if live else OfflineLLM()
-    service = TailorService(llm_client=llm)
+    service = TailorService(llm_client=llm, keep_run=False)  # outputs go to --out-dir; no copies in data/runs (P9.8)
     counter = _RetryCounter()
     logging.getLogger("app.llm.client").addHandler(counter)
     started = time.time()

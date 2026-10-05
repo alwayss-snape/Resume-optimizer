@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "60d7bdf3e083ac4d",
+  "source_hash": "65182241bbc449e9",
   "stats": {
-    "files": 164,
-    "python_files": 140,
+    "files": 165,
+    "python_files": 141,
     "app_modules": 60,
-    "test_files": 70,
+    "test_files": 71,
     "classes": 110,
-    "functions": 1056,
-    "lines_of_python": 21295
+    "functions": 1060,
+    "lines_of_python": 21341
   },
   "axes": {
     "x": "location (path)",
@@ -1365,7 +1365,7 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 74,
+      "lines": 75,
       "doc": "The web app (P5.1): `uvicorn app.api.main:app`.",
       "classes": [],
       "functions": [
@@ -1376,12 +1376,12 @@
         },
         {
           "name": "_sweeping",
-          "line": 33,
+          "line": 34,
           "doc": "Expired sessions and their files are deleted on time even when no"
         },
         {
           "name": "create_app",
-          "line": 48,
+          "line": 49,
           "doc": ""
         }
       ]
@@ -3567,7 +3567,7 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 1460,
+      "lines": 1468,
       "doc": "",
       "classes": [
         {
@@ -3578,146 +3578,151 @@
             {
               "name": "__init__",
               "line": 62,
-              "doc": ""
+              "doc": "`keep_run=False` (the web app): nothing is written to data/runs, so"
+            },
+            {
+              "name": "_save_run",
+              "line": 97,
+              "doc": "A run artifact for the CLI / eval; nothing when no run is kept (P9.8)."
             },
             {
               "name": "generate_preview_md",
-              "line": 95,
+              "line": 102,
               "doc": ""
             },
             {
               "name": "_patchable",
-              "line": 141,
+              "line": 148,
               "doc": "Proposals as in-place DOCX patches. A summary proposal targets the"
             },
             {
               "name": "_apply_gap_answers",
-              "line": 164,
+              "line": 171,
               "doc": "Ticked keywords join the skills section; a typed answer becomes a"
             },
             {
               "name": "_prefill_from_profile",
-              "line": 212,
+              "line": 219,
               "doc": "Answers confirmed for an earlier JD pre-fill the same questions"
             },
             {
               "name": "_draft_from_answer",
-              "line": 224,
+              "line": 231,
               "doc": "Polish the candidate's answer into one bullet that may use only"
             },
             {
               "name": "_split_description",
-              "line": 243,
+              "line": 250,
               "doc": "Pasted role description -> bullet-sized chunks: one per line (list"
             },
             {
               "name": "validate_new_role",
-              "line": 253,
+              "line": 260,
               "doc": "Check a new job before any work is done; raises ValueError with a"
             },
             {
               "name": "_new_experience",
-              "line": 278,
+              "line": 285,
               "doc": "An empty job from the \"add a job\" fields, validated."
             },
             {
               "name": "_insert_by_date",
-              "line": 286,
+              "line": 293,
               "doc": "Place a job in date order: current jobs first, then most recent start."
             },
             {
               "name": "add_new_role",
-              "line": 299,
+              "line": 306,
               "doc": "Add a job the resume doesn't have yet (P3.3). Each chunk of the"
             },
             {
               "name": "_skills_proposals",
-              "line": 336,
+              "line": 343,
               "doc": "The skills section with the JD's skills first, when that changes it (P1.6)."
             },
             {
               "name": "_summary_proposals",
-              "line": 341,
+              "line": 348,
               "doc": "The tailored summary as a proposal, when one was written (P1.5)."
             },
             {
               "name": "_embed",
-              "line": 346,
+              "line": 353,
               "doc": "Sentence embeddings for the planner, loaded lazily; raises when the"
             },
             {
               "name": "_fit_relevance",
-              "line": 355,
+              "line": 362,
               "doc": "Planner relevance per bullet for the page-fit loop. Bullets the user"
             },
             {
               "name": "_render_template",
-              "line": 365,
+              "line": 372,
               "doc": "One template render plus PDF conversion (the page-fit loop's step)."
             },
             {
               "name": "_coverage",
-              "line": 373,
+              "line": 380,
               "doc": "Content coverage of the rendered DOCX against the uploaded file (P8.2)."
             },
             {
               "name": "_apply_bullet_order",
-              "line": 400,
+              "line": 407,
               "doc": "Reorder bullets as planned (most relevant first within each"
             },
             {
               "name": "parse_resume",
-              "line": 415,
+              "line": 422,
               "doc": "File -> (raw document, ResumeDocument, evidence). The deterministic"
             },
             {
               "name": "read_file",
-              "line": 422,
+              "line": 429,
               "doc": "The uploaded file as raw blocks, or UnreadableFile with a message"
             },
             {
               "name": "normalize_raw",
-              "line": 457,
+              "line": 464,
               "doc": ""
             },
             {
               "name": "_copy_parsed",
-              "line": 470,
+              "line": 477,
               "doc": "Deep copies, so a parse kept in UI session state is never mutated."
             },
             {
               "name": "preview_keyword_match",
-              "line": 475,
+              "line": 482,
               "doc": "Match rate if these proposals were applied (P3.4 \"recalculate\"):"
             },
             {
               "name": "apply_parse_corrections",
-              "line": 498,
+              "line": 505,
               "doc": "Apply the user's fixes from the \"Check parsed resume\" step (P3.5)."
             },
             {
               "name": "analyze_only",
-              "line": 624,
+              "line": 631,
               "doc": ""
             },
             {
               "name": "generate_proposals",
-              "line": 654,
+              "line": 661,
               "doc": "Generate rewrite proposals without applying them, plus questions"
             },
             {
               "name": "incorporate_user_addition",
-              "line": 731,
+              "line": 738,
               "doc": "Fold a user-supplied free-text addition (a project, an"
             },
             {
               "name": "tailor_resume",
-              "line": 810,
+              "line": 817,
               "doc": ""
             },
             {
               "name": "arrange",
-              "line": 1328,
+              "line": 1336,
               "doc": "Re-render the tailored resume as the user arranged it (P8.13\u2013P8.16):"
             }
           ]
@@ -3731,12 +3736,12 @@
         },
         {
           "name": "_hidden_text",
-          "line": 1424,
+          "line": 1432,
           "doc": "Text of the sections the user hid, so coverage counts it as their choice."
         },
         {
           "name": "_merge_usage",
-          "line": 1451,
+          "line": 1459,
           "doc": "Combine two LLMClient.get_usage_summary() dicts into one."
         }
       ]
@@ -6776,6 +6781,32 @@
       ]
     },
     {
+      "id": "tests/unit/test_privacy_p98.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 37,
+      "doc": "P9.8: a web run keeps nothing in data/runs; the CLI still keeps its run folder.",
+      "classes": [],
+      "functions": [
+        {
+          "name": "_tailor",
+          "line": 15,
+          "doc": ""
+        },
+        {
+          "name": "test_the_web_service_keeps_no_run_folder",
+          "line": 22,
+          "doc": ""
+        },
+        {
+          "name": "test_the_cli_keeps_its_run_folder",
+          "line": 33,
+          "doc": ""
+        }
+      ]
+    },
+    {
       "id": "tests/unit/test_profile_store.py",
       "type": "python",
       "layer": "Tests",
@@ -8863,6 +8894,11 @@
       "type": "tested_by"
     },
     {
+      "from": "app/api/main.py",
+      "to": "tests/unit/test_privacy_p98.py",
+      "type": "tested_by"
+    },
+    {
       "from": "app/api/routes.py",
       "to": "app/analysis/jd_analyzer.py",
       "type": "imports"
@@ -9724,6 +9760,11 @@
     },
     {
       "from": "app/eval/harness.py",
+      "to": "tests/unit/test_privacy_p98.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/eval/harness.py",
       "to": "tests/unit/test_profile_store.py",
       "type": "tested_by"
     },
@@ -10489,6 +10530,11 @@
     },
     {
       "from": "app/services/run_manager.py",
+      "to": "tests/unit/test_privacy_p98.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/services/run_manager.py",
       "to": "tests/unit/test_profile_store.py",
       "type": "tested_by"
     },
@@ -10775,6 +10821,11 @@
     {
       "from": "app/services/tailor.py",
       "to": "tests/unit/test_new_role.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/services/tailor.py",
+      "to": "tests/unit/test_privacy_p98.py",
       "type": "tested_by"
     },
     {

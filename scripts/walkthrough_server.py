@@ -7,4 +7,4 @@ from app.api.main import create_app
 from app.eval.harness import OfflineLLM
 from app.services.tailor import TailorService
 
-app = create_app(make_service=lambda model=None: TailorService(llm_client=OfflineLLM()), rate_limit=1000)
+app = create_app(make_service=lambda model=None: TailorService(llm_client=OfflineLLM(), keep_run=False), rate_limit=1000)
