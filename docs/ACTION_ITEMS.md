@@ -23,9 +23,9 @@ JD-aligned rewrites, a Novoresume-style ATS layout that fits the right length, a
 | 6: UI redesign | 6 | 6 | 0 | 0 |
 | 7: Owner feedback on the flow | 2 | 2 | 0 | 0 |
 | 8: Cross-domain robustness and user control | 26 | 26 | 0 | 0 |
-| 9: Close-out and owner review | 13 | 11 | 0 | 2 |
+| 9: Close-out and owner review | 14 | 11 | 0 | 3 |
 | 10: Inputs, outputs, cover letter and history | 9 | 0 | 0 | 9 |
-| **Total** | **104** | **90** | **0** | **12** |
+| **Total** | **105** | **90** | **0** | **13** |
 
 Phase 1's two open items (P1.15, P1.16) are ➖, moved into P8.9 and P8.18, so its row no longer adds up to 16.
 
@@ -317,6 +317,7 @@ passes live (P9.3). Not re-run: the 5 live LLM persona runs (Groq quota kept for
 | P9.11 | **Live-AI browser walkthrough:** `scripts/walkthrough.cjs` against the real app with Groq (one persona, 1440 light): real wait countdown, rewrites on Review, downloads | `scripts/walkthrough.cjs` | ⬜ | Stage N. Size M. Port 8010 only |
 | P9.12 | **Skills guardrails (R2):** a ticked gap keyword goes under a skills category of its own type (language, framework / library, tool / platform, practice, expertise), a new one named for its type if the resume has none, never into a category of another type ("Other skills" when unknown); traits and soft skills ("Fast learner", "deep curiosity about AI") are never listed as skills, only shown through an example bullet; the JD's spelling is kept ("CI", not "ci") | `analysis/skills_tailor.py`, `analysis/gap_questions.py` (`infer_kind`), `services/tailor.py` (`_apply_gap_answers`), `web/src/components/GapQuestionCard.tsx` | ✅ | 2026-10-05, from the owner's run: "ci, version control, unit tests, LLMs, Fast learner, deep curiosity about AI" were appended to "Frameworks": every ticked keyword went to the first category named like tool / framework / skill. Now: Practices: CI, version control, unit tests; Expertise: LLMs; the traits get a note ("Not listed under Skills… write a line with a real example") and the card says so when one is ticked; `infer_kind` marks traits soft even when the JD analysis called them hard. `test_skill_placement_p912.py` (the owner's exact case), `GapQuestionCard.test.tsx` |
 | P9.13 | **Arrange: projects inside a job are blocks (R3):** a job's bullets are shown under their project sub-headings ("Scalable MLOps Framework"); a project moves up / down with all its bullets (buttons, keyboard, focus kept); bullets move and drag only within their own project; the server keeps a sub-heading's bullets together whatever order arrives, so a heading is never split | `web/src/lib/arrange.ts` (`orderedGroups`, `moveGroup`, `moveBullet`, `dropBullet`), `web/src/pages/Arrange.tsx`, `services/arrange.py` (`_keep_groups_together`) | ✅ | 2026-10-05, from the owner's screenshot: Arrange listed the bullets flat with no project headings, and a bullet could be moved out of its project. Chrome check on the replica (three projects in one job) at 1440 dark and 390 light: projects shown as blocks, moved by keyboard, focus kept, no overflow; the re-rendered DOCX has the projects in the new order, 0 read-back problems, 1 page. Tests in `arrange.test.ts` and `tests/integration/test_arrange.py`. Not done: dragging a whole project (buttons and keyboard only) |
+| P9.14 | **Landing: the two actions after the inputs (R4):** "Tailor my resume" and "Just check my match" sit above the resume and JD boxes, as a mode switch, while the button that starts the run is at the bottom of the form, so it reads as a choice made before there's anything to act on. Move the choice below both boxes as the form's two actions (tailor / check the match), one click each, and drop the separate mode switch at the top | `web/src/pages/Landing.tsx`, `web/src/components/UploadForm.tsx` | ⬜ | Owner request 2026-10-05; not started while the owner tests the current build. Keep the keyboard order, the error messages and the privacy note; component tests and a walkthrough at 1440 / 390 |
 
 ### Owner review of the current state
 
@@ -328,6 +329,7 @@ becomes a P9.x item above or goes to the Backlog._
 | R1 | Drafting screen says "under a minute" while it waits on the free AI service; every wait is a new checked row; "bullet(s)" (screenshot, 2026-10-04) | Details → drafting progress | Low | P9.7 |
 | R2 | Tailored resume listed "ci, version control, unit tests, LLMs, Fast learner, deep curiosity about AI" under Frameworks: terms added in the wrong section, traits as skills (screenshot, 2026-10-05) | Results → Skills | High | P9.12 |
 | R3 | Arrange shows a job's bullets flat: the project sub-headings inside the job are missing, and a project can't be moved as one block with its bullets (screenshot, 2026-10-05) | Results → Arrange | Medium | P9.13 |
+| R4 | "Tailor my resume" / "Just check my match" sit above the resume and JD boxes; they belong after them, since you act once both are filled in (screenshot, 2026-10-05) | Landing | Low | P9.14 |
 
 ---
 
