@@ -365,6 +365,16 @@ class ResumeNormalizer:
                   "sweden", "norway", "denmark", "finland", "poland", "portugal", "uae", "israel", "south africa",
                   "nigeria", "kenya", "philippines", "malaysia", "indonesia", "south korea", "korea", "españa",
                   "deutschland", "remote"}
+    # Large cities a resume names without a state or country ("TCS, Chennai").
+    _CITIES = {"bengaluru", "bangalore", "chennai", "mumbai", "delhi", "new delhi", "gurugram", "gurgaon", "noida",
+               "hyderabad", "pune", "kolkata", "ahmedabad", "kochi", "jaipur", "chandigarh", "london", "manchester",
+               "edinburgh", "dublin", "paris", "lyon", "berlin", "munich", "hamburg", "frankfurt", "amsterdam",
+               "madrid", "barcelona", "milan", "rome", "zurich", "geneva", "vienna", "stockholm", "copenhagen",
+               "oslo", "helsinki", "warsaw", "lisbon", "brussels", "toronto", "vancouver", "montreal", "sydney",
+               "melbourne", "auckland", "tokyo", "seoul", "shanghai", "beijing", "shenzhen", "dubai", "abu dhabi",
+               "tel aviv", "nairobi", "lagos", "johannesburg", "cape town", "manila", "jakarta", "kuala lumpur",
+               "bangkok", "são paulo", "sao paulo", "mexico city", "new york city", "nyc", "san francisco",
+               "los angeles", "chicago", "boston", "seattle"}
     _COMPANY_SUFFIX_RE = re.compile(
         r"\b(?:inc|llc|llp|ltd|limited|corp|corporation|co|company|group|gmbh|ag|sa|plc|pvt|bank|university"
         r"|college|school|hospital|clinic|center|centre|institute|agency|department|army|navy|isd)\b\.?",
@@ -382,6 +392,12 @@ class ResumeNormalizer:
             return ", ".join(parts[:-2]), ", ".join(parts[-2:])
         last = parts[-1]
         if last.lower() in self._COUNTRIES or self._CITY_STATE_RE.match(last):
+            return ", ".join(parts[:-1]), last
+        # "Infosys Ltd, Bengaluru", "TCS, Chennai": a well-known city, or a
+        # place-like name after a company suffix, is the location (P9.21).
+        if last.lower() in self._CITIES or (
+                self._ends_with_suffix(parts[-2]) and re.fullmatch(r"[A-Z][a-z]+(?:[ -][A-Z][a-z]+)?", last)
+                and not self._COMPANY_SUFFIX_RE.search(last) and not self._looks_like_title(last)):
             return ", ".join(parts[:-1]), last
         # A lone city ("Groupe SEB, Lyon") can't be told from a company
         # ("Payments Platform, Stripe"), so it stays with the company

@@ -32,7 +32,15 @@ def _jobs(lines, tmp_path, heading="Experience"):
     ("Logistics NCOIC (92Y Unit Supply Specialist), U.S. Army, Fort Hood, TX\t2014 – 2024",
      ("Logistics NCOIC (92Y Unit Supply Specialist)", "U.S. Army", "Fort Hood, TX", "2014", "2024")),
     ("Supply Chain Analyst, Groupe SEB, Lyon\t01/09/2019 – 31/08/2023",
-     ("Supply Chain Analyst", "Groupe SEB, Lyon", None, "01/09/2019", "31/08/2023")),
+     ("Supply Chain Analyst", "Groupe SEB", "Lyon", "01/09/2019", "31/08/2023")),  # a known city (P9.21)
+    ("Senior Software Engineer, Infosys Ltd, Bengaluru\tJuly 2018 – Till Date",  # the live india run (P9.21)
+     ("Senior Software Engineer", "Infosys Ltd", "Bengaluru", "July 2018", "Till Date")),
+    ("Software Engineer, TCS, Chennai\tJune 2015 – June 2018",
+     ("Software Engineer", "TCS", "Chennai", "June 2015", "June 2018")),
+    ("Data Engineer, Acme Pvt Ltd, Coimbatore\t2019 – 2021",  # after a company suffix, a place-like name
+     ("Data Engineer", "Acme Pvt Ltd", "Coimbatore", "2019", "2021")),
+    ("Backend Engineer, Payments Platform, Stripe\t2019 – 2021",  # an unknown name stays with the company
+     ("Backend Engineer", "Payments Platform, Stripe", None, "2019", "2021")),
     ("SVP, Global Supply Chain | Meridian Consumer Products | 2013 – 2018",
      ("SVP, Global Supply Chain", "Meridian Consumer Products", None, "2013", "2018")),
     ("Delivery Driver (part-time, concurrent) — DoorDash — 2020 to present",
@@ -89,3 +97,4 @@ def test_later_role_never_inherits_a_date_column(tmp_path):
                                    "Assistant Professor", "Postdoc", "Logistics NCOIC", "Family Caregiver"])
 def test_role_words_outside_tech(title):
     assert ResumeNormalizer()._looks_like_title(title)
+

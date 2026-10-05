@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "source_hash": "b22bcfcc1836f2a7",
+  "source_hash": "11f66a3a235ea341",
   "stats": {
     "files": 167,
     "python_files": 143,
@@ -8,7 +8,7 @@
     "test_files": 73,
     "classes": 111,
     "functions": 1084,
-    "lines_of_python": 21749
+    "lines_of_python": 21780
   },
   "axes": {
     "x": "location (path)",
@@ -702,7 +702,7 @@
       "stages": [
         "2 Normalize"
       ],
-      "lines": 1246,
+      "lines": 1262,
       "doc": "",
       "classes": [
         {
@@ -797,112 +797,112 @@
             },
             {
               "name": "_split_company_location",
-              "line": 373,
+              "line": 383,
               "doc": "'Banner Medical Center, Phoenix, AZ' -> ('Banner Medical Center',"
             },
             {
               "name": "_split_comma_job",
-              "line": 391,
+              "line": 407,
               "doc": "'Shift Supervisor, Starbucks, Atlanta GA' -> (title, company,"
             },
             {
               "name": "_ends_with_suffix",
-              "line": 407,
+              "line": 423,
               "doc": "\"CloudMetrics Inc.\" ends with a full stop but is a company, not a sentence."
             },
             {
               "name": "_next_is_meta_line",
-              "line": 412,
+              "line": 428,
               "doc": "The ATS template prints 'Company \u00b7 Location' under the title line."
             },
             {
               "name": "_trim",
-              "line": 425,
+              "line": 441,
               "doc": "Strip separators left around removed dates, keeping a closing"
             },
             {
               "name": "_split_skill_line",
-              "line": 441,
+              "line": 457,
               "doc": "'Languages: Python, SQL<tab>Frameworks: Pandas, and XGBoost' ->"
             },
             {
               "name": "_skill_items",
-              "line": 462,
+              "line": 478,
               "doc": ""
             },
             {
               "name": "_split_education_line",
-              "line": 480,
+              "line": 496,
               "doc": "'B.S. Biology, University of Texas at Austin, 2016' -> (degree,"
             },
             {
               "name": "_looks_like_degree",
-              "line": 526,
+              "line": 542,
               "doc": "'B.Tech in Computer Science' yes; 'State University' no."
             },
             {
               "name": "_split_middle_dot",
-              "line": 532,
+              "line": 548,
               "doc": "'Acme Corp \u00b7 Pune, India' -> ('Acme Corp', 'Pune, India'), the"
             },
             {
               "name": "_is_dated_line",
-              "line": 541,
+              "line": 557,
               "doc": "A job title/company line carrying a date range or year. A date"
             },
             {
               "name": "_header_range",
-              "line": 556,
+              "line": 572,
               "doc": "A date range inside a job header line, or None. Trailing ranges"
             },
             {
               "name": "_experience_line_kind",
-              "line": 573,
+              "line": 589,
               "doc": "'dated' (title and/or company with dates), 'header_line' (a short"
             },
             {
               "name": "_add_role",
-              "line": 592,
+              "line": 608,
               "doc": "Record a role; the first one also fills the entry's title/dates."
             },
             {
               "name": "_merge_links",
-              "line": 602,
+              "line": 618,
               "doc": "Profile links from the file's hyperlinks and from URLs written in"
             },
             {
               "name": "_trailing_dates",
-              "line": 616,
+              "line": 632,
               "doc": "(match, start, end) for a trailing date range or single date."
             },
             {
               "name": "_extract_date_range",
-              "line": 626,
+              "line": 642,
               "doc": ""
             },
             {
               "name": "_strip_date_range",
-              "line": 632,
+              "line": 648,
               "doc": ""
             },
             {
               "name": "_parse_title_and_dates",
-              "line": 636,
+              "line": 652,
               "doc": "'Data Scientist II | August 2024 - Present' ->"
             },
             {
               "name": "_split_list_items",
-              "line": 651,
+              "line": 667,
               "doc": "Items of a certification / award line. ';' always separates"
             },
             {
               "name": "_split_respecting_parens",
-              "line": 670,
+              "line": 686,
               "doc": "Split on sep_chars, but never inside ( ) or [ ] groups \u2014 so"
             },
             {
               "name": "normalize",
-              "line": 693,
+              "line": 709,
               "doc": ""
             }
           ]
@@ -2118,7 +2118,7 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 532,
+      "lines": 537,
       "doc": "Run evaluation cases through the pipeline and collect metrics (P4.1).",
       "classes": [
         {
@@ -2205,67 +2205,67 @@
         },
         {
           "name": "_docx_text",
-          "line": 283,
+          "line": 288,
           "doc": ""
         },
         {
           "name": "is_content_failure",
-          "line": 298,
+          "line": 303,
           "doc": ""
         },
         {
           "name": "_same_text",
-          "line": 302,
+          "line": 307,
           "doc": ""
         },
         {
           "name": "check_job_details",
-          "line": 307,
+          "line": 312,
           "doc": "Each job's title, company, dates and bullet count as the file states"
         },
         {
           "name": "check_must_keep",
-          "line": 327,
+          "line": 332,
           "doc": "Source phrases that must survive into the rendered file."
         },
         {
           "name": "check_expected",
-          "line": 336,
+          "line": 341,
           "doc": "Compare a run with the case's expected.json; one message per miss."
         },
         {
           "name": "_judge",
-          "line": 405,
+          "line": 410,
           "doc": "Judge one tailored resume (P4.3) and record what the judge cost."
         },
         {
           "name": "replay_case",
-          "line": 416,
+          "line": 421,
           "doc": "Judge the tailored output a previous run saved in replay_dir/<case>/"
         },
         {
           "name": "run",
-          "line": 436,
+          "line": 441,
           "doc": ""
         },
         {
           "name": "_flatten",
-          "line": 456,
+          "line": 461,
           "doc": ""
         },
         {
           "name": "compare",
-          "line": 473,
+          "line": 478,
           "doc": "Human-readable differences per case between a report and a baseline."
         },
         {
           "name": "_judge_summary",
-          "line": 501,
+          "line": 506,
           "doc": ""
         },
         {
           "name": "summary_lines",
-          "line": 507,
+          "line": 512,
           "doc": ""
         }
       ]
@@ -4592,7 +4592,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 44,
+      "lines": 46,
       "doc": "P4.2: every generated anonymized case must reproduce its expected.json",
       "classes": [],
       "functions": [
@@ -4613,7 +4613,7 @@
         },
         {
           "name": "test_check_flag_passes_for_a_clean_case",
-          "line": 40,
+          "line": 42,
           "doc": "Offline parse / JD / keyword checks (no rendering) in the default suite."
         }
       ]
@@ -4639,33 +4639,33 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 63,
+      "lines": 62,
       "doc": "P8.1: the cross-domain user-testing personas as eval cases (offline, no LLM).",
       "classes": [],
       "functions": [
         {
           "name": "_failures",
-          "line": 35,
+          "line": 34,
           "doc": ""
         },
         {
           "name": "_params",
-          "line": 44,
+          "line": 43,
           "doc": ""
         },
         {
           "name": "test_persona_cases_exist",
-          "line": 49,
+          "line": 48,
           "doc": ""
         },
         {
           "name": "test_persona_content",
-          "line": 56,
+          "line": 55,
           "doc": ""
         },
         {
           "name": "test_persona_full",
-          "line": 62,
+          "line": 61,
           "doc": ""
         }
       ]
@@ -5898,7 +5898,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 91,
+      "lines": 100,
       "doc": "P8.5: job-line formats outside tech: title / company / location / dates",
       "classes": [],
       "functions": [
@@ -5909,32 +5909,32 @@
         },
         {
           "name": "test_one_line_job_formats",
-          "line": 46,
+          "line": 54,
           "doc": ""
         },
         {
           "name": "test_title_tab_company_then_a_dates_line",
-          "line": 51,
+          "line": 59,
           "doc": ""
         },
         {
           "name": "test_federal_header_over_three_lines",
-          "line": 61,
+          "line": 69,
           "doc": ""
         },
         {
           "name": "test_long_title_line_is_a_job_not_a_bullet",
-          "line": 72,
+          "line": 80,
           "doc": ""
         },
         {
           "name": "test_later_role_never_inherits_a_date_column",
-          "line": 82,
+          "line": 90,
           "doc": ""
         },
         {
           "name": "test_role_words_outside_tech",
-          "line": 90,
+          "line": 98,
           "doc": ""
         }
       ]

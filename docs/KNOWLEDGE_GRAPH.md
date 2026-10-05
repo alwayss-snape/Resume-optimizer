@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**60 app modules · 73 test files · 111 classes · 1084 functions/methods · 21,749 lines of Python** · source hash `b22bcfcc1836f2a7`
+**60 app modules · 73 test files · 111 classes · 1084 functions/methods · 21,780 lines of Python** · source hash `11f66a3a235ea341`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -371,7 +371,7 @@ _Is this text in English? (P8.25)_
 
 ### `app/analysis/resume_normalizer.py`
 
-**Layer:** Analysis · **Stage:** 2 Normalize · **Lines:** 1246
+**Layer:** Analysis · **Stage:** 2 Normalize · **Lines:** 1262
 
 - class **`ResumeNormalizer`** ([app/analysis/resume_normalizer.py:9](../app/analysis/resume_normalizer.py#L9))
   - `find_phone()` :62 — The first phone number in a line, as written, or None.
@@ -391,28 +391,28 @@ _Is this text in English? (P8.25)_
   - `_looks_like_title()` :334
   - `_split_title_company()` :337 — 'Title | Company | Place', 'Company — Title', 'Title — Team — Company'
   - `_title_score()` :354 — 2 when a role word ends the phrase ("Data Analyst"), 1 when it's
-  - `_split_company_location()` :373 — 'Banner Medical Center, Phoenix, AZ' -> ('Banner Medical Center',
-  - `_split_comma_job()` :391 — 'Shift Supervisor, Starbucks, Atlanta GA' -> (title, company,
-  - `_ends_with_suffix()` :407 — "CloudMetrics Inc." ends with a full stop but is a company, not a sentence.
-  - `_next_is_meta_line()` :412 — The ATS template prints 'Company · Location' under the title line.
-  - `_trim()` :425 — Strip separators left around removed dates, keeping a closing
-  - `_split_skill_line()` :441 — 'Languages: Python, SQL<tab>Frameworks: Pandas, and XGBoost' ->
-  - `_skill_items()` :462
-  - `_split_education_line()` :480 — 'B.S. Biology, University of Texas at Austin, 2016' -> (degree,
-  - `_looks_like_degree()` :526 — 'B.Tech in Computer Science' yes; 'State University' no.
-  - `_split_middle_dot()` :532 — 'Acme Corp · Pune, India' -> ('Acme Corp', 'Pune, India'), the
-  - `_is_dated_line()` :541 — A job title/company line carrying a date range or year. A date
-  - `_header_range()` :556 — A date range inside a job header line, or None. Trailing ranges
-  - `_experience_line_kind()` :573 — 'dated' (title and/or company with dates), 'header_line' (a short
-  - `_add_role()` :592 — Record a role; the first one also fills the entry's title/dates.
-  - `_merge_links()` :602 — Profile links from the file's hyperlinks and from URLs written in
-  - `_trailing_dates()` :616 — (match, start, end) for a trailing date range or single date.
-  - `_extract_date_range()` :626
-  - `_strip_date_range()` :632
-  - `_parse_title_and_dates()` :636 — 'Data Scientist II | August 2024 - Present' ->
-  - `_split_list_items()` :651 — Items of a certification / award line. ';' always separates
-  - `_split_respecting_parens()` :670 — Split on sep_chars, but never inside ( ) or [ ] groups — so
-  - `normalize()` :693
+  - `_split_company_location()` :383 — 'Banner Medical Center, Phoenix, AZ' -> ('Banner Medical Center',
+  - `_split_comma_job()` :407 — 'Shift Supervisor, Starbucks, Atlanta GA' -> (title, company,
+  - `_ends_with_suffix()` :423 — "CloudMetrics Inc." ends with a full stop but is a company, not a sentence.
+  - `_next_is_meta_line()` :428 — The ATS template prints 'Company · Location' under the title line.
+  - `_trim()` :441 — Strip separators left around removed dates, keeping a closing
+  - `_split_skill_line()` :457 — 'Languages: Python, SQL<tab>Frameworks: Pandas, and XGBoost' ->
+  - `_skill_items()` :478
+  - `_split_education_line()` :496 — 'B.S. Biology, University of Texas at Austin, 2016' -> (degree,
+  - `_looks_like_degree()` :542 — 'B.Tech in Computer Science' yes; 'State University' no.
+  - `_split_middle_dot()` :548 — 'Acme Corp · Pune, India' -> ('Acme Corp', 'Pune, India'), the
+  - `_is_dated_line()` :557 — A job title/company line carrying a date range or year. A date
+  - `_header_range()` :572 — A date range inside a job header line, or None. Trailing ranges
+  - `_experience_line_kind()` :589 — 'dated' (title and/or company with dates), 'header_line' (a short
+  - `_add_role()` :608 — Record a role; the first one also fills the entry's title/dates.
+  - `_merge_links()` :618 — Profile links from the file's hyperlinks and from URLs written in
+  - `_trailing_dates()` :632 — (match, start, end) for a trailing date range or single date.
+  - `_extract_date_range()` :642
+  - `_strip_date_range()` :648
+  - `_parse_title_and_dates()` :652 — 'Data Scientist II | August 2024 - Present' ->
+  - `_split_list_items()` :667 — Items of a certification / award line. ';' always separates
+  - `_split_respecting_parens()` :686 — Split on sep_chars, but never inside ( ) or [ ] groups — so
+  - `normalize()` :709
 - **Imports:** `domain/evidence.py`, `domain/resume.py`, `domain/resume_document.py`, `ingestion/docx.py`
 - **Imported by:** `analysis/keyword_match.py`, `analysis/structure_extractor.py`, `eval/golden.py`, `services/tailor.py`, `validation/output.py`
 - **Tested by:** `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_ats_round_trip.py`, `tests/unit/test_contact_p84.py`, `tests/unit/test_dates_p86.py`, `tests/unit/test_education_p88.py`, `tests/unit/test_job_lines_p85.py`, `tests/unit/test_kept_sections_p83.py`, `tests/unit/test_layouts_p87.py`, `tests/unit/test_parser_regressions_p42.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_stage_h_review.py`, `tests/unit/test_structure_extractor.py`, `tests/unit/test_tailor_resume_flow.py`
@@ -778,7 +778,7 @@ _Canonical projection of a parsed resume, compared against hand-checked_
 
 ### `app/eval/harness.py`
 
-**Layer:** Root · **Stage:** all · **Lines:** 532
+**Layer:** Root · **Stage:** all · **Lines:** 537
 
 _Run evaluation cases through the pipeline and collect metrics (P4.1)._
 
@@ -797,19 +797,19 @@ _Run evaluation cases through the pipeline and collect metrics (P4.1)._
 - function **`_norm_number()`** ([app/eval/harness.py:258](../app/eval/harness.py#L258))
 - function **`fabricated_numbers()`** ([app/eval/harness.py:263](../app/eval/harness.py#L263)) — Numbers (with their units) in the tailored resume that the original
 - function **`stuffing()`** ([app/eval/harness.py:273](../app/eval/harness.py#L273)) — Signs of keyword stuffing: tailoring pushed the rate above the target
-- function **`_docx_text()`** ([app/eval/harness.py:283](../app/eval/harness.py#L283))
-- function **`is_content_failure()`** ([app/eval/harness.py:298](../app/eval/harness.py#L298))
-- function **`_same_text()`** ([app/eval/harness.py:302](../app/eval/harness.py#L302))
-- function **`check_job_details()`** ([app/eval/harness.py:307](../app/eval/harness.py#L307)) — Each job's title, company, dates and bullet count as the file states
-- function **`check_must_keep()`** ([app/eval/harness.py:327](../app/eval/harness.py#L327)) — Source phrases that must survive into the rendered file.
-- function **`check_expected()`** ([app/eval/harness.py:336](../app/eval/harness.py#L336)) — Compare a run with the case's expected.json; one message per miss.
-- function **`_judge()`** ([app/eval/harness.py:405](../app/eval/harness.py#L405)) — Judge one tailored resume (P4.3) and record what the judge cost.
-- function **`replay_case()`** ([app/eval/harness.py:416](../app/eval/harness.py#L416)) — Judge the tailored output a previous run saved in replay_dir/<case>/
-- function **`run()`** ([app/eval/harness.py:436](../app/eval/harness.py#L436))
-- function **`_flatten()`** ([app/eval/harness.py:456](../app/eval/harness.py#L456))
-- function **`compare()`** ([app/eval/harness.py:473](../app/eval/harness.py#L473)) — Human-readable differences per case between a report and a baseline.
-- function **`_judge_summary()`** ([app/eval/harness.py:501](../app/eval/harness.py#L501))
-- function **`summary_lines()`** ([app/eval/harness.py:507](../app/eval/harness.py#L507))
+- function **`_docx_text()`** ([app/eval/harness.py:288](../app/eval/harness.py#L288))
+- function **`is_content_failure()`** ([app/eval/harness.py:303](../app/eval/harness.py#L303))
+- function **`_same_text()`** ([app/eval/harness.py:307](../app/eval/harness.py#L307))
+- function **`check_job_details()`** ([app/eval/harness.py:312](../app/eval/harness.py#L312)) — Each job's title, company, dates and bullet count as the file states
+- function **`check_must_keep()`** ([app/eval/harness.py:332](../app/eval/harness.py#L332)) — Source phrases that must survive into the rendered file.
+- function **`check_expected()`** ([app/eval/harness.py:341](../app/eval/harness.py#L341)) — Compare a run with the case's expected.json; one message per miss.
+- function **`_judge()`** ([app/eval/harness.py:410](../app/eval/harness.py#L410)) — Judge one tailored resume (P4.3) and record what the judge cost.
+- function **`replay_case()`** ([app/eval/harness.py:421](../app/eval/harness.py#L421)) — Judge the tailored output a previous run saved in replay_dir/<case>/
+- function **`run()`** ([app/eval/harness.py:441](../app/eval/harness.py#L441))
+- function **`_flatten()`** ([app/eval/harness.py:461](../app/eval/harness.py#L461))
+- function **`compare()`** ([app/eval/harness.py:478](../app/eval/harness.py#L478)) — Human-readable differences per case between a report and a baseline.
+- function **`_judge_summary()`** ([app/eval/harness.py:506](../app/eval/harness.py#L506))
+- function **`summary_lines()`** ([app/eval/harness.py:512](../app/eval/harness.py#L512))
 - **Imports:** `analysis/experience.py`, `analysis/jd_analyzer.py`, `analysis/keyword_match.py`, `domain/report.py`, `eval/golden.py`, `eval/judge.py`, `llm/client.py`, `rendering/layout.py`, `services/tailor.py`
 - **Imported by:** `eval/__main__.py`, `scripts/walkthrough_server.py`
 - **Tested by:** `tests/integration/test_arrange.py`, `tests/integration/test_eval_cases.py`, `tests/integration/test_persona_cases.py`, `tests/unit/test_cli_parity.py`, `tests/unit/test_eval_harness.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_judge.py`, `tests/unit/test_keyword_match.py`, `tests/unit/test_privacy_p98.py`, `tests/unit/test_profile_store.py`, `tests/unit/test_skill_placement_p912.py`, `tests/unit/test_uploads_p822.py`
