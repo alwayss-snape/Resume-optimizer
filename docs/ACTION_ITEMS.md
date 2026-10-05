@@ -1,8 +1,9 @@
 # Action Items — Best Tailored Resume per JD
 
 _Living tracker. Update an item's **Status** in the same commit that changes it; add a short note (commit subject or
-what's left). Last updated: 2026-10-04 (P0–P8 done, P5.7 shelved; Phase 9's gate items P9.1–P9.6 done the same day;
-the owner's review of the current state comes next and becomes P9.7 onward)._
+what's left). Last updated: 2026-10-05 (P0–P8 and P9.1–P9.6 done, P5.7 shelved; the owner accepted the next round:
+P9.7–P9.11 (quick fixes, coverage runs) and Phase 10 (LinkedIn import, output formats, cover letter, history), stages
+M–Q)._
 
 **Goal:** every resume + JD run produces the best possible tailored resume: an accurate match score, strong
 JD-aligned rewrites, a Novoresume-style ATS layout that fits the right length, and nothing fabricated.
@@ -22,8 +23,9 @@ JD-aligned rewrites, a Novoresume-style ATS layout that fits the right length, a
 | 6: UI redesign | 6 | 6 | 0 | 0 |
 | 7: Owner feedback on the flow | 2 | 2 | 0 | 0 |
 | 8: Cross-domain robustness and user control | 26 | 26 | 0 | 0 |
-| 9: Close-out and owner review | 6 | 6 | 0 | 0 |
-| **Total** | **88** | **85** | **0** | **1** |
+| 9: Close-out and owner review | 11 | 6 | 0 | 5 |
+| 10: Inputs, outputs, cover letter and history | 9 | 0 | 0 | 9 |
+| **Total** | **102** | **85** | **0** | **15** |
 
 Phase 1's two open items (P1.15, P1.16) are ➖, moved into P8.9 and P8.18, so its row no longer adds up to 16.
 
@@ -32,13 +34,18 @@ Phase 1's two open items (P1.15, P1.16) are ➖, moved into P8.9 and P8.18, so i
 | Topic | Decision |
 |---|---|
 | Length | Auto by experience: 1 page under 8 years, 2 pages above. Trim the least JD-relevant bullets to fit |
-| Page / dates | A4, "Jan 2022 – Present" (India / Asia / Europe standard) |
+| Page / dates | A4, "Jan 2022 – Present" (India / Asia / Europe standard). _Superseded 2026-10-05 by "Region" below_ |
 | Layout | Clean ATS single column following Novoresume's layout conventions (our own implementation, not their assets or text) |
 | Gaps | Suggest-and-confirm: the tool asks, and drafts only from the user's answer. Never fabricate |
 | Confirmed facts | Saved locally (`data/profile/facts.json`, gitignored) and reused across JDs |
 | Languages (2026-10-02) | **Safe, not full:** never lose non-English content; Unicode-safe tokens and file names; a fallback font; a clear "English-only for now" notice. Multilingual headings, dates and questions are backlog |
 | CV conventions (2026-10-02) | **Preserve, no new modes:** unknown sections kept verbatim under their own heading; the user picks the page target or "don't trim". Academic CV and federal templates are backlog |
 | Arrange and edit (2026-10-02) | After the AI changes are applied, the user can reorder sections, entries and bullets, hide sections, edit text and restore trimmed bullets. Deterministic code re-renders with no LLM call. Bullets move only within their own job or project, never into another one |
+| Region (2026-10-05) | Suggested from the JD's location, confirmed or changed by the user (Review, Arrange). US: Letter and "01/2022 – Present"; UK / EU, India, other: A4 and "Jan 2022 – Present"; federal always MM/YYYY. Personal details (date of birth, photo, Father's Name, declaration) only get advice, never removed automatically (P10.3) |
+| CV modes (2026-10-05) | **Full templates** for Academic CV and US Federal (USAJOBS style), suggested from resume / JD signals and confirmed by the user; no page cap in either; publications verbatim. Supersedes "no new modes" above (P10.5–P10.7) |
+| Cover letter (2026-10-05) | A short reviewable draft (250–350 words, 3–4 paragraphs), only facts from the resume, one Groq call on demand from Results, DOCX / PDF in the resume's look (P10.8) |
+| History (2026-10-05) | **Opt-in, on this machine:** nothing is kept unless the user clicks "Keep this run"; saved under `data/history/` (gitignored) with the parsed resume so it can reopen into Arrange; delete any time; off when hosted (P10.9). Web runs no longer write `data/runs/` (P9.8) |
+| Scanned PDFs (2026-10-05) | No OCR this round (back to the backlog); the plain "scanned image" message stays |
 | LLM | **Groq free tier only** (`openai/gpt-oss-120b`), with no paid APIs (decided 2026-09-30). The Claude provider (P0.1) stays in the code but is shelved: not used, not even as a fallback. Claude Pro does not include API access |
 
 ---
@@ -64,6 +71,14 @@ FOX JD and compare with the baseline. The phase tables below stay the catalogue;
 | **J. Arrange and edit before download** | The user owns the final structure | P8.13 → P8.14 → P8.15 → P8.16 | On the replica and two personas, reorder sections / entries / bullets, hide a section, edit a bullet, restore a trimmed bullet and undo, by mouse and keyboard; each change re-renders with no LLM call and the coverage check and ATS round-trip pass; browser check 1440 / 390 px, light and dark; private real-resume run |
 | **K. A fair, explained score** | A score that is fair outside tech and hard to game | P8.17 → P8.18 → P8.19 → P8.20 → P8.21 | Strong-fit personas score in a plausible band; the keyword-stuffed resume no longer beats them; offline and LLM scores for the same pair agree within a stated tolerance |
 | **L. Clear failures, privacy, global basics** | Every failure explained, cloud use disclosed | P8.22 → P8.23 → P8.24 → P8.25 → P8.26 | Every edge file gets a specific message (no 500s); full persona sweep offline plus the 5 LLM runs; browser walkthrough; private real-resume run |
+| **M. Quick fixes** (added 2026-10-05) | Honest progress, nothing kept that we promise to delete | P9.7 → P9.8 → P9.9 | Full suite; private live run; review agent; offline walkthrough with a forced AI wait; check-in |
+| **N. Coverage gaps** | What offline checks can't see | P9.10 → P9.11 (over 2 days, Groq quota) | Every finding fixed or in the backlog; full suite; review agent; check-in |
+| **O. LinkedIn import** | A LinkedIn "Save to PDF" reads like a resume | P10.1 | Golden parse of an anonymized LinkedIn fixture; replica and private golden parses unchanged; one live run; review agent; Check details walkthrough; check-in |
+| **P. Output formats** | Right page, dates and template for the job | P10.2 → P10.3 → P10.4 → P10.5 → P10.6 → P10.7 | Full suite + eval; default ATS output unchanged; academic and federal personas pass live; private run; review agent; walkthrough at 1440 / 390, light and dark; check-in |
+| **Q. Cover letter and history** | Extras the owner asked for | P10.8 → P10.9 | Full suite; live cover letter on the private resume; review agent; walkthrough (draft, edit, download; keep, reopen into Arrange, delete); check-in |
+
+Each stage gate from M on: full suite, private real-resume run, an independent review agent (15-minute budget, fixed
+report format), a browser walkthrough if the UI changed, then a check-in with the owner before the next stage.
 
 **Privacy:** the user's resume and its golden file live in `data/eval/private/` (gitignored). Committed tests use an
 anonymized replica of the layout.
@@ -267,9 +282,9 @@ the end of each stage.
 | P8.26 | **Check details and messages:** every section shown (education, skills, certifications, kept sections) plus a "lines we couldn't place" list the user can assign; parse issues in plain words; warnings separate template quirks from real loss; HTML download; domain-neutral placeholders; softer metrics nudge for non-quantified roles | `web/src/pages/Details.tsx`, `api/routes.py` (`FILE_KINDS`), `validation/content_lint.py` | U20, U34, U35, U38 | ✅ | 2026-10-03: Check details shows "Also read from your file" (header details, summary, education, skills, projects, certifications, achievements, interests and every kept section, read-only) and "Lines we couldn't place" (`unplaced_lines`), each kept under "Additional information" unless the user moves it to the summary, Skills or a job's bullets (corrections `placed`). Parse issues are in plain words (`plain_issue`: "We couldn't find the employer for “…”. Add it below."). Read-back problems are split (`OutputQAValidator.is_serious`): name, email, phone, links, job count or a whole section not read back still fail the run; other differences (a role's dates printed differently, a bullet re-wrapped) are listed as "small differences" and don't (most persona runs ended "with warnings" while the destructive ones said success); lost content is shown first. HTML download (`/api/files/html`). Placeholders aren't tech examples, and the numbers nudge says many roles don't measure everything and never to invent one |
 
 **Backlog (not this round):** full multilingual support (headings, dates and questions in the JD's language);
-academic CV and federal modes; cover letter; history across JDs; LinkedIn import; US Letter and region presets
-(EU / India personal-details advice); OCR for scanned PDFs; tagged-PDF accessibility; per-NAT rate limit (belongs with
-P5.7); moving bullets between jobs (excluded on purpose: it risks misattribution).
+OCR for scanned PDFs (planned as local Tesseract, dropped from the 2026-10-05 round by the owner); per-NAT rate limit
+(belongs with P5.7); moving bullets between jobs (excluded on purpose: it risks misattribution). Academic / federal
+templates, cover letter, history, LinkedIn import, US Letter and region presets and tagged PDF moved to Phase 10.
 
 ---
 
@@ -295,15 +310,39 @@ passes live (P9.3). Not re-run: the 5 live LLM persona runs (Groq quota kept for
 | P9.4 | **Browser walkthrough:** the whole flow plus Arrange, Check details ("Also read", "Lines we couldn't place") and the conditions checklist, at 1440 / 390 px, light and dark, by mouse and keyboard | `web/src/pages/*` | ✅ | 2026-10-04: in real Chrome through playwright-core (`scripts/walkthrough.cjs` against `scripts/walkthrough_server.py`, the built app with the offline LLM so no Groq quota is spent), nurse persona + its JD, all four of 1440 / 390 × light / dark: upload → Check details ("Also read" shown, no unplaced lines: the P9.1 F1 fix seen in the browser) → Review (Job conditions shown; Generate pressed by keyboard) → Results → Arrange (a section moved by keyboard, focus kept on its control; Summary hidden by mouse and brought back with Undo). 0 console errors, 0 × 5xx, no horizontal overflow at 390 px, dark background applied. Fixed from the screenshots: "Arrange and edit" wrapped onto two lines at 1440; Results said "rewrites only reword what's there" twice once the stretch guidance showed (P9.5); the AI-unavailable banner ended in a stray "Then start over." when there is no fix hint. Not covered: live AI rewrites in the browser (offline run; the live path is P9.3), drag and drop by pointer, screen readers |
 | P9.5 | **Minor matching notes from the Stage K review:** `definitions()` can take a connector word as an acronym; "X or Y" doesn't share a tail ("Java or Python developer"); keyword spans from `original.find` can be off when the JD had HTML; Results shows only the different-field guidance, not the others | `analysis/keyword_match.py`, `analysis/jd_analyzer.py`, `web/src/pages/Results.tsx` | ✅ | 2026-10-04: connectors (or, in, with, a, to…) never give an acronym a letter or start its expansion ("Or Associate (OA)" was read as a definition), and an acronym that does spell one is now found ("Point Of Sale (POS)"); "Java or Python developer" / "RN or LPN license": a role or credential word at the end belongs to both, so the second head alone counts just like the first (sharing it strictly would have cost a nurse credit for RN); requirement spans now point into the cleaned JD the job keeps (`raw_text`), searched from the previous span so a repeated line maps to its own place; Results shows the stretch guidance too. `test_matching_p95.py`, a Results test. Persona eval: 40 pass, 11 xfail; `veteran` already passed its full check (stale xfail since Stage K, removed) |
 | P9.6 | **Docs catch-up:** PROJECT_OVERVIEW (test counts, open issue 6 "Next"), README and BUILD.md describe the state after Phase 8 | `docs/PROJECT_OVERVIEW.md`, `README.md`, `BUILD.md` | ✅ | 2026-10-04: PROJECT_OVERVIEW reviewed (inputs, upload messages, session sweep, test counts, open issue 6 closed out, new issues 7 "Phase 9 close-out / Next: owner review" and 8 "Groq per-minute waits"); README features (file types, ATS template vs your layout, Arrange, fair score) and the dev commands (tests, eval, browser walkthrough). BUILD.md left untouched on purpose: it holds the owner's uncommitted venv edit, so its run and test instructions are mirrored in README for now |
+| P9.7 | **Drafting screen (R1):** "usually 1–2 minutes; longer when the free AI service asks us to wait"; AI waits become their own progress event, shown as one countdown line under the running step (never checked, never stacked); "Rewriting 1 bullet / 10 bullets" | `web/src/pages/Details.tsx`, `web/src/components/ProgressPanel.tsx`, `web/src/lib/api.ts`, `api/routes.py` (`_stream`), `llm/client.py` (`on_wait`), `analysis/rewriter.py` | ⬜ | Stage M. Size S |
+| P9.8 | **Privacy: web runs keep nothing in `data/runs/`:** `TailorService(keep_run=False)` for the web (CLI and eval keep it); no server path in the progress list; then delete the existing `data/runs/*` (owner approved 2026-10-05) | `services/tailor.py`, `services/run_manager.py`, `api/main.py` | ⬜ | Stage M. Size S/M. Found while planning: every web run wrote the uploaded resume, JD and plan there, never deleted |
+| P9.9 | **Summary years:** the summary reuses the resume's own figure ("3.6 years"); verify on the private resume, fix gaps (e.g. "3 years 7 months", a claim outside the summary / headline), close open issue 3 | `analysis/summary_writer.py` (`years_claim`), `validation/factual.py` | ⬜ | Stage M. Size S. Mostly built already |
+| P9.10 | **5 live LLM persona runs:** nurse, sales-pdf, india, eu_cv, academic, one per command; every real problem becomes its own item with a test | `data/eval/personas/`, `app/eval` | ⬜ | Stage N. Size M. ~13K Groq tokens each |
+| P9.11 | **Live-AI browser walkthrough:** `scripts/walkthrough.cjs` against the real app with Groq (one persona, 1440 light): real wait countdown, rewrites on Review, downloads | `scripts/walkthrough.cjs` | ⬜ | Stage N. Size M. Port 8010 only |
 
-### Owner review of the current state (pending)
+### Owner review of the current state
 
 _To be filled from the owner's review. One line per finding: ID, what they saw, where, and how bad. Each finding then
 becomes a P9.x item above or goes to the Backlog._
 
 | ID | Finding | Where | Severity | Item |
 |---|---|---|---|---|
-| R1 | _(waiting for the owner's review)_ | | | |
+| R1 | Drafting screen says "under a minute" while it waits on the free AI service; every wait is a new checked row; "bullet(s)" (screenshot, 2026-10-04) | Details → drafting progress | Low | P9.7 |
+
+---
+
+## Phase 10: Inputs, outputs, cover letter and history
+
+Planned and accepted by the owner on 2026-10-05 (decisions in the table at the top). Stages O → P → Q, each with its gate
+and a check-in.
+
+| ID | Item | Files | Status | Notes |
+|---|---|---|---|---|
+| P10.1 | **LinkedIn "Save to PDF" import:** detect the export (`linkedin.com/in/`, "Page N of M", a left sidebar under ~35% of the width, Contact / Top Skills / Languages / Certifications / Honors-Awards); read the sidebar and main column separately; company → roles → "Month YYYY - Present (2 years 3 months)" with the duration stripped; drop page footers; fall back to the normal parse when unsure. Anonymized fixture generator + golden file | `ingestion/pdf.py`, `tests/fixtures/resumes/make_linkedin_export_pdf.py` | ⬜ | Stage O. Size L |
+| P10.2 | **Page size plumbing:** `page_size` "A4" / "Letter" in `ResumePresentation`; one `PageSpec` used by the DOCX template, HTML and page-fit (Letter's line length calibrated on measured PDFs) | `domain/resume_document.py`, `rendering/layout.py`, `rendering/template_renderer.py`, `rendering/html_renderer.py`, `rendering/page_fit.py` | ⬜ | Stage P. Size M. A4 is hard-coded in four places today |
+| P10.3 | **Region: suggest, confirm, dates, advice:** a deterministic region from the JD (location line, US state codes, countries, currency, USAJOBS) with its evidence; shown on Review ("Formatted for US (Letter) · the job says 'Austin, TX' · change") and switchable in Arrange with no LLM call; dates by region; personal-details advice only | new `analysis/region.py`, `rendering/layout.py`, `validation/content_lint.py`, `api/routes.py`, `services/arrange.py`, `web/src/pages/Review.tsx`, `Arrange.tsx`, `lib/store.ts` | ⬜ | Stage P. Size M |
+| P10.4 | **Tagged (accessible) PDF:** switched on in each pooled LibreOffice profile (`UseTaggedPDF`; LibreOffice 7.3 here, so not the 7.4 JSON filter); round-trip and page counts unchanged | `rendering/pdf_converter.py` | ⬜ | Stage P. Size S |
+| P10.5 | **CV mode selection:** standard / academic / federal, suggested from resume and JD signals (Publications, ORCID, Professor / Postdoc; GS-xxxx-xx, hours per week, supervisor; USAJOBS, faculty) and confirmed by the user; no page cap for academic and federal | `analysis/`, `api/routes.py`, `services/arrange.py`, web | ⬜ | Stage P. Size M |
+| P10.6 | **Academic CV template:** appointments and Professor / Postdoc / Lecturer roles as experience, not education; publications verbatim and numbered (never rewritten, trimmed or reordered); CV section order; the `academic` persona passes (U9) | `analysis/resume_normalizer.py`, `analysis/rewriter.py`, `rendering/*` | ⬜ | Stage P. Size L |
+| P10.7 | **US Federal template (USAJOBS style):** per-job fields (address, MM/YYYY dates, hours per week, salary, series / grade, supervisor, phone, may-contact) then duties and accomplishments; citizenship / veteran's preference / clearance kept at the top; unmatched lines verbatim; the `federal` persona passes (U9) | `analysis/resume_normalizer.py`, `analysis/rewriter.py`, `rendering/*` | ⬜ | Stage P. Size L |
+| P10.8 | **Cover letter:** "Draft a cover letter" on Results; facts decided by code (name, verbatim JD title and company, found keywords, quantified bullets, years claim), one Groq call, fact-checked per paragraph like the summary (no person's name not in the JD), greeting and sign-off by code, 250–350 words; editable; DOCX / PDF in the resume's look | new `analysis/cover_letter.py`, `llm/prompts/cover_letter.txt`, `llm/schemas.py`, `validation/factual.py`, `rendering/*`, `web/src/pages/Results.tsx` | ⬜ | Stage Q. Size L |
+| P10.9 | **History, opt-in, on this machine:** "Keep this run on this computer" on Results saves the JD, scores, keyword table, files, cover letter, parsed resume and arrange state under `data/history/<uuid>/` (gitignored first); list, reopen into Results and Arrange (re-render with no LLM), delete; off when hosted; privacy note updated | new `services/history.py`, `api/routes.py`, web | ⬜ | Stage Q. Size L |
 
 ---
 

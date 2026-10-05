@@ -94,8 +94,10 @@ and unused prompts (P0.8, P1.10) are all fixed. What remains:
    P8.22–P8.26 (6 issues fixed, the worst being every section heading added to the output as "Additional
    information"), a timed edge-file sweep with no 500s, a real-browser walkthrough, and a live private run of the
    owner's resume (golden parse, 12/12 bullets handled, 100% coverage, clean read-back, 1 page; Groq per-minute
-   limits and reasoning cut-offs are now retried instead of losing bullets). **Next:** the owner reviews the current
-   state; findings go into ACTION_ITEMS as R1, R2… and become P9.7 onward.
+   limits and reasoning cut-offs are now retried instead of losing bullets). **Next (accepted 2026-10-05):** stages M–Q
+   in ACTION_ITEMS: quick fixes (drafting screen, no web data kept in `data/runs/`, summary years), the live coverage
+   runs, LinkedIn import, output formats (US Letter / region, tagged PDF, Academic CV and Federal templates), then a
+   cover letter and opt-in local history. OCR stays in the backlog.
 8. **Groq free tier, per minute:** 8K tokens per minute means role rewrites can wait 30–60 s each on a busy run.
    That is now waited out (shown as progress), so a real run takes ~1–2 minutes of drafting.
 
