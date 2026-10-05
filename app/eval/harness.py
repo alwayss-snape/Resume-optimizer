@@ -158,7 +158,7 @@ def run_case(case: Case, *, live: bool = False, tailor: bool = False, out_dir: O
             "keywords_matched": len(keyword_report.matched),
             "keywords_missing": [r.keyword for r in keyword_report.missing],
             "keyword_coverage": keyword_coverage(job.keywords, raw_doc.raw_text),
-            "attainable_coverage": attainable_coverage(job.keywords, raw_doc.raw_text, keyword_report),
+            "attainable_coverage": attainable_coverage(job.keywords, raw_doc.raw_text, keyword_report, jd_text),
         }
 
         tailored = None
@@ -235,13 +235,14 @@ def _tailor_metrics(service, case: Case, jd_text: str, parsed, generated: Dict, 
     }, result
 
 
-def attainable_coverage(keywords: List[str], resume_text: str, keyword_report) -> Dict:
+def attainable_coverage(keywords: List[str], resume_text: str, keyword_report, jd_text: str = "") -> Dict:
     """Of the JD keywords written verbatim somewhere in the resume, the share
     the keyword matcher finds (P4.2). Below 100% means the matcher misses
     something the resume plainly says; the target is at least 95%."""
-    from app.analysis.keyword_match import tokens
+    from app.analysis.keyword_match import is_place, tokens
 
-    attainable = [k for k in keywords if JDAnalyzer.count_occurrences(k, resume_text) > 0]
+    # A place the JD names ("Arizona") is not a skill: the matcher skips it (P8.17), so it isn't attainable (P9.15).
+    attainable = [k for k in keywords if JDAnalyzer.count_occurrences(k, resume_text) > 0 and not is_place(k, jd_text)]
     # Compared as alias-canonical tokens: "machine learning" is the matcher's "ML" row.
     found_rows = {" ".join(tokens(r.keyword)) for r in keyword_report.rows if r.found}
     missed = [k for k in attainable if " ".join(tokens(k)) not in found_rows]

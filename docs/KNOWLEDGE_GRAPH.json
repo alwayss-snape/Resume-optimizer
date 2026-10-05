@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "282dd7bce8ba06a2",
+  "source_hash": "ead536cb52025462",
   "stats": {
     "files": 167,
     "python_files": 143,
     "app_modules": 60,
     "test_files": 73,
     "classes": 111,
-    "functions": 1078,
-    "lines_of_python": 21621
+    "functions": 1079,
+    "lines_of_python": 21654
   },
   "axes": {
     "x": "location (path)",
@@ -525,42 +525,42 @@
       "stages": [
         "5 Score"
       ],
-      "lines": 416,
+      "lines": 423,
       "doc": "Keyword-level match rate, the headline score (P1.2).",
       "classes": [
         {
           "name": "KeywordMatcher",
-          "line": 219,
+          "line": 224,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
-              "line": 220,
+              "line": 225,
               "doc": ""
             },
             {
               "name": "_slash_parts",
-              "line": 224,
+              "line": 229,
               "doc": "\"Compact/NLC\", \"English/Spanish\": words joined by a slash, each"
             },
             {
               "name": "_found_with_credit",
-              "line": 234,
+              "line": 239,
               "doc": ""
             },
             {
               "name": "_find",
-              "line": 256,
+              "line": 261,
               "doc": ""
             },
             {
               "name": "_title_credit",
-              "line": 283,
+              "line": 290,
               "doc": ""
             },
             {
               "name": "match",
-              "line": 293,
+              "line": 300,
               "doc": ""
             }
           ]
@@ -594,27 +594,27 @@
         },
         {
           "name": "is_place",
-          "line": 156,
+          "line": 161,
           "doc": "A location the JD names, not a skill (P8.17: \"Arizona\" and \"DC\" were"
         },
         {
           "name": "definitions",
-          "line": 175,
+          "line": 180,
           "doc": "acronym -> expansion (both lowercase), from \"Full Name (ACR)\" in texts."
         },
         {
           "name": "alternatives_of",
-          "line": 197,
+          "line": 202,
           "doc": "Token sequences that count as the keyword: \"OSHA 10 or 30\" -> OSHA 10,"
         },
         {
           "name": "guidance",
-          "line": 356,
+          "line": 363,
           "doc": "What a low match means (P8.21): a nurse applying to a sales job scored"
         },
         {
           "name": "reconcile",
-          "line": 390,
+          "line": 397,
           "doc": "A requirement can't read \"not shown\" while every job keyword in it is"
         }
       ]
@@ -2118,7 +2118,7 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 531,
+      "lines": 532,
       "doc": "Run evaluation cases through the pipeline and collect metrics (P4.1).",
       "classes": [
         {
@@ -2190,82 +2190,82 @@
         },
         {
           "name": "_norm_number",
-          "line": 257,
+          "line": 258,
           "doc": ""
         },
         {
           "name": "fabricated_numbers",
-          "line": 262,
+          "line": 263,
           "doc": "Numbers (with their units) in the tailored resume that the original"
         },
         {
           "name": "stuffing",
-          "line": 272,
+          "line": 273,
           "doc": "Signs of keyword stuffing: tailoring pushed the rate above the target"
         },
         {
           "name": "_docx_text",
-          "line": 282,
+          "line": 283,
           "doc": ""
         },
         {
           "name": "is_content_failure",
-          "line": 297,
+          "line": 298,
           "doc": ""
         },
         {
           "name": "_same_text",
-          "line": 301,
+          "line": 302,
           "doc": ""
         },
         {
           "name": "check_job_details",
-          "line": 306,
+          "line": 307,
           "doc": "Each job's title, company, dates and bullet count as the file states"
         },
         {
           "name": "check_must_keep",
-          "line": 326,
+          "line": 327,
           "doc": "Source phrases that must survive into the rendered file."
         },
         {
           "name": "check_expected",
-          "line": 335,
+          "line": 336,
           "doc": "Compare a run with the case's expected.json; one message per miss."
         },
         {
           "name": "_judge",
-          "line": 404,
+          "line": 405,
           "doc": "Judge one tailored resume (P4.3) and record what the judge cost."
         },
         {
           "name": "replay_case",
-          "line": 415,
+          "line": 416,
           "doc": "Judge the tailored output a previous run saved in replay_dir/<case>/"
         },
         {
           "name": "run",
-          "line": 435,
+          "line": 436,
           "doc": ""
         },
         {
           "name": "_flatten",
-          "line": 455,
+          "line": 456,
           "doc": ""
         },
         {
           "name": "compare",
-          "line": 472,
+          "line": 473,
           "doc": "Human-readable differences per case between a report and a baseline."
         },
         {
           "name": "_judge_summary",
-          "line": 500,
+          "line": 501,
           "doc": ""
         },
         {
           "name": "summary_lines",
-          "line": 506,
+          "line": 507,
           "doc": ""
         }
       ]
@@ -4634,33 +4634,33 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 60,
+      "lines": 63,
       "doc": "P8.1: the cross-domain user-testing personas as eval cases (offline, no LLM).",
       "classes": [],
       "functions": [
         {
           "name": "_failures",
-          "line": 32,
+          "line": 35,
           "doc": ""
         },
         {
           "name": "_params",
-          "line": 41,
+          "line": 44,
           "doc": ""
         },
         {
           "name": "test_persona_cases_exist",
-          "line": 46,
+          "line": 49,
           "doc": ""
         },
         {
           "name": "test_persona_content",
-          "line": 53,
+          "line": 56,
           "doc": ""
         },
         {
           "name": "test_persona_full",
-          "line": 59,
+          "line": 62,
           "doc": ""
         }
       ]
@@ -6046,7 +6046,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 108,
+      "lines": 130,
       "doc": "Keyword-level match rate as the headline score (P1.2).",
       "classes": [],
       "functions": [
@@ -6114,6 +6114,11 @@
           "name": "test_hyphenated_terms_and_ing_fields_after_verb_folding",
           "line": 100,
           "doc": "P7.2 review: stemming must not break \"AWS-certified\" or turn"
+        },
+        {
+          "name": "test_custom_sections_and_slash_joined_words_count_p915",
+          "line": 111,
+          "doc": "The live nurse run (P9.10): \"ICU\" under Clinical Rotations and \"NLC\" in"
         }
       ]
     },
@@ -9916,6 +9921,11 @@
     {
       "from": "app/eval/harness.py",
       "to": "tests/unit/test_judge.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/eval/harness.py",
+      "to": "tests/unit/test_keyword_match.py",
       "type": "tested_by"
     },
     {

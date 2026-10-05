@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**60 app modules · 73 test files · 111 classes · 1078 functions/methods · 21,621 lines of Python** · source hash `282dd7bce8ba06a2`
+**60 app modules · 73 test files · 111 classes · 1079 functions/methods · 21,654 lines of Python** · source hash `ead536cb52025462`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -317,27 +317,27 @@ _Suggest-and-confirm gaps (P3.1): ask, never assume._
 
 ### `app/analysis/keyword_match.py`
 
-**Layer:** Analysis · **Stage:** 5 Score · **Lines:** 416
+**Layer:** Analysis · **Stage:** 5 Score · **Lines:** 423
 
 _Keyword-level match rate, the headline score (P1.2)._
 
-- class **`KeywordMatcher`** ([app/analysis/keyword_match.py:219](../app/analysis/keyword_match.py#L219))
-  - `__init__()` :220
-  - `_slash_parts()` :224 — "Compact/NLC", "English/Spanish": words joined by a slash, each
-  - `_found_with_credit()` :234
-  - `_find()` :256
-  - `_title_credit()` :283
-  - `match()` :293
+- class **`KeywordMatcher`** ([app/analysis/keyword_match.py:224](../app/analysis/keyword_match.py#L224))
+  - `__init__()` :225
+  - `_slash_parts()` :229 — "Compact/NLC", "English/Spanish": words joined by a slash, each
+  - `_found_with_credit()` :239
+  - `_find()` :261
+  - `_title_credit()` :290
+  - `match()` :300
 - function **`_stem()`** ([app/analysis/keyword_match.py:59](../app/analysis/keyword_match.py#L59)) — Plural- and verb-form-insensitive: "communicate", "communicated" and
 - function **`_alias()`** ([app/analysis/keyword_match.py:77](../app/analysis/keyword_match.py#L77))
 - function **`tokens()`** ([app/analysis/keyword_match.py:89](../app/analysis/keyword_match.py#L89)) — Lowercased, alias-canonical, plural- and verb-form-insensitive tokens.
 - function **`_contains_seq()`** ([app/analysis/keyword_match.py:95](../app/analysis/keyword_match.py#L95))
 - function **`resume_sections()`** ([app/analysis/keyword_match.py:100](../app/analysis/keyword_match.py#L100)) — (label, text) for every part of the resume a recruiter or ATS reads.
-- function **`is_place()`** ([app/analysis/keyword_match.py:156](../app/analysis/keyword_match.py#L156)) — A location the JD names, not a skill (P8.17: "Arizona" and "DC" were
-- function **`definitions()`** ([app/analysis/keyword_match.py:175](../app/analysis/keyword_match.py#L175)) — acronym -> expansion (both lowercase), from "Full Name (ACR)" in texts.
-- function **`alternatives_of()`** ([app/analysis/keyword_match.py:197](../app/analysis/keyword_match.py#L197)) — Token sequences that count as the keyword: "OSHA 10 or 30" -> OSHA 10,
-- function **`guidance()`** ([app/analysis/keyword_match.py:356](../app/analysis/keyword_match.py#L356)) — What a low match means (P8.21): a nurse applying to a sales job scored
-- function **`reconcile()`** ([app/analysis/keyword_match.py:390](../app/analysis/keyword_match.py#L390)) — A requirement can't read "not shown" while every job keyword in it is
+- function **`is_place()`** ([app/analysis/keyword_match.py:161](../app/analysis/keyword_match.py#L161)) — A location the JD names, not a skill (P8.17: "Arizona" and "DC" were
+- function **`definitions()`** ([app/analysis/keyword_match.py:180](../app/analysis/keyword_match.py#L180)) — acronym -> expansion (both lowercase), from "Full Name (ACR)" in texts.
+- function **`alternatives_of()`** ([app/analysis/keyword_match.py:202](../app/analysis/keyword_match.py#L202)) — Token sequences that count as the keyword: "OSHA 10 or 30" -> OSHA 10,
+- function **`guidance()`** ([app/analysis/keyword_match.py:363](../app/analysis/keyword_match.py#L363)) — What a low match means (P8.21): a nurse applying to a sales job scored
+- function **`reconcile()`** ([app/analysis/keyword_match.py:397](../app/analysis/keyword_match.py#L397)) — A requirement can't read "not shown" while every job keyword in it is
 - **Imports:** `analysis/gap_questions.py`, `analysis/resume_normalizer.py`, `analysis/terminology.py`, `domain/job.py`, `domain/report.py`, `domain/resume.py`
 - **Imported by:** `analysis/gap_questions.py`, `analysis/skills_tailor.py`, `analysis/tailor_planner.py`, `eval/harness.py`, `services/tailor.py`
 - **Tested by:** `tests/unit/test_gap_questions.py`, `tests/unit/test_guidance_p821.py`, `tests/unit/test_jd_p818.py`, `tests/unit/test_keyword_match.py`, `tests/unit/test_matching_p817.py`, `tests/unit/test_matching_p95.py`, `tests/unit/test_parser_regressions_p42.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_stuffing_p819.py`, `tests/unit/test_summary_writer.py`
@@ -778,7 +778,7 @@ _Canonical projection of a parsed resume, compared against hand-checked_
 
 ### `app/eval/harness.py`
 
-**Layer:** Root · **Stage:** all · **Lines:** 531
+**Layer:** Root · **Stage:** all · **Lines:** 532
 
 _Run evaluation cases through the pipeline and collect metrics (P4.1)._
 
@@ -794,25 +794,25 @@ _Run evaluation cases through the pipeline and collect metrics (P4.1)._
 - function **`run_case()`** ([app/eval/harness.py:103](../app/eval/harness.py#L103))
 - function **`_tailor_metrics()`** ([app/eval/harness.py:194](../app/eval/harness.py#L194))
 - function **`attainable_coverage()`** ([app/eval/harness.py:238](../app/eval/harness.py#L238)) — Of the JD keywords written verbatim somewhere in the resume, the share
-- function **`_norm_number()`** ([app/eval/harness.py:257](../app/eval/harness.py#L257))
-- function **`fabricated_numbers()`** ([app/eval/harness.py:262](../app/eval/harness.py#L262)) — Numbers (with their units) in the tailored resume that the original
-- function **`stuffing()`** ([app/eval/harness.py:272](../app/eval/harness.py#L272)) — Signs of keyword stuffing: tailoring pushed the rate above the target
-- function **`_docx_text()`** ([app/eval/harness.py:282](../app/eval/harness.py#L282))
-- function **`is_content_failure()`** ([app/eval/harness.py:297](../app/eval/harness.py#L297))
-- function **`_same_text()`** ([app/eval/harness.py:301](../app/eval/harness.py#L301))
-- function **`check_job_details()`** ([app/eval/harness.py:306](../app/eval/harness.py#L306)) — Each job's title, company, dates and bullet count as the file states
-- function **`check_must_keep()`** ([app/eval/harness.py:326](../app/eval/harness.py#L326)) — Source phrases that must survive into the rendered file.
-- function **`check_expected()`** ([app/eval/harness.py:335](../app/eval/harness.py#L335)) — Compare a run with the case's expected.json; one message per miss.
-- function **`_judge()`** ([app/eval/harness.py:404](../app/eval/harness.py#L404)) — Judge one tailored resume (P4.3) and record what the judge cost.
-- function **`replay_case()`** ([app/eval/harness.py:415](../app/eval/harness.py#L415)) — Judge the tailored output a previous run saved in replay_dir/<case>/
-- function **`run()`** ([app/eval/harness.py:435](../app/eval/harness.py#L435))
-- function **`_flatten()`** ([app/eval/harness.py:455](../app/eval/harness.py#L455))
-- function **`compare()`** ([app/eval/harness.py:472](../app/eval/harness.py#L472)) — Human-readable differences per case between a report and a baseline.
-- function **`_judge_summary()`** ([app/eval/harness.py:500](../app/eval/harness.py#L500))
-- function **`summary_lines()`** ([app/eval/harness.py:506](../app/eval/harness.py#L506))
+- function **`_norm_number()`** ([app/eval/harness.py:258](../app/eval/harness.py#L258))
+- function **`fabricated_numbers()`** ([app/eval/harness.py:263](../app/eval/harness.py#L263)) — Numbers (with their units) in the tailored resume that the original
+- function **`stuffing()`** ([app/eval/harness.py:273](../app/eval/harness.py#L273)) — Signs of keyword stuffing: tailoring pushed the rate above the target
+- function **`_docx_text()`** ([app/eval/harness.py:283](../app/eval/harness.py#L283))
+- function **`is_content_failure()`** ([app/eval/harness.py:298](../app/eval/harness.py#L298))
+- function **`_same_text()`** ([app/eval/harness.py:302](../app/eval/harness.py#L302))
+- function **`check_job_details()`** ([app/eval/harness.py:307](../app/eval/harness.py#L307)) — Each job's title, company, dates and bullet count as the file states
+- function **`check_must_keep()`** ([app/eval/harness.py:327](../app/eval/harness.py#L327)) — Source phrases that must survive into the rendered file.
+- function **`check_expected()`** ([app/eval/harness.py:336](../app/eval/harness.py#L336)) — Compare a run with the case's expected.json; one message per miss.
+- function **`_judge()`** ([app/eval/harness.py:405](../app/eval/harness.py#L405)) — Judge one tailored resume (P4.3) and record what the judge cost.
+- function **`replay_case()`** ([app/eval/harness.py:416](../app/eval/harness.py#L416)) — Judge the tailored output a previous run saved in replay_dir/<case>/
+- function **`run()`** ([app/eval/harness.py:436](../app/eval/harness.py#L436))
+- function **`_flatten()`** ([app/eval/harness.py:456](../app/eval/harness.py#L456))
+- function **`compare()`** ([app/eval/harness.py:473](../app/eval/harness.py#L473)) — Human-readable differences per case between a report and a baseline.
+- function **`_judge_summary()`** ([app/eval/harness.py:501](../app/eval/harness.py#L501))
+- function **`summary_lines()`** ([app/eval/harness.py:507](../app/eval/harness.py#L507))
 - **Imports:** `analysis/experience.py`, `analysis/jd_analyzer.py`, `analysis/keyword_match.py`, `domain/report.py`, `eval/golden.py`, `eval/judge.py`, `llm/client.py`, `rendering/layout.py`, `services/tailor.py`
 - **Imported by:** `eval/__main__.py`, `scripts/walkthrough_server.py`
-- **Tested by:** `tests/integration/test_arrange.py`, `tests/integration/test_eval_cases.py`, `tests/integration/test_persona_cases.py`, `tests/unit/test_cli_parity.py`, `tests/unit/test_eval_harness.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_judge.py`, `tests/unit/test_privacy_p98.py`, `tests/unit/test_profile_store.py`, `tests/unit/test_skill_placement_p912.py`, `tests/unit/test_uploads_p822.py`
+- **Tested by:** `tests/integration/test_arrange.py`, `tests/integration/test_eval_cases.py`, `tests/integration/test_persona_cases.py`, `tests/unit/test_cli_parity.py`, `tests/unit/test_eval_harness.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_judge.py`, `tests/unit/test_keyword_match.py`, `tests/unit/test_privacy_p98.py`, `tests/unit/test_profile_store.py`, `tests/unit/test_skill_placement_p912.py`, `tests/unit/test_uploads_p822.py`
 
 ### `app/eval/judge.py`
 

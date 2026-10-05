@@ -106,3 +106,25 @@ def test_hyphenated_terms_and_ing_fields_after_verb_folding():
                  "Mentored two analysts"]))
     assert {k: r.found for k, r in _rows(report).items()} == {"AWS": True, "cloud": True, "Marketing": False,
                                                            "Accounting": False, "Mentor": True}
+
+
+def test_custom_sections_and_slash_joined_words_count_p915():
+    """The live nurse run (P9.10): "ICU" under Clinical Rotations and "NLC" in
+    "(Compact/NLC)" were reported missing though the resume says both."""
+    from app.domain.resume import OtherSection, SectionLine
+    from app.eval.harness import attainable_coverage
+
+    resume = _resume(["Titrate cardiac drips per protocol"])
+    resume.certifications = [{"name": "Registered Nurse (RN), Arizona State Board of Nursing (Compact/NLC)"}]
+    resume.other_sections = [OtherSection(id="sec_01", heading="Clinical Rotations",
+                                          lines=[SectionLine(text="ICU - Mayo Clinic Hospital (120 hrs), Spring 2019")])]
+    job = _job(["ICU", "NLC", "Arizona", "CI"], required_lines=["Current RN license in Arizona or compact (NLC) state"],
+               preferred_lines=["1 year ICU preferred"])
+    report = KeywordMatcher().match(job, resume)
+    rows = _rows(report)
+    assert rows["ICU"].found and rows["ICU"].where == ["clinical rotations"]
+    assert rows["NLC"].found and rows["NLC"].where == ["certifications"]
+    assert "Arizona" not in rows  # a place, not a skill (P8.17)
+    assert not rows["CI"].found  # whole words only, still
+    text = "Arizona State Board of Nursing (Compact/NLC)\nICU - Mayo Clinic Hospital"
+    assert attainable_coverage(job.keywords, text, report, job.raw_text) == {"pct": 100.0, "attainable": 2, "missed": []}

@@ -126,6 +126,11 @@ def resume_sections(resume: Resume) -> List[Tuple[str, str]]:
         parts.append(("certifications", " ".join(str(v) for v in cert.values() if v)))
     for item in resume.achievements:
         parts.append(("achievements", item))
+    # Sections kept verbatim (Clinical Rotations, Volunteer, Languages...) are
+    # read too: "ICU - Mayo Clinic Hospital" under Clinical Rotations shows ICU (P9.15).
+    for sec in resume.other_sections:
+        for line in sec.lines:
+            parts.append((sec.heading.strip().lower() or "other", line.text))
     return [(label, text) for label, text in parts if text and text.strip()]
 
 
@@ -267,7 +272,9 @@ class KeywordMatcher:
             token_set = set(toks)
             # "HIPAA-compliant" contains HIPAA: also look at hyphenated
             # tokens split into their parts (dots and slashes stay: Node.js, A/B).
+            # Words joined by a slash count on their own too: "Compact/NLC" shows NLC (P9.15).
             split = [p for t in toks for p in (t.split("-") if t.rsplit("-", 1)[-1] in _TERM_SUFFIX_STEMS else [t]) if p]
+            split = [q for p in split for q in ([p, *p.split("/")] if "/" in p else [p]) if q]
             hit = any(_contains_seq(toks, alt) or _contains_seq(split, alt) for alt in alternatives)
             # A multi-word term also counts when all its words appear in one
             # sentence ("recommendation systems" vs "systems for recommendation").
