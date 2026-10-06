@@ -10,6 +10,38 @@ Timestamped record of every **major** commit (anything touching `app/`, `scripts
 
 <!-- entries below; newest first -->
 
+<!-- entry:2026-10-07T03:09:02+05:30 -->
+## 2026-10-07 03:09 (+0530) · P10.11: Check details shows how a file was read as a note, not a problem
+
+Kshitij Chaubey · branch `fb_ksh`
+
+**Why / details**
+
+> The Stage O walkthrough showed the LinkedIn note under "Possible reading
+> problem:", and a LinkedIn role with no description as "If it isn't a
+> job, remove it". Neither is a problem: the note is information, and a role
+> without a description is normal in an export, so that advice nudges people
+> to delete a real job.
+>
+> /api/parse now returns parse_notes apart from parse_issues. Check details
+> shows notes in a plain box with an info icon. For a layout-read file,
+> "experience without bullets" is no longer a reading problem; Results'
+> content checks still suggest bullets for it.
+>
+> The walkthrough script also takes RESUME / JD_FILE, so the gate could
+> walk the LinkedIn export through every screen.
+
+**Changed files**
+
+- Docs: `M` docs/ACTION_ITEMS.md, `M` docs/PROJECT_OVERVIEW.md
+- Root: `M` web/src/App.test.tsx, `M` web/src/App.tsx, `M` web/src/components/Icon.tsx, `M` web/src/lib/store.ts, `M` web/src/lib/types.ts, `M` web/src/pages/Details.tsx
+- Services: `M` app/services/tailor.py
+- Tests: `M` tests/unit/test_linkedin_import_p101.py
+- Tooling: `M` scripts/walkthrough.cjs
+- Web API: `M` app/api/routes.py
+
+---
+
 <!-- entry:2026-10-07T02:46:16+05:30 -->
 ## 2026-10-07 02:46 (+0530) · P10.10: retry a long role in two halves when Groq runs out of tokens
 

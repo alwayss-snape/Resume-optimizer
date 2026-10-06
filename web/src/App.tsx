@@ -47,7 +47,7 @@ export function App() {
   /** A new upload is a new run: earlier results and steps are gone at once,
    *  even if this one fails (the server has already reset its side). */
   const freshRun = (intent: Intent, file: File, jdText: string, template = run.template) => {
-    updateRun({ intent, file, jdText, template, report: null, details: null, parseIssues: [], unplaced: [], drafted: null,
+    updateRun({ intent, file, jdText, template, report: null, details: null, parseIssues: [], parseNotes: [], unplaced: [], drafted: null,
       review: null, results: null });
     useApp.setState({ reached: 0 });
   };
@@ -55,7 +55,8 @@ export function App() {
   const readResume = async (file: File, jdText: string, isCurrent: () => boolean) => {
     const parsed = await parseResume(file, jdText, model);
     if (!isCurrent()) return;
-    updateRun({ details: parsed.details, parseIssues: parsed.parse_issues, unplaced: parsed.unplaced ?? [] });
+    updateRun({ details: parsed.details, parseIssues: parsed.parse_issues, parseNotes: parsed.parse_notes ?? [],
+      unplaced: parsed.unplaced ?? [] });
     advance("details");
   };
 

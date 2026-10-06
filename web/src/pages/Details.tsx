@@ -151,6 +151,17 @@ export function Details() {
         </p>
       </div>
 
+      {run.parseNotes.length > 0 && (
+        <ul className="flex flex-col gap-2 rounded-[3px] border border-line bg-panel p-4 text-sm">
+          {run.parseNotes.map((note) => (
+            <li key={note} className="flex items-start gap-2">
+              <Icon name="info" size={16} className="mt-0.5 shrink-0 text-pencil" />
+              <span>{note}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+
       {run.parseIssues.length > 0 && (
         <ul className="flex flex-col gap-2 rounded-[3px] border border-warning bg-panel p-4 text-sm">
           {run.parseIssues.map((issue) => (

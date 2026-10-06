@@ -40,6 +40,8 @@ export interface UnplacedLine {
 export interface ParseResult {
   details: Details;
   parse_issues: string[];
+  /** How the file was read, e.g. as a LinkedIn profile export (P10.11): information, not a problem. */
+  parse_notes?: string[];
   /** Lines of the file the parse put nowhere, for the user to assign (P8.26). */
   unplaced?: UnplacedLine[];
 }

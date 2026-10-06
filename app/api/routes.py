@@ -463,7 +463,8 @@ async def parse(request: Request, response: Response, file: Optional[UploadFile]
         jd_language = other_language(jd_text)
         if jd_language:  # P8.25
             issues.append(english_only_note("job description", jd_language))
-        session.data.update(parsed=parsed, jd_text=jd_text, model=model, parse_issues=issues)
+        session.data.update(parsed=parsed, jd_text=jd_text, model=model, parse_issues=issues,
+                            parse_notes=list(service.last_parse_notes))
     except BaseException as e:
         session.busy.release()
         if is_new:  # no cookie was sent, so nobody could reach it again
@@ -475,7 +476,7 @@ async def parse(request: Request, response: Response, file: Optional[UploadFile]
     response.set_cookie(SESSION_COOKIE, session.id, httponly=True, samesite="lax",
                         max_age=store.ttl_seconds)
     return {"details": _details(parsed[1].resume), "parse_issues": [plain_issue(i) for i in session.data["parse_issues"]],
-            "unplaced": unplaced_lines(parsed[0], parsed[1].resume)}
+            "parse_notes": session.data["parse_notes"], "unplaced": unplaced_lines(parsed[0], parsed[1].resume)}
 
 
 @router.post("/proposals", dependencies=[Depends(rate_limited)])

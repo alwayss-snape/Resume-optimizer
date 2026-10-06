@@ -115,9 +115,10 @@ def test_no_llm_relabel_for_an_export():
     service = TailorService(llm_client=llm)
     _, resume_doc, _ = service.parse_resume(EXPORT)
     assert llm.calls == 0
-    # The internship has no description; that is still shown on Check details.
-    assert "experience without bullets (Northstar Labs)" in service.last_parse_issues
-    assert NOTE in service.last_parse_issues
+    # P10.11: a role with no description is normal in an export, so it is not
+    # a reading problem; how the file was read is a note, not an issue.
+    assert service.last_parse_issues == []
+    assert service.last_parse_notes == [NOTE]
     assert resume_doc.resume.experience[-1].company == "Northstar Labs"
 
 
@@ -129,3 +130,14 @@ def test_an_export_tailors_offline_with_nothing_lost(tmp_path):
                                    parsed=service.parse_resume(EXPORT), remember_answers=False)
     assert result["coverage"]["lost"] == [] and result["coverage"]["pct"] == 100.0
     assert result["success"] is True
+
+
+def test_the_api_returns_the_note_apart_from_the_issues_p1011():
+    from fastapi.testclient import TestClient
+    from app.api.main import create_app
+    client = TestClient(create_app(make_service=lambda model=None: TailorService(llm_client=None, keep_run=False)))
+    with open(EXPORT, "rb") as f, open(JD, encoding="utf-8") as jd:
+        body = client.post("/api/parse", files={"file": ("Profile.pdf", f, "application/pdf")},
+                           data={"jd_text": jd.read()}).json()
+    assert body["parse_notes"] == [NOTE] and body["parse_issues"] == []
+    assert body["details"]["candidate"]["location"] == "Bengaluru, Karnataka, India"

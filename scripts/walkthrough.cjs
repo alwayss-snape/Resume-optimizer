@@ -12,8 +12,9 @@ const R = path.join(__dirname, "..") + "/";
 const S = process.env.OUT || "/tmp/tailores-walkthrough";
 const BASE = process.env.BASE || "http://127.0.0.1:8010/";
 fs.mkdirSync(S + "/shots", { recursive: true });
-const RESUME = R + "docs/user_testing/2026-10-02/resumes/nurse.docx";
-const JD = fs.readFileSync(R + "data/eval/personas/nurse/jd.txt", "utf8");
+// RESUME / JD_FILE (repo-relative) walk another file through, e.g. the LinkedIn export (P10.1).
+const RESUME = R + (process.env.RESUME || "docs/user_testing/2026-10-02/resumes/nurse.docx");
+const JD = fs.readFileSync(R + (process.env.JD_FILE || "data/eval/personas/nurse/jd.txt"), "utf8");
 const T = 60000;
 const LIVE = Boolean(process.env.LIVE);
 const DRAFT_T = LIVE ? 360000 : T;  // the free AI service can make drafting wait a few minutes

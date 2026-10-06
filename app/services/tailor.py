@@ -70,6 +70,7 @@ class TailorService:
         self.structure_extractor = StructureExtractor(self.llm_client, self.resume_normalizer)
         # Problems left in the last parse (empty = looks right). Shown by the UI.
         self.last_parse_issues: List[str] = []
+        self.last_parse_notes: List[str] = []
         self.jd_analyzer = JDAnalyzer(self.llm_client)
         self.matcher = EvidenceMatcher(self.llm_client)
         # A single reused instance: the embedding model (if enabled) is
@@ -472,13 +473,19 @@ class TailorService:
 
     def normalize_raw(self, raw_doc):
         resume_doc, evidence_list = self.resume_normalizer.normalize(raw_doc)
+        # Information about how the file was read, shown apart from the
+        # problems on Check details (P10.11).
+        self.last_parse_notes: List[str] = []
         if raw_doc.layout:
             # Structure read from a known layout (the LinkedIn export, P10.1):
-            # an LLM re-label can't improve it, and a role with no
-            # description there is normal. The problems are still shown.
-            self.last_parse_issues = self.structure_extractor.problems(resume_doc.resume, evidence_list, raw_doc)
+            # an LLM re-label can't improve it, and a role with no description
+            # is normal there, so it isn't called a reading problem (P10.11;
+            # the content checks on Results still suggest bullets for it).
+            self.last_parse_issues = [
+                issue for issue in self.structure_extractor.problems(resume_doc.resume, evidence_list, raw_doc)
+                if not issue.startswith("experience without bullets")]
             if raw_doc.layout == LINKEDIN_LAYOUT:
-                self.last_parse_issues.append(LINKEDIN_NOTE)
+                self.last_parse_notes.append(LINKEDIN_NOTE)
         else:
             resume_doc, evidence_list, self.last_parse_issues = self.structure_extractor.improve(
                 raw_doc, resume_doc, evidence_list,

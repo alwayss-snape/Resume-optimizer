@@ -25,6 +25,7 @@ export interface Run {
   template: Template;
   details: Details | null;
   parseIssues: string[];
+  parseNotes: string[]; // how the file was read, e.g. a LinkedIn export (P10.11)
   unplaced: UnplacedLine[]; // lines the parse put nowhere (P8.26)
   report: AnalysisReport | null;
   drafted: ProposalsResult | null;
@@ -36,7 +37,7 @@ export interface Run {
 }
 
 export const EMPTY_RUN: Run = {
-  intent: "tailor", file: null, jdText: "", template: "ats", details: null, parseIssues: [], unplaced: [],
+  intent: "tailor", file: null, jdText: "", template: "ats", details: null, parseIssues: [], parseNotes: [], unplaced: [],
   report: null, drafted: null, review: null, results: null, resultsVersion: 0, jumpTo: null,
 };
 export type Theme = "dark" | "light" | "system";

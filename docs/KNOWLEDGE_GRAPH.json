@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "89f824ccb10d4a29",
+  "source_hash": "b2f47853d526154f",
   "stats": {
     "files": 173,
     "python_files": 147,
     "app_modules": 61,
     "test_files": 75,
     "classes": 114,
-    "functions": 1134,
-    "lines_of_python": 22836
+    "functions": 1135,
+    "lines_of_python": 22856
   },
   "axes": {
     "x": "location (path)",
@@ -1437,7 +1437,7 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 706,
+      "lines": 707,
       "doc": "HTTP endpoints, one per step of the review flow (P5.1).",
       "classes": [
         {
@@ -1501,7 +1501,7 @@
         },
         {
           "name": "ArrangeIn",
-          "line": 622,
+          "line": 623,
           "doc": "",
           "methods": []
         }
@@ -1629,47 +1629,47 @@
         },
         {
           "name": "proposals",
-          "line": 482,
+          "line": 483,
           "doc": "Step 2: apply the user's fixes, then draft rewrites and gap"
         },
         {
           "name": "match_preview",
-          "line": 533,
+          "line": 534,
           "doc": "The match rate if the selected (and edited) proposals were applied."
         },
         {
           "name": "tailor",
-          "line": 543,
+          "line": 544,
           "doc": "Step 3: apply the review and generate the files. Streams progress."
         },
         {
           "name": "_results_out",
-          "line": 583,
+          "line": 584,
           "doc": "What the Results (and Arrange) screen gets after a run."
         },
         {
           "name": "arrange",
-          "line": 630,
+          "line": 631,
           "doc": "Re-render the tailored resume as the user arranged it (P8.13). No LLM"
         },
         {
           "name": "_result_path",
-          "line": 669,
+          "line": 670,
           "doc": ""
         },
         {
           "name": "download",
-          "line": 677,
+          "line": 678,
           "doc": ""
         },
         {
           "name": "preview",
-          "line": 685,
+          "line": 686,
           "doc": "One page of the tailored PDF as a PNG (Chrome blocks embedded PDFs)."
         },
         {
           "name": "reset",
-          "line": 694,
+          "line": 695,
           "doc": "Start over: delete this visitor's files and state. If a step is still"
         }
       ]
@@ -3713,7 +3713,7 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 1501,
+      "lines": 1508,
       "doc": "",
       "classes": [
         {
@@ -3728,147 +3728,147 @@
             },
             {
               "name": "_save_run",
-              "line": 98,
+              "line": 99,
               "doc": "A run artifact for the CLI / eval; nothing when no run is kept (P9.8)."
             },
             {
               "name": "generate_preview_md",
-              "line": 103,
+              "line": 104,
               "doc": ""
             },
             {
               "name": "_patchable",
-              "line": 149,
+              "line": 150,
               "doc": "Proposals as in-place DOCX patches. A summary proposal targets the"
             },
             {
               "name": "_apply_gap_answers",
-              "line": 169,
+              "line": 170,
               "doc": "Ticked keywords join the skills section; a typed answer becomes a"
             },
             {
               "name": "_prefill_from_profile",
-              "line": 228,
+              "line": 229,
               "doc": "Answers confirmed for an earlier JD pre-fill the same questions"
             },
             {
               "name": "_draft_from_answer",
-              "line": 240,
+              "line": 241,
               "doc": "Polish the candidate's answer into one bullet that may use only"
             },
             {
               "name": "_split_description",
-              "line": 259,
+              "line": 260,
               "doc": "Pasted role description -> bullet-sized chunks: one per line (list"
             },
             {
               "name": "validate_new_role",
-              "line": 269,
+              "line": 270,
               "doc": "Check a new job before any work is done; raises ValueError with a"
             },
             {
               "name": "_new_experience",
-              "line": 294,
+              "line": 295,
               "doc": "An empty job from the \"add a job\" fields, validated."
             },
             {
               "name": "_insert_by_date",
-              "line": 302,
+              "line": 303,
               "doc": "Place a job in date order: current jobs first, then most recent start."
             },
             {
               "name": "add_new_role",
-              "line": 315,
+              "line": 316,
               "doc": "Add a job the resume doesn't have yet (P3.3). Each chunk of the"
             },
             {
               "name": "_skills_proposals",
-              "line": 352,
+              "line": 353,
               "doc": "The skills section with the JD's skills first, when that changes it (P1.6)."
             },
             {
               "name": "_summary_proposals",
-              "line": 357,
+              "line": 358,
               "doc": "The tailored summary as a proposal, when one was written (P1.5)."
             },
             {
               "name": "_embed",
-              "line": 362,
+              "line": 363,
               "doc": "Sentence embeddings for the planner, loaded lazily; raises when the"
             },
             {
               "name": "_fit_relevance",
-              "line": 371,
+              "line": 372,
               "doc": "Planner relevance per bullet for the page-fit loop. Bullets the user"
             },
             {
               "name": "_render_template",
-              "line": 381,
+              "line": 382,
               "doc": "One template render plus PDF conversion (the page-fit loop's step)."
             },
             {
               "name": "_coverage",
-              "line": 389,
+              "line": 390,
               "doc": "Content coverage of the rendered DOCX against the uploaded file (P8.2)."
             },
             {
               "name": "_apply_bullet_order",
-              "line": 416,
+              "line": 417,
               "doc": "Reorder bullets as planned (most relevant first within each"
             },
             {
               "name": "parse_resume",
-              "line": 431,
+              "line": 432,
               "doc": "File -> (raw document, ResumeDocument, evidence). The deterministic"
             },
             {
               "name": "read_file",
-              "line": 438,
+              "line": 439,
               "doc": "The uploaded file as raw blocks, or UnreadableFile with a message"
             },
             {
               "name": "normalize_raw",
-              "line": 473,
+              "line": 474,
               "doc": ""
             },
             {
               "name": "_copy_parsed",
-              "line": 494,
+              "line": 501,
               "doc": "Deep copies, so a parse kept in UI session state is never mutated."
             },
             {
               "name": "preview_keyword_match",
-              "line": 499,
+              "line": 506,
               "doc": "Match rate if these proposals were applied (P3.4 \"recalculate\"):"
             },
             {
               "name": "apply_parse_corrections",
-              "line": 522,
+              "line": 529,
               "doc": "Apply the user's fixes from the \"Check parsed resume\" step (P3.5)."
             },
             {
               "name": "analyze_only",
-              "line": 648,
+              "line": 655,
               "doc": ""
             },
             {
               "name": "generate_proposals",
-              "line": 678,
+              "line": 685,
               "doc": "Generate rewrite proposals without applying them, plus questions"
             },
             {
               "name": "incorporate_user_addition",
-              "line": 755,
+              "line": 762,
               "doc": "Fold a user-supplied free-text addition (a project, an"
             },
             {
               "name": "tailor_resume",
-              "line": 834,
+              "line": 841,
               "doc": ""
             },
             {
               "name": "arrange",
-              "line": 1360,
+              "line": 1367,
               "doc": "Re-render the tailored resume as the user arranged it (P8.13\u2013P8.16):"
             }
           ]
@@ -3882,12 +3882,12 @@
         },
         {
           "name": "_hidden_text",
-          "line": 1456,
+          "line": 1463,
           "doc": "Text of the sections the user hid, so coverage counts it as their choice."
         },
         {
           "name": "_merge_usage",
-          "line": 1483,
+          "line": 1490,
           "doc": "Combine two LLMClient.get_usage_summary() dicts into one. When one"
         }
       ]
@@ -4476,7 +4476,7 @@
       "type": "file",
       "layer": "Tooling",
       "stages": [],
-      "lines": 123
+      "lines": 124
     },
     {
       "id": "scripts/walkthrough_server.py",
@@ -6382,7 +6382,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 131,
+      "lines": 143,
       "doc": "P10.1: a LinkedIn \"Save to PDF\" export is read by its own two-column",
       "classes": [
         {
@@ -6451,7 +6451,12 @@
         },
         {
           "name": "test_an_export_tailors_offline_with_nothing_lost",
-          "line": 124,
+          "line": 125,
+          "doc": ""
+        },
+        {
+          "name": "test_the_api_returns_the_note_apart_from_the_issues_p1011",
+          "line": 135,
           "doc": ""
         }
       ]
@@ -9410,6 +9415,11 @@
     {
       "from": "app/api/main.py",
       "to": "tests/unit/test_api.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/api/main.py",
+      "to": "tests/unit/test_linkedin_import_p101.py",
       "type": "tested_by"
     },
     {

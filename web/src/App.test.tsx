@@ -54,6 +54,24 @@ test("tailor: upload -> check details -> drafting with progress -> review", asyn
   expect(useApp.getState().run.drafted?.proposals).toHaveLength(1);
 });
 
+test("a note on how the file was read is not called a reading problem (P10.11)", async () => {
+  const note = "Read as a LinkedIn profile (Save to PDF): please check the details below.";
+  stubApi({
+    "/api/config": () => jsonResponse(CONFIG),
+    "/api/parse": () => jsonResponse({ details: DETAILS, parse_issues: ["No phone number found"], parse_notes: [note] }),
+  });
+  const user = userEvent.setup();
+  render(<App />);
+  await fillUpload(user);
+  await user.click(screen.getByRole("button", { name: /^Tailor my resume$/ }));
+
+  expect(await screen.findByRole("heading", { name: "Check your details" })).toBeInTheDocument();
+  const shown = screen.getByText(note);
+  expect(shown.closest("li")).not.toHaveTextContent("Possible reading problem");
+  expect(screen.getByText(/No phone number found/).closest("li")).toHaveTextContent("Possible reading problem");
+  expect(screen.getAllByText(/Possible reading problem/)).toHaveLength(1);
+});
+
 test("check my match: shows the report, then can go on to tailor with the same files", async () => {
   stubApi({
     "/api/config": () => jsonResponse(CONFIG),
