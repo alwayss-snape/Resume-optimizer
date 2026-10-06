@@ -6,6 +6,7 @@ from uuid import uuid4
 from pydantic import Field
 
 from app.analysis.change_proposal import ChangeProposal
+from app.analysis.experience import is_ongoing
 from app.domain.evidence import Evidence
 from app.domain.job import JobDescription
 from app.domain.resume import Experience, Resume
@@ -58,6 +59,35 @@ STATUS_UNCHANGED = "unchanged"              # the LLM kept the original wording
 STATUS_LLM_UNAVAILABLE = "llm_unavailable"  # provider unreachable / misconfigured
 STATUS_LLM_ERROR = "llm_error"              # the call failed (rate limit, bad output, ...)
 FAILED_STATUSES = (STATUS_LLM_UNAVAILABLE, STATUS_LLM_ERROR)
+
+
+def _past_forms(verb: str) -> set:
+    """Past tense spellings of a base verb: "lead" -> {"led", "leaded"},
+    "manage" -> {"managed"}, "plan" -> {"planned", "planed"}."""
+    from app.validation.factual import FactualValidator
+    v = verb.lower()
+    forms = {past for past, base in FactualValidator.IRREGULAR.items() if base == v}
+    forms |= {v + "ed", v + "d", v + v[-1:] + "ed"}
+    if len(v) > 2 and v.endswith("y") and v[-2] not in "aeiou":
+        forms.add(v[:-1] + "ied")
+    return forms
+
+
+def keep_present_tense(original: str, rewritten: str) -> str:
+    """For a job the candidate still holds (P9.24): a bullet written in the
+    present tense ("Lead a lab of 4 PhD students") keeps its own opening verb
+    when the rewrite only moved it into the past ("Led a lab ..."). Puts back
+    a word the bullet already had; never anything new."""
+    orig_words, new_words = (original or "").split(), (rewritten or "").split()
+    if not orig_words or not new_words:
+        return rewritten
+    first = re.sub(r"[^A-Za-z]", "", orig_words[0])
+    new_first = re.sub(r"[^A-Za-z]", "", new_words[0])
+    if not first or first.lower().endswith("ed") or new_first.lower() == first.lower():
+        return rewritten
+    if new_first.lower() in _past_forms(first):
+        return " ".join([orig_words[0]] + new_words[1:])
+    return rewritten
 
 
 def _count(n: int, noun: str) -> str:
@@ -174,9 +204,20 @@ class LLMRewriter:
         with open(prompt_path, "r", encoding="utf-8") as f:
             system_prompt = f.read()
 
+        roles = exp.all_roles() if exp is not None else []
+        # The candidate still holds this job: its present-tense bullets stay
+        # present (P9.24; the model only saw titles and wrote "Led" for "Lead").
+        current = bool(roles) and is_ongoing(roles[0].end_date)
         if exp is not None:
-            titles = ", ".join(r.title for r in exp.all_roles() if r.title) or "(not given)"
+            titles = ", ".join(r.title for r in roles if r.title) or "(not given)"
             header = [f"Company: {exp.company or '(not given)'}", f"Titles: {titles}"]
+            dates = "; ".join(f"{r.title or 'role'}: {r.start_date or '?'} – {r.end_date or '?'}"
+                              for r in roles if r.start_date or r.end_date)
+            if dates:
+                header.append(f"Dates: {dates}")
+            if current:
+                header.append("This is the candidate's current job: keep a bullet written in the present "
+                              "tense in the present tense (\"Lead\", \"Teach\"), never turn it into the past.")
         lines = list(header or []) + (["", note] if note else []) + ["", "Bullets:"]
         for item in items:
             lines.append(f"- bullet_id: {item['bullet_id']}")
@@ -204,6 +245,8 @@ class LLMRewriter:
             if item is None or bullet.bullet_id in out:
                 continue  # unknown or duplicate id from the model
             text = normalize_llm_text(bullet.rewritten or "").lstrip("•- ").strip()
+            if current:
+                text = keep_present_tense(item["text"], text)
             allowed = {k.lower() for k in item["keywords"]}
             used = [k for k in bullet.keywords_used if k.lower() in allowed and k.lower() in text.lower()]
             if not text or _same_wording(text, item["text"]):

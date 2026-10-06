@@ -279,3 +279,38 @@ def test_retry_that_stays_unchanged_keeps_first_result():
     proposals = {p.target_semantic_id: p for p in LLMRewriter(client).execute_plan(resume, plan, evidence, job)}
     assert client.generate_json.call_count == 2  # never more than one follow-up
     assert proposals["b2"].status == "unchanged" and proposals["b2"].error is None
+
+
+def test_current_job_keeps_present_tense_p924():
+    # Live academic run (P9.10): "Lead a lab ..." / "Teach BIO 210 ..." in a
+    # 2019 - Present job came back as "Led" / "Taught".
+    from app.analysis.rewriter import LLMRewriter, keep_present_tense
+    from app.domain.resume import Experience, ResumeBullet
+    from app.llm.schemas import RoleBulletRewrite, RoleRewriteResult
+    assert keep_present_tense("Lead a lab of 4 PhD students", "Led a lab of 4 PhD students.") == \
+        "Lead a lab of 4 PhD students."
+    assert keep_present_tense("Teach BIO 210 Microbiology (120 students)", "Taught BIO 210 Microbiology to 120 students.") \
+        == "Teach BIO 210 Microbiology to 120 students."
+    assert keep_present_tense("Manage 12 nurses", "Managed 12 nurses on nights") == "Manage 12 nurses on nights"
+    assert keep_present_tense("Supply 40 sites", "Supplied 40 sites") == "Supply 40 sites"
+    # Another verb, or a bullet already in the past tense, is left alone.
+    assert keep_present_tense("Lead a lab", "Directed a lab") == "Directed a lab"
+    assert keep_present_tense("Built Spark pipelines", "Built Spark data pipelines") == "Built Spark data pipelines"
+
+    exp = Experience(id="e1", company="Midwestern State University", title="Assistant Professor",
+                     start_date="2019", end_date="Present",
+                     bullets=[ResumeBullet(id="b1", text="Lead a lab of 4 PhD students")])
+    client = _role_client(RoleRewriteResult(bullets=[
+        RoleBulletRewrite(bullet_id="b1", rewritten="Led a lab of 4 PhD students and 6 undergraduates.")]))
+    items = [{"bullet_id": "b1", "text": exp.bullets[0].text, "group": None, "requirements": [],
+              "keywords": [], "evidence_ids": ["ev_b1"]}]
+    out, _, _ = LLMRewriter(client).rewrite_role(exp, items)
+    assert out["b1"]["text"] == "Lead a lab of 4 PhD students and 6 undergraduates."
+    prompt = client.generate_json.call_args.kwargs["messages"][1]["content"]
+    assert "Dates: Assistant Professor: 2019 – Present" in prompt and "current job" in prompt
+
+    # A job that ended goes to the past tense as before.
+    exp.end_date = "2022"
+    out, _, _ = LLMRewriter(_role_client(RoleRewriteResult(bullets=[
+        RoleBulletRewrite(bullet_id="b1", rewritten="Led a lab of 4 PhD students.")]))).rewrite_role(exp, items)
+    assert out["b1"]["text"] == "Led a lab of 4 PhD students."

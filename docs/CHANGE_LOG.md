@@ -10,6 +10,34 @@ Timestamped record of every **major** commit (anything touching `app/`, `scripts
 
 <!-- entries below; newest first -->
 
+<!-- entry:2026-10-06T08:14:47+05:30 -->
+## 2026-10-06 08:14 (+0530) · P9.24: a current job's present-tense bullets stay in the present tense
+
+Kshitij Chaubey · branch `fb_ksh`
+
+**Why / details**
+
+> The live academic persona run (P9.10) rewrote "Lead a lab of 4 PhD
+> students" as "Led ..." and "Teach BIO 210" as "Taught ..." in a job held
+> since 2019. The role prompt only gave the model the company and titles and
+> asks for a past-tense opening verb, so it had no way to know the job was
+> ongoing. The prompt now carries each title's dates and says when the job is
+> current, and keep_present_tense restores the bullet's own opening verb when
+> the rewrite only moved it into the past. That guard can only put back a
+> word already in the bullet, so it stays within the core rule.
+
+**Changed files**
+
+- Analysis: `M` app/analysis/rewriter.py
+- Docs: `M` docs/ACTION_ITEMS.md
+- Tests: `M` tests/unit/test_rewriter.py
+
+**Structure delta**
+
+- `app/analysis/rewriter.py`: added `_past_forms()`, `keep_present_tense()`
+
+---
+
 <!-- entry:2026-10-06T08:13:31+05:30 -->
 ## 2026-10-06 08:13 (+0530) · P9.23: JD values from the LLM must match whole terms, in the JD's own case
 

@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "ada7c1d63410974a",
+  "source_hash": "0bb37decab53bcd8",
   "stats": {
     "files": 168,
     "python_files": 144,
     "app_modules": 60,
     "test_files": 74,
     "classes": 111,
-    "functions": 1090,
-    "lines_of_python": 21896
+    "functions": 1093,
+    "lines_of_python": 21974
   },
   "axes": {
     "x": "location (path)",
@@ -922,37 +922,37 @@
       "stages": [
         "7 Rewrite"
       ],
-      "lines": 298,
+      "lines": 341,
       "doc": "",
       "classes": [
         {
           "name": "LLMRewriter",
-          "line": 74,
+          "line": 104,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
-              "line": 75,
+              "line": 105,
               "doc": ""
             },
             {
               "name": "rewrite_bullet",
-              "line": 78,
+              "line": 108,
               "doc": "Rewrite (or, given a single free-text `original_text` with no"
             },
             {
               "name": "rewrite_bullet_with_status",
-              "line": 98,
+              "line": 128,
               "doc": "Like rewrite_bullet, plus what happened, so failures are visible"
             },
             {
               "name": "rewrite_role",
-              "line": 156,
+              "line": 186,
               "doc": "Rewrite several bullets of one role in ONE call (P1.4)."
             },
             {
               "name": "execute_plan",
-              "line": 215,
+              "line": 258,
               "doc": "One LLM call per role (P1.4): all of a job's bullets that the"
             }
           ]
@@ -961,22 +961,32 @@
       "functions": [
         {
           "name": "normalize_llm_text",
-          "line": 27,
+          "line": 28,
           "doc": ""
         },
         {
           "name": "_same_wording",
-          "line": 34,
+          "line": 35,
           "doc": "Equal apart from case, whitespace and closing punctuation, so adding a"
         },
         {
           "name": "breaks_bullet_rules",
-          "line": 50,
+          "line": 51,
           "doc": "True when a bullet is over the word limit or uses a filler word."
         },
         {
+          "name": "_past_forms",
+          "line": 64,
+          "doc": "Past tense spellings of a base verb: \"lead\" -> {\"led\", \"leaded\"},"
+        },
+        {
+          "name": "keep_present_tense",
+          "line": 76,
+          "doc": "For a job the candidate still holds (P9.24): a bullet written in the"
+        },
+        {
           "name": "_count",
-          "line": 63,
+          "line": 93,
           "doc": "\"1 bullet\", \"10 bullets\" (P9.7: was \"10 bullet(s)\")."
         }
       ]
@@ -7246,7 +7256,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 281,
+      "lines": 316,
       "doc": "",
       "classes": [],
       "functions": [
@@ -7333,6 +7343,11 @@
         {
           "name": "test_retry_that_stays_unchanged_keeps_first_result",
           "line": 264,
+          "doc": ""
+        },
+        {
+          "name": "test_current_job_keeps_present_tense_p924",
+          "line": 284,
           "doc": ""
         }
       ]
@@ -8706,6 +8721,11 @@
     },
     {
       "from": "app/analysis/rewriter.py",
+      "to": "app/analysis/experience.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/analysis/rewriter.py",
       "to": "app/analysis/rewriter.py::LLMRewriter",
       "type": "contains"
     },
@@ -8747,6 +8767,11 @@
     {
       "from": "app/analysis/rewriter.py",
       "to": "app/llm/schemas.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/analysis/rewriter.py",
+      "to": "app/validation/factual.py",
       "type": "imports"
     },
     {

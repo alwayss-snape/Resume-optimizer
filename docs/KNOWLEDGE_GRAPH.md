@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**60 app modules · 74 test files · 111 classes · 1090 functions/methods · 21,896 lines of Python** · source hash `ada7c1d63410974a`
+**60 app modules · 74 test files · 111 classes · 1093 functions/methods · 21,974 lines of Python** · source hash `0bb37decab53bcd8`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -267,7 +267,7 @@ _Years of experience from role date ranges (P1.5), and the page target_
 - function **`years_phrase()`** ([app/analysis/experience.py:136](../app/analysis/experience.py#L136)) — How a resume states it: '4+ years', '1 year', or None under 1 year.
 - function **`target_pages()`** ([app/analysis/experience.py:148](../app/analysis/experience.py#L148)) — How many A4 pages the tailored resume should fill.
 - **Imports:** `domain/resume.py`
-- **Imported by:** `analysis/checklist.py`, `analysis/summary_writer.py`, `eval/harness.py`, `rendering/layout.py`, `rendering/page_fit.py`, `services/arrange.py`, `services/tailor.py`, `validation/content_lint.py`
+- **Imported by:** `analysis/checklist.py`, `analysis/rewriter.py`, `analysis/summary_writer.py`, `eval/harness.py`, `rendering/layout.py`, `rendering/page_fit.py`, `services/arrange.py`, `services/tailor.py`, `validation/content_lint.py`
 - **Tested by:** `tests/unit/test_dates_p86.py`, `tests/unit/test_experience.py`, `tests/unit/test_summary_writer.py`
 
 ### `app/analysis/gap_questions.py`
@@ -421,19 +421,21 @@ _Is this text in English? (P8.25)_
 
 ### `app/analysis/rewriter.py`
 
-**Layer:** Analysis · **Stage:** 7 Rewrite · **Lines:** 298
+**Layer:** Analysis · **Stage:** 7 Rewrite · **Lines:** 341
 
-- class **`LLMRewriter`** ([app/analysis/rewriter.py:74](../app/analysis/rewriter.py#L74))
-  - `__init__()` :75
-  - `rewrite_bullet()` :78 — Rewrite (or, given a single free-text `original_text` with no
-  - `rewrite_bullet_with_status()` :98 — Like rewrite_bullet, plus what happened, so failures are visible
-  - `rewrite_role()` :156 — Rewrite several bullets of one role in ONE call (P1.4).
-  - `execute_plan()` :215 — One LLM call per role (P1.4): all of a job's bullets that the
-- function **`normalize_llm_text()`** ([app/analysis/rewriter.py:27](../app/analysis/rewriter.py#L27))
-- function **`_same_wording()`** ([app/analysis/rewriter.py:34](../app/analysis/rewriter.py#L34)) — Equal apart from case, whitespace and closing punctuation, so adding a
-- function **`breaks_bullet_rules()`** ([app/analysis/rewriter.py:50](../app/analysis/rewriter.py#L50)) — True when a bullet is over the word limit or uses a filler word.
-- function **`_count()`** ([app/analysis/rewriter.py:63](../app/analysis/rewriter.py#L63)) — "1 bullet", "10 bullets" (P9.7: was "10 bullet(s)").
-- **Imports:** `analysis/change_proposal.py`, `domain/evidence.py`, `domain/job.py`, `domain/resume.py`, `domain/tailoring.py`, `llm/client.py`, `llm/schemas.py`
+- class **`LLMRewriter`** ([app/analysis/rewriter.py:104](../app/analysis/rewriter.py#L104))
+  - `__init__()` :105
+  - `rewrite_bullet()` :108 — Rewrite (or, given a single free-text `original_text` with no
+  - `rewrite_bullet_with_status()` :128 — Like rewrite_bullet, plus what happened, so failures are visible
+  - `rewrite_role()` :186 — Rewrite several bullets of one role in ONE call (P1.4).
+  - `execute_plan()` :258 — One LLM call per role (P1.4): all of a job's bullets that the
+- function **`normalize_llm_text()`** ([app/analysis/rewriter.py:28](../app/analysis/rewriter.py#L28))
+- function **`_same_wording()`** ([app/analysis/rewriter.py:35](../app/analysis/rewriter.py#L35)) — Equal apart from case, whitespace and closing punctuation, so adding a
+- function **`breaks_bullet_rules()`** ([app/analysis/rewriter.py:51](../app/analysis/rewriter.py#L51)) — True when a bullet is over the word limit or uses a filler word.
+- function **`_past_forms()`** ([app/analysis/rewriter.py:64](../app/analysis/rewriter.py#L64)) — Past tense spellings of a base verb: "lead" -> {"led", "leaded"},
+- function **`keep_present_tense()`** ([app/analysis/rewriter.py:76](../app/analysis/rewriter.py#L76)) — For a job the candidate still holds (P9.24): a bullet written in the
+- function **`_count()`** ([app/analysis/rewriter.py:93](../app/analysis/rewriter.py#L93)) — "1 bullet", "10 bullets" (P9.7: was "10 bullet(s)").
+- **Imports:** `analysis/change_proposal.py`, `analysis/experience.py`, `domain/evidence.py`, `domain/job.py`, `domain/resume.py`, `domain/tailoring.py`, `llm/client.py`, `llm/schemas.py`, `validation/factual.py`
 - **Imported by:** `analysis/summary_writer.py`, `rendering/docx_patcher.py`, `services/tailor.py`, `validation/content_lint.py`, `validation/factual.py`
 - **Tested by:** `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_docx_renderer.py`, `tests/unit/test_fact_check_p89.py`, `tests/unit/test_progress_p97.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_tailor_planner.py`, `tests/unit/test_tailor_resume_flow.py`, `tests/unit/test_validation.py`
 - **Prompts:** `llm/prompts/rewrite_bullet.txt`, `llm/prompts/rewrite_role.txt`
@@ -1264,7 +1266,7 @@ _Content coverage (P8.2): does every line of the uploaded resume reach the_
   - `_words_from_elsewhere()` :344 — Runs of consecutive plain words that the resume uses only under
   - `validate_proposal()` :365
 - **Imports:** `analysis/rewriter.py`, `analysis/skills_tailor.py`, `analysis/terminology.py`, `domain/evidence.py`
-- **Imported by:** `services/tailor.py`
+- **Imported by:** `analysis/rewriter.py`, `services/tailor.py`
 - **Tested by:** `tests/unit/test_fact_check_p89.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_validation.py`
 
 ### `app/validation/output.py`
@@ -1393,8 +1395,10 @@ flowchart LR
   analysis_matcher --> llm_client
   analysis_resume_normalizer --> ingestion_docx
   analysis_rewriter --> analysis_change_proposal
+  analysis_rewriter --> analysis_experience
   analysis_rewriter --> llm_client
   analysis_rewriter --> llm_schemas
+  analysis_rewriter --> validation_factual
   analysis_semantic_matcher --> config_settings
   analysis_skills_tailor --> analysis_change_proposal
   analysis_skills_tailor --> analysis_keyword_match
