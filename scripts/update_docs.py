@@ -670,7 +670,10 @@ def _split_entries(text: str) -> Tuple[str, List[Tuple[str, str]]]:
     for chunk in re.split(r"(?=^<!-- entry:)", rest, flags=re.M):
         m = re.match(r"<!-- entry:(.+?) -->", chunk)
         if m:
-            entries.append((m.group(1), chunk.strip() + "\n"))
+            # Drop the "---" separators _join put after this entry; kept, they
+            # piled up by one per entry on every commit.
+            body = re.sub(r"(?:\s*^---\s*$)+\s*\Z", "", chunk.strip(), flags=re.M)
+            entries.append((m.group(1), body + "\n"))
     return head, entries
 
 

@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**60 app modules · 73 test files · 111 classes · 1088 functions/methods · 21,861 lines of Python** · source hash `f826645051584849`
+**60 app modules · 74 test files · 111 classes · 1089 functions/methods · 21,882 lines of Python** · source hash `36832c27e922be78`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -204,6 +204,7 @@ tests/
     test_tailor_service_addition.py              _service(), test_incorporate_user_addition_appends_bullet_to_most_rece…
     test_template_layout.py                      P2.1: the ATS template (A4, Arial, standard headings, section order,
     test_template_renderer_standalone.py         _full_text(), test_template_renderer_ats_mode(), test_template_rendere…
+    test_update_docs.py                          test_change_log_round_trip_keeps_one_separator_per_entry()
     test_uploads_p822.py                         P8.22: every upload gets a result or a message the person can act on.
     test_validation.py                           test_factual_validator_preserves_grounded_claims(), test_factual_valid…
 ```

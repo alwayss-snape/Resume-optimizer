@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "f826645051584849",
+  "source_hash": "36832c27e922be78",
   "stats": {
-    "files": 167,
-    "python_files": 143,
+    "files": 168,
+    "python_files": 144,
     "app_modules": 60,
-    "test_files": 73,
+    "test_files": 74,
     "classes": 111,
-    "functions": 1088,
-    "lines_of_python": 21861
+    "functions": 1089,
+    "lines_of_python": 21882
   },
   "axes": {
     "x": "location (path)",
@@ -4244,7 +4244,7 @@
       "type": "python",
       "layer": "Tooling",
       "stages": [],
-      "lines": 740,
+      "lines": 743,
       "doc": "Regenerate the repo's living docs: the knowledge graph and the change log.",
       "classes": [],
       "functions": [
@@ -4340,22 +4340,22 @@
         },
         {
           "name": "_join",
-          "line": 677,
+          "line": 680,
           "doc": ""
         },
         {
           "name": "log_entry",
-          "line": 681,
+          "line": 684,
           "doc": ""
         },
         {
           "name": "backfill",
-          "line": 699,
+          "line": 702,
           "doc": ""
         },
         {
           "name": "main",
-          "line": 716,
+          "line": 719,
           "doc": ""
         }
       ]
@@ -8101,6 +8101,22 @@
           "name": "test_template_renderer_handles_missing_optional_fields",
           "line": 68,
           "doc": "No dates, no location, no email \u2014 must not crash, and must still"
+        }
+      ]
+    },
+    {
+      "id": "tests/unit/test_update_docs.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 18,
+      "doc": "",
+      "classes": [],
+      "functions": [
+        {
+          "name": "test_change_log_round_trip_keeps_one_separator_per_entry",
+          "line": 8,
+          "doc": "Each commit re-read the log with the \"---\" after every entry kept, then"
         }
       ]
     },
