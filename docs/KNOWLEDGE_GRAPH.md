@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**60 app modules · 74 test files · 111 classes · 1093 functions/methods · 21,974 lines of Python** · source hash `0bb37decab53bcd8`
+**60 app modules · 74 test files · 111 classes · 1094 functions/methods · 21,996 lines of Python** · source hash `85d1bd2db4cf214a`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -372,7 +372,7 @@ _Is this text in English? (P8.25)_
 
 ### `app/analysis/resume_normalizer.py`
 
-**Layer:** Analysis · **Stage:** 2 Normalize · **Lines:** 1278
+**Layer:** Analysis · **Stage:** 2 Normalize · **Lines:** 1289
 
 - class **`ResumeNormalizer`** ([app/analysis/resume_normalizer.py:9](../app/analysis/resume_normalizer.py#L9))
   - `find_phone()` :62 — The first phone number in a line, as written, or None.
@@ -384,37 +384,37 @@ _Is this text in English? (P8.25)_
   - `_styled_as_heading()` :168 — Set like the document's section headings, or (when none was
   - `_heading_kind()` :179 — The section a heading line starts, or None when the line is content.
   - `_display_heading()` :222 — 'CLINICAL ROTATIONS' -> 'Clinical Rotations'; mixed case kept.
-  - `_header_segments()` :230 — 'Austin, TX · a@b.com · 512-555-0199' -> its parts.
-  - `_looks_like_name()` :234
-  - `_looks_like_location()` :246 — A place, never a job title ("Backend Engineer, Payments" or
-  - `_is_detail()` :254 — A header part worth keeping as is: not contact data (email,
-  - `_is_section_title()` :304
-  - `_looks_like_title()` :334
-  - `_split_title_company()` :337 — 'Title | Company | Place', 'Company — Title', 'Title — Team — Company'
-  - `_title_score()` :354 — 2 when a role word ends the phrase ("Data Analyst"), 1 when it's
-  - `_split_company_location()` :383 — 'Banner Medical Center, Phoenix, AZ' -> ('Banner Medical Center',
-  - `_split_comma_job()` :407 — 'Shift Supervisor, Starbucks, Atlanta GA' -> (title, company,
-  - `_ends_with_suffix()` :423 — "CloudMetrics Inc." ends with a full stop but is a company, not a sentence.
-  - `_next_is_meta_line()` :428 — The ATS template prints 'Company · Location' under the title line.
-  - `_next_is_company_line()` :434 — The ATS template prints just the company under "Title<tab>dates"
-  - `_trim()` :456 — Strip separators left around removed dates, keeping a closing
-  - `_split_skill_line()` :472 — 'Languages: Python, SQL<tab>Frameworks: Pandas, and XGBoost' ->
-  - `_skill_items()` :493
-  - `_split_education_line()` :511 — 'B.S. Biology, University of Texas at Austin, 2016' -> (degree,
-  - `_looks_like_degree()` :557 — 'B.Tech in Computer Science' yes; 'State University' no.
-  - `_split_middle_dot()` :563 — 'Acme Corp · Pune, India' -> ('Acme Corp', 'Pune, India'), the
-  - `_is_dated_line()` :572 — A job title/company line carrying a date range or year. A date
-  - `_header_range()` :587 — A date range inside a job header line, or None. Trailing ranges
-  - `_experience_line_kind()` :604 — 'dated' (title and/or company with dates), 'header_line' (a short
-  - `_add_role()` :623 — Record a role; the first one also fills the entry's title/dates.
-  - `_merge_links()` :633 — Profile links from the file's hyperlinks and from URLs written in
-  - `_trailing_dates()` :647 — (match, start, end) for a trailing date range or single date.
-  - `_extract_date_range()` :657
-  - `_strip_date_range()` :663
-  - `_parse_title_and_dates()` :667 — 'Data Scientist II | August 2024 - Present' ->
-  - `_split_list_items()` :682 — Items of a certification / award line. ';' always separates
-  - `_split_respecting_parens()` :701 — Split on sep_chars, but never inside ( ) or [ ] groups — so
-  - `normalize()` :724
+  - `_header_segments()` :241 — 'Austin, TX · a@b.com · 512-555-0199' -> its parts.
+  - `_looks_like_name()` :245
+  - `_looks_like_location()` :257 — A place, never a job title ("Backend Engineer, Payments" or
+  - `_is_detail()` :265 — A header part worth keeping as is: not contact data (email,
+  - `_is_section_title()` :315
+  - `_looks_like_title()` :345
+  - `_split_title_company()` :348 — 'Title | Company | Place', 'Company — Title', 'Title — Team — Company'
+  - `_title_score()` :365 — 2 when a role word ends the phrase ("Data Analyst"), 1 when it's
+  - `_split_company_location()` :394 — 'Banner Medical Center, Phoenix, AZ' -> ('Banner Medical Center',
+  - `_split_comma_job()` :418 — 'Shift Supervisor, Starbucks, Atlanta GA' -> (title, company,
+  - `_ends_with_suffix()` :434 — "CloudMetrics Inc." ends with a full stop but is a company, not a sentence.
+  - `_next_is_meta_line()` :439 — The ATS template prints 'Company · Location' under the title line.
+  - `_next_is_company_line()` :445 — The ATS template prints just the company under "Title<tab>dates"
+  - `_trim()` :467 — Strip separators left around removed dates, keeping a closing
+  - `_split_skill_line()` :483 — 'Languages: Python, SQL<tab>Frameworks: Pandas, and XGBoost' ->
+  - `_skill_items()` :504
+  - `_split_education_line()` :522 — 'B.S. Biology, University of Texas at Austin, 2016' -> (degree,
+  - `_looks_like_degree()` :568 — 'B.Tech in Computer Science' yes; 'State University' no.
+  - `_split_middle_dot()` :574 — 'Acme Corp · Pune, India' -> ('Acme Corp', 'Pune, India'), the
+  - `_is_dated_line()` :583 — A job title/company line carrying a date range or year. A date
+  - `_header_range()` :598 — A date range inside a job header line, or None. Trailing ranges
+  - `_experience_line_kind()` :615 — 'dated' (title and/or company with dates), 'header_line' (a short
+  - `_add_role()` :634 — Record a role; the first one also fills the entry's title/dates.
+  - `_merge_links()` :644 — Profile links from the file's hyperlinks and from URLs written in
+  - `_trailing_dates()` :658 — (match, start, end) for a trailing date range or single date.
+  - `_extract_date_range()` :668
+  - `_strip_date_range()` :674
+  - `_parse_title_and_dates()` :678 — 'Data Scientist II | August 2024 - Present' ->
+  - `_split_list_items()` :693 — Items of a certification / award line. ';' always separates
+  - `_split_respecting_parens()` :712 — Split on sep_chars, but never inside ( ) or [ ] groups — so
+  - `normalize()` :735
 - **Imports:** `domain/evidence.py`, `domain/resume.py`, `domain/resume_document.py`, `ingestion/docx.py`
 - **Imported by:** `analysis/keyword_match.py`, `analysis/structure_extractor.py`, `eval/golden.py`, `services/tailor.py`, `validation/output.py`
 - **Tested by:** `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_ats_round_trip.py`, `tests/unit/test_contact_p84.py`, `tests/unit/test_dates_p86.py`, `tests/unit/test_education_p88.py`, `tests/unit/test_job_lines_p85.py`, `tests/unit/test_kept_sections_p83.py`, `tests/unit/test_layouts_p87.py`, `tests/unit/test_parser_regressions_p42.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_stage_h_review.py`, `tests/unit/test_structure_extractor.py`, `tests/unit/test_tailor_resume_flow.py`

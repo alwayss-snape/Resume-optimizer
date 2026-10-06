@@ -220,9 +220,20 @@ class ResumeNormalizer:
 
     @staticmethod
     def _display_heading(text: str) -> str:
-        """'CLINICAL ROTATIONS' -> 'Clinical Rotations'; mixed case kept."""
+        """'CLINICAL ROTATIONS' -> 'Clinical Rotations'; mixed case kept.
+        Small words stay lower case and an apostrophe doesn't start a word
+        ('GRANTS AND FUNDING' -> 'Grants and Funding', not 'Grants And
+        Funding'; "DEAN'S LIST" -> "Dean's List"; P9.25)."""
         text = re.sub(r"\s+", " ", text).strip().rstrip(":")
-        return text.title() if text.isupper() else text
+        if not text.isupper():
+            return text
+        small = {"a", "an", "and", "as", "at", "by", "for", "in", "of", "on", "or", "the", "to", "with"}
+        def cap(word: str) -> str:
+            i = next((n for n, ch in enumerate(word) if ch.isalpha()), None)
+            return word if i is None else word[:i] + word[i].upper() + word[i + 1:]
+
+        words = text.lower().split(" ")
+        return " ".join(w if i and w in small else cap(w) for i, w in enumerate(words))
 
     # -- header lines (P8.3, P8.7) -----------------------------------------
 

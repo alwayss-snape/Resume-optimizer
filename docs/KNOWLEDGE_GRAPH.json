@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "0bb37decab53bcd8",
+  "source_hash": "85d1bd2db4cf214a",
   "stats": {
     "files": 168,
     "python_files": 144,
     "app_modules": 60,
     "test_files": 74,
     "classes": 111,
-    "functions": 1093,
-    "lines_of_python": 21974
+    "functions": 1094,
+    "lines_of_python": 21996
   },
   "axes": {
     "x": "location (path)",
@@ -702,7 +702,7 @@
       "stages": [
         "2 Normalize"
       ],
-      "lines": 1278,
+      "lines": 1289,
       "doc": "",
       "classes": [
         {
@@ -757,157 +757,157 @@
             },
             {
               "name": "_header_segments",
-              "line": 230,
+              "line": 241,
               "doc": "'Austin, TX \u00b7 a@b.com \u00b7 512-555-0199' -> its parts."
             },
             {
               "name": "_looks_like_name",
-              "line": 234,
+              "line": 245,
               "doc": ""
             },
             {
               "name": "_looks_like_location",
-              "line": 246,
+              "line": 257,
               "doc": "A place, never a job title (\"Backend Engineer, Payments\" or"
             },
             {
               "name": "_is_detail",
-              "line": 254,
+              "line": 265,
               "doc": "A header part worth keeping as is: not contact data (email,"
             },
             {
               "name": "_is_section_title",
-              "line": 304,
+              "line": 315,
               "doc": ""
             },
             {
               "name": "_looks_like_title",
-              "line": 334,
+              "line": 345,
               "doc": ""
             },
             {
               "name": "_split_title_company",
-              "line": 337,
+              "line": 348,
               "doc": "'Title | Company | Place', 'Company \u2014 Title', 'Title \u2014 Team \u2014 Company'"
             },
             {
               "name": "_title_score",
-              "line": 354,
+              "line": 365,
               "doc": "2 when a role word ends the phrase (\"Data Analyst\"), 1 when it's"
             },
             {
               "name": "_split_company_location",
-              "line": 383,
+              "line": 394,
               "doc": "'Banner Medical Center, Phoenix, AZ' -> ('Banner Medical Center',"
             },
             {
               "name": "_split_comma_job",
-              "line": 407,
+              "line": 418,
               "doc": "'Shift Supervisor, Starbucks, Atlanta GA' -> (title, company,"
             },
             {
               "name": "_ends_with_suffix",
-              "line": 423,
+              "line": 434,
               "doc": "\"CloudMetrics Inc.\" ends with a full stop but is a company, not a sentence."
             },
             {
               "name": "_next_is_meta_line",
-              "line": 428,
+              "line": 439,
               "doc": "The ATS template prints 'Company \u00b7 Location' under the title line."
             },
             {
               "name": "_next_is_company_line",
-              "line": 434,
+              "line": 445,
               "doc": "The ATS template prints just the company under \"Title<tab>dates\""
             },
             {
               "name": "_trim",
-              "line": 456,
+              "line": 467,
               "doc": "Strip separators left around removed dates, keeping a closing"
             },
             {
               "name": "_split_skill_line",
-              "line": 472,
+              "line": 483,
               "doc": "'Languages: Python, SQL<tab>Frameworks: Pandas, and XGBoost' ->"
             },
             {
               "name": "_skill_items",
-              "line": 493,
+              "line": 504,
               "doc": ""
             },
             {
               "name": "_split_education_line",
-              "line": 511,
+              "line": 522,
               "doc": "'B.S. Biology, University of Texas at Austin, 2016' -> (degree,"
             },
             {
               "name": "_looks_like_degree",
-              "line": 557,
+              "line": 568,
               "doc": "'B.Tech in Computer Science' yes; 'State University' no."
             },
             {
               "name": "_split_middle_dot",
-              "line": 563,
+              "line": 574,
               "doc": "'Acme Corp \u00b7 Pune, India' -> ('Acme Corp', 'Pune, India'), the"
             },
             {
               "name": "_is_dated_line",
-              "line": 572,
+              "line": 583,
               "doc": "A job title/company line carrying a date range or year. A date"
             },
             {
               "name": "_header_range",
-              "line": 587,
+              "line": 598,
               "doc": "A date range inside a job header line, or None. Trailing ranges"
             },
             {
               "name": "_experience_line_kind",
-              "line": 604,
+              "line": 615,
               "doc": "'dated' (title and/or company with dates), 'header_line' (a short"
             },
             {
               "name": "_add_role",
-              "line": 623,
+              "line": 634,
               "doc": "Record a role; the first one also fills the entry's title/dates."
             },
             {
               "name": "_merge_links",
-              "line": 633,
+              "line": 644,
               "doc": "Profile links from the file's hyperlinks and from URLs written in"
             },
             {
               "name": "_trailing_dates",
-              "line": 647,
+              "line": 658,
               "doc": "(match, start, end) for a trailing date range or single date."
             },
             {
               "name": "_extract_date_range",
-              "line": 657,
+              "line": 668,
               "doc": ""
             },
             {
               "name": "_strip_date_range",
-              "line": 663,
+              "line": 674,
               "doc": ""
             },
             {
               "name": "_parse_title_and_dates",
-              "line": 667,
+              "line": 678,
               "doc": "'Data Scientist II | August 2024 - Present' ->"
             },
             {
               "name": "_split_list_items",
-              "line": 682,
+              "line": 693,
               "doc": "Items of a certification / award line. ';' always separates"
             },
             {
               "name": "_split_respecting_parens",
-              "line": 701,
+              "line": 712,
               "doc": "Split on sep_chars, but never inside ( ) or [ ] groups \u2014 so"
             },
             {
               "name": "normalize",
-              "line": 724,
+              "line": 735,
               "doc": ""
             }
           ]
@@ -6030,7 +6030,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 97,
+      "lines": 108,
       "doc": "P8.3: sections the model has no fields for are kept verbatim under their",
       "classes": [],
       "functions": [
@@ -6067,6 +6067,11 @@
         {
           "name": "test_bold_label_inside_skills_is_not_a_section",
           "line": 88,
+          "doc": ""
+        },
+        {
+          "name": "test_verbatim_headings_keep_small_words_lower_case_p925",
+          "line": 100,
           "doc": ""
         }
       ]

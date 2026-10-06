@@ -23,9 +23,9 @@ JD-aligned rewrites, a Novoresume-style ATS layout that fits the right length, a
 | 6: UI redesign | 6 | 6 | 0 | 0 |
 | 7: Owner feedback on the flow | 2 | 2 | 0 | 0 |
 | 8: Cross-domain robustness and user control | 26 | 26 | 0 | 0 |
-| 9: Close-out and owner review | 24 | 23 | 1 | 0 |
+| 9: Close-out and owner review | 25 | 24 | 1 | 0 |
 | 10: Inputs, outputs, cover letter and history | 9 | 0 | 0 | 9 |
-| **Total** | **115** | **102** | **1** | **10** |
+| **Total** | **116** | **103** | **1** | **10** |
 
 Phase 1's two open items (P1.15, P1.16) are ➖, moved into P8.9 and P8.18, so its row no longer adds up to 16.
 
@@ -328,6 +328,7 @@ passes live (P9.3). Not re-run: the 5 live LLM persona runs (Groq quota kept for
 | P9.22 | **Groq strict JSON rejected on every try** (owner review R5, 2026-10-05): 11 of 14 rewrites showed the original text and the Review banner printed Groq's raw 400 body (`json_validate_failed`, empty `failed_generation`); the retry only ever re-sent strict mode | `llm/client.py` | ✅ | 2026-10-06: after two strict-mode rejections the last try uses `json_object` mode with our own Pydantic validation; a rejection on every try raises a plain message ("usually temporary: start over") instead of the JSON body. Not reproduced afterwards: 29 strict calls on the private resume all passed, so the cause is intermittent on Groq's side. 2 tests |
 | P9.23 | **JD skills matched inside longer words** (live academic run, P9.10): the keyword table showed "r" for the JD's "R", because the check that every LLM value is in the JD found the "r" in "Senior"; the same check let a skill through when it only appeared inside a longer word ("Java" in "JavaScript") | `analysis/jd_analyzer.py` | ✅ | 2026-10-06: `_verbatim` matches whole terms only (a plural still counts: "API" in "APIs") and tries the JD's exact capitalisation before a case-insensitive match, so the table shows "R". Used for title, company, skills, education and certifications. `test_llm_values_match_whole_terms_in_the_jds_own_case_p923` |
 | P9.24 | **A current job's bullets turned into the past tense** (live academic run, P9.10): in a 2019 – Present job "Lead a lab of 4 PhD students" came back as "Led …" and "Teach BIO 210 …" as "Taught …"; the role prompt gave the model only the company and titles, never the dates, and says "start with a past-tense verb" | `analysis/rewriter.py` | ✅ | 2026-10-06: the role prompt now lists each title's dates and, when the most recent role is ongoing, says it is the current job and present-tense bullets stay present. `keep_present_tense` backs this up in code: when the rewrite only moved the bullet's own opening verb into the past ("Lead" → "Led", "Manage" → "Managed", irregular forms from the fact check's table), the original verb is put back. It only restores a word the bullet had; another verb, or a job that ended, is left alone. `test_current_job_keeps_present_tense_p924` |
+| P9.25 | **"Grants And Funding"** (live academic run, P9.10): an all-capitals heading kept verbatim (P8.3) was title-cased with `str.title()`, so small words were capitalised and "DEAN'S LIST" would read "Dean'S List" | `analysis/resume_normalizer.py` | ✅ | 2026-10-06: `_display_heading` capitalises each word itself: small words (and, of, for, the, …) stay lower case except first, the letter after an apostrophe stays lower case, a non-English first letter ("ÉDUCATION") is handled; a heading in mixed case is still the user's own and kept as written. `test_verbatim_headings_keep_small_words_lower_case_p925` |
 
 ### Owner review of the current state
 

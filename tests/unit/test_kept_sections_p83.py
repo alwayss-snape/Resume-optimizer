@@ -95,3 +95,14 @@ def test_bold_label_inside_skills_is_not_a_section(tmp_path):
     d.save(path)
     resume = ResumeNormalizer().normalize(DocxParser().parse(path))[0].resume
     assert resume.other_sections == [] and "Python" in [s for v in resume.skills.values() for s in v]
+
+
+def test_verbatim_headings_keep_small_words_lower_case_p925():
+    # Live academic run (P9.10): "GRANTS AND FUNDING" printed as "Grants And Funding".
+    show = ResumeNormalizer._display_heading
+    assert show("GRANTS AND FUNDING") == "Grants and Funding"
+    assert show("HONORS & AWARDS:") == "Honors & Awards"
+    assert show("DEAN'S LIST") == "Dean's List"
+    assert show("OF NOTE") == "Of Note"  # the first word is always capitalised
+    assert show("ÉDUCATION CONTINUE") == "Éducation Continue"
+    assert show("Grants and Funding") == "Grants and Funding"  # mixed case is the user's own

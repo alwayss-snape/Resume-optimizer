@@ -10,6 +10,28 @@ Timestamped record of every **major** commit (anything touching `app/`, `scripts
 
 <!-- entries below; newest first -->
 
+<!-- entry:2026-10-06T08:15:25+05:30 -->
+## 2026-10-06 08:15 (+0530) · P9.25: verbatim headings keep small words in lower case
+
+Kshitij Chaubey · branch `fb_ksh`
+
+**Why / details**
+
+> The live academic persona run (P9.10) printed "GRANTS AND FUNDING" as
+> "Grants And Funding". Headings kept verbatim (P8.3) were title-cased with
+> str.title(), which capitalises every word and also the letter after an
+> apostrophe ("Dean'S List"). _display_heading now capitalises word by word,
+> keeps short connector words lower case after the first word, and handles a
+> non-ASCII first letter. Mixed-case headings are still kept as written.
+
+**Changed files**
+
+- Analysis: `M` app/analysis/resume_normalizer.py
+- Docs: `M` docs/ACTION_ITEMS.md
+- Tests: `M` tests/unit/test_kept_sections_p83.py
+
+---
+
 <!-- entry:2026-10-06T08:14:47+05:30 -->
 ## 2026-10-06 08:14 (+0530) · P9.24: a current job's present-tense bullets stay in the present tense
 
