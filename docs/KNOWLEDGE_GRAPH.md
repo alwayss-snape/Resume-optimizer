@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**60 app modules · 74 test files · 111 classes · 1089 functions/methods · 21,882 lines of Python** · source hash `36832c27e922be78`
+**60 app modules · 74 test files · 111 classes · 1090 functions/methods · 21,896 lines of Python** · source hash `ada7c1d63410974a`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -289,7 +289,7 @@ _Suggest-and-confirm gaps (P3.1): ask, never assume._
 
 ### `app/analysis/jd_analyzer.py`
 
-**Layer:** Analysis · **Stage:** 3 JD analysis · **Lines:** 517
+**Layer:** Analysis · **Stage:** 3 JD analysis · **Lines:** 520
 
 - class **`JDAnalyzer`** ([app/analysis/jd_analyzer.py:11](../app/analysis/jd_analyzer.py#L11)) — Extract only text that is visibly present in the supplied job description.
   - `__init__()` :65
@@ -303,14 +303,14 @@ _Suggest-and-confirm gaps (P3.1): ask, never assume._
   - `_is_requirement()` :262
   - `_reflow_lines()` :271 — Undo hard line-wrapping from pasted JDs (job boards/PDFs often wrap
   - `_verbatim()` :309 — The JD's own spelling of `value` if it occurs in the JD (case- and
-  - `_verbatim_list()` :319
-  - `_contains_term()` :330 — Whole-term containment: "A/B" is in "A/B testing", "ML" is not in "MLflow".
-  - `count_occurrences()` :335 — Whole-term, case-insensitive count ("R" doesn't match "React").
-  - `_heuristic_title_company()` :341
-  - `_seniority()` :362
-  - `_years()` :369
-  - `_llm_analyze()` :377 — One structured call: metadata, requirement lines by index, skills.
-  - `analyze()` :405
+  - `_verbatim_list()` :322
+  - `_contains_term()` :333 — Whole-term containment: "A/B" is in "A/B testing", "ML" is not in "MLflow".
+  - `count_occurrences()` :338 — Whole-term, case-insensitive count ("R" doesn't match "React").
+  - `_heuristic_title_company()` :344
+  - `_seniority()` :365
+  - `_years()` :372
+  - `_llm_analyze()` :380 — One structured call: metadata, requirement lines by index, skills.
+  - `analyze()` :408
 - **Imports:** `analysis/terminology.py`, `domain/job.py`, `llm/client.py`, `llm/schemas.py`
 - **Imported by:** `api/routes.py`, `eval/harness.py`, `services/tailor.py`
 - **Tested by:** `tests/unit/test_checklist_p820.py`, `tests/unit/test_jd_analyzer.py`, `tests/unit/test_jd_analyzer_llm.py`, `tests/unit/test_jd_analyzer_v2.py`, `tests/unit/test_jd_p818.py`, `tests/unit/test_matching_p95.py`, `tests/unit/test_parser_regressions_p42.py`

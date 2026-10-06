@@ -23,9 +23,9 @@ JD-aligned rewrites, a Novoresume-style ATS layout that fits the right length, a
 | 6: UI redesign | 6 | 6 | 0 | 0 |
 | 7: Owner feedback on the flow | 2 | 2 | 0 | 0 |
 | 8: Cross-domain robustness and user control | 26 | 26 | 0 | 0 |
-| 9: Close-out and owner review | 22 | 21 | 1 | 0 |
+| 9: Close-out and owner review | 23 | 22 | 1 | 0 |
 | 10: Inputs, outputs, cover letter and history | 9 | 0 | 0 | 9 |
-| **Total** | **113** | **100** | **1** | **10** |
+| **Total** | **114** | **101** | **1** | **10** |
 
 Phase 1's two open items (P1.15, P1.16) are ➖, moved into P8.9 and P8.18, so its row no longer adds up to 16.
 
@@ -326,6 +326,7 @@ passes live (P9.3). Not re-run: the 5 live LLM persona runs (Groq quota kept for
 | P9.20 | **"Oracle SQL" missed next to "Oracle PL/SQL"** (live india run, P9.10): a multi-word term whose words sit in one sentence counts (P8), but the slash parts from P9.15 weren't used for that check | `analysis/keyword_match.py` | ✅ | 2026-10-05: the one-sentence check also looks at slash parts, so "Maintained Oracle PL/SQL procedures" shows Oracle SQL; "SQL Server" still doesn't match. `test_slash_parts_count_for_multi_word_terms_p920` |
 | P9.21 | **"Infosys Ltd, Bengaluru" read as the company** (live india run, P9.10): in "Title, Company, City" a lone city stayed with the company, since "Groupe SEB, Lyon" can't be told from "Payments Platform, Stripe" by shape | `analysis/resume_normalizer.py` | ✅ | 2026-10-05: `_split_company_location` takes the last part as the location when it is a well-known city (`_CITIES`: large Indian, European, and other cities a resume names without a state or country) or a place-like name after a company suffix ("Acme Pvt Ltd, Coimbatore"). An unknown name still stays with the company ("Payments Platform, Stripe"). "Groupe SEB, Lyon" now splits too. Cases in `test_job_lines_p85.py` |
 | P9.22 | **Groq strict JSON rejected on every try** (owner review R5, 2026-10-05): 11 of 14 rewrites showed the original text and the Review banner printed Groq's raw 400 body (`json_validate_failed`, empty `failed_generation`); the retry only ever re-sent strict mode | `llm/client.py` | ✅ | 2026-10-06: after two strict-mode rejections the last try uses `json_object` mode with our own Pydantic validation; a rejection on every try raises a plain message ("usually temporary: start over") instead of the JSON body. Not reproduced afterwards: 29 strict calls on the private resume all passed, so the cause is intermittent on Groq's side. 2 tests |
+| P9.23 | **JD skills matched inside longer words** (live academic run, P9.10): the keyword table showed "r" for the JD's "R", because the check that every LLM value is in the JD found the "r" in "Senior"; the same check let a skill through when it only appeared inside a longer word ("Java" in "JavaScript") | `analysis/jd_analyzer.py` | ✅ | 2026-10-06: `_verbatim` matches whole terms only (a plural still counts: "API" in "APIs") and tries the JD's exact capitalisation before a case-insensitive match, so the table shows "R". Used for title, company, skills, education and certifications. `test_llm_values_match_whole_terms_in_the_jds_own_case_p923` |
 
 ### Owner review of the current state
 

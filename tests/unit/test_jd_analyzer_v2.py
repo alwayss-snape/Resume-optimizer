@@ -113,3 +113,14 @@ def test_llm_keywords_are_topped_up_from_requirement_lines():
     llm = FakeLLM(_llm_result(hard_skills=["Python"]))
     jd = JDAnalyzer(llm).analyze(JD)
     assert {"Python", "PyTorch", "XGBoost", "A/B testing", "FAISS", "Kafka", "ML"} <= set(jd.keywords)
+
+
+def test_llm_values_match_whole_terms_in_the_jds_own_case_p923():
+    # Live academic run (P9.10): "R" was found as the "r" in "Senior" and shown as "r".
+    jd_text = "Senior Scientist, Soil Microbiome (R&D)\nRequirements:\n- Bioinformatics (Python, R, QIIME2)\n- REST APIs and JavaScript\n"
+    assert JDAnalyzer._verbatim("R", jd_text) == "R"
+    assert JDAnalyzer._verbatim("r", jd_text) == "R"  # the JD's capitalisation, not the model's
+    assert JDAnalyzer._verbatim("Java", jd_text) is None  # only inside "JavaScript"
+    assert JDAnalyzer._verbatim("Sci", jd_text) is None
+    assert JDAnalyzer._verbatim("API", jd_text) == "API"  # a plural still counts
+    assert JDAnalyzer._verbatim("python", jd_text) == "Python"

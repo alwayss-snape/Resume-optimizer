@@ -10,6 +10,29 @@ Timestamped record of every **major** commit (anything touching `app/`, `scripts
 
 <!-- entries below; newest first -->
 
+<!-- entry:2026-10-06T08:13:31+05:30 -->
+## 2026-10-06 08:13 (+0530) · P9.23: JD values from the LLM must match whole terms, in the JD's own case
+
+Kshitij Chaubey · branch `fb_ksh`
+
+**Why / details**
+
+> The live academic persona run (P9.10) showed "r" in the keyword table for
+> the JD's "R": _verbatim checked each LLM value against the JD with a plain
+> case-insensitive search, so "R" was found as the "r" inside "Senior" and
+> took that spelling. The same check let a skill through when it only sat
+> inside a longer word ("Java" in "JavaScript"), which is exactly what the
+> check exists to stop. Now it needs word boundaries (a plural still counts)
+> and prefers the JD's exact capitalisation.
+
+**Changed files**
+
+- Analysis: `M` app/analysis/jd_analyzer.py
+- Docs: `M` docs/ACTION_ITEMS.md
+- Tests: `M` tests/unit/test_jd_analyzer_v2.py
+
+---
+
 <!-- entry:2026-10-06T07:46:16+05:30 -->
 ## 2026-10-06 07:46 (+0530) · Docs hook: stop CHANGE_LOG separators from piling up on every commit
 

@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "36832c27e922be78",
+  "source_hash": "ada7c1d63410974a",
   "stats": {
     "files": 168,
     "python_files": 144,
     "app_modules": 60,
     "test_files": 74,
     "classes": 111,
-    "functions": 1089,
-    "lines_of_python": 21882
+    "functions": 1090,
+    "lines_of_python": 21896
   },
   "axes": {
     "x": "location (path)",
@@ -410,7 +410,7 @@
       "stages": [
         "3 JD analysis"
       ],
-      "lines": 517,
+      "lines": 520,
       "doc": "",
       "classes": [
         {
@@ -475,42 +475,42 @@
             },
             {
               "name": "_verbatim_list",
-              "line": 319,
+              "line": 322,
               "doc": ""
             },
             {
               "name": "_contains_term",
-              "line": 330,
+              "line": 333,
               "doc": "Whole-term containment: \"A/B\" is in \"A/B testing\", \"ML\" is not in \"MLflow\"."
             },
             {
               "name": "count_occurrences",
-              "line": 335,
+              "line": 338,
               "doc": "Whole-term, case-insensitive count (\"R\" doesn't match \"React\")."
             },
             {
               "name": "_heuristic_title_company",
-              "line": 341,
+              "line": 344,
               "doc": ""
             },
             {
               "name": "_seniority",
-              "line": 362,
+              "line": 365,
               "doc": ""
             },
             {
               "name": "_years",
-              "line": 369,
+              "line": 372,
               "doc": ""
             },
             {
               "name": "_llm_analyze",
-              "line": 377,
+              "line": 380,
               "doc": "One structured call: metadata, requirement lines by index, skills."
             },
             {
               "name": "analyze",
-              "line": 405,
+              "line": 408,
               "doc": ""
             }
           ]
@@ -5798,7 +5798,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 115,
+      "lines": 126,
       "doc": "JD analysis v2 (P1.1): title/company without labels, whole-line",
       "classes": [
         {
@@ -5863,6 +5863,11 @@
         {
           "name": "test_llm_keywords_are_topped_up_from_requirement_lines",
           "line": 112,
+          "doc": ""
+        },
+        {
+          "name": "test_llm_values_match_whole_terms_in_the_jds_own_case_p923",
+          "line": 118,
           "doc": ""
         }
       ]

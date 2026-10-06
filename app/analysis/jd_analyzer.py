@@ -309,11 +309,14 @@ class JDAnalyzer:
     def _verbatim(value: Optional[str], jd_text: str) -> Optional[str]:
         """The JD's own spelling of `value` if it occurs in the JD (case- and
         whitespace-insensitive), else None. Anything the LLM returns that
-        isn't in the JD is dropped here."""
+        isn't in the JD is dropped here. Whole terms only, so "R" isn't the
+        "r" in "Senior" and "Java" isn't in "JavaScript" (a plural still
+        counts: "API" in "APIs"); the JD's own capitalisation wins (P9.23)."""
         if not value or not value.strip():
             return None
         words = [re.escape(w) for w in value.split()]
-        m = re.search(r"\s+".join(words), jd_text, re.IGNORECASE)
+        pattern = r"(?<![A-Za-z0-9])" + r"\s+".join(words) + r"(?=(?:e?s)?(?![A-Za-z0-9]))"
+        m = re.search(pattern, jd_text) or re.search(pattern, jd_text, re.IGNORECASE)
         return re.sub(r"\s+", " ", m.group(0)).strip() if m else None
 
     def _verbatim_list(self, values: List[str], jd_text: str) -> List[str]:
