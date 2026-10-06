@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**61 app modules · 75 test files · 114 classes · 1132 functions/methods · 22,772 lines of Python** · source hash `8866f5f50483cf40`
+**61 app modules · 75 test files · 114 classes · 1134 functions/methods · 22,836 lines of Python** · source hash `89f824ccb10d4a29`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -426,20 +426,20 @@ _Is this text in English? (P8.25)_
 
 ### `app/analysis/rewriter.py`
 
-**Layer:** Analysis · **Stage:** 7 Rewrite · **Lines:** 341
+**Layer:** Analysis · **Stage:** 7 Rewrite · **Lines:** 357
 
-- class **`LLMRewriter`** ([app/analysis/rewriter.py:104](../app/analysis/rewriter.py#L104))
-  - `__init__()` :105
-  - `rewrite_bullet()` :108 — Rewrite (or, given a single free-text `original_text` with no
-  - `rewrite_bullet_with_status()` :128 — Like rewrite_bullet, plus what happened, so failures are visible
-  - `rewrite_role()` :186 — Rewrite several bullets of one role in ONE call (P1.4).
-  - `execute_plan()` :258 — One LLM call per role (P1.4): all of a job's bullets that the
+- class **`LLMRewriter`** ([app/analysis/rewriter.py:107](../app/analysis/rewriter.py#L107))
+  - `__init__()` :108
+  - `rewrite_bullet()` :111 — Rewrite (or, given a single free-text `original_text` with no
+  - `rewrite_bullet_with_status()` :131 — Like rewrite_bullet, plus what happened, so failures are visible
+  - `rewrite_role()` :189 — Rewrite several bullets of one role in ONE call (P1.4).
+  - `execute_plan()` :261 — One LLM call per role (P1.4): all of a job's bullets that the
 - function **`normalize_llm_text()`** ([app/analysis/rewriter.py:28](../app/analysis/rewriter.py#L28))
 - function **`_same_wording()`** ([app/analysis/rewriter.py:35](../app/analysis/rewriter.py#L35)) — Equal apart from case, whitespace and closing punctuation, so adding a
-- function **`breaks_bullet_rules()`** ([app/analysis/rewriter.py:51](../app/analysis/rewriter.py#L51)) — True when a bullet is over the word limit or uses a filler word.
-- function **`_past_forms()`** ([app/analysis/rewriter.py:64](../app/analysis/rewriter.py#L64)) — Past tense spellings of a base verb: "lead" -> {"led", "leaded"},
-- function **`keep_present_tense()`** ([app/analysis/rewriter.py:76](../app/analysis/rewriter.py#L76)) — For a job the candidate still holds (P9.24): a bullet written in the
-- function **`_count()`** ([app/analysis/rewriter.py:93](../app/analysis/rewriter.py#L93)) — "1 bullet", "10 bullets" (P9.7: was "10 bullet(s)").
+- function **`breaks_bullet_rules()`** ([app/analysis/rewriter.py:54](../app/analysis/rewriter.py#L54)) — True when a bullet is over the word limit or uses a filler word.
+- function **`_past_forms()`** ([app/analysis/rewriter.py:67](../app/analysis/rewriter.py#L67)) — Past tense spellings of a base verb: "lead" -> {"led", "leaded"},
+- function **`keep_present_tense()`** ([app/analysis/rewriter.py:79](../app/analysis/rewriter.py#L79)) — For a job the candidate still holds (P9.24): a bullet written in the
+- function **`_count()`** ([app/analysis/rewriter.py:96](../app/analysis/rewriter.py#L96)) — "1 bullet", "10 bullets" (P9.7: was "10 bullet(s)").
 - **Imports:** `analysis/change_proposal.py`, `analysis/experience.py`, `domain/evidence.py`, `domain/job.py`, `domain/resume.py`, `domain/tailoring.py`, `llm/client.py`, `llm/schemas.py`, `validation/factual.py`
 - **Imported by:** `analysis/summary_writer.py`, `rendering/docx_patcher.py`, `services/tailor.py`, `validation/content_lint.py`, `validation/factual.py`
 - **Tested by:** `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_docx_renderer.py`, `tests/unit/test_fact_check_p89.py`, `tests/unit/test_progress_p97.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_tailor_planner.py`, `tests/unit/test_tailor_resume_flow.py`, `tests/unit/test_validation.py`

@@ -105,7 +105,8 @@ and unused prompts (P0.8, P1.10) are all fixed. What remains:
    counted twice, a repeated "Skills:" label, unchanged bullets listed as rewrites, a comma title read back wrong, a
    city kept in the company); the live-AI browser walkthrough passed (P9.11). **Stage N done (2026-10-06):** eu_cv passes (German kept verbatim); academic found three more problems, all fixed (P9.23 JD skills matched inside longer words, P9.24 a current job's bullets turned into the past tense, P9.25 "Grants And Funding"); its 3 pages wait for the Academic CV template (P10.6). Private live run clean. **Stage O (2026-10-07):** LinkedIn "Save to PDF" import built (P10.1) against an anonymized fixture and golden file; gate in progress. **Next: Stage P, output formats (P10.2–P10.7).** Groq strict-JSON rejections that repeat now fall back to plain JSON mode with a readable error (P9.22).
 8. **Groq free tier, per minute:** 8K tokens per minute means role rewrites can wait 30–60 s each on a busy run.
-   That is now waited out (shown as progress), so a real run takes ~1–2 minutes of drafting.
+   That is now waited out (shown as progress), so a real run takes ~1–2 minutes of drafting. The same cap can leave a long role's answer
+   out of completion tokens on every try; such a role is now retried in two halves (P10.10).
 
 ## Repo map (docs)
 

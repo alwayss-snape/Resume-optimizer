@@ -314,3 +314,51 @@ def test_current_job_keeps_present_tense_p924():
     out, _, _ = LLMRewriter(_role_client(RoleRewriteResult(bullets=[
         RoleBulletRewrite(bullet_id="b1", rewritten="Led a lab of 4 PhD students.")]))).rewrite_role(exp, items)
     assert out["b1"]["text"] == "Led a lab of 4 PhD students."
+
+
+def test_a_long_role_rejected_as_invalid_json_is_retried_in_halves_p1010():
+    """P10.10: Groq's "max completion tokens reached" (json_validate_failed)
+    on a 10-bullet role lost 10 of 12 bullets on the private resume; two
+    half-size calls fit."""
+    from app.analysis.rewriter import LLMRewriter
+    from app.analysis.tailor_planner import TailoringPlanner
+    from app.llm.schemas import LLMInvalidJSONError, RoleBulletRewrite, RoleRewriteResult
+    texts = ["Built LightGBM models in Python for fraud.", "Built Spark pipelines for feature data.",
+             "Tuned LightGBM ranking in Python.", "Ran Spark jobs for daily scoring.",
+             "Wrote Python services for model scoring."]
+    resume = Resume(candidate=Candidate(name="J"), experience=[Experience(
+        id="e1", company="Acme", title="Data Scientist",
+        bullets=[ResumeBullet(id=f"b{i}", text=t) for i, t in enumerate(texts)])])
+    evidence = [Evidence(id=f"ev_{b.id}", source_type="experience", source_id=b.id, text=b.text)
+                for b in resume.experience[0].bullets]
+    job = JobDescription(requirements=[Requirement(id="r1", text="LightGBM, Spark and Python modeling")],
+                         keywords=["LightGBM", "Python", "Spark"], raw_text="x")
+    plan = TailoringPlanner().create_plan(resume, job, evidence, matches=[])
+
+    calls = []
+
+    def answer(messages, schema_model, **kwargs):
+        ids = [line.split(": ", 1)[1] for line in messages[1]["content"].splitlines()
+               if line.startswith("- bullet_id: ")]
+        calls.append(ids)
+        if len(ids) > 3:
+            raise LLMInvalidJSONError("the AI service returned an empty or malformed answer on every try "
+                                      "(Groq json_validate_failed).")
+        return RoleRewriteResult(bullets=[RoleBulletRewrite(bullet_id=i, rewritten=f"Delivered work item {i}.")
+                                          for i in ids])
+
+    client = _role_client()
+    client.generate_json.side_effect = answer
+    proposals = LLMRewriter(client).execute_plan(resume, plan, evidence, job)
+    assert len(calls[0]) == 5 and [len(c) for c in calls[1:]] == [2, 3]
+    assert {p.status for p in proposals} == {"ok"} and len(proposals) == 5
+
+
+def test_a_short_role_is_not_split_p1010():
+    from app.analysis.rewriter import LLMRewriter
+    from app.llm.schemas import LLMInvalidJSONError
+    resume, evidence, job, plan = _role_setup()
+    client = _role_client(error=LLMInvalidJSONError("(Groq json_validate_failed)"))
+    proposals = LLMRewriter(client).execute_plan(resume, plan, evidence, job)
+    assert client.generate_json.call_count == 1
+    assert {p.status for p in proposals} == {"llm_error"}

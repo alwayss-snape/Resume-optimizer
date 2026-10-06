@@ -45,6 +45,9 @@ def _same_wording(a: str, b: str) -> bool:
 FILLER_WORDS = ("robust", "seamless", "seamlessly", "dynamic", "intelligent", "fully", "leveraged",
                 "leveraging", "synergy", "results-driven", "cutting-edge")
 MAX_BULLET_WORDS = 28
+# A role call the AI service rejected (invalid JSON, usually out of
+# completion tokens) is tried again in two halves from this many bullets (P10.10).
+SPLIT_ROLE_FROM = 4
 _FILLER_RE = re.compile(r"\b(" + "|".join(re.escape(w) for w in FILLER_WORDS) + r")\b", re.IGNORECASE)
 
 
@@ -312,6 +315,19 @@ class LLMRewriter:
             (it sometimes returns only the first few of a long role) or
             returned unchanged although they break the length / filler rules."""
             results, error, missing_status = self.rewrite_role(exp, items, header=header)
+            if not results and error and "json_validate_failed" in error and len(items) >= SPLIT_ROLE_FROM:
+                # P10.10: on the free tier a long role's answer can run out of
+                # completion tokens on every try (10 of 12 bullets lost on the
+                # private resume, 2026-10-07); two halves need half the output each.
+                half = len(items) // 2
+                results, missing_status = {}, STATUS_LLM_ERROR
+                errors = []
+                for part in (items[:half], items[half:]):
+                    got, part_error, _ = self.rewrite_role(exp, part, header=header)
+                    results.update(got)
+                    if part_error:
+                        errors.append(part_error)
+                error = errors[0] if errors else None
             retry = [i for i in items if i["bullet_id"] not in results
                      or (results[i["bullet_id"]]["status"] == STATUS_UNCHANGED and breaks_bullet_rules(i["text"]))]
             if results and retry and not error:

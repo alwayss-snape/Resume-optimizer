@@ -10,6 +10,32 @@ Timestamped record of every **major** commit (anything touching `app/`, `scripts
 
 <!-- entries below; newest first -->
 
+<!-- entry:2026-10-07T02:46:16+05:30 -->
+## 2026-10-07 02:46 (+0530) · P10.10: retry a long role in two halves when Groq runs out of tokens
+
+Kshitij Chaubey · branch `fb_ksh`
+
+**Why / details**
+
+> The Stage O private live run lost 10 of 12 bullets in 2 of 3 runs on
+> 2026-10-07. Captured error: Groq json_validate_failed, "max completion
+> tokens reached before generating a valid document", on the 10-bullet role
+> call, on every try, even after effort dropped to low. The free tier caps a
+> completion to what fits its 8K tokens-per-minute budget next to the
+> prompt, so a long role's answer can simply not fit.
+>
+> When a role call of 4+ bullets fails that way, it is now retried as two
+> half-size calls, each needing half the output. Normal runs make exactly
+> the same calls as before; the follow-up for skipped bullets still runs.
+
+**Changed files**
+
+- Analysis: `M` app/analysis/rewriter.py
+- Docs: `M` docs/ACTION_ITEMS.md, `M` docs/PROJECT_OVERVIEW.md
+- Tests: `M` tests/unit/test_rewriter.py
+
+---
+
 <!-- entry:2026-10-07T02:36:16+05:30 -->
 ## 2026-10-07 02:36 (+0530) · P10.1: read a LinkedIn "Save to PDF" export by its two-column layout
 

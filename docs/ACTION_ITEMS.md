@@ -1,7 +1,7 @@
 # Action Items — Best Tailored Resume per JD
 
 _Living tracker. Update an item's **Status** in the same commit that changes it; add a short note (commit subject or
-what's left). Last updated: 2026-10-07 (P0–P9 done, Stage N gate passed, P10.1 done (Stage O); P5.7 shelved; the owner accepted the next round:
+what's left). Last updated: 2026-10-07 (P0–P9 done, Stage N gate passed, P10.1 and P10.10 done (Stage O); P5.7 shelved; the owner accepted the next round:
 P9.7–P9.11 (quick fixes, coverage runs) and Phase 10 (LinkedIn import, output formats, cover letter, history), stages
 M–Q)._
 
@@ -24,8 +24,8 @@ JD-aligned rewrites, a Novoresume-style ATS layout that fits the right length, a
 | 7: Owner feedback on the flow | 2 | 2 | 0 | 0 |
 | 8: Cross-domain robustness and user control | 26 | 26 | 0 | 0 |
 | 9: Close-out and owner review | 25 | 25 | 0 | 0 |
-| 10: Inputs, outputs, cover letter and history | 9 | 1 | 0 | 8 |
-| **Total** | **116** | **105** | **0** | **9** |
+| 10: Inputs, outputs, cover letter and history | 10 | 2 | 0 | 8 |
+| **Total** | **117** | **106** | **0** | **9** |
 
 Phase 1's two open items (P1.15, P1.16) are ➖, moved into P8.9 and P8.18, so its row no longer adds up to 16.
 
@@ -361,6 +361,7 @@ and a check-in.
 | P10.7 | **US Federal template (USAJOBS style):** per-job fields (address, MM/YYYY dates, hours per week, salary, series / grade, supervisor, phone, may-contact) then duties and accomplishments; citizenship / veteran's preference / clearance kept at the top; unmatched lines verbatim; the `federal` persona passes (U9) | `analysis/resume_normalizer.py`, `analysis/rewriter.py`, `rendering/*` | ⬜ | Stage P. Size L |
 | P10.8 | **Cover letter:** "Draft a cover letter" on Results; facts decided by code (name, verbatim JD title and company, found keywords, quantified bullets, years claim), one Groq call, fact-checked per paragraph like the summary (no person's name not in the JD), greeting and sign-off by code, 250–350 words; editable; DOCX / PDF in the resume's look | new `analysis/cover_letter.py`, `llm/prompts/cover_letter.txt`, `llm/schemas.py`, `validation/factual.py`, `rendering/*`, `web/src/pages/Results.tsx` | ⬜ | Stage Q. Size L |
 | P10.9 | **History, opt-in, on this machine:** "Keep this run on this computer" on Results saves the JD, scores, keyword table, files, cover letter, parsed resume and arrange state under `data/history/<uuid>/` (gitignored first); list, reopen into Results and Arrange (re-render with no LLM), delete; off when hosted; privacy note updated | new `services/history.py`, `api/routes.py`, web | ⬜ | Stage Q. Size L |
+| P10.10 | **A long role lost to "max completion tokens"** (Stage O private live run): 2 of 3 runs on 2026-10-07 lost 10 of 12 bullets; Groq rejected the 10-bullet role call with `json_validate_failed` / "max completion tokens reached before generating a valid document" on every try, even at low effort, since the free tier caps a completion to what fits its 8K tokens per minute | `analysis/rewriter.py` | ✅ | Found in Stage O. 2026-10-07: a role call of 4+ bullets that comes back rejected as invalid JSON is tried again as two half-size calls (each needs half the output); the usual follow-up for skipped bullets still runs after. Normal runs make the same calls as before. `test_a_long_role_rejected_as_invalid_json_is_retried_in_halves_p1010`, `test_a_short_role_is_not_split_p1010` |
 
 ---
 

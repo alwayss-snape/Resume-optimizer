@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "8866f5f50483cf40",
+  "source_hash": "89f824ccb10d4a29",
   "stats": {
     "files": 173,
     "python_files": 147,
     "app_modules": 61,
     "test_files": 75,
     "classes": 114,
-    "functions": 1132,
-    "lines_of_python": 22772
+    "functions": 1134,
+    "lines_of_python": 22836
   },
   "axes": {
     "x": "location (path)",
@@ -922,37 +922,37 @@
       "stages": [
         "7 Rewrite"
       ],
-      "lines": 341,
+      "lines": 357,
       "doc": "",
       "classes": [
         {
           "name": "LLMRewriter",
-          "line": 104,
+          "line": 107,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
-              "line": 105,
+              "line": 108,
               "doc": ""
             },
             {
               "name": "rewrite_bullet",
-              "line": 108,
+              "line": 111,
               "doc": "Rewrite (or, given a single free-text `original_text` with no"
             },
             {
               "name": "rewrite_bullet_with_status",
-              "line": 128,
+              "line": 131,
               "doc": "Like rewrite_bullet, plus what happened, so failures are visible"
             },
             {
               "name": "rewrite_role",
-              "line": 186,
+              "line": 189,
               "doc": "Rewrite several bullets of one role in ONE call (P1.4)."
             },
             {
               "name": "execute_plan",
-              "line": 258,
+              "line": 261,
               "doc": "One LLM call per role (P1.4): all of a job's bullets that the"
             }
           ]
@@ -971,22 +971,22 @@
         },
         {
           "name": "breaks_bullet_rules",
-          "line": 51,
+          "line": 54,
           "doc": "True when a bullet is over the word limit or uses a filler word."
         },
         {
           "name": "_past_forms",
-          "line": 64,
+          "line": 67,
           "doc": "Past tense spellings of a base verb: \"lead\" -> {\"led\", \"leaded\"},"
         },
         {
           "name": "keep_present_tense",
-          "line": 76,
+          "line": 79,
           "doc": "For a job the candidate still holds (P9.24): a bullet written in the"
         },
         {
           "name": "_count",
-          "line": 93,
+          "line": 96,
           "doc": "\"1 bullet\", \"10 bullets\" (P9.7: was \"10 bullet(s)\")."
         }
       ]
@@ -7524,7 +7524,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 316,
+      "lines": 364,
       "doc": "",
       "classes": [],
       "functions": [
@@ -7616,6 +7616,16 @@
         {
           "name": "test_current_job_keeps_present_tense_p924",
           "line": 284,
+          "doc": ""
+        },
+        {
+          "name": "test_a_long_role_rejected_as_invalid_json_is_retried_in_halves_p1010",
+          "line": 319,
+          "doc": "P10.10: Groq's \"max completion tokens reached\" (json_validate_failed)"
+        },
+        {
+          "name": "test_a_short_role_is_not_split_p1010",
+          "line": 357,
           "doc": ""
         }
       ]
