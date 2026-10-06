@@ -103,7 +103,7 @@ and unused prompts (P0.8, P1.10) are all fixed. What remains:
    (2026-10-05):** the landing page's two actions now follow the inputs (P9.14); live persona runs for nurse, sales-pdf
    and india found seven real problems, all fixed (P9.15–P9.21: custom sections and slash words in the match, usage
    counted twice, a repeated "Skills:" label, unchanged bullets listed as rewrites, a comma title read back wrong, a
-   city kept in the company); the live-AI browser walkthrough passed (P9.11). eu_cv and academic run next day (Groq quota).
+   city kept in the company); the live-AI browser walkthrough passed (P9.11). eu_cv and academic run next day (Groq quota). Groq strict-JSON rejections that repeat now fall back to plain JSON mode with a readable error (P9.22).
 8. **Groq free tier, per minute:** 8K tokens per minute means role rewrites can wait 30–60 s each on a busy run.
    That is now waited out (shown as progress), so a real run takes ~1–2 minutes of drafting.
 

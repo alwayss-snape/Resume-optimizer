@@ -352,6 +352,40 @@ def test_groq_strict_json_validate_failed_is_retried():
     assert post.call_count == 2
 
 
+def test_groq_strict_rejected_twice_falls_back_to_plain_json_mode():
+    """2026-10-05: strict mode returned an empty generation on every try for
+    11 of 14 rewrites; the last try drops the strict schema for json_object
+    mode plus our own validation."""
+    bad = MagicMock(status_code=400, headers={},
+                    text='{"error":{"code":"json_validate_failed","failed_generation":""}}')
+    good = MagicMock(status_code=200, headers={})
+    good.json.return_value = {"choices": [{"message": {"content": '{"value": "ok"}'}}], "usage": {}}
+
+    class Out(BaseModel):
+        value: str
+
+    with patch("httpx.Client.post", side_effect=[bad, bad, good]) as post:
+        client = LLMClient(provider="groq", api_key="k", model="openai/gpt-oss-120b")
+        assert client.generate_json([{"role": "user", "content": "x"}], Out).value == "ok"
+    formats = [c.kwargs["json"]["response_format"]["type"] for c in post.call_args_list]
+    assert formats == ["json_schema", "json_schema", "json_object"]
+
+
+def test_groq_json_rejected_on_every_try_gives_a_readable_error():
+    """The Review banner shows this error; it used to be Groq's raw JSON body."""
+    bad = MagicMock(status_code=400, headers={},
+                    text='{"error":{"code":"json_validate_failed","failed_generation":""}}')
+
+    class Out(BaseModel):
+        value: str
+
+    with patch("httpx.Client.post", side_effect=[bad, bad, bad]):
+        client = LLMClient(provider="groq", api_key="k", model="openai/gpt-oss-120b")
+        with pytest.raises(LLMInvalidJSONError) as err:
+            client.generate_json([{"role": "user", "content": "x"}], Out)
+    assert "{" not in str(err.value) and "start over" in str(err.value)
+
+
 def test_groq_out_of_completion_tokens_retries_with_less_reasoning():
     """P9.3: gpt-oss spent its completion budget reasoning ("max completion
     tokens reached before generating a valid document") and the role rewrite

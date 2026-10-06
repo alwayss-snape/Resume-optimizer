@@ -23,9 +23,9 @@ JD-aligned rewrites, a Novoresume-style ATS layout that fits the right length, a
 | 6: UI redesign | 6 | 6 | 0 | 0 |
 | 7: Owner feedback on the flow | 2 | 2 | 0 | 0 |
 | 8: Cross-domain robustness and user control | 26 | 26 | 0 | 0 |
-| 9: Close-out and owner review | 21 | 20 | 1 | 0 |
+| 9: Close-out and owner review | 22 | 21 | 1 | 0 |
 | 10: Inputs, outputs, cover letter and history | 9 | 0 | 0 | 9 |
-| **Total** | **112** | **99** | **1** | **10** |
+| **Total** | **113** | **100** | **1** | **10** |
 
 Phase 1's two open items (P1.15, P1.16) are ➖, moved into P8.9 and P8.18, so its row no longer adds up to 16.
 
@@ -325,6 +325,7 @@ passes live (P9.3). Not re-run: the 5 live LLM persona runs (Groq quota kept for
 | P9.19 | **The change log listed untouched bullets as rewrites** (live sales-pdf run, P9.10): the AI kept 5 strong bullets as they were, and the downloadable `changes.md` showed "Accepted Rewrites (5)" with the same text as Original and Tailored | `services/tailor.py` | ✅ | 2026-10-05: only reworded items are listed under Accepted Rewrites; the rest are counted as "Kept as written (N): the AI found nothing to improve" (whitespace-only changes count as kept). Review already said "Kept as is". `test_report_lists_only_reworded_bullets_p919` |
 | P9.20 | **"Oracle SQL" missed next to "Oracle PL/SQL"** (live india run, P9.10): a multi-word term whose words sit in one sentence counts (P8), but the slash parts from P9.15 weren't used for that check | `analysis/keyword_match.py` | ✅ | 2026-10-05: the one-sentence check also looks at slash parts, so "Maintained Oracle PL/SQL procedures" shows Oracle SQL; "SQL Server" still doesn't match. `test_slash_parts_count_for_multi_word_terms_p920` |
 | P9.21 | **"Infosys Ltd, Bengaluru" read as the company** (live india run, P9.10): in "Title, Company, City" a lone city stayed with the company, since "Groupe SEB, Lyon" can't be told from "Payments Platform, Stripe" by shape | `analysis/resume_normalizer.py` | ✅ | 2026-10-05: `_split_company_location` takes the last part as the location when it is a well-known city (`_CITIES`: large Indian, European, and other cities a resume names without a state or country) or a place-like name after a company suffix ("Acme Pvt Ltd, Coimbatore"). An unknown name still stays with the company ("Payments Platform, Stripe"). "Groupe SEB, Lyon" now splits too. Cases in `test_job_lines_p85.py` |
+| P9.22 | **Groq strict JSON rejected on every try** (owner's live run, 2026-10-05): 11 of 14 rewrites showed the original text and the Review banner printed Groq's raw 400 body (`json_validate_failed`, empty `failed_generation`); the retry only ever re-sent strict mode | `llm/client.py` | ✅ | 2026-10-06: after two strict-mode rejections the last try uses `json_object` mode with our own Pydantic validation; a rejection on every try raises a plain message ("usually temporary: start over") instead of the JSON body. Not reproduced afterwards: 29 strict calls on the private resume all passed, so the cause is intermittent on Groq's side. 2 tests |
 
 ### Owner review of the current state
 

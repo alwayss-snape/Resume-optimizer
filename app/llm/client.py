@@ -597,16 +597,33 @@ class LLMClient:
                         # resume): think less on the next try.
                         if "max completion tokens" in str(e) and effort in ("high", "medium"):
                             effort = "medium" if effort == "high" else "low"
+                        # Rejected twice in a row: strict mode keeps returning an
+                        # empty generation for some inputs (11 of 14 rewrites lost
+                        # on 2026-10-05), so the last try uses plain JSON mode and
+                        # our own schema validation instead.
+                        if attempt >= 1:
+                            strict_schema = None
                         continue
+                    if "json_validate_failed" in str(e):
+                        raise LLMInvalidJSONError(_JSON_REJECTED_MESSAGE) from e
                     raise
                 self._record(True, model=response.model_name, response=response)
             else:
-                response = self.generate(
-                    messages=current_messages,
-                    temperature=temperature,
-                    response_format="json",
-                    effort=effort,
-                )
+                try:
+                    response = self.generate(
+                        messages=current_messages,
+                        temperature=temperature,
+                        response_format="json",
+                        effort=effort,
+                    )
+                except LLMError as e:
+                    if "json_validate_failed" not in str(e):
+                        raise
+                    last_error = e
+                    logger.warning(f"Groq JSON mode validation failed on attempt {attempt + 1}")
+                    if attempt < max_retries:
+                        continue
+                    raise LLMInvalidJSONError(_JSON_REJECTED_MESSAGE) from e
             raw_text = response.raw_text.strip()
             # Reasoning models (Qwen3) may put their thinking before the answer.
             raw_text = re.sub(r"<think>.*?</think>", "", raw_text, flags=re.DOTALL).strip()
@@ -640,6 +657,10 @@ class LLMClient:
         raise LLMInvalidJSONError(
             f"Failed to generate valid JSON matching schema {schema_model.__name__} after {max_retries + 1} attempts. Last error: {last_error}"
         )
+
+
+_JSON_REJECTED_MESSAGE = ("the AI service returned an empty or malformed answer on every try "
+                          "(Groq json_validate_failed). This is usually temporary: start over to try again.")
 
 
 def _requested_wait(resp: Any) -> float:

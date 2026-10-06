@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "cf202070758e2d49",
+  "source_hash": "f826645051584849",
   "stats": {
     "files": 167,
     "python_files": 143,
     "app_modules": 60,
     "test_files": 73,
     "classes": 111,
-    "functions": 1086,
-    "lines_of_python": 21806
+    "functions": 1088,
+    "lines_of_python": 21861
   },
   "axes": {
     "x": "location (path)",
@@ -2589,7 +2589,7 @@
         "3 JD analysis",
         "7 Rewrite"
       ],
-      "lines": 710,
+      "lines": 731,
       "doc": "",
       "classes": [
         {
@@ -2703,7 +2703,7 @@
         },
         {
           "name": "LLMDailyLimitError",
-          "line": 665,
+          "line": 686,
           "doc": "The provider's daily free limit is used up (P8.23).",
           "methods": []
         }
@@ -2711,27 +2711,27 @@
       "functions": [
         {
           "name": "_requested_wait",
-          "line": 645,
+          "line": 666,
           "doc": "How long Groq asks us to wait: the retry-after header, else the"
         },
         {
           "name": "daily_limit_message",
-          "line": 669,
+          "line": 690,
           "doc": ""
         },
         {
           "name": "_too_long_to_wait",
-          "line": 676,
+          "line": 697,
           "doc": "A 429 not worth waiting for: the daily limit, or a wait over a minute."
         },
         {
           "name": "_retry_after_seconds",
-          "line": 682,
+          "line": 703,
           "doc": "Seconds to wait before retrying a 429: the server's `retry-after`"
         },
         {
           "name": "strict_json_schema",
-          "line": 697,
+          "line": 718,
           "doc": "Adapt a Pydantic JSON schema for strict structured-output modes: every"
         }
       ]
@@ -6178,7 +6178,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 413,
+      "lines": 447,
       "doc": "",
       "classes": [
         {
@@ -6320,18 +6320,28 @@
           "doc": "Groq's transient 'json_validate_failed' (empty generation) gets the"
         },
         {
-          "name": "test_groq_out_of_completion_tokens_retries_with_less_reasoning",
+          "name": "test_groq_strict_rejected_twice_falls_back_to_plain_json_mode",
           "line": 355,
+          "doc": "2026-10-05: strict mode returned an empty generation on every try for"
+        },
+        {
+          "name": "test_groq_json_rejected_on_every_try_gives_a_readable_error",
+          "line": 374,
+          "doc": "The Review banner shows this error; it used to be Groq's raw JSON body."
+        },
+        {
+          "name": "test_groq_out_of_completion_tokens_retries_with_less_reasoning",
+          "line": 389,
           "doc": "P9.3: gpt-oss spent its completion budget reasoning (\"max completion"
         },
         {
           "name": "test_groq_per_minute_limit_is_waited_out",
-          "line": 373,
+          "line": 407,
           "doc": "P9.3: a tokens-per-minute 429 asking for 41 s used to fail the call at"
         },
         {
           "name": "test_waits_are_reported_and_a_daily_limit_is_remembered",
-          "line": 389,
+          "line": 423,
           "doc": "P8.23: a back-off says so; a daily limit stops further calls with a plain message."
         }
       ]

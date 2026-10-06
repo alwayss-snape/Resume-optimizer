@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**60 app modules · 73 test files · 111 classes · 1086 functions/methods · 21,806 lines of Python** · source hash `cf202070758e2d49`
+**60 app modules · 73 test files · 111 classes · 1088 functions/methods · 21,861 lines of Python** · source hash `f826645051584849`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -910,7 +910,7 @@ _Plain-text resumes: a .txt upload or text pasted in the app (P8.22)._
 
 ### `app/llm/client.py`
 
-**Layer:** LLM · **Stage:** 3 JD analysis, 7 Rewrite · **Lines:** 710
+**Layer:** LLM · **Stage:** 3 JD analysis, 7 Rewrite · **Lines:** 731
 
 - class **`WaitNotice`** ([app/llm/client.py:62](../app/llm/client.py#L62)) — A progress message saying the AI service asked us to wait (P9.7). It is
 - class **`LLMClient`** ([app/llm/client.py:73](../app/llm/client.py#L73)) — Unified client for text generation across three interchangeable providers:
@@ -932,12 +932,12 @@ _Plain-text resumes: a .txt upload or text pasted in the app (P8.22)._
   - `_generate_anthropic()` :514
   - `_generate_json_anthropic()` :519 — Structured outputs guarantee the response matches the schema, so
   - `generate_json()` :540 — Generate structured JSON conforming to a Pydantic model.
-- class **`LLMDailyLimitError`** ([app/llm/client.py:665](../app/llm/client.py#L665)) — The provider's daily free limit is used up (P8.23).
-- function **`_requested_wait()`** ([app/llm/client.py:645](../app/llm/client.py#L645)) — How long Groq asks us to wait: the retry-after header, else the
-- function **`daily_limit_message()`** ([app/llm/client.py:669](../app/llm/client.py#L669))
-- function **`_too_long_to_wait()`** ([app/llm/client.py:676](../app/llm/client.py#L676)) — A 429 not worth waiting for: the daily limit, or a wait over a minute.
-- function **`_retry_after_seconds()`** ([app/llm/client.py:682](../app/llm/client.py#L682)) — Seconds to wait before retrying a 429: the server's `retry-after`
-- function **`strict_json_schema()`** ([app/llm/client.py:697](../app/llm/client.py#L697)) — Adapt a Pydantic JSON schema for strict structured-output modes: every
+- class **`LLMDailyLimitError`** ([app/llm/client.py:686](../app/llm/client.py#L686)) — The provider's daily free limit is used up (P8.23).
+- function **`_requested_wait()`** ([app/llm/client.py:666](../app/llm/client.py#L666)) — How long Groq asks us to wait: the retry-after header, else the
+- function **`daily_limit_message()`** ([app/llm/client.py:690](../app/llm/client.py#L690))
+- function **`_too_long_to_wait()`** ([app/llm/client.py:697](../app/llm/client.py#L697)) — A 429 not worth waiting for: the daily limit, or a wait over a minute.
+- function **`_retry_after_seconds()`** ([app/llm/client.py:703](../app/llm/client.py#L703)) — Seconds to wait before retrying a 429: the server's `retry-after`
+- function **`strict_json_schema()`** ([app/llm/client.py:718](../app/llm/client.py#L718)) — Adapt a Pydantic JSON schema for strict structured-output modes: every
 - **Imports:** `config/settings.py`, `llm/schemas.py`, `validation/safety.py`
 - **Imported by:** `analysis/jd_analyzer.py`, `analysis/matcher.py`, `analysis/rewriter.py`, `analysis/structure_extractor.py`, `analysis/summary_writer.py`, `analysis/tailor_planner.py`, `api/main.py`, `api/routes.py`, `cli.py`, `eval/harness.py`, `eval/judge.py`, `services/tailor.py`, `scripts/benchmark_model.py`, `scripts/walkthrough_server.py`
 - **Tested by:** `tests/unit/test_judge.py`, `tests/unit/test_llm_client.py`, `tests/unit/test_progress_p97.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_tailor_resume_flow.py`, `tests/unit/test_validation.py`
