@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "85d1bd2db4cf214a",
+  "source_hash": "8866f5f50483cf40",
   "stats": {
-    "files": 168,
-    "python_files": 144,
-    "app_modules": 60,
-    "test_files": 74,
-    "classes": 111,
-    "functions": 1094,
-    "lines_of_python": 21996
+    "files": 173,
+    "python_files": 147,
+    "app_modules": 61,
+    "test_files": 75,
+    "classes": 114,
+    "functions": 1132,
+    "lines_of_python": 22772
   },
   "axes": {
     "x": "location (path)",
@@ -702,7 +702,7 @@
       "stages": [
         "2 Normalize"
       ],
-      "lines": 1289,
+      "lines": 1305,
       "doc": "",
       "classes": [
         {
@@ -2359,7 +2359,7 @@
       "stages": [
         "1 Ingest"
       ],
-      "lines": 259,
+      "lines": 264,
       "doc": "",
       "classes": [
         {
@@ -2370,38 +2370,38 @@
         },
         {
           "name": "RawDocument",
-          "line": 28,
+          "line": 30,
           "doc": "",
           "methods": []
         },
         {
           "name": "DocxParser",
-          "line": 36,
+          "line": 41,
           "doc": "",
           "methods": [
             {
               "name": "_classify",
-              "line": 48,
+              "line": 53,
               "doc": "-> (block_type, text without a bullet glyph, whole line bold)."
             },
             {
               "name": "_skills_label_row",
-              "line": 82,
+              "line": 87,
               "doc": "'Label: values' for a two-cell row of a skills table, else None."
             },
             {
               "name": "_text_box_paragraphs",
-              "line": 109,
+              "line": 114,
               "doc": "Paragraphs inside text boxes anchored in this paragraph (P8.7:"
             },
             {
               "name": "_hyperlinks",
-              "line": 127,
+              "line": 132,
               "doc": "Targets of every external hyperlink in the body, in rId order"
             },
             {
               "name": "parse",
-              "line": 138,
+              "line": 143,
               "doc": ""
             }
           ]
@@ -2427,6 +2427,107 @@
         }
       ],
       "functions": []
+    },
+    {
+      "id": "app/ingestion/linkedin.py",
+      "type": "python",
+      "layer": "Ingestion",
+      "stages": [
+        "1 Ingest"
+      ],
+      "lines": 367,
+      "doc": "LinkedIn \"Save to PDF\" profile export (P10.1).",
+      "classes": [
+        {
+          "name": "_Reader",
+          "line": 80,
+          "doc": "",
+          "methods": [
+            {
+              "name": "__init__",
+              "line": 81,
+              "doc": ""
+            },
+            {
+              "name": "emit",
+              "line": 92,
+              "doc": ""
+            },
+            {
+              "name": "_wraps",
+              "line": 110,
+              "doc": "Is `line` the wrapped continuation of `prev`? The export wraps a"
+            },
+            {
+              "name": "items",
+              "line": 132,
+              "doc": ""
+            },
+            {
+              "name": "sidebar_sections",
+              "line": 146,
+              "doc": ""
+            },
+            {
+              "name": "contact_items",
+              "line": 162,
+              "doc": "Email, phone, profile and site URLs, without LinkedIn's"
+            },
+            {
+              "name": "is_main_heading",
+              "line": 178,
+              "doc": ""
+            },
+            {
+              "name": "is_grey",
+              "line": 181,
+              "doc": ""
+            },
+            {
+              "name": "experience",
+              "line": 184,
+              "doc": "Company \u2192 [total duration] \u2192 title \u2192 dates \u2192 [location] \u2192"
+            },
+            {
+              "name": "_is_location",
+              "line": 250,
+              "doc": "The grey place line under a role's dates. Without colours to go"
+            },
+            {
+              "name": "education",
+              "line": 261,
+              "doc": ""
+            },
+            {
+              "name": "read",
+              "line": 278,
+              "doc": ""
+            }
+          ]
+        }
+      ],
+      "functions": [
+        {
+          "name": "_strip_bullet",
+          "line": 58,
+          "doc": ""
+        },
+        {
+          "name": "_join",
+          "line": 65,
+          "doc": "A wrapped line rejoins the one above; a break after a hyphen"
+        },
+        {
+          "name": "_common",
+          "line": 73,
+          "doc": ""
+        },
+        {
+          "name": "read_linkedin_export",
+          "line": 336,
+          "doc": "The export as a RawDocument, or None when the file isn't one (or"
+        }
+      ]
     },
     {
       "id": "app/ingestion/ocr.py",
@@ -2470,73 +2571,73 @@
       "stages": [
         "1 Ingest"
       ],
-      "lines": 373,
+      "lines": 388,
       "doc": "",
       "classes": [
         {
           "name": "_Line",
-          "line": 41,
+          "line": 42,
           "doc": "One visual text line with the layout facts the parser needs.",
           "methods": []
         },
         {
           "name": "PdfParser",
-          "line": 73,
+          "line": 75,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
-              "line": 80,
+              "line": 82,
               "doc": ""
             },
             {
               "name": "_ensure_fitz",
-              "line": 83,
+              "line": 85,
               "doc": ""
             },
             {
               "name": "_merge_wrapped_lines",
-              "line": 91,
+              "line": 93,
               "doc": "Text-only fallback for joining word-wrapped lines: a line is joined"
             },
             {
-              "name": "_page_lines",
-              "line": 112,
-              "doc": ""
+              "name": "_raw_page_lines",
+              "line": 114,
+              "doc": "Each visual line as printed, before right-hand columns are stitched on."
             },
             {
               "name": "_attach_right_columns",
-              "line": 134,
+              "line": 138,
               "doc": "A short, right-aligned run printed on the same row as a left-hand"
             },
             {
               "name": "_split_bullet",
-              "line": 181,
+              "line": 185,
               "doc": "Return the bullet text without its glyph, or None if not a bullet."
             },
             {
               "name": "_continues",
-              "line": 188,
+              "line": 192,
               "doc": "Is `line` a word-wrap continuation of the item ending with `prev`?"
             },
             {
               "name": "_assemble",
-              "line": 211,
+              "line": 215,
               "doc": "Join continuation lines onto their bullet/paragraph. Each returned"
             },
             {
               "name": "_body_size",
-              "line": 235,
+              "line": 239,
               "doc": ""
             },
             {
               "name": "_is_heading",
-              "line": 242,
+              "line": 246,
               "doc": ""
             },
             {
               "name": "parse",
-              "line": 258,
+              "line": 262,
               "doc": ""
             }
           ]
@@ -2545,17 +2646,17 @@
       "functions": [
         {
           "name": "_clean",
-          "line": 54,
+          "line": 56,
           "doc": ""
         },
         {
           "name": "_is_bold_span",
-          "line": 60,
+          "line": 62,
           "doc": ""
         },
         {
           "name": "_join_wrapped",
-          "line": 64,
+          "line": 66,
           "doc": "Join a wrapped line to the one before it. A line that breaks after"
         }
       ]
@@ -3612,162 +3713,162 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 1492,
+      "lines": 1501,
       "doc": "",
       "classes": [
         {
           "name": "TailorService",
-          "line": 61,
+          "line": 62,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
-              "line": 62,
+              "line": 63,
               "doc": "`keep_run=False` (the web app): nothing is written to data/runs, so"
             },
             {
               "name": "_save_run",
-              "line": 97,
+              "line": 98,
               "doc": "A run artifact for the CLI / eval; nothing when no run is kept (P9.8)."
             },
             {
               "name": "generate_preview_md",
-              "line": 102,
+              "line": 103,
               "doc": ""
             },
             {
               "name": "_patchable",
-              "line": 148,
+              "line": 149,
               "doc": "Proposals as in-place DOCX patches. A summary proposal targets the"
             },
             {
               "name": "_apply_gap_answers",
-              "line": 168,
+              "line": 169,
               "doc": "Ticked keywords join the skills section; a typed answer becomes a"
             },
             {
               "name": "_prefill_from_profile",
-              "line": 227,
+              "line": 228,
               "doc": "Answers confirmed for an earlier JD pre-fill the same questions"
             },
             {
               "name": "_draft_from_answer",
-              "line": 239,
+              "line": 240,
               "doc": "Polish the candidate's answer into one bullet that may use only"
             },
             {
               "name": "_split_description",
-              "line": 258,
+              "line": 259,
               "doc": "Pasted role description -> bullet-sized chunks: one per line (list"
             },
             {
               "name": "validate_new_role",
-              "line": 268,
+              "line": 269,
               "doc": "Check a new job before any work is done; raises ValueError with a"
             },
             {
               "name": "_new_experience",
-              "line": 293,
+              "line": 294,
               "doc": "An empty job from the \"add a job\" fields, validated."
             },
             {
               "name": "_insert_by_date",
-              "line": 301,
+              "line": 302,
               "doc": "Place a job in date order: current jobs first, then most recent start."
             },
             {
               "name": "add_new_role",
-              "line": 314,
+              "line": 315,
               "doc": "Add a job the resume doesn't have yet (P3.3). Each chunk of the"
             },
             {
               "name": "_skills_proposals",
-              "line": 351,
+              "line": 352,
               "doc": "The skills section with the JD's skills first, when that changes it (P1.6)."
             },
             {
               "name": "_summary_proposals",
-              "line": 356,
+              "line": 357,
               "doc": "The tailored summary as a proposal, when one was written (P1.5)."
             },
             {
               "name": "_embed",
-              "line": 361,
+              "line": 362,
               "doc": "Sentence embeddings for the planner, loaded lazily; raises when the"
             },
             {
               "name": "_fit_relevance",
-              "line": 370,
+              "line": 371,
               "doc": "Planner relevance per bullet for the page-fit loop. Bullets the user"
             },
             {
               "name": "_render_template",
-              "line": 380,
+              "line": 381,
               "doc": "One template render plus PDF conversion (the page-fit loop's step)."
             },
             {
               "name": "_coverage",
-              "line": 388,
+              "line": 389,
               "doc": "Content coverage of the rendered DOCX against the uploaded file (P8.2)."
             },
             {
               "name": "_apply_bullet_order",
-              "line": 415,
+              "line": 416,
               "doc": "Reorder bullets as planned (most relevant first within each"
             },
             {
               "name": "parse_resume",
-              "line": 430,
+              "line": 431,
               "doc": "File -> (raw document, ResumeDocument, evidence). The deterministic"
             },
             {
               "name": "read_file",
-              "line": 437,
+              "line": 438,
               "doc": "The uploaded file as raw blocks, or UnreadableFile with a message"
             },
             {
               "name": "normalize_raw",
-              "line": 472,
+              "line": 473,
               "doc": ""
             },
             {
               "name": "_copy_parsed",
-              "line": 485,
+              "line": 494,
               "doc": "Deep copies, so a parse kept in UI session state is never mutated."
             },
             {
               "name": "preview_keyword_match",
-              "line": 490,
+              "line": 499,
               "doc": "Match rate if these proposals were applied (P3.4 \"recalculate\"):"
             },
             {
               "name": "apply_parse_corrections",
-              "line": 513,
+              "line": 522,
               "doc": "Apply the user's fixes from the \"Check parsed resume\" step (P3.5)."
             },
             {
               "name": "analyze_only",
-              "line": 639,
+              "line": 648,
               "doc": ""
             },
             {
               "name": "generate_proposals",
-              "line": 669,
+              "line": 678,
               "doc": "Generate rewrite proposals without applying them, plus questions"
             },
             {
               "name": "incorporate_user_addition",
-              "line": 746,
+              "line": 755,
               "doc": "Fold a user-supplied free-text addition (a project, an"
             },
             {
               "name": "tailor_resume",
-              "line": 825,
+              "line": 834,
               "doc": ""
             },
             {
               "name": "arrange",
-              "line": 1351,
+              "line": 1360,
               "doc": "Re-render the tailored resume as the user arranged it (P8.13\u2013P8.16):"
             }
           ]
@@ -3776,17 +3877,17 @@
       "functions": [
         {
           "name": "_progress",
-          "line": 50,
+          "line": 51,
           "doc": "A progress reporter that can never break a run (P3.6)."
         },
         {
           "name": "_hidden_text",
-          "line": 1447,
+          "line": 1456,
           "doc": "Text of the sections the user hid, so coverage counts it as their choice."
         },
         {
           "name": "_merge_usage",
-          "line": 1474,
+          "line": 1483,
           "doc": "Combine two LLMClient.get_usage_summary() dicts into one. When one"
         }
       ]
@@ -4254,118 +4355,118 @@
       "type": "python",
       "layer": "Tooling",
       "stages": [],
-      "lines": 743,
+      "lines": 744,
       "doc": "Regenerate the repo's living docs: the knowledge graph and the change log.",
       "classes": [],
       "functions": [
         {
           "name": "git",
-          "line": 138,
+          "line": 139,
           "doc": ""
         },
         {
           "name": "layer_of",
-          "line": 145,
+          "line": 146,
           "doc": ""
         },
         {
           "name": "module_name",
-          "line": 152,
+          "line": 153,
           "doc": ""
         },
         {
           "name": "first_line",
-          "line": 159,
+          "line": 160,
           "doc": ""
         },
         {
           "name": "list_files",
-          "line": 168,
+          "line": 169,
           "doc": "Tracked + new (not ignored) files, restricted to the project map."
         },
         {
           "name": "parse_python",
-          "line": 186,
+          "line": 187,
           "doc": ""
         },
         {
           "name": "symbols_of",
-          "line": 214,
+          "line": 215,
           "doc": ""
         },
         {
           "name": "settings_fields",
-          "line": 227,
+          "line": 228,
           "doc": ""
         },
         {
           "name": "build_graph",
-          "line": 246,
+          "line": 247,
           "doc": ""
         },
         {
           "name": "render_graph_md",
-          "line": 320,
+          "line": 321,
           "doc": ""
         },
         {
           "name": "write_graph",
-          "line": 518,
+          "line": 519,
           "doc": ""
         },
         {
           "name": "commit_info",
-          "line": 561,
+          "line": 562,
           "doc": ""
         },
         {
           "name": "changed_files",
-          "line": 572,
+          "line": 573,
           "doc": ""
         },
         {
           "name": "is_major",
-          "line": 585,
+          "line": 586,
           "doc": ""
         },
         {
           "name": "blob",
-          "line": 594,
+          "line": 595,
           "doc": ""
         },
         {
           "name": "structure_delta",
-          "line": 599,
+          "line": 600,
           "doc": ""
         },
         {
           "name": "render_entry",
-          "line": 622,
+          "line": 623,
           "doc": ""
         },
         {
           "name": "_split_entries",
-          "line": 665,
+          "line": 666,
           "doc": ""
         },
         {
           "name": "_join",
-          "line": 680,
+          "line": 681,
           "doc": ""
         },
         {
           "name": "log_entry",
-          "line": 684,
+          "line": 685,
           "doc": ""
         },
         {
           "name": "backfill",
-          "line": 702,
+          "line": 703,
           "doc": ""
         },
         {
           "name": "main",
-          "line": 719,
+          "line": 720,
           "doc": ""
         }
       ]
@@ -4434,6 +4535,89 @@
       "layer": "Tests",
       "stages": [],
       "lines": 15
+    },
+    {
+      "id": "tests/fixtures/resumes/linkedin_export.golden.json",
+      "type": "file",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 121
+    },
+    {
+      "id": "tests/fixtures/resumes/linkedin_export.pdf",
+      "type": "file",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 327
+    },
+    {
+      "id": "tests/fixtures/resumes/make_linkedin_export_pdf.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 231,
+      "doc": "Generate linkedin_export.pdf: an anonymized profile laid out like",
+      "classes": [
+        {
+          "name": "Writer",
+          "line": 62,
+          "doc": "Writes lines down a column, starting a new page (with its footer)",
+          "methods": [
+            {
+              "name": "__init__",
+              "line": 66,
+              "doc": ""
+            },
+            {
+              "name": "new_page",
+              "line": 73,
+              "doc": ""
+            },
+            {
+              "name": "tw",
+              "line": 80,
+              "doc": ""
+            },
+            {
+              "name": "text",
+              "line": 87,
+              "doc": ""
+            },
+            {
+              "name": "main",
+              "line": 90,
+              "doc": "One main-column paragraph, wrapped; page breaks fall between lines."
+            },
+            {
+              "name": "finish",
+              "line": 100,
+              "doc": ""
+            }
+          ]
+        }
+      ],
+      "functions": [
+        {
+          "name": "wrap",
+          "line": 47,
+          "doc": "Greedy word wrap, the way the export breaks a description."
+        },
+        {
+          "name": "sidebar",
+          "line": 112,
+          "doc": ""
+        },
+        {
+          "name": "main_column",
+          "line": 157,
+          "doc": ""
+        },
+        {
+          "name": "build",
+          "line": 219,
+          "doc": ""
+        }
+      ]
     },
     {
       "id": "tests/fixtures/resumes/make_replica_layout_pdf.py",
@@ -4638,13 +4822,13 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 37,
+      "lines": 38,
       "doc": "Parse a resume and compare it, field by field, with a hand-checked golden",
       "classes": [],
       "functions": [
         {
           "name": "test_parse_matches_golden",
-          "line": 26,
+          "line": 27,
           "doc": ""
         }
       ]
@@ -6189,6 +6373,85 @@
         {
           "name": "test_middle_dot_bullets",
           "line": 57,
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "tests/unit/test_linkedin_import_p101.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 131,
+      "doc": "P10.1: a LinkedIn \"Save to PDF\" export is read by its own two-column",
+      "classes": [
+        {
+          "name": "_CountingLLM",
+          "line": 101,
+          "doc": "",
+          "methods": [
+            {
+              "name": "__init__",
+              "line": 102,
+              "doc": ""
+            },
+            {
+              "name": "is_available",
+              "line": 105,
+              "doc": ""
+            },
+            {
+              "name": "generate_json",
+              "line": 108,
+              "doc": ""
+            }
+          ]
+        }
+      ],
+      "functions": [
+        {
+          "name": "_pdf",
+          "line": 18,
+          "doc": "lines: (x, y, text, size, colour); Helvetica, one Letter page."
+        },
+        {
+          "name": "_export_lines",
+          "line": 28,
+          "doc": "A minimal export: sidebar Contact, then name, headline, place and one job."
+        },
+        {
+          "name": "test_the_export_is_read_by_its_layout",
+          "line": 51,
+          "doc": ""
+        },
+        {
+          "name": "test_other_pdfs_take_the_normal_path",
+          "line": 63,
+          "doc": ""
+        },
+        {
+          "name": "test_a_one_column_resume_with_a_contact_heading_and_a_profile_url_is_not_an_export",
+          "line": 67,
+          "doc": ""
+        },
+        {
+          "name": "test_an_export_that_does_not_read_cleanly_falls_back",
+          "line": 79,
+          "doc": ""
+        },
+        {
+          "name": "test_a_role_location_is_found_without_grey_text",
+          "line": 87,
+          "doc": ""
+        },
+        {
+          "name": "test_no_llm_relabel_for_an_export",
+          "line": 113,
+          "doc": ""
+        },
+        {
+          "name": "test_an_export_tailors_offline_with_nothing_lost",
+          "line": 124,
           "doc": ""
         }
       ]
@@ -8686,6 +8949,11 @@
     },
     {
       "from": "app/analysis/resume_normalizer.py",
+      "to": "tests/unit/test_linkedin_import_p101.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/analysis/resume_normalizer.py",
       "to": "tests/unit/test_parser_regressions_p42.py",
       "type": "tested_by"
     },
@@ -10195,6 +10463,26 @@
       "type": "tested_by"
     },
     {
+      "from": "app/ingestion/linkedin.py",
+      "to": "app/ingestion/docx.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/ingestion/linkedin.py",
+      "to": "app/ingestion/linkedin.py::_Reader",
+      "type": "contains"
+    },
+    {
+      "from": "app/ingestion/linkedin.py",
+      "to": "app/rendering/document_map.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/ingestion/linkedin.py",
+      "to": "tests/unit/test_linkedin_import_p101.py",
+      "type": "tested_by"
+    },
+    {
       "from": "app/ingestion/ocr.py",
       "to": "app/ingestion/ocr.py::OCREngine",
       "type": "contains"
@@ -10202,6 +10490,11 @@
     {
       "from": "app/ingestion/pdf.py",
       "to": "app/ingestion/docx.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/ingestion/pdf.py",
+      "to": "app/ingestion/linkedin.py",
       "type": "imports"
     },
     {
@@ -10227,6 +10520,11 @@
     {
       "from": "app/ingestion/pdf.py",
       "to": "tests/unit/test_layouts_p87.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/ingestion/pdf.py",
+      "to": "tests/unit/test_linkedin_import_p101.py",
       "type": "tested_by"
     },
     {
@@ -10956,6 +11254,11 @@
     },
     {
       "from": "app/services/tailor.py",
+      "to": "app/ingestion/linkedin.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/services/tailor.py",
       "to": "app/ingestion/pdf.py",
       "type": "imports"
     },
@@ -11097,6 +11400,11 @@
     {
       "from": "app/services/tailor.py",
       "to": "tests/unit/test_global_p825.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/services/tailor.py",
+      "to": "tests/unit/test_linkedin_import_p101.py",
       "type": "tested_by"
     },
     {
@@ -11380,6 +11688,11 @@
       "type": "contains"
     },
     {
+      "from": "tests/fixtures/resumes/make_linkedin_export_pdf.py",
+      "to": "tests/fixtures/resumes/make_linkedin_export_pdf.py::Writer",
+      "type": "contains"
+    },
+    {
       "from": "tests/unit/test_jd_analyzer_llm.py",
       "to": "tests/unit/test_jd_analyzer_llm.py::_FakeLLMClient",
       "type": "contains"
@@ -11387,6 +11700,11 @@
     {
       "from": "tests/unit/test_jd_analyzer_v2.py",
       "to": "tests/unit/test_jd_analyzer_v2.py::FakeLLM",
+      "type": "contains"
+    },
+    {
+      "from": "tests/unit/test_linkedin_import_p101.py",
+      "to": "tests/unit/test_linkedin_import_p101.py::_CountingLLM",
       "type": "contains"
     },
     {

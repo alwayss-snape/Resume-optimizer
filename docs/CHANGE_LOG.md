@@ -10,6 +10,54 @@ Timestamped record of every **major** commit (anything touching `app/`, `scripts
 
 <!-- entries below; newest first -->
 
+<!-- entry:2026-10-07T02:36:16+05:30 -->
+## 2026-10-07 02:36 (+0530) · P10.1: read a LinkedIn "Save to PDF" export by its two-column layout
+
+Kshitij Chaubey · branch `fb_ksh`
+
+**Why / details**
+
+> A LinkedIn profile export interleaved its sidebar and main column when read
+> line by line: no email, phone or place, companies read as bullets and
+> roles as sub-headings. The export's layout is fixed, so a dedicated reader
+> (app/ingestion/linkedin.py) takes it apart deterministically: the two
+> columns separately, "Page N of M" footers and LinkedIn's durations
+> dropped, and every block hinted (name, headline, location, company,
+> job_title, bullet, section:X) so the normalizer guesses nothing. Text is
+> copied from the file; only date separators are rewritten.
+>
+> Detection is strict (name right of 25% of the width, no line crossing the
+> column gap, sidebar under 38%, a known sidebar heading, a footer or
+> profile URL), and the reader returns None whenever a line doesn't fit the
+> pattern, so the normal parse still runs for everything else. The replica
+> and private golden parses are unchanged.
+>
+> The normalizer gained headline / location hints ("Pune, Maharashtra,
+> India" has three parts, which the contact-line rule never takes for a
+> place). The service skips the LLM re-label for a layout-read file, since
+> a role with no description is normal in an export and re-labelling would
+> spend Groq tokens for nothing, and adds a note on Check details.
+>
+> Built fixture-first: an anonymized generator and a hand-written golden
+> file, then the parser, which matched it.
+
+**Changed files**
+
+- Analysis: `M` app/analysis/resume_normalizer.py
+- Docs: `M` docs/ACTION_ITEMS.md, `M` docs/PROJECT_OVERVIEW.md
+- Ingestion: `M` app/ingestion/docx.py, `A` app/ingestion/linkedin.py, `M` app/ingestion/pdf.py
+- Root: `M` data/eval/cases.json
+- Services: `M` app/services/tailor.py
+- Tests: `A` tests/fixtures/resumes/linkedin_export.golden.json, `A` tests/fixtures/resumes/linkedin_export.pdf, `A` tests/fixtures/resumes/make_linkedin_export_pdf.py, `M` tests/integration/test_parse_golden.py, `M` tests/unit/test_eval_harness.py, `A` tests/unit/test_linkedin_import_p101.py
+- Tooling: `M` scripts/update_docs.py
+
+**Structure delta**
+
+- new module `app/ingestion/linkedin.py`: `class _Reader`
+- `app/ingestion/pdf.py`: added `PdfParser._raw_page_lines()`; removed `PdfParser._page_lines()`
+
+---
+
 <!-- entry:2026-10-06T08:15:25+05:30 -->
 ## 2026-10-06 08:15 (+0530) · P9.25: verbatim headings keep small words in lower case
 

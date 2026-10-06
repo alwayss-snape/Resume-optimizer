@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**60 app modules · 74 test files · 111 classes · 1094 functions/methods · 21,996 lines of Python** · source hash `85d1bd2db4cf214a`
+**61 app modules · 75 test files · 114 classes · 1132 functions/methods · 22,772 lines of Python** · source hash `8866f5f50483cf40`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -73,6 +73,7 @@ app/
   ingestion/
     docx.py                                      RawBlock, RawDocument, DocxParser
     errors.py                                    A file the tool can't read, with a message the person can act on (P8.2…
+    linkedin.py                                  LinkedIn "Save to PDF" profile export (P10.1).
     ocr.py                                       OCREngine
     pdf.py                                       _Line, PdfParser
     text.py                                      Plain-text resumes: a .txt upload or text pasted in the app (P8.22).
@@ -126,6 +127,9 @@ tests/
       replica_layout_jd.txt
       sample.txt
     resumes/
+      linkedin_export.golden.json
+      linkedin_export.pdf
+      make_linkedin_export_pdf.py                Generate linkedin_export.pdf: an anonymized profile laid out like
       make_replica_layout_pdf.py                 Generate replica_layout.pdf: an anonymized resume with the same PDF la…
       replica_layout.golden.json
       replica_layout.pdf
@@ -171,6 +175,7 @@ tests/
     test_kept_sections_p83.py                    P8.3: sections the model has no fields for are kept verbatim under the…
     test_keyword_match.py                        Keyword-level match rate as the headline score (P1.2).
     test_layouts_p87.py                          P8.7: text boxes, a name in a separated page header, "·" bullets.
+    test_linkedin_import_p101.py                 P10.1: a LinkedIn "Save to PDF" export is read by its own two-column
     test_llm_client.py                           SampleSchema
     test_matcher.py                              test_evidence_matcher_exact_and_alias(), test_one_generic_word_cannot_…
     test_matching_p817.py                        P8.17: a fairer match for non-tech resumes.
@@ -215,7 +220,7 @@ Rows = layer (what kind of code), columns = pipeline stage (when it runs during 
 
 | Layer | 1 Ingest | 2 Normalize | 3 JD analysis | 4 Match | 5 Score | 6 Plan | 7 Rewrite | 8 Validate | 9 Render | 10 Report |
 |---|---|---|---|---|---|---|---|---|---|---|
-| **Ingestion** | `docx`<br>`errors`<br>`ocr`<br>`pdf`<br>`text` | · | · | · | · | · | · | · | · | · |
+| **Ingestion** | `docx`<br>`errors`<br>`linkedin`<br>`ocr`<br>`pdf`<br>`text` | · | · | · | · | · | · | · | · | · |
 | **Analysis** | · | `experience`<br>`resume_normalizer`<br>`structure_extractor` | `jd_analyzer` | `checklist`<br>`matcher`<br>`semantic_matcher`<br>`terminology` | `keyword_match`<br>`scoring` | `gap_questions`<br>`tailor_planner` | `change_proposal`<br>`experience`<br>`rewriter`<br>`skills_tailor`<br>`summary_writer` | · | · | · |
 | **LLM** | · | · | `client`<br>`schemas` | · | · | · | `client`<br>`schemas` | · | · | · |
 | **Validation** | · | · | `safety` | · | · | · | · | `content_lint`<br>`coverage`<br>`factual`<br>`output`<br>`structural` | · | · |
@@ -372,7 +377,7 @@ _Is this text in English? (P8.25)_
 
 ### `app/analysis/resume_normalizer.py`
 
-**Layer:** Analysis · **Stage:** 2 Normalize · **Lines:** 1289
+**Layer:** Analysis · **Stage:** 2 Normalize · **Lines:** 1305
 
 - class **`ResumeNormalizer`** ([app/analysis/resume_normalizer.py:9](../app/analysis/resume_normalizer.py#L9))
   - `find_phone()` :62 — The first phone number in a line, as written, or None.
@@ -417,7 +422,7 @@ _Is this text in English? (P8.25)_
   - `normalize()` :735
 - **Imports:** `domain/evidence.py`, `domain/resume.py`, `domain/resume_document.py`, `ingestion/docx.py`
 - **Imported by:** `analysis/keyword_match.py`, `analysis/structure_extractor.py`, `eval/golden.py`, `services/tailor.py`, `validation/output.py`
-- **Tested by:** `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_ats_round_trip.py`, `tests/unit/test_contact_p84.py`, `tests/unit/test_dates_p86.py`, `tests/unit/test_education_p88.py`, `tests/unit/test_job_lines_p85.py`, `tests/unit/test_kept_sections_p83.py`, `tests/unit/test_layouts_p87.py`, `tests/unit/test_parser_regressions_p42.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_stage_h_review.py`, `tests/unit/test_structure_extractor.py`, `tests/unit/test_tailor_resume_flow.py`
+- **Tested by:** `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_ats_round_trip.py`, `tests/unit/test_contact_p84.py`, `tests/unit/test_dates_p86.py`, `tests/unit/test_education_p88.py`, `tests/unit/test_job_lines_p85.py`, `tests/unit/test_kept_sections_p83.py`, `tests/unit/test_layouts_p87.py`, `tests/unit/test_linkedin_import_p101.py`, `tests/unit/test_parser_regressions_p42.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_stage_h_review.py`, `tests/unit/test_structure_extractor.py`, `tests/unit/test_tailor_resume_flow.py`
 
 ### `app/analysis/rewriter.py`
 
@@ -841,18 +846,18 @@ _LLM-as-judge for the evaluation harness (P4.3)._
 
 ### `app/ingestion/docx.py`
 
-**Layer:** Ingestion · **Stage:** 1 Ingest · **Lines:** 259
+**Layer:** Ingestion · **Stage:** 1 Ingest · **Lines:** 264
 
 - class **`RawBlock`** ([app/ingestion/docx.py:12](../app/ingestion/docx.py#L12))
-- class **`RawDocument`** ([app/ingestion/docx.py:28](../app/ingestion/docx.py#L28))
-- class **`DocxParser`** ([app/ingestion/docx.py:36](../app/ingestion/docx.py#L36))
-  - `_classify()` :48 — -> (block_type, text without a bullet glyph, whole line bold).
-  - `_skills_label_row()` :82 — 'Label: values' for a two-cell row of a skills table, else None.
-  - `_text_box_paragraphs()` :109 — Paragraphs inside text boxes anchored in this paragraph (P8.7:
-  - `_hyperlinks()` :127 — Targets of every external hyperlink in the body, in rId order
-  - `parse()` :138
+- class **`RawDocument`** ([app/ingestion/docx.py:30](../app/ingestion/docx.py#L30))
+- class **`DocxParser`** ([app/ingestion/docx.py:41](../app/ingestion/docx.py#L41))
+  - `_classify()` :53 — -> (block_type, text without a bullet glyph, whole line bold).
+  - `_skills_label_row()` :87 — 'Label: values' for a two-cell row of a skills table, else None.
+  - `_text_box_paragraphs()` :114 — Paragraphs inside text boxes anchored in this paragraph (P8.7:
+  - `_hyperlinks()` :132 — Targets of every external hyperlink in the body, in rId order
+  - `parse()` :143
 - **Imports:** `rendering/document_map.py`
-- **Imported by:** `analysis/resume_normalizer.py`, `analysis/structure_extractor.py`, `eval/golden.py`, `ingestion/pdf.py`, `ingestion/text.py`, `services/tailor.py`, `validation/output.py`
+- **Imported by:** `analysis/resume_normalizer.py`, `analysis/structure_extractor.py`, `eval/golden.py`, `ingestion/linkedin.py`, `ingestion/pdf.py`, `ingestion/text.py`, `services/tailor.py`, `validation/output.py`
 - **Tested by:** `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_ats_round_trip.py`, `tests/unit/test_details_p826.py`, `tests/unit/test_docx_parser.py`, `tests/unit/test_docx_renderer.py`, `tests/unit/test_education_p88.py`, `tests/unit/test_job_lines_p85.py`, `tests/unit/test_kept_sections_p83.py`, `tests/unit/test_layouts_p87.py`, `tests/unit/test_parser_regressions_p42.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_pdf_parser.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_stage_h_review.py`, `tests/unit/test_structure_extractor.py`, `tests/unit/test_tailor_resume_flow.py`
 
 ### `app/ingestion/errors.py`
@@ -864,6 +869,33 @@ _A file the tool can't read, with a message the person can act on (P8.22)._
 - class **`UnreadableFile`** ([app/ingestion/errors.py:8](../app/ingestion/errors.py#L8)) — `str(error)` is the user-facing explanation.
 - **Imported by:** `api/routes.py`, `ingestion/text.py`
 - **Tested by:** `tests/unit/test_uploads_p822.py`
+
+### `app/ingestion/linkedin.py`
+
+**Layer:** Ingestion · **Stage:** 1 Ingest · **Lines:** 367
+
+_LinkedIn "Save to PDF" profile export (P10.1)._
+
+- class **`_Reader`** ([app/ingestion/linkedin.py:80](../app/ingestion/linkedin.py#L80))
+  - `__init__()` :81
+  - `emit()` :92
+  - `_wraps()` :110 — Is `line` the wrapped continuation of `prev`? The export wraps a
+  - `items()` :132
+  - `sidebar_sections()` :146
+  - `contact_items()` :162 — Email, phone, profile and site URLs, without LinkedIn's
+  - `is_main_heading()` :178
+  - `is_grey()` :181
+  - `experience()` :184 — Company → [total duration] → title → dates → [location] →
+  - `_is_location()` :250 — The grey place line under a role's dates. Without colours to go
+  - `education()` :261
+  - `read()` :278
+- function **`_strip_bullet()`** ([app/ingestion/linkedin.py:58](../app/ingestion/linkedin.py#L58))
+- function **`_join()`** ([app/ingestion/linkedin.py:65](../app/ingestion/linkedin.py#L65)) — A wrapped line rejoins the one above; a break after a hyphen
+- function **`_common()`** ([app/ingestion/linkedin.py:73](../app/ingestion/linkedin.py#L73))
+- function **`read_linkedin_export()`** ([app/ingestion/linkedin.py:336](../app/ingestion/linkedin.py#L336)) — The export as a RawDocument, or None when the file isn't one (or
+- **Imports:** `ingestion/docx.py`, `rendering/document_map.py`
+- **Imported by:** `ingestion/pdf.py`, `services/tailor.py`
+- **Tested by:** `tests/unit/test_linkedin_import_p101.py`
 
 ### `app/ingestion/ocr.py`
 
@@ -877,27 +909,27 @@ _A file the tool can't read, with a message the person can act on (P8.22)._
 
 ### `app/ingestion/pdf.py`
 
-**Layer:** Ingestion · **Stage:** 1 Ingest · **Lines:** 373
+**Layer:** Ingestion · **Stage:** 1 Ingest · **Lines:** 388
 
-- class **`_Line`** ([app/ingestion/pdf.py:41](../app/ingestion/pdf.py#L41)) — One visual text line with the layout facts the parser needs.
-- class **`PdfParser`** ([app/ingestion/pdf.py:73](../app/ingestion/pdf.py#L73))
-  - `__init__()` :80
-  - `_ensure_fitz()` :83
-  - `_merge_wrapped_lines()` :91 — Text-only fallback for joining word-wrapped lines: a line is joined
-  - `_page_lines()` :112
-  - `_attach_right_columns()` :134 — A short, right-aligned run printed on the same row as a left-hand
-  - `_split_bullet()` :181 — Return the bullet text without its glyph, or None if not a bullet.
-  - `_continues()` :188 — Is `line` a word-wrap continuation of the item ending with `prev`?
-  - `_assemble()` :211 — Join continuation lines onto their bullet/paragraph. Each returned
-  - `_body_size()` :235
-  - `_is_heading()` :242
-  - `parse()` :258
-- function **`_clean()`** ([app/ingestion/pdf.py:54](../app/ingestion/pdf.py#L54))
-- function **`_is_bold_span()`** ([app/ingestion/pdf.py:60](../app/ingestion/pdf.py#L60))
-- function **`_join_wrapped()`** ([app/ingestion/pdf.py:64](../app/ingestion/pdf.py#L64)) — Join a wrapped line to the one before it. A line that breaks after
-- **Imports:** `ingestion/docx.py`, `ingestion/ocr.py`, `rendering/document_map.py`
+- class **`_Line`** ([app/ingestion/pdf.py:42](../app/ingestion/pdf.py#L42)) — One visual text line with the layout facts the parser needs.
+- class **`PdfParser`** ([app/ingestion/pdf.py:75](../app/ingestion/pdf.py#L75))
+  - `__init__()` :82
+  - `_ensure_fitz()` :85
+  - `_merge_wrapped_lines()` :93 — Text-only fallback for joining word-wrapped lines: a line is joined
+  - `_raw_page_lines()` :114 — Each visual line as printed, before right-hand columns are stitched on.
+  - `_attach_right_columns()` :138 — A short, right-aligned run printed on the same row as a left-hand
+  - `_split_bullet()` :185 — Return the bullet text without its glyph, or None if not a bullet.
+  - `_continues()` :192 — Is `line` a word-wrap continuation of the item ending with `prev`?
+  - `_assemble()` :215 — Join continuation lines onto their bullet/paragraph. Each returned
+  - `_body_size()` :239
+  - `_is_heading()` :246
+  - `parse()` :262
+- function **`_clean()`** ([app/ingestion/pdf.py:56](../app/ingestion/pdf.py#L56))
+- function **`_is_bold_span()`** ([app/ingestion/pdf.py:62](../app/ingestion/pdf.py#L62))
+- function **`_join_wrapped()`** ([app/ingestion/pdf.py:66](../app/ingestion/pdf.py#L66)) — Join a wrapped line to the one before it. A line that breaks after
+- **Imports:** `ingestion/docx.py`, `ingestion/linkedin.py`, `ingestion/ocr.py`, `rendering/document_map.py`
 - **Imported by:** `eval/golden.py`, `services/tailor.py`, `validation/output.py`
-- **Tested by:** `tests/unit/test_layouts_p87.py`, `tests/unit/test_parser_regressions_p42.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_pdf_parser.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_structure_extractor.py`
+- **Tested by:** `tests/unit/test_layouts_p87.py`, `tests/unit/test_linkedin_import_p101.py`, `tests/unit/test_parser_regressions_p42.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_pdf_parser.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_structure_extractor.py`
 
 ### `app/ingestion/text.py`
 
@@ -973,7 +1005,7 @@ _Plain-text resumes: a .txt upload or text pasted in the app (P8.22)._
 - class **`DocumentMap`** ([app/rendering/document_map.py:15](../app/rendering/document_map.py#L15))
   - `add_location()` :18
   - `get_location()` :21
-- **Imported by:** `ingestion/docx.py`, `ingestion/pdf.py`, `ingestion/text.py`, `rendering/docx_patcher.py`
+- **Imported by:** `ingestion/docx.py`, `ingestion/linkedin.py`, `ingestion/pdf.py`, `ingestion/text.py`, `rendering/docx_patcher.py`
 - **Tested by:** `tests/unit/test_details_p826.py`, `tests/unit/test_docx_parser.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_structure_extractor.py`
 
 ### `app/rendering/docx_patcher.py`
@@ -1171,45 +1203,45 @@ _Local profile of facts the user has confirmed (P3.2)._
 
 ### `app/services/tailor.py`
 
-**Layer:** Services · **Stage:** all · **Lines:** 1492
+**Layer:** Services · **Stage:** all · **Lines:** 1501
 
-- class **`TailorService`** ([app/services/tailor.py:61](../app/services/tailor.py#L61))
-  - `__init__()` :62 — `keep_run=False` (the web app): nothing is written to data/runs, so
-  - `_save_run()` :97 — A run artifact for the CLI / eval; nothing when no run is kept (P9.8).
-  - `generate_preview_md()` :102
-  - `_patchable()` :148 — Proposals as in-place DOCX patches. A summary proposal targets the
-  - `_apply_gap_answers()` :168 — Ticked keywords join the skills section; a typed answer becomes a
-  - `_prefill_from_profile()` :227 — Answers confirmed for an earlier JD pre-fill the same questions
-  - `_draft_from_answer()` :239 — Polish the candidate's answer into one bullet that may use only
-  - `_split_description()` :258 — Pasted role description -> bullet-sized chunks: one per line (list
-  - `validate_new_role()` :268 — Check a new job before any work is done; raises ValueError with a
-  - `_new_experience()` :293 — An empty job from the "add a job" fields, validated.
-  - `_insert_by_date()` :301 — Place a job in date order: current jobs first, then most recent start.
-  - `add_new_role()` :314 — Add a job the resume doesn't have yet (P3.3). Each chunk of the
-  - `_skills_proposals()` :351 — The skills section with the JD's skills first, when that changes it (P1.6).
-  - `_summary_proposals()` :356 — The tailored summary as a proposal, when one was written (P1.5).
-  - `_embed()` :361 — Sentence embeddings for the planner, loaded lazily; raises when the
-  - `_fit_relevance()` :370 — Planner relevance per bullet for the page-fit loop. Bullets the user
-  - `_render_template()` :380 — One template render plus PDF conversion (the page-fit loop's step).
-  - `_coverage()` :388 — Content coverage of the rendered DOCX against the uploaded file (P8.2).
-  - `_apply_bullet_order()` :415 — Reorder bullets as planned (most relevant first within each
-  - `parse_resume()` :430 — File -> (raw document, ResumeDocument, evidence). The deterministic
-  - `read_file()` :437 — The uploaded file as raw blocks, or UnreadableFile with a message
-  - `normalize_raw()` :472
-  - `_copy_parsed()` :485 — Deep copies, so a parse kept in UI session state is never mutated.
-  - `preview_keyword_match()` :490 — Match rate if these proposals were applied (P3.4 "recalculate"):
-  - `apply_parse_corrections()` :513 — Apply the user's fixes from the "Check parsed resume" step (P3.5).
-  - `analyze_only()` :639
-  - `generate_proposals()` :669 — Generate rewrite proposals without applying them, plus questions
-  - `incorporate_user_addition()` :746 — Fold a user-supplied free-text addition (a project, an
-  - `tailor_resume()` :825
-  - `arrange()` :1351 — Re-render the tailored resume as the user arranged it (P8.13–P8.16):
-- function **`_progress()`** ([app/services/tailor.py:50](../app/services/tailor.py#L50)) — A progress reporter that can never break a run (P3.6).
-- function **`_hidden_text()`** ([app/services/tailor.py:1447](../app/services/tailor.py#L1447)) — Text of the sections the user hid, so coverage counts it as their choice.
-- function **`_merge_usage()`** ([app/services/tailor.py:1474](../app/services/tailor.py#L1474)) — Combine two LLMClient.get_usage_summary() dicts into one. When one
-- **Imports:** `analysis/checklist.py`, `analysis/experience.py`, `analysis/gap_questions.py`, `analysis/jd_analyzer.py`, `analysis/keyword_match.py`, `analysis/language.py`, `analysis/matcher.py`, `analysis/resume_normalizer.py`, `analysis/rewriter.py`, `analysis/scoring.py`, `analysis/semantic_matcher.py`, `analysis/skills_tailor.py`, `analysis/structure_extractor.py`, `analysis/summary_writer.py`, `analysis/tailor_planner.py`, `domain/evidence.py`, `domain/job.py`, `domain/report.py`, `domain/resume.py`, `domain/resume_document.py`, `domain/tailoring.py`, `ingestion/docx.py`, `ingestion/pdf.py`, `ingestion/text.py`, `llm/client.py`, `rendering/docx_patcher.py`, `rendering/html_renderer.py`, `rendering/layout.py`, `rendering/page_fit.py`, `rendering/pdf_converter.py`, `rendering/template_renderer.py`, `services/arrange.py`, `services/profile_store.py`, `services/run_manager.py`, `validation/content_lint.py`, `validation/coverage.py`, `validation/factual.py`, `validation/output.py`, `validation/safety.py`, `validation/structural.py`
+- class **`TailorService`** ([app/services/tailor.py:62](../app/services/tailor.py#L62))
+  - `__init__()` :63 — `keep_run=False` (the web app): nothing is written to data/runs, so
+  - `_save_run()` :98 — A run artifact for the CLI / eval; nothing when no run is kept (P9.8).
+  - `generate_preview_md()` :103
+  - `_patchable()` :149 — Proposals as in-place DOCX patches. A summary proposal targets the
+  - `_apply_gap_answers()` :169 — Ticked keywords join the skills section; a typed answer becomes a
+  - `_prefill_from_profile()` :228 — Answers confirmed for an earlier JD pre-fill the same questions
+  - `_draft_from_answer()` :240 — Polish the candidate's answer into one bullet that may use only
+  - `_split_description()` :259 — Pasted role description -> bullet-sized chunks: one per line (list
+  - `validate_new_role()` :269 — Check a new job before any work is done; raises ValueError with a
+  - `_new_experience()` :294 — An empty job from the "add a job" fields, validated.
+  - `_insert_by_date()` :302 — Place a job in date order: current jobs first, then most recent start.
+  - `add_new_role()` :315 — Add a job the resume doesn't have yet (P3.3). Each chunk of the
+  - `_skills_proposals()` :352 — The skills section with the JD's skills first, when that changes it (P1.6).
+  - `_summary_proposals()` :357 — The tailored summary as a proposal, when one was written (P1.5).
+  - `_embed()` :362 — Sentence embeddings for the planner, loaded lazily; raises when the
+  - `_fit_relevance()` :371 — Planner relevance per bullet for the page-fit loop. Bullets the user
+  - `_render_template()` :381 — One template render plus PDF conversion (the page-fit loop's step).
+  - `_coverage()` :389 — Content coverage of the rendered DOCX against the uploaded file (P8.2).
+  - `_apply_bullet_order()` :416 — Reorder bullets as planned (most relevant first within each
+  - `parse_resume()` :431 — File -> (raw document, ResumeDocument, evidence). The deterministic
+  - `read_file()` :438 — The uploaded file as raw blocks, or UnreadableFile with a message
+  - `normalize_raw()` :473
+  - `_copy_parsed()` :494 — Deep copies, so a parse kept in UI session state is never mutated.
+  - `preview_keyword_match()` :499 — Match rate if these proposals were applied (P3.4 "recalculate"):
+  - `apply_parse_corrections()` :522 — Apply the user's fixes from the "Check parsed resume" step (P3.5).
+  - `analyze_only()` :648
+  - `generate_proposals()` :678 — Generate rewrite proposals without applying them, plus questions
+  - `incorporate_user_addition()` :755 — Fold a user-supplied free-text addition (a project, an
+  - `tailor_resume()` :834
+  - `arrange()` :1360 — Re-render the tailored resume as the user arranged it (P8.13–P8.16):
+- function **`_progress()`** ([app/services/tailor.py:51](../app/services/tailor.py#L51)) — A progress reporter that can never break a run (P3.6).
+- function **`_hidden_text()`** ([app/services/tailor.py:1456](../app/services/tailor.py#L1456)) — Text of the sections the user hid, so coverage counts it as their choice.
+- function **`_merge_usage()`** ([app/services/tailor.py:1483](../app/services/tailor.py#L1483)) — Combine two LLMClient.get_usage_summary() dicts into one. When one
+- **Imports:** `analysis/checklist.py`, `analysis/experience.py`, `analysis/gap_questions.py`, `analysis/jd_analyzer.py`, `analysis/keyword_match.py`, `analysis/language.py`, `analysis/matcher.py`, `analysis/resume_normalizer.py`, `analysis/rewriter.py`, `analysis/scoring.py`, `analysis/semantic_matcher.py`, `analysis/skills_tailor.py`, `analysis/structure_extractor.py`, `analysis/summary_writer.py`, `analysis/tailor_planner.py`, `domain/evidence.py`, `domain/job.py`, `domain/report.py`, `domain/resume.py`, `domain/resume_document.py`, `domain/tailoring.py`, `ingestion/docx.py`, `ingestion/linkedin.py`, `ingestion/pdf.py`, `ingestion/text.py`, `llm/client.py`, `rendering/docx_patcher.py`, `rendering/html_renderer.py`, `rendering/layout.py`, `rendering/page_fit.py`, `rendering/pdf_converter.py`, `rendering/template_renderer.py`, `services/arrange.py`, `services/profile_store.py`, `services/run_manager.py`, `validation/content_lint.py`, `validation/coverage.py`, `validation/factual.py`, `validation/output.py`, `validation/safety.py`, `validation/structural.py`
 - **Imported by:** `api/main.py`, `cli.py`, `eval/harness.py`, `scripts/walkthrough_server.py`
-- **Tested by:** `tests/integration/test_arrange.py`, `tests/integration/test_coverage_tailor.py`, `tests/integration/test_end_to_end.py`, `tests/unit/test_api.py`, `tests/unit/test_check_parsed_resume.py`, `tests/unit/test_cli.py`, `tests/unit/test_cli_parity.py`, `tests/unit/test_details_p826.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_global_p825.py`, `tests/unit/test_new_role.py`, `tests/unit/test_privacy_p98.py`, `tests/unit/test_profile_store.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_review_view.py`, `tests/unit/test_skill_placement_p912.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_tailor_resume_flow.py`, `tests/unit/test_tailor_service_addition.py`, `tests/unit/test_uploads_p822.py`
+- **Tested by:** `tests/integration/test_arrange.py`, `tests/integration/test_coverage_tailor.py`, `tests/integration/test_end_to_end.py`, `tests/unit/test_api.py`, `tests/unit/test_check_parsed_resume.py`, `tests/unit/test_cli.py`, `tests/unit/test_cli_parity.py`, `tests/unit/test_details_p826.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_global_p825.py`, `tests/unit/test_linkedin_import_p101.py`, `tests/unit/test_new_role.py`, `tests/unit/test_privacy_p98.py`, `tests/unit/test_profile_store.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_review_view.py`, `tests/unit/test_skill_placement_p912.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_tailor_resume_flow.py`, `tests/unit/test_tailor_service_addition.py`, `tests/unit/test_uploads_p822.py`
 
 ### `app/validation/content_lint.py`
 
@@ -1338,6 +1370,7 @@ flowchart LR
   subgraph Ingestion[Ingestion]
     ingestion_docx[docx]
     ingestion_errors[errors]
+    ingestion_linkedin[linkedin]
     ingestion_ocr[ocr]
     ingestion_pdf[pdf]
     ingestion_text[text]
@@ -1451,7 +1484,10 @@ flowchart LR
   eval_judge --> llm_client
   eval_judge --> llm_schemas
   ingestion_docx --> rendering_document_map
+  ingestion_linkedin --> ingestion_docx
+  ingestion_linkedin --> rendering_document_map
   ingestion_pdf --> ingestion_docx
+  ingestion_pdf --> ingestion_linkedin
   ingestion_pdf --> ingestion_ocr
   ingestion_pdf --> rendering_document_map
   ingestion_text --> ingestion_docx
@@ -1485,6 +1521,7 @@ flowchart LR
   services_tailor --> analysis_summary_writer
   services_tailor --> analysis_tailor_planner
   services_tailor --> ingestion_docx
+  services_tailor --> ingestion_linkedin
   services_tailor --> ingestion_pdf
   services_tailor --> ingestion_text
   services_tailor --> llm_client

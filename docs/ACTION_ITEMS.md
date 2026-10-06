@@ -1,7 +1,7 @@
 # Action Items — Best Tailored Resume per JD
 
 _Living tracker. Update an item's **Status** in the same commit that changes it; add a short note (commit subject or
-what's left). Last updated: 2026-10-06 (P0–P9 done, Stage N gate passed; P5.7 shelved; the owner accepted the next round:
+what's left). Last updated: 2026-10-07 (P0–P9 done, Stage N gate passed, P10.1 done (Stage O); P5.7 shelved; the owner accepted the next round:
 P9.7–P9.11 (quick fixes, coverage runs) and Phase 10 (LinkedIn import, output formats, cover letter, history), stages
 M–Q)._
 
@@ -24,8 +24,8 @@ JD-aligned rewrites, a Novoresume-style ATS layout that fits the right length, a
 | 7: Owner feedback on the flow | 2 | 2 | 0 | 0 |
 | 8: Cross-domain robustness and user control | 26 | 26 | 0 | 0 |
 | 9: Close-out and owner review | 25 | 25 | 0 | 0 |
-| 10: Inputs, outputs, cover letter and history | 9 | 0 | 0 | 9 |
-| **Total** | **116** | **104** | **0** | **10** |
+| 10: Inputs, outputs, cover letter and history | 9 | 1 | 0 | 8 |
+| **Total** | **116** | **105** | **0** | **9** |
 
 Phase 1's two open items (P1.15, P1.16) are ➖, moved into P8.9 and P8.18, so its row no longer adds up to 16.
 
@@ -352,7 +352,7 @@ and a check-in.
 
 | ID | Item | Files | Status | Notes |
 |---|---|---|---|---|
-| P10.1 | **LinkedIn "Save to PDF" import:** detect the export (`linkedin.com/in/`, "Page N of M", a left sidebar under ~35% of the width, Contact / Top Skills / Languages / Certifications / Honors-Awards); read the sidebar and main column separately; company → roles → "Month YYYY - Present (2 years 3 months)" with the duration stripped; drop page footers; fall back to the normal parse when unsure. Anonymized fixture generator + golden file | `ingestion/pdf.py`, `tests/fixtures/resumes/make_linkedin_export_pdf.py` | ⬜ | Stage O. Size L |
+| P10.1 | **LinkedIn "Save to PDF" import:** detect the export (`linkedin.com/in/`, "Page N of M", a left sidebar under ~35% of the width, Contact / Top Skills / Languages / Certifications / Honors-Awards); read the sidebar and main column separately; company → roles → "Month YYYY - Present (2 years 3 months)" with the duration stripped; drop page footers; fall back to the normal parse when unsure. Anonymized fixture generator + golden file | new `ingestion/linkedin.py`, `ingestion/pdf.py`, `analysis/resume_normalizer.py`, `services/tailor.py`, `tests/fixtures/resumes/make_linkedin_export_pdf.py` | ✅ | Stage O. Size L. 2026-10-07: fixture generator and a hand-written golden file first (`linkedin_export.pdf` / `.golden.json`: two pages, a company with two roles and a total duration, typed "•" / "-" bullets and plain paragraphs that wrap with no indent, a bullet wrapping across the page break, a role with no description, a profile URL and a certification wrapped in the sidebar). `read_linkedin_export` runs on the raw lines before right-column stitching: it needs the name (biggest text) right of 25% of the width, every other line inside one column, the sidebar under 38%, a known sidebar heading on page 1 and a footer or profile URL; otherwise, or when a description has no role above it, it returns None and the normal parse runs. Blocks carry hints (name, headline, location, company, job_title, bullet, section:X), so the normalizer guesses nothing; it gained `headline` / `location` hints (a three-part "Pune, Maharashtra, India" isn't a place to the contact-line rule). Grey text marks dates and places, with a shape rule when a file has no colours. A wrapped line is joined when its first word would not have fitted on the line above (a margin past the widest line, so two short certifications don't merge); Top Skills and Languages are one per line. Contact labels ("(Mobile)", "(LinkedIn)") dropped; Languages kept verbatim. The service skips the LLM re-label for a layout-read file (a role with no description is normal there) and adds a Check details note. Replica and private golden parses unchanged. `test_parse_golden[linkedin-export]`, `test_linkedin_import_p101.py` (not an export: one-column page with Contact + profile URL; fallback; no grey text; no LLM call; offline tailor with 100% coverage) |
 | P10.2 | **Page size plumbing:** `page_size` "A4" / "Letter" in `ResumePresentation`; one `PageSpec` used by the DOCX template, HTML and page-fit (Letter's line length calibrated on measured PDFs) | `domain/resume_document.py`, `rendering/layout.py`, `rendering/template_renderer.py`, `rendering/html_renderer.py`, `rendering/page_fit.py` | ⬜ | Stage P. Size M. A4 is hard-coded in four places today |
 | P10.3 | **Region: suggest, confirm, dates, advice:** a deterministic region from the JD (location line, US state codes, countries, currency, USAJOBS) with its evidence; shown on Review ("Formatted for US (Letter) · the job says 'Austin, TX' · change") and switchable in Arrange with no LLM call; dates by region; personal-details advice only | new `analysis/region.py`, `rendering/layout.py`, `validation/content_lint.py`, `api/routes.py`, `services/arrange.py`, `web/src/pages/Review.tsx`, `Arrange.tsx`, `lib/store.ts` | ⬜ | Stage P. Size M |
 | P10.4 | **Tagged (accessible) PDF:** switched on in each pooled LibreOffice profile (`UseTaggedPDF`; LibreOffice 7.3 here, so not the 7.4 JSON filter); round-trip and page counts unchanged | `rendering/pdf_converter.py` | ⬜ | Stage P. Size S |

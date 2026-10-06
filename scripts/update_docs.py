@@ -72,6 +72,7 @@ STAGES = [
 STAGE_MAP: Dict[str, List[str]] = {
     "app/ingestion/docx.py": ["1 Ingest"],
     "app/ingestion/pdf.py": ["1 Ingest"],
+    "app/ingestion/linkedin.py": ["1 Ingest"],
     "app/ingestion/text.py": ["1 Ingest"],
     "app/ingestion/errors.py": ["1 Ingest"],
     "app/ingestion/ocr.py": ["1 Ingest"],

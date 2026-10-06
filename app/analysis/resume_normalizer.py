@@ -796,6 +796,22 @@ class ResumeNormalizer:
                 candidate_name = text
                 continue
 
+            if block.hint in ("headline", "location"):
+                # Known from the file's layout (the LinkedIn export, P10.1):
+                # "Pune, Maharashtra, India" has three parts, which the
+                # contact-line guess would not take for a place.
+                header_blocks.append(block.id)
+                if block.hint == "location":
+                    candidate_location = candidate_location or text
+                elif candidate_headline is None:
+                    candidate_headline = text
+                    evidence_list.append(Evidence(
+                        id=f"ev_{ev_counter:04d}", source_type="summary",
+                        source_id=block.id, source_location_id=block.id, text=text,
+                    ))
+                    ev_counter += 1
+                continue
+
             heading_kind = None
             if block.hint and block.hint.startswith("section:"):
                 hinted = block.hint.split(":", 1)[1]

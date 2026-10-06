@@ -28,6 +28,7 @@ from app.domain.resume import Experience, OtherSection, Project, Resume, ResumeB
 from app.domain.resume_document import ResumeDocument, ResumeSource
 from app.domain.tailoring import TailoringPlan
 from app.ingestion.docx import DocxParser
+from app.ingestion.linkedin import LAYOUT as LINKEDIN_LAYOUT, NOTE as LINKEDIN_NOTE
 from app.ingestion.pdf import PdfParser
 from app.llm.client import LLMClient
 from app.rendering.docx_patcher import DocxPatcher
@@ -471,9 +472,17 @@ class TailorService:
 
     def normalize_raw(self, raw_doc):
         resume_doc, evidence_list = self.resume_normalizer.normalize(raw_doc)
-        resume_doc, evidence_list, self.last_parse_issues = self.structure_extractor.improve(
-            raw_doc, resume_doc, evidence_list,
-        )
+        if raw_doc.layout:
+            # Structure read from a known layout (the LinkedIn export, P10.1):
+            # an LLM re-label can't improve it, and a role with no
+            # description there is normal. The problems are still shown.
+            self.last_parse_issues = self.structure_extractor.problems(resume_doc.resume, evidence_list, raw_doc)
+            if raw_doc.layout == LINKEDIN_LAYOUT:
+                self.last_parse_issues.append(LINKEDIN_NOTE)
+        else:
+            resume_doc, evidence_list, self.last_parse_issues = self.structure_extractor.improve(
+                raw_doc, resume_doc, evidence_list,
+            )
         # Shown on "Check your details"; not a reason to ask the LLM (P8.6).
         self.last_parse_issues = list(self.last_parse_issues) + future_dates(resume_doc.resume)
         language = other_language(raw_doc.raw_text)

@@ -1,6 +1,6 @@
 # Project Overview — Resume-optimizer
 
-_Start here. Last reviewed: 2026-10-06 (branch `fb_ksh`). Hand-maintained — update it when capabilities or open
+_Start here. Last reviewed: 2026-10-07 (branch `fb_ksh`). Hand-maintained — update it when capabilities or open
 issues change. For "where is X in the code" see [KNOWLEDGE_GRAPH.md](KNOWLEDGE_GRAPH.md); for "what changed when"
 see [CHANGE_LOG.md](CHANGE_LOG.md)._
 
@@ -46,7 +46,7 @@ Semantic matching uses a local embedding model (`all-MiniLM-L6-v2`).
 | Area | Status | Notes |
 |---|---|---|
 | DOCX parsing (incl. table layouts) | ✅ Works | Paragraphs and tables in document order, hyperlinks, page-header contact (P1.9) |
-| PDF parsing | ✅ Works | Layout-aware (font size, bold, indent, right columns; P1.11). Several roles per company and project sub-sections inside a job (P1.12). The user's resume matches its golden file. Text PDFs only; `ocr.py` is a stub path. PDF input always uses the ATS template |
+| PDF parsing | ✅ Works | Layout-aware (font size, bold, indent, right columns; P1.11). Several roles per company and project sub-sections inside a job (P1.12). The user's resume matches its golden file. A LinkedIn "Save to PDF" profile export is recognised and read by its two-column layout (sidebar and main column apart, durations and page footers dropped; falls back to the normal parse when unsure; P10.1). Text PDFs only; `ocr.py` is a stub path. PDF input always uses the ATS template |
 | JD requirement extraction | ✅ Works | One structured LLM call (title, company, seniority, years, whole-line requirements with priority, skills), every value checked against the JD; deterministic fallback (P1.1) |
 | Matching + score | ✅ Works | Headline = keyword match rate with a matched/missing table (P1.2), plural- and verb-form-insensitive (P7.2); requirement-level evidence score kept as secondary. Results names the keywords still missing and links to where they can be confirmed (P7.2) |
 | Tailor content | ✅ Works | All relevant job and project bullets (one call per role), summary, skills order; nothing invented, dropped details flagged (P1.3–P1.7, P1.14) |
@@ -61,7 +61,7 @@ Semantic matching uses a local embedding model (`all-MiniLM-L6-v2`).
 | Web API | ✅ Works | FastAPI (P5.1): one endpoint per step, SSE progress, per-visitor sessions with expiry (swept every minute, P9.1), upload checks, rate limit. Every broken upload gets its own plain message, never a 500: damaged, empty, password-protected, scanned, too large, wrong type (P8.22, P9.2). Public-hosting hardening is P5.7 |
 | Web UI (`web/`) | ✅ Works | React app (P5.2–P5.6) redesigned in Phase 6 as **Editor's Proof** (`DESIGN.md`): bright paper on a light desk with a matching dark mode that follows the system, blue pencil as the one action colour, proof marks for every change (struck, inserted, highlighted keywords, reasons in the margin), a landing hero of 3D proof sheets with self-drawing marks over a WebGL ink field, a score rule instead of a gauge, WCAG 2.2 AA. Flow unchanged: upload → check details → review → results, plus the match report |
 | CLI | ✅ Works | `analyze`, `propose` (editable review file) and `tailor --proposals` with the UI's features: edits, gap answers, additions, a new job, strict mode; live progress (P3.6) |
-| Tests | ✅ 609 backend + 91 front-end passing | `pytest -q` (~4 min); the offline eval and persona cases run with `pytest -m eval` (50 pass, 2 known xfail: academic and federal, waiting for their templates). A browser walkthrough in Chrome at 1440 / 390 px, light and dark: `scripts/walkthrough.cjs` (P9.4); `LIVE=1` runs it against the real app and AI (P9.11) |
+| Tests | ✅ 617 backend + 91 front-end passing | `pytest -q` (~4 min); the offline eval and persona cases run with `pytest -m eval` (50 pass, 2 known xfail: academic and federal, waiting for their templates). A browser walkthrough in Chrome at 1440 / 390 px, light and dark: `scripts/walkthrough.cjs` (P9.4); `LIVE=1` runs it against the real app and AI (P9.11) |
 | Evaluation set | ✅ Works | 11 anonymized resume + JD cases with expected facts; `python -m app.eval run --tailor --check` (P4.1, P4.2); LLM-as-judge from another model family, rubric + position-swapped pairwise, `--judge` / `--replay` (P4.3) |
 | Arrange and edit after AI changes | ✅ Works | From Results: reorder sections, jobs and each job's bullets (never across jobs), hide sections, reword a bullet, keep what page-fit trimmed, choose 1 / 2 / 3 pages or "don't trim"; re-rendered with no LLM, checked like a tailoring run (P8.13–P8.16) |
 | Resumes outside tech, outside the US, not in English | ✅ Works | Unknown sections kept verbatim under their own heading; header details kept; non-tech job-line formats, EU / US numeric dates, seasons, "Till Date"; phone formats worldwide; text boxes; .txt, pasted text, .doc / .odt / .rtf; a content coverage check fails any run that loses a line (P8.1–P8.8, P8.22). Non-English text is kept and named "English only for now" (P8.25) |
@@ -103,7 +103,7 @@ and unused prompts (P0.8, P1.10) are all fixed. What remains:
    (2026-10-05):** the landing page's two actions now follow the inputs (P9.14); live persona runs for nurse, sales-pdf
    and india found seven real problems, all fixed (P9.15–P9.21: custom sections and slash words in the match, usage
    counted twice, a repeated "Skills:" label, unchanged bullets listed as rewrites, a comma title read back wrong, a
-   city kept in the company); the live-AI browser walkthrough passed (P9.11). **Stage N done (2026-10-06):** eu_cv passes (German kept verbatim); academic found three more problems, all fixed (P9.23 JD skills matched inside longer words, P9.24 a current job's bullets turned into the past tense, P9.25 "Grants And Funding"); its 3 pages wait for the Academic CV template (P10.6). Private live run clean. **Next: Stage O, LinkedIn import (P10.1).** Groq strict-JSON rejections that repeat now fall back to plain JSON mode with a readable error (P9.22).
+   city kept in the company); the live-AI browser walkthrough passed (P9.11). **Stage N done (2026-10-06):** eu_cv passes (German kept verbatim); academic found three more problems, all fixed (P9.23 JD skills matched inside longer words, P9.24 a current job's bullets turned into the past tense, P9.25 "Grants And Funding"); its 3 pages wait for the Academic CV template (P10.6). Private live run clean. **Stage O (2026-10-07):** LinkedIn "Save to PDF" import built (P10.1) against an anonymized fixture and golden file; gate in progress. **Next: Stage P, output formats (P10.2–P10.7).** Groq strict-JSON rejections that repeat now fall back to plain JSON mode with a readable error (P9.22).
 8. **Groq free tier, per minute:** 8K tokens per minute means role rewrites can wait 30–60 s each on a busy run.
    That is now waited out (shown as progress), so a real run takes ~1–2 minutes of drafting.
 

@@ -23,6 +23,8 @@ class RawBlock(BaseModel):
     # Structural role set by the LLM structure extractor (P1.13): "name",
     # "company", "job_title", "subheading", "bullet" or "section:<Name>".
     # Overrides the normalizer's own layout guesses; the text is untouched.
+    # A known layout (the LinkedIn export, P10.1) also sets "headline",
+    # "location" and "text" (a plain line that is never a heading).
     hint: Optional[str] = None
 
 class RawDocument(BaseModel):
@@ -32,6 +34,9 @@ class RawDocument(BaseModel):
     raw_text: str = ""
     # Hyperlink targets found in the file (LinkedIn, GitHub, portfolio...).
     links: List[str] = Field(default_factory=list)
+    # Set when the file was read by a layout-specific reader whose blocks
+    # already carry structure hints, e.g. "linkedin_export" (P10.1).
+    layout: Optional[str] = None
 
 class DocxParser:
     # "●" (U+25CF) and friends are common Word bullet glyphs that are NOT the

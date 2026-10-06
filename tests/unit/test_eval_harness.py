@@ -8,9 +8,9 @@ from app.eval.harness import Case, compare, keyword_coverage, load_cases, run
 
 def test_committed_cases_load():
     names = [c.name for c in load_cases(include_private=False)]
-    assert names[:3] == ["replica-pdf", "sample-docx", "sample-pdf"]
+    assert names[:4] == ["replica-pdf", "sample-docx", "sample-pdf", "linkedin-pdf"]  # P10.1: LinkedIn export
     # P4.2: the generated anonymized set, each with an expected.json
-    assert names[3:] == ["new-grad", "senior-12y", "career-changer", "table-docx", "promotion-projects",
+    assert names[4:] == ["new-grad", "senior-12y", "career-changer", "table-docx", "promotion-projects",
                          "pdf-mid", "boilerplate-jd", "product-manager"]
 
 

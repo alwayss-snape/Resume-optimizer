@@ -13,6 +13,7 @@ except Exception as e:  # pragma: no cover - runtime dependency may be missing i
     _FITZ_IMPORT_ERROR = e
 
 from app.ingestion.docx import RawBlock, RawDocument
+from app.ingestion.linkedin import read_linkedin_export
 from app.ingestion.ocr import OCREngine
 from app.rendering.document_map import DocumentLocation, DocumentMap
 
@@ -49,6 +50,7 @@ class _Line:
     bold: float  # fraction of visible characters set in a bold font
     page: int
     glyph_x0: Optional[float] = None  # set for bullet lines: where the glyph sits
+    color: int = 0  # sRGB of the line's main span (the LinkedIn export greys dates and places)
 
 
 def _clean(text: str) -> str:
@@ -109,7 +111,8 @@ class PdfParser:
 
     # -- layout extraction ----------------------------------------------
 
-    def _page_lines(self, page, page_num: int) -> List[_Line]:
+    def _raw_page_lines(self, page, page_num: int) -> List[_Line]:
+        """Each visual line as printed, before right-hand columns are stitched on."""
         lines: List[_Line] = []
         for block in page.get_text("dict")["blocks"]:
             if block.get("type") != 0:
@@ -123,9 +126,10 @@ class PdfParser:
                 total = sum(n for _, n in visible) or 1
                 bold = sum(n for s, n in visible if _is_bold_span(s)) / total
                 size = max(s["size"] for s in spans)
+                color = max(visible, key=lambda v: v[1])[0].get("color", 0)
                 x0, y0, x1, y1 = raw["bbox"]
-                lines.append(_Line(text, x0, x1, y0, y1, size, bold, page_num))
-        return self._attach_right_columns(lines)
+                lines.append(_Line(text, x0, x1, y0, y1, size, bold, page_num, color=color))
+        return lines
 
     _DATE_OR_PLACE_RE = re.compile(
         r"^(?:(?:[A-Za-z]{3,9}\.?\s+)?(?:19|20)\d{2}\s*(?:[-–—]|to)\s*(?:(?:[A-Za-z]{3,9}\.?\s+)?(?:19|20)\d{2}|"
@@ -269,17 +273,28 @@ class PdfParser:
         current_section = "Header"
         block_counter = 0
 
-        page_items: List[List[_Line]] = []
-        all_lines: List[_Line] = []
+        raw_pages: List[List[_Line]] = []
         for page_num in range(len(doc)):
             page = doc[page_num]
-            lines = self._page_lines(page, page_num)
-            all_lines.extend(lines)
-            page_items.append(self._assemble(lines))
+            raw_pages.append(self._raw_page_lines(page, page_num))
             for link in page.get_links():
                 uri = link.get("uri")
                 if uri and uri not in links:
                     links.append(uri)
+
+        # A LinkedIn "Save to PDF" export has its own two-column layout (P10.1).
+        page_width = doc[0].rect.width if len(doc) else 0
+        linkedin = read_linkedin_export(raw_pages, links, page_width, os.path.basename(file_path))
+        if linkedin is not None:
+            doc.close()
+            return linkedin
+
+        page_items: List[List[_Line]] = []
+        all_lines: List[_Line] = []
+        for lines in raw_pages:
+            lines = self._attach_right_columns(lines)
+            all_lines.extend(lines)
+            page_items.append(self._assemble(lines))
         total_text_length = sum(len(l.text.strip()) for l in all_lines)
         body_size = self._body_size(all_lines)
 

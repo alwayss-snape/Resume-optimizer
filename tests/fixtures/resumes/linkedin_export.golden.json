@@ -1,0 +1,121 @@
+{
+  "candidate": {
+    "name": "Morgan Ellis",
+    "headline": "Senior Backend Engineer | Payments and Distributed Systems",
+    "email": "morgan.ellis@example.com",
+    "phone": "+91 98765 43210",
+    "location": "Bengaluru, Karnataka, India",
+    "links": [
+      "https://www.linkedin.com/in/morgan-ellis-4b7a21c9",
+      "https://morganellis.dev"
+    ]
+  },
+  "summary": "Backend engineer with 7 years of experience building payment and ledger services in Go and Java. I care about reliable systems, clear on-call runbooks and mentoring the engineers around me.",
+  "experience": [
+    {
+      "company": "Lumen Pay",
+      "location": "Bengaluru, Karnataka, India",
+      "roles": [
+        [
+          "Senior Backend Engineer",
+          "April 2022",
+          "Present"
+        ]
+      ],
+      "groups": [
+        [
+          null,
+          [
+            "Led the move of card settlement from a nightly batch to an event-driven service in Go and Kafka, cutting settlement time from 9 hours to 40 minutes",
+            "Designed an idempotent ledger API on PostgreSQL that handles 3,000 requests per second at peak",
+            "Mentor four engineers and run the payments on-call rotation"
+          ]
+        ]
+      ]
+    },
+    {
+      "company": "Lumen Pay",
+      "location": "Mumbai, Maharashtra, India",
+      "roles": [
+        [
+          "Backend Engineer",
+          "January 2020",
+          "March 2022"
+        ]
+      ],
+      "groups": [
+        [
+          null,
+          [
+            "Built the merchant onboarding service in Java and Spring Boot and reduced manual KYC reviews by 35% within two quarters.",
+            "Added contract tests between the onboarding and risk services, catching breaking API changes before release."
+          ]
+        ]
+      ]
+    },
+    {
+      "company": "Brightline Logistics",
+      "location": "Pune, Maharashtra, India",
+      "roles": [
+        [
+          "Software Engineer",
+          "July 2017",
+          "December 2019"
+        ]
+      ],
+      "groups": [
+        [
+          null,
+          [
+            "Wrote route-assignment jobs in Python that matched 20,000 daily parcels to delivery vans across 14 city depots",
+            "Moved the parcel-tracking database from MySQL to PostgreSQL with zero downtime, using dual writes and a staged read cutover",
+            "Built Grafana dashboards for depot managers to follow late deliveries by route",
+            "Cut the nightly reconciliation job from 3 hours to 25 minutes by replacing row-by-row updates with batched upserts"
+          ]
+        ]
+      ]
+    },
+    {
+      "company": "Northstar Labs",
+      "location": null,
+      "roles": [
+        [
+          "Software Engineering Intern",
+          "January 2017",
+          "June 2017"
+        ]
+      ],
+      "groups": []
+    }
+  ],
+  "projects": [],
+  "skills": {
+    "Skills": [
+      "Distributed Systems",
+      "Go (Programming Language)",
+      "PostgreSQL"
+    ]
+  },
+  "education": [
+    {
+      "institution": "Westbrook Institute of Technology",
+      "degree": "Bachelor of Engineering - BE, Computer Science",
+      "location": null,
+      "dates": "2013 - 2017"
+    },
+    {
+      "institution": "Lakeside College",
+      "degree": "Higher Secondary Certificate, Science",
+      "location": null,
+      "dates": "2011 - 2013"
+    }
+  ],
+  "certifications": [
+    "AWS Certified Solutions Architect – Associate",
+    "Certified Kubernetes Application Developer (CKAD)"
+  ],
+  "achievements": [
+    "Engineering Excellence Award 2022"
+  ],
+  "interests": []
+}

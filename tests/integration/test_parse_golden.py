@@ -19,10 +19,11 @@ from app.eval.golden import project
 CASES = [
     ("tests/fixtures/resumes/replica_layout.pdf", "tests/fixtures/resumes/replica_layout.golden.json"),
     ("data/eval/private/resume.pdf", "data/eval/private/resume.golden.json"),
+    ("tests/fixtures/resumes/linkedin_export.pdf", "tests/fixtures/resumes/linkedin_export.golden.json"),  # P10.1
 ]
 
 
-@pytest.mark.parametrize("resume_path,golden_path", CASES, ids=["replica", "private-real-resume"])
+@pytest.mark.parametrize("resume_path,golden_path", CASES, ids=["replica", "private-real-resume", "linkedin-export"])
 def test_parse_matches_golden(resume_path, golden_path):
     if not (os.path.exists(resume_path) and os.path.exists(golden_path)):
         pytest.skip(f"{resume_path} / {golden_path} not present")
