@@ -8,7 +8,7 @@ from docx.shared import Inches, Mm, Pt, RGBColor
 from typing import Any
 
 from app.domain.resume_document import ResumePresentation
-from app.rendering.layout import (SECTION_TITLES, fallback_font, contact_parts, date_range, display_skills, format_date_text,
+from app.rendering.layout import (SECTION_TITLES, page_spec, fallback_font, contact_parts, date_range, display_skills, format_date_text,
                                   ordered_sections, other_section, skill_label)
 
 
@@ -26,7 +26,7 @@ class TemplateRenderer:
     _gap = 1.0  # vertical spacing factor; 0.5 in compact mode
 
     def render_ats_default(self, resume_or_doc: Any, output_path: str) -> str:
-        """Render the ATS template (P2.1): A4, single column, Arial,
+        """Render the ATS template (P2.1): A4 or Letter, single column, Arial,
         standard headings in `presentation.section_order`. Accepts a Resume
         or a ResumeDocument."""
         if hasattr(resume_or_doc, "resume"):
@@ -217,10 +217,12 @@ class TemplateRenderer:
     # -- layout helpers -----------------------------------------------
 
     def _set_document_defaults(self, doc: "docx.Document", presentation: "ResumePresentation") -> None:
-        """A4, the template's margins and font, instead of python-docx's
-        stock Letter page and Calibri Normal style."""
+        """The presentation's page (A4 or Letter, P10.2), the template's
+        margins and font, instead of python-docx's stock Letter page and
+        Calibri Normal style."""
         section = doc.sections[0]
-        section.page_width, section.page_height = Mm(210), Mm(297)
+        page = page_spec(presentation)
+        section.page_width, section.page_height = Mm(page.width_mm), Mm(page.height_mm)
         section.left_margin = section.right_margin = Inches(presentation.margin_side_in)
         section.top_margin = section.bottom_margin = Inches(presentation.margin_vertical_in)
 

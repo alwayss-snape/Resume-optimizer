@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "b2f47853d526154f",
+  "source_hash": "a978fb4212db09f8",
   "stats": {
-    "files": 173,
-    "python_files": 147,
+    "files": 175,
+    "python_files": 149,
     "app_modules": 61,
-    "test_files": 75,
-    "classes": 114,
-    "functions": 1135,
-    "lines_of_python": 22856
+    "test_files": 77,
+    "classes": 115,
+    "functions": 1149,
+    "lines_of_python": 23045
   },
   "axes": {
     "x": "location (path)",
@@ -1997,7 +1997,7 @@
         "2 Normalize",
         "9 Render"
       ],
-      "lines": 86,
+      "lines": 87,
       "doc": "",
       "classes": [
         {
@@ -2008,29 +2008,29 @@
         },
         {
           "name": "ResumeSource",
-          "line": 25,
+          "line": 26,
           "doc": "",
           "methods": []
         },
         {
           "name": "ResumeRevision",
-          "line": 31,
+          "line": 32,
           "doc": "",
           "methods": []
         },
         {
           "name": "ResumeDocument",
-          "line": 43,
+          "line": 44,
           "doc": "Versioned source of truth for editing, tailoring, and rendering.",
           "methods": [
             {
               "name": "record_revision",
-              "line": 59,
+              "line": 60,
               "doc": ""
             },
             {
               "name": "snapshot",
-              "line": 84,
+              "line": 85,
               "doc": "Return a JSON-serializable, versioned document for storage or export."
             }
           ]
@@ -3055,7 +3055,7 @@
       "stages": [
         "9 Render"
       ],
-      "lines": 162,
+      "lines": 163,
       "doc": "",
       "classes": [
         {
@@ -3100,7 +3100,7 @@
             },
             {
               "name": "write_html",
-              "line": 158,
+              "line": 159,
               "doc": ""
             }
           ]
@@ -3115,73 +3115,96 @@
       "stages": [
         "9 Render"
       ],
-      "lines": 221,
+      "lines": 252,
       "doc": "Shared layout rules for the ATS template (P2.1).",
-      "classes": [],
+      "classes": [
+        {
+          "name": "PageSpec",
+          "line": 21,
+          "doc": "One paper size, read by the DOCX template, the HTML preview and",
+          "methods": [
+            {
+              "name": "height_pt",
+              "line": 32,
+              "doc": ""
+            },
+            {
+              "name": "body_pt",
+              "line": 35,
+              "doc": "Height available to text between the top and bottom margins."
+            }
+          ]
+        }
+      ],
       "functions": [
         {
+          "name": "page_spec",
+          "line": 46,
+          "doc": ""
+        },
+        {
           "name": "section_order_for",
-          "line": 39,
+          "line": 70,
           "doc": "Default order; education moves before experience for someone with"
         },
         {
           "name": "_place_kept_sections",
-          "line": 52,
+          "line": 83,
           "doc": "Each kept section goes right after the section it followed in the"
         },
         {
           "name": "other_section",
-          "line": 76,
+          "line": 107,
           "doc": "The kept section an \"other:<id>\" order entry names, or None."
         },
         {
           "name": "ordered_sections",
-          "line": 82,
+          "line": 113,
           "doc": "`order` plus any kept section it doesn't list yet (an order saved"
         },
         {
           "name": "format_date",
-          "line": 88,
+          "line": 119,
           "doc": "'August 2024' / 'Aug. 2024' / '08/2024' -> 'Aug 2024'; 'Current' ->"
         },
         {
           "name": "date_range",
-          "line": 123,
+          "line": 154,
           "doc": "'Jan 2022 \u2013 Present'; one side only when the other is missing. Both"
         },
         {
           "name": "format_date_text",
-          "line": 130,
+          "line": 161,
           "doc": "A free-text range such as an education's '2016 - 2020' or"
         },
         {
           "name": "contact_parts",
-          "line": 140,
+          "line": 171,
           "doc": "email | phone | City, Country | linkedin | github | other links."
         },
         {
           "name": "display_skills",
-          "line": 148,
+          "line": 179,
           "doc": "At most `max_categories` lines: the first ones as they are (JD-relevant"
         },
         {
           "name": "skill_label",
-          "line": 167,
+          "line": 198,
           "doc": "The label printed before a skills line, or None when the resume has a"
         },
         {
           "name": "output_basename",
-          "line": 175,
+          "line": 206,
           "doc": "First_Last_Resume_<Company>: letters of any script kept (\"Luc\u00eda"
         },
         {
           "name": "fallback_font",
-          "line": 201,
+          "line": 232,
           "doc": "The best installed font for scripts Arial lacks."
         },
         {
           "name": "needs_fallback_font",
-          "line": 219,
+          "line": 250,
           "doc": "Characters outside Latin / Greek: CJK, Cyrillic, Arabic, Devanagari..."
         }
       ]
@@ -3193,59 +3216,59 @@
       "stages": [
         "9 Render"
       ],
-      "lines": 243,
+      "lines": 249,
       "doc": "Page-fit loop (P2.4): render, count pages, trim, render again.",
       "classes": [
         {
           "name": "FitResult",
-          "line": 44,
+          "line": 46,
           "doc": "",
           "methods": [
             {
               "name": "trimmed",
-              "line": 52,
+              "line": 54,
               "doc": ""
             },
             {
               "name": "fits",
-              "line": 56,
+              "line": 58,
               "doc": ""
             }
           ]
         },
         {
           "name": "PageFitter",
-          "line": 75,
+          "line": 77,
           "doc": "`render(document, docx_path, out_dir)` writes the DOCX and returns the",
           "methods": [
             {
               "name": "__init__",
-              "line": 80,
+              "line": 82,
               "doc": ""
             },
             {
               "name": "fit",
-              "line": 85,
+              "line": 87,
               "doc": "`pinned`: bullet ids, project ids and \"interests\" the user kept on"
             },
             {
               "name": "_drop_interests",
-              "line": 133,
+              "line": 138,
               "doc": ""
             },
             {
               "name": "_trim_bullets",
-              "line": 140,
+              "line": 145,
               "doc": "Least relevant bullets first, within the per-role minimums; never"
             },
             {
               "name": "_drop_sections",
-              "line": 176,
+              "line": 181,
               "doc": "Least relevant job sub-section or project, as a whole; never one"
             },
             {
               "name": "_compact",
-              "line": 216,
+              "line": 222,
               "doc": ""
             }
           ]
@@ -3254,27 +3277,27 @@
       "functions": [
         {
           "name": "measure_pdf",
-          "line": 60,
+          "line": 62,
           "doc": "(page count, points of the last page used by text below its top margin)."
         },
         {
           "name": "bullet_height",
-          "line": 71,
+          "line": 73,
           "doc": ""
         },
         {
           "name": "_is_current",
-          "line": 223,
+          "line": 229,
           "doc": "The first job, and any other job that hasn't ended, keep the larger"
         },
         {
           "name": "_owner_label",
-          "line": 230,
+          "line": 236,
           "doc": "\"Lakeshore Electric (Journeyman Electrician)\" or a project's name, so"
         },
         {
           "name": "_short",
-          "line": 241,
+          "line": 247,
           "doc": ""
         }
       ]
@@ -3385,7 +3408,7 @@
       "stages": [
         "9 Render"
       ],
-      "lines": 315,
+      "lines": 317,
       "doc": "",
       "classes": [
         {
@@ -3396,7 +3419,7 @@
             {
               "name": "render_ats_default",
               "line": 28,
-              "doc": "Render the ATS template (P2.1): A4, single column, Arial,"
+              "doc": "Render the ATS template (P2.1): A4 or Letter, single column, Arial,"
             },
             {
               "name": "_add_header",
@@ -3451,41 +3474,41 @@
             {
               "name": "_set_document_defaults",
               "line": 219,
-              "doc": "A4, the template's margins and font, instead of python-docx's"
+              "doc": "The presentation's page (A4 or Letter, P10.2), the template's"
             },
             {
               "name": "_content_width",
-              "line": 244,
+              "line": 246,
               "doc": ""
             },
             {
               "name": "_add_section_heading",
-              "line": 248,
+              "line": 250,
               "doc": "A section label in the accent color with a rule underneath \u2014"
             },
             {
               "name": "_role_dates",
-              "line": 263,
+              "line": 265,
               "doc": ""
             },
             {
               "name": "_add_meta_line",
-              "line": 266,
+              "line": 268,
               "doc": "'Company \u00b7 Location' in italic grey under a title line."
             },
             {
               "name": "_add_bullets",
-              "line": 275,
+              "line": 277,
               "doc": ""
             },
             {
               "name": "_add_title_dates_line",
-              "line": 280,
+              "line": 282,
               "doc": "Title (bold) on the left, date range right-aligned on the same"
             },
             {
               "name": "_add_bottom_border",
-              "line": 302,
+              "line": 304,
               "doc": "Adds a single bottom border to a paragraph via raw OOXML \u2014 the"
             }
           ]
@@ -6878,6 +6901,42 @@
       ]
     },
     {
+      "id": "tests/unit/test_page_size_p102.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 63,
+      "doc": "P10.2: one PageSpec decides the paper for the DOCX template, the HTML",
+      "classes": [],
+      "functions": [
+        {
+          "name": "_doc",
+          "line": 15,
+          "doc": ""
+        },
+        {
+          "name": "test_a4_is_the_default_and_unchanged",
+          "line": 23,
+          "doc": ""
+        },
+        {
+          "name": "test_the_docx_page_follows_the_presentation",
+          "line": 31,
+          "doc": ""
+        },
+        {
+          "name": "test_the_html_preview_uses_the_same_page",
+          "line": 40,
+          "doc": ""
+        },
+        {
+          "name": "test_page_fit_measures_overflow_on_the_letter_page",
+          "line": 47,
+          "doc": "A Letter page holds less height, so the same overflow on page 2 asks"
+        }
+      ]
+    },
+    {
       "id": "tests/unit/test_parser_regressions_p42.py",
       "type": "python",
       "layer": "Tests",
@@ -7306,6 +7365,47 @@
         {
           "name": "test_tailor_applies_project_rewrite",
           "line": 59,
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "tests/unit/test_region_p103.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 85,
+      "doc": "P10.3: the region comes from the JD's own words, with its evidence; it",
+      "classes": [],
+      "functions": [
+        {
+          "name": "test_region_from_the_jd_with_its_evidence",
+          "line": 29,
+          "doc": ""
+        },
+        {
+          "name": "test_apply_region_sets_paper_and_dates",
+          "line": 34,
+          "doc": ""
+        },
+        {
+          "name": "test_numeric_dates_keep_years_and_present",
+          "line": 42,
+          "doc": ""
+        },
+        {
+          "name": "_resume",
+          "line": 50,
+          "doc": ""
+        },
+        {
+          "name": "test_us_resume_renders_on_letter_with_numeric_dates",
+          "line": 61,
+          "doc": ""
+        },
+        {
+          "name": "test_personal_details_get_advice_only_for_us_and_europe",
+          "line": 74,
           "doc": ""
         }
       ]
@@ -9959,6 +10059,11 @@
     },
     {
       "from": "app/domain/resume.py",
+      "to": "tests/unit/test_page_size_p102.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/resume.py",
       "to": "tests/unit/test_parser_regressions_p42.py",
       "type": "tested_by"
     },
@@ -9970,6 +10075,11 @@
     {
       "from": "app/domain/resume.py",
       "to": "tests/unit/test_project_rewrites.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/resume.py",
+      "to": "tests/unit/test_region_p103.py",
       "type": "tested_by"
     },
     {
@@ -10104,12 +10214,22 @@
     },
     {
       "from": "app/domain/resume_document.py",
+      "to": "tests/unit/test_page_size_p102.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/resume_document.py",
       "to": "tests/unit/test_parsing_fixes_p19.py",
       "type": "tested_by"
     },
     {
       "from": "app/domain/resume_document.py",
       "to": "tests/unit/test_project_rewrites.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/resume_document.py",
+      "to": "tests/unit/test_region_p103.py",
       "type": "tested_by"
     },
     {
@@ -10859,7 +10979,17 @@
     },
     {
       "from": "app/rendering/html_renderer.py",
+      "to": "tests/unit/test_page_size_p102.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/rendering/html_renderer.py",
       "to": "tests/unit/test_parsing_fixes_p19.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/rendering/html_renderer.py",
+      "to": "tests/unit/test_region_p103.py",
       "type": "tested_by"
     },
     {
@@ -10889,6 +11019,11 @@
     },
     {
       "from": "app/rendering/layout.py",
+      "to": "app/rendering/layout.py::PageSpec",
+      "type": "contains"
+    },
+    {
+      "from": "app/rendering/layout.py",
       "to": "tests/unit/test_dates_p86.py",
       "type": "tested_by"
     },
@@ -10900,6 +11035,16 @@
     {
       "from": "app/rendering/layout.py",
       "to": "tests/unit/test_kept_sections_p83.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/rendering/layout.py",
+      "to": "tests/unit/test_page_size_p102.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/rendering/layout.py",
+      "to": "tests/unit/test_region_p103.py",
       "type": "tested_by"
     },
     {
@@ -10929,6 +11074,11 @@
     },
     {
       "from": "app/rendering/page_fit.py",
+      "to": "app/rendering/layout.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/rendering/page_fit.py",
       "to": "app/rendering/page_fit.py::FitResult",
       "type": "contains"
     },
@@ -10945,6 +11095,11 @@
     {
       "from": "app/rendering/page_fit.py",
       "to": "tests/unit/test_page_fit.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/rendering/page_fit.py",
+      "to": "tests/unit/test_page_size_p102.py",
       "type": "tested_by"
     },
     {
@@ -11019,7 +11174,17 @@
     },
     {
       "from": "app/rendering/template_renderer.py",
+      "to": "tests/unit/test_page_size_p102.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/rendering/template_renderer.py",
       "to": "tests/unit/test_parsing_fixes_p19.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/rendering/template_renderer.py",
+      "to": "tests/unit/test_region_p103.py",
       "type": "tested_by"
     },
     {
@@ -11510,6 +11675,11 @@
     {
       "from": "app/validation/content_lint.py",
       "to": "tests/unit/test_content_lint.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/validation/content_lint.py",
+      "to": "tests/unit/test_region_p103.py",
       "type": "tested_by"
     },
     {

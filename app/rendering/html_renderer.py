@@ -4,7 +4,7 @@ from typing import Iterable
 
 from app.domain.resume import Resume
 from app.domain.resume_document import ResumeDocument
-from app.rendering.layout import (SECTION_TITLES, contact_parts, date_range, display_skills, format_date_text,
+from app.rendering.layout import (SECTION_TITLES, page_spec, contact_parts, date_range, display_skills, format_date_text,
                                   ordered_sections, other_section, skill_label)
 
 class HtmlResumeRenderer:
@@ -75,6 +75,7 @@ class HtmlResumeRenderer:
         """Same sections, order and headings as the DOCX template (P2.1)."""
         resume: Resume = document.resume
         presentation = document.presentation
+        page = page_spec(presentation)
         contact = " | ".join(html.escape(value) for value in contact_parts(resume.candidate))
         headline = (f'<p class="headline">{html.escape(resume.candidate.headline)}</p>'
                     if resume.candidate.headline else "")
@@ -131,9 +132,9 @@ class HtmlResumeRenderer:
         return f"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><title>{html.escape(resume.candidate.name)} — Resume</title>
 <style>
-@page {{ size: A4; margin: {presentation.margin_vertical_in}in {presentation.margin_side_in}in; }}
+@page {{ size: {page.css_size}; margin: {presentation.margin_vertical_in}in {presentation.margin_side_in}in; }}
 * {{ box-sizing: border-box; }}
-body {{ font-family: {html.escape(presentation.font_family)}, Arial, "Noto Sans CJK SC", "Arial Unicode MS", "PingFang SC", sans-serif; color: #111827; font-size: 10.5pt; line-height: 1.4; max-width: 210mm; margin: 0 auto; padding: 24px 16px; background: #fff; }}
+body {{ font-family: {html.escape(presentation.font_family)}, Arial, "Noto Sans CJK SC", "Arial Unicode MS", "PingFang SC", sans-serif; color: #111827; font-size: 10.5pt; line-height: 1.4; max-width: {page.width_mm:g}mm; margin: 0 auto; padding: 24px 16px; background: #fff; }}
 header {{ border-bottom: 1px solid {html.escape(presentation.accent_color)}; padding-bottom: 8px; margin-bottom: 12px; }}
 h1 {{ margin: 0; font-size: 22pt; font-weight: 700; letter-spacing: .2px; color: {html.escape(presentation.accent_color)}; }}
 .contact {{ margin: 5px 0 0; color: #4b5563; font-size: 10pt; }}

@@ -10,6 +10,36 @@ Timestamped record of every **major** commit (anything touching `app/`, `scripts
 
 <!-- entries below; newest first -->
 
+<!-- entry:2026-10-07T21:28:37+05:30 -->
+## 2026-10-07 21:28 (+0530) · P10.2: one PageSpec for A4 and US Letter across DOCX, HTML and page-fit
+
+Kshitij Chaubey · branch `fb_ksh`
+
+**Why / details**
+
+> A4 was hard-coded in the DOCX template, the HTML preview's @page and width,
+> and page-fit's body height and bullet line length. US jobs (P10.3) need
+> Letter, and the three must agree or page-fit trims for the wrong page.
+>
+> PageSpec (rendering/layout.py) holds the paper size, its CSS size and the
+> characters of a 10.5pt bullet per line; ResumePresentation.page_size picks
+> it. Letter's line length was measured on rendered PDFs (98 vs 94 chars a
+> line for the same bullets), so 96 against A4's 92. A4 output is unchanged:
+> same twips in the DOCX, same CSS.
+
+**Changed files**
+
+- Docs: `M` docs/ACTION_ITEMS.md, `M` docs/PROJECT_OVERVIEW.md
+- Domain models: `M` app/domain/resume_document.py
+- Rendering: `M` app/rendering/html_renderer.py, `M` app/rendering/layout.py, `M` app/rendering/page_fit.py, `M` app/rendering/template_renderer.py
+- Tests: `A` tests/unit/test_page_size_p102.py
+
+**Structure delta**
+
+- `app/rendering/layout.py`: added `PageSpec.body_pt()`, `PageSpec.height_pt()`, `class PageSpec`, `page_spec()`
+
+---
+
 <!-- entry:2026-10-07T03:09:02+05:30 -->
 ## 2026-10-07 03:09 (+0530) · P10.11: Check details shows how a file was read as a note, not a problem
 

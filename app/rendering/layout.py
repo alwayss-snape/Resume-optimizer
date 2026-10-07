@@ -6,6 +6,7 @@ standard headings, with dates written the same way.
 """
 import os
 import re
+from dataclasses import dataclass
 from datetime import date
 from typing import Dict, List, Optional
 
@@ -14,6 +15,36 @@ from app.domain.resume import Candidate, Resume
 from app.domain.resume_document import ResumePresentation
 
 DEFAULT_SECTION_ORDER = ResumePresentation().section_order
+
+
+@dataclass(frozen=True)
+class PageSpec:
+    """One paper size, read by the DOCX template, the HTML preview and
+    page-fit (P10.2), so the three never disagree about the page."""
+    name: str
+    width_mm: float
+    height_mm: float
+    css_size: str
+    # Characters of a 10.5pt Arial bullet per line, measured on rendered PDFs.
+    bullet_chars_per_line: int
+
+    @property
+    def height_pt(self) -> float:
+        return self.height_mm / 25.4 * 72
+
+    def body_pt(self, margin_vertical_in: float) -> float:
+        """Height available to text between the top and bottom margins."""
+        return self.height_pt - 2 * margin_vertical_in * 72
+
+
+PAGE_SPECS = {
+    "A4": PageSpec("A4", 210.0, 297.0, "A4", 92),
+    "Letter": PageSpec("Letter", 215.9, 279.4, "letter", 96),
+}
+
+
+def page_spec(presentation: Optional[ResumePresentation] = None) -> PageSpec:
+    return PAGE_SPECS[(presentation or ResumePresentation()).page_size]
 
 # Standard heading names only: ATS parsers look for these words.
 SECTION_TITLES = {

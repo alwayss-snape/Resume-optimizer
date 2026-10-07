@@ -24,17 +24,19 @@ from typing import Callable, Dict, List, Optional, Tuple
 from app.analysis.experience import is_ongoing
 from app.domain.resume import Resume
 from app.domain.resume_document import ResumeDocument
+from app.rendering.layout import PAGE_SPECS, page_spec
 
 MAX_RENDERS = 4
 MIN_BULLETS_CURRENT_ROLE = 3
 MIN_BULLETS_OTHER = 2
 
-# Layout estimates for the ATS template (A4, Arial 10.5pt, 0.7" side and
-# 0.6" top/bottom margins). Only used to decide how much to trim before the
-# next render; the render itself is the judge.
-PAGE_BODY_PT = 841.9 - 2 * 0.6 * 72
+# Layout estimates for the ATS template (Arial 10.5pt, 0.7" side and 0.6"
+# top/bottom margins); the page itself comes from the presentation's
+# PageSpec (P10.2), these defaults are A4's. Only used to decide how much to
+# trim before the next render; the render itself is the judge.
+PAGE_BODY_PT = PAGE_SPECS["A4"].body_pt(0.6)
 LINE_PT = 13.4
-BULLET_CHARS_PER_LINE = 92
+BULLET_CHARS_PER_LINE = PAGE_SPECS["A4"].bullet_chars_per_line
 BULLET_GAP_PT = 1.0
 HEADING_PT = 26.0
 SUBHEADING_PT = 17.0
@@ -68,8 +70,8 @@ def measure_pdf(pdf_path: str) -> Tuple[int, float]:
     return pages, max(0.0, used)
 
 
-def bullet_height(text: str) -> float:
-    return max(1, math.ceil(len(text or "") / BULLET_CHARS_PER_LINE)) * LINE_PT + BULLET_GAP_PT
+def bullet_height(text: str, chars_per_line: int = BULLET_CHARS_PER_LINE) -> float:
+    return max(1, math.ceil(len(text or "") / chars_per_line)) * LINE_PT + BULLET_GAP_PT
 
 
 class PageFitter:
@@ -91,10 +93,13 @@ class PageFitter:
         resume = document.resume
         trim_candidates = trim_candidates or set()
         pinned = pinned or set()
+        page = page_spec(document.presentation)
+        body_pt = page.body_pt(document.presentation.margin_vertical_in)
+        height = lambda text: bullet_height(text, page.bullet_chars_per_line)
         steps = [
             lambda need: self._drop_interests(resume) if "interests" not in pinned else (0.0, []),
-            lambda need: self._trim_bullets(resume, need, relevance, trim_candidates, pinned),
-            lambda need: self._drop_sections(resume, need, relevance, pinned),
+            lambda need: self._trim_bullets(resume, need, relevance, trim_candidates, pinned, height),
+            lambda need: self._drop_sections(resume, need, relevance, pinned, height),
             lambda need: self._compact(document),
         ] if trim else []
         result = FitResult(pdf_path=None, pages=None, target_pages=target_pages, renders=0)
@@ -109,7 +114,7 @@ class PageFitter:
             result.pages = pages
             if pages <= target_pages or result.renders >= MAX_RENDERS or step >= len(steps):
                 break
-            need = max(LINE_PT, (pages - target_pages - 1) * PAGE_BODY_PT + last_used)
+            need = max(LINE_PT, (pages - target_pages - 1) * body_pt + last_used)
             saved = 0.0
             while step < len(steps) and saved < need:
                 gained, notes = steps[step](need - saved)
@@ -138,7 +143,7 @@ class PageFitter:
 
     @staticmethod
     def _trim_bullets(resume: Resume, need: float, relevance: Dict[str, float], trim_candidates: set,
-                      pinned: Optional[set] = None):
+                      pinned: Optional[set] = None, height: Callable[[str], float] = bullet_height):
         """Least relevant bullets first, within the per-role minimums; never
         a pinned one."""
         pinned = pinned or set()
@@ -167,13 +172,14 @@ class PageFitter:
             # The last bullet under a sub-heading takes the heading with it.
             alone = bool(group) and sum(1 for b in section.bullets if b.group == group) == 1
             section.bullets.remove(bullet)
-            saved += bullet_height(bullet.text) + (SUBHEADING_PT if alone else 0.0)
+            saved += height(bullet.text) + (SUBHEADING_PT if alone else 0.0)
             notes.append(f"Removed a less relevant bullet from {_owner_label(section)} to fit the page: "
                          f"\"{_short(bullet.text)}\"")
         return saved, notes
 
     @staticmethod
-    def _drop_sections(resume: Resume, need: float, relevance: Dict[str, float], pinned: Optional[set] = None):
+    def _drop_sections(resume: Resume, need: float, relevance: Dict[str, float], pinned: Optional[set] = None,
+                       height: Callable[[str], float] = bullet_height):
         """Least relevant job sub-section or project, as a whole; never one
         holding a pinned bullet, nor a pinned project."""
         pinned = pinned or set()
@@ -188,7 +194,7 @@ class PageFitter:
                     continue
                 options.append((
                     sum(relevance.get(b.id, 0.0) for b in bullets) / len(bullets),
-                    SUBHEADING_PT + sum(bullet_height(b.text) for b in bullets),
+                    SUBHEADING_PT + sum(height(b.text) for b in bullets),
                     f"the \"{group}\" sub-section of {_owner_label(exp)}",
                     lambda exp=exp, ids=ids: setattr(exp, "bullets", [b for b in exp.bullets if b.id not in ids]),
                 ))
@@ -199,7 +205,7 @@ class PageFitter:
                     if project.bullets else 0.0)
             options.append((
                 mean,
-                SUBHEADING_PT + sum(bullet_height(b.text) for b in project.bullets),
+                SUBHEADING_PT + sum(height(b.text) for b in project.bullets),
                 f"the \"{project.name}\" project",
                 lambda project=project: resume.projects.remove(project),
             ))
