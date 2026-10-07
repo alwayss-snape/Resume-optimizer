@@ -23,8 +23,8 @@ PERSONAS = [c for c in load_cases(include_private=False, include_personas=True) 
 CONTENT_XFAIL = {}
 # Scoring and page checks still fail for these (P9.15 cleared eight: custom
 # sections and slash-joined words now count, and places aren't attainable).
+# Academic passes since P10.5: an Academic CV has no page cap.
 FULL_XFAIL = {
-    'academic': '3 pages for a 2-page target and "Ecology" counted 46 times: needs the academic CV template (P10.6)',
     'federal': 'GS-12 not matched: needs the federal template\'s field parsing (P10.7)',
 }
 

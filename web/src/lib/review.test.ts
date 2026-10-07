@@ -68,3 +68,11 @@ test("the region starts as the JD's suggestion and goes with the request (P10.3)
   expect(tailorRequest(drafted.proposals, { ...r, region: "uk_eu" }, opts).region).toBe("uk_eu");
   expect(tailorRequest(DRAFTED.proposals, initialReview(DRAFTED), opts).region).toBeNull();
 });
+
+test("the CV type starts as the suggestion and goes with the request (P10.5)", () => {
+  const drafted = { ...DRAFTED, cv_mode: { mode: "federal", label: "US Federal (USAJOBS)", evidence: [] } };
+  const opts = { keepLayout: false, strictFactual: false, rememberAnswers: true };
+  const r = initialReview(drafted);
+  expect(tailorRequest(drafted.proposals, r, opts).cv_mode).toBe("federal");
+  expect(tailorRequest(drafted.proposals, { ...r, cvMode: "standard" }, opts).cv_mode).toBe("standard");
+});

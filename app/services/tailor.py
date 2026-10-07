@@ -43,6 +43,7 @@ from app.services.profile_store import ProfileStore
 from app.services.run_manager import RunManager
 from app.validation.content_lint import lint as content_lint
 from app.analysis.region import apply_region
+from app.analysis.cv_mode import CV_MODES, NO_PAGE_CAP, apply_cv_mode, suggest_cv_mode
 from app.validation.coverage import content_coverage, docx_text
 from app.validation.factual import FactualValidator
 from app.validation.output import OutputQAValidator
@@ -860,9 +861,12 @@ class TailorService:
         progress: Optional[Callable[[str], None]] = None,
         conditions_confirmed: Optional[List[str]] = None,
         region: Optional[str] = None,
+        cv_mode: Optional[str] = None,
     ) -> Dict[str, str]:
         """`region` ("us", "uk_eu", "india", "other", P10.3) sets the paper
-        and date style; None keeps the template's default (A4, "Jan 2022")."""
+        and date style; None keeps the template's default (A4, "Jan 2022").
+        `cv_mode` ("standard", "academic", "federal", P10.5): None takes the
+        one the resume and JD suggest (the CLI and eval have no one to ask)."""
         run_dir = self.run_manager.create_run(resume_path, jd_text) if self.run_manager else None
         clean_jd_text = self.safety_guard.sanitize(jd_text)
         
@@ -1126,6 +1130,9 @@ class TailorService:
         resume_doc.presentation.section_order = section_order_for(resume)
         if region:
             apply_region(resume_doc.presentation, region)
+        apply_cv_mode(resume_doc.presentation,
+                      cv_mode if cv_mode in CV_MODES else suggest_cv_mode(resume, clean_jd_text).mode)
+        capped = resume_doc.presentation.cv_mode not in NO_PAGE_CAP
         fit = None
 
         if mode == "PRESERVE" and not is_pdf:
@@ -1142,7 +1149,7 @@ class TailorService:
             trim_candidates = {a.source_id for a in plan.actions if a.trim_candidate}
             fit = PageFitter(self._render_template).fit(
                 resume_doc, docx_output_path, output_dir, page_target,
-                relevance=relevance, trim_candidates=trim_candidates,
+                relevance=relevance, trim_candidates=trim_candidates, trim=capped,
             )
             _append_progress(f"DOCX reconstructed via template renderer at {docx_output_path} "
                              f"({fit.pages or '?'} page(s), target {page_target}, {fit.renders} render(s))")
@@ -1340,6 +1347,7 @@ class TailorService:
         if fit:
             layout = default_layout(full_doc.resume, full_doc.presentation.section_order)
             layout.region = full_doc.presentation.region
+            layout.cv_mode = full_doc.presentation.cv_mode
             arrange_state = {
                 "full_doc": full_doc, "original": original_resume, "raw_doc": raw_doc, "job_desc": job_desc,
                 "relevance": relevance, "trim_candidates": trim_candidates, "initial_score": initial_score,
@@ -1352,7 +1360,7 @@ class TailorService:
             "docx": docx_output_path,
             "pdf": pdf_output_path if pdf_res else "",
             "html": html_output_path,
-            "target_pages": target_pages(resume),
+            "target_pages": target_pages(resume) if capped else None,
             "content_lint": content_report,
             "changes_md": report_md_path,
             "alignment_score": f"{score:.1f}",
@@ -1387,6 +1395,10 @@ class TailorService:
         doc.presentation.compact = False
         if layout.region:  # switched in Arrange (P10.3); otherwise the run's
             apply_region(doc.presentation, layout.region)
+        if layout.cv_mode:  # P10.5
+            apply_cv_mode(doc.presentation, layout.cv_mode)
+        # Academic and federal CVs run to their full length unless the user picks a page target.
+        uncapped = doc.presentation.cv_mode in NO_PAGE_CAP and layout.page_target is None
         # The user's removals and edits are theirs, not losses (P8.2).
         full = full_doc.resume
         removed_ids = set(layout.removed_bullets)
@@ -1416,7 +1428,7 @@ class TailorService:
             doc, docx_path, output_dir, page_target, relevance=state["relevance"],
             trim_candidates=state["trim_candidates"],
             pinned=set(layout.pinned) | {b for b, t in layout.edits.items() if (t or "").strip()},  # your words stay
-            trim=layout.trim)
+            trim=layout.trim and not uncapped)
         warnings: List[str] = list(fit.notes)
         if not layout.trim and fit.pages and fit.pages > page_target:
             warnings.append(f"{fit.pages} pages (not trimmed, as you chose).")
@@ -1460,7 +1472,7 @@ class TailorService:
         state["trimmed"] = trimmed_items(before_fit, resume)
         return {
             "docx": docx_path, "pdf": fit.pdf_path or "", "html": html_path, "changes_md": state["changes_md"],
-            "target_pages": page_target, "content_lint": content_lint(resume, region=doc.presentation.region),
+            "target_pages": None if uncapped else page_target, "content_lint": content_lint(resume, region=doc.presentation.region),
             "alignment_score": f"{keyword_report.rate:.1f}",
             "initial_alignment_score": f"{state['initial_score']:.1f}", "keyword_match": keyword_report,
             "warnings": warnings, "docx_warnings": docx_warnings, "pdf_warnings": pdf_warnings,

@@ -11,6 +11,7 @@ import { type ProofView, ProposalCard } from "../components/ProposalCard";
 import { ProofStack } from "../components/ProofStack";
 import { ScoreDial, verdict } from "../components/ScoreDial";
 import { ApiError, friendlyError, matchPreview, tailorResume } from "../lib/api";
+import { CvModeChoice } from "../components/CvModeChoice";
 import { RegionChoice } from "../components/RegionChoice";
 import { beginStep, isAbort } from "../lib/inflight";
 import {
@@ -63,9 +64,16 @@ export function Review() {
   }, [jump, updateRun, heading]);
 
   // Paper and dates (P10.3): only the ATS template has them.
+  // and the CV type (P10.5).
   const regionChoice = (id: string, className: string) => run.template !== "keep" && drafted.region ? (
-    <RegionChoice id={id} className={className} value={review.region ?? drafted.region.region} suggested={drafted.region}
-      onChange={(region) => update((r) => ({ ...r, region }))} />
+    <div className={`flex-col gap-4 ${className}`}>
+      {drafted.cv_mode && (
+        <CvModeChoice id={`${id}-mode`} value={review.cvMode ?? drafted.cv_mode.mode} suggested={drafted.cv_mode}
+          onChange={(cvMode) => update((r) => ({ ...r, cvMode }))} />
+      )}
+      <RegionChoice id={id} value={review.region ?? drafted.region.region} suggested={drafted.region}
+        onChange={(region) => update((r) => ({ ...r, region }))} />
+    </div>
   ) : null;
   const groups = useMemo(() => groupProposals(drafted.proposals), [drafted.proposals]);
   const selectionKey = JSON.stringify(selection(drafted.proposals, review));
@@ -378,7 +386,7 @@ export function Review() {
         </aside>
       </div>
 
-      {regionChoice("region-phone", "mx-4 mb-6 lg:hidden")}
+      {regionChoice("region-phone", "mx-4 mb-6 flex lg:hidden")}
 
       {/* phones: the rate and the main action stay in reach */}
       <div className="sticky bottom-0 z-20 border-t border-line bg-bg lg:hidden">

@@ -92,3 +92,18 @@ test("paper and dates switch in Arrange and go with the layout (P10.3)", async (
   await act(async () => { vi.advanceTimersByTime(1000); });
   expect(JSON.parse(String(fetchMock.mock.calls[0][1]?.body)).layout.region).toBe("india");
 });
+
+test("the CV type switches in Arrange and goes with the layout (P10.5)", async () => {
+  vi.useFakeTimers({ shouldAdvanceTime: true });
+  const fetchMock = vi.fn(async (_url: string, init?: RequestInit) =>
+    new Response(JSON.stringify({ ...RESULT, arrangement: { ...ARRANGEMENT, layout: JSON.parse(String(init?.body)).layout } })));
+  vi.stubGlobal("fetch", fetchMock);
+  const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+  const result = { ...RESULT, cv_mode: { mode: "academic", label: "Academic CV", evidence: ["an ORCID iD"] } };
+  render(<Arrange result={result} onResult={() => undefined} onBack={() => undefined} />);
+  expect(screen.getByRole("radio", { name: "Academic CV" })).toBeChecked();
+  expect(screen.getByText(/Suggested because of an ORCID iD\./)).toBeInTheDocument();
+  await user.click(screen.getByRole("radio", { name: "Standard resume" }));
+  await act(async () => { vi.advanceTimersByTime(1000); });
+  expect(JSON.parse(String(fetchMock.mock.calls[0][1]?.body)).layout.cv_mode).toBe("standard");
+});

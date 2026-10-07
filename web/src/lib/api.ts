@@ -191,6 +191,7 @@ export interface TailorRequest {
   conditions?: string[];
   remember_answers: boolean;
   region?: string | null; // P10.3: confirmed on Review
+  cv_mode?: string | null; // P10.5: confirmed on Review
 }
 
 export const tailorResume = (body: TailorRequest, onProgress: OnProgress, signal?: AbortSignal) =>

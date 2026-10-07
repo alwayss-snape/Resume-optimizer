@@ -4,9 +4,9 @@ import { Icon } from "../components/Icon";
 import { arrangeResume, friendlyError, previewUrl } from "../lib/api";
 import {
   dropBullet, editBullet, keepTrimmed, moveBullet, moveEntry, moveGroup, moveSection, orderedEntries, orderedGroups,
-  orderedSections, placeBefore, reordered, restoreOriginalOrder, sameLayout, setPageTarget, setRegion, toggleBullet, toggleSection,
+  orderedSections, placeBefore, reordered, restoreOriginalOrder, sameLayout, setCvMode, setPageTarget, setRegion, toggleBullet, toggleSection,
 } from "../lib/arrange";
-import { REGION_LABELS, type ArrangeBullet, type ArrangeEntry, type ArrangeSection, type Arrangement, type Layout, type TailorResult } from "../lib/types";
+import { CV_MODE_LABELS, REGION_LABELS, type ArrangeBullet, type ArrangeEntry, type ArrangeSection, type Arrangement, type Layout, type TailorResult } from "../lib/types";
 import { useFocusHeading } from "../lib/useFocusHeading";
 
 const UPDATE_DELAY_MS = 900;
@@ -254,6 +254,7 @@ export function Arrange({ result, onResult, onBack }: {
   const notes = result.warnings.filter((w) => /newest first|isn't elsewhere|pages \(not trimmed|Removed .* to fit|Still \d+ pages/.test(w));
   const target = layout.trim ? (layout.page_target ?? 0) : -1;
   const region = layout.region ?? result.region?.region ?? "other";
+  const cvMode = layout.cv_mode ?? result.cv_mode?.mode ?? "standard";
 
   return (
     <div className="mx-auto flex max-w-[1320px] flex-col gap-8 px-4 py-12 md:px-8 md:py-16">
@@ -308,8 +309,26 @@ export function Arrange({ result, onResult, onBack }: {
               ))}
             </div>
             <p className="m-0 text-xs text-muted">
-              Automatic fits 1 page under 8 years of experience and 2 from 8 years. Don't trim keeps everything, however long.
+              Automatic fits 1 page under 8 years of experience and 2 from 8 years (an Academic CV or US Federal resume: its full length). Don't trim keeps everything, however long.
               Lines you keep or reword are never trimmed; to make room, something less relevant may be.
+            </p>
+          </fieldset>
+
+          <fieldset className="sheet flex flex-col gap-3 rounded-[3px] p-5 md:p-6">
+            <legend className="float-left mb-2 text-[15px] font-bold">CV type</legend>
+            <div className="clear-both flex flex-wrap gap-2.5">
+              {Object.entries(CV_MODE_LABELS).map(([value, label]) => (
+                <label key={value} className={`flex min-h-11 cursor-pointer items-center gap-2 rounded-[3px] border px-4 text-sm font-medium has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-pencil ${
+                  cvMode === value ? "border-pencil bg-pencil-soft" : "border-field hover:border-ink"}`}>
+                  <input type="radio" name="cv-mode" className="size-4" checked={cvMode === value}
+                    onChange={() => change(setCvMode(layout, value))} />
+                  {label}
+                </label>
+              ))}
+            </div>
+            <p className="m-0 text-xs text-muted">
+              An Academic CV or a US Federal resume runs to its full length; pick a page target above to trim one anyway.
+              {result.cv_mode?.evidence.length ? ` Suggested because of ${result.cv_mode.evidence.join(", ")}.` : ""}
             </p>
           </fieldset>
 

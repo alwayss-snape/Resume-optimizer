@@ -41,6 +41,7 @@ class Layout(BaseModel):
     page_target: Optional[int] = None  # None: by years of experience
     trim: bool = True  # False: "don't trim", render at full length
     region: Optional[str] = None  # P10.3: "us", "uk_eu", "india", "other"; None keeps the run's
+    cv_mode: Optional[str] = None  # P10.5: "standard", "academic", "federal"; None keeps the run's
 
 
 def _owners(resume: Resume):

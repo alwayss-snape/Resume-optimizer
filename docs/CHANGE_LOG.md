@@ -10,6 +10,44 @@ Timestamped record of every **major** commit (anything touching `app/`, `scripts
 
 <!-- entries below; newest first -->
 
+<!-- entry:2026-10-07T22:03:29+05:30 -->
+## 2026-10-07 22:03 (+0530) · P10.5: CV type (standard / Academic CV / US Federal) suggested and confirmed
+
+Kshitij Chaubey · branch `fb_ksh`
+
+**Why / details**
+
+> The owner chose full templates for academic and federal CVs, suggested from
+> resume and JD signals and confirmed by the user, with no page cap. This item
+> is the selection and the cap; the templates are P10.6 and P10.7.
+>
+> analysis/cv_mode.py decides deterministically (federal: a federal JD or two
+> federal fields in the resume; academic: two academic signals, or one with an
+> academic JD) and returns the evidence. Over every eval case only academic
+> and federal get a mode, so other output is unchanged. Federal is always US
+> Letter with MM/YYYY dates. Academic and federal render to full length unless
+> the user picks a page target. Review shows "CV type", Arrange switches it
+> with no LLM call; the CLI and eval take the suggestion. Academic now passes
+> offline and is off FULL_XFAIL (eval 51 pass / 1 known xfail, federal).
+
+**Changed files**
+
+- Analysis: `A` app/analysis/cv_mode.py
+- Docs: `M` docs/ACTION_ITEMS.md, `M` docs/PROJECT_OVERVIEW.md
+- Domain models: `M` app/domain/resume_document.py
+- Root: `A` web/src/components/CvModeChoice.test.tsx, `A` web/src/components/CvModeChoice.tsx, `M` web/src/lib/api.ts, `M` web/src/lib/arrange.ts, `M` web/src/lib/review.test.ts, `M` web/src/lib/review.ts, `M` web/src/lib/types.ts, `M` web/src/pages/Arrange.test.tsx, `M` web/src/pages/Arrange.tsx, `M` web/src/pages/Review.tsx
+- Services: `M` app/services/arrange.py, `M` app/services/tailor.py
+- Tests: `M` tests/integration/test_persona_cases.py, `A` tests/unit/test_cv_mode_p105.py
+- Tooling: `M` scripts/update_docs.py
+- Web API: `M` app/api/routes.py
+
+**Structure delta**
+
+- new module `app/analysis/cv_mode.py`: `class ModeGuess`
+- `app/api/routes.py`: added `_mode_out()`
+
+---
+
 <!-- entry:2026-10-07T21:51:01+05:30 -->
 ## 2026-10-07 21:51 (+0530) · P10.4: tagged (accessible) PDF from each pooled LibreOffice profile
 

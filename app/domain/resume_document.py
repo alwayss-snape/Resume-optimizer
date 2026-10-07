@@ -22,6 +22,9 @@ class ResumePresentation(BaseModel):
     # paper and the dates: "month" is "Jan 2022", "numeric" is "01/2022".
     region: Optional[str] = None
     date_style: Literal["month", "numeric"] = "month"
+    # P10.5: "academic" (Academic CV) and "federal" (USAJOBS) have their own
+    # templates and no page cap.
+    cv_mode: Literal["standard", "academic", "federal"] = "standard"
     margin_side_in: float = 0.7
     margin_vertical_in: float = 0.6
     compact: bool = False

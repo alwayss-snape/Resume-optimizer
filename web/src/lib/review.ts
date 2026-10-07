@@ -29,6 +29,7 @@ export interface ReviewState {
   newJob: NewJob;
   conditions?: string[]; // job conditions the user meets (P8.20)
   region?: string | null; // paper and dates, suggested from the JD (P10.3)
+  cvMode?: string | null; // standard / academic / federal, suggested from the resume and JD (P10.5)
 }
 
 export const EMPTY_JOB: NewJob = { company: "", title: "", location: "", current: false, start: "", end: "", description: "" };
@@ -45,6 +46,7 @@ export function initialReview(drafted: ProposalsResult): ReviewState {
     newJob: EMPTY_JOB,
     conditions: [],
     region: drafted.region?.region ?? null,
+    cvMode: drafted.cv_mode?.mode ?? null,
   };
 }
 
@@ -114,6 +116,7 @@ export function tailorRequest(proposals: Proposal[], review: ReviewState, option
     remember_answers: options.rememberAnswers,
     conditions: review.conditions ?? [],
     region: review.region ?? null,
+    cv_mode: review.cvMode ?? null,
   };
 }
 
