@@ -14,6 +14,7 @@ from pydantic import BaseModel, Field
 from app.analysis.experience import is_ongoing, parse_month
 from app.analysis.rewriter import FILLER_WORDS, MAX_BULLET_WORDS
 from app.domain.resume import Resume
+from app.analysis.region import personal_details_advice
 
 MIN_BULLET_WORDS = 6
 BULLETS_CURRENT = (3, 6)   # recent role: 3-6 bullets (template spec)
@@ -31,7 +32,8 @@ _METRIC_RE = re.compile(r"\d|%|\$|€|£|₹")
 
 
 class LintIssue(BaseModel):
-    check: str        # bullets_per_role, length, pronoun, buzzword, tense, dates, repeated_verb, metrics
+    check: str        # bullets_per_role, length, pronoun, buzzword, tense, dates, repeated_verb, metrics,
+                      # personal_details
     where: str        # "Acme Corp", "Acme Corp: 'Built the…'", "resume"
     message: str
 
@@ -55,7 +57,9 @@ def _is_present(value: Optional[str]) -> bool:
     return is_ongoing(value)
 
 
-def lint(resume: Resume, today: Optional[date] = None) -> ContentReport:
+def lint(resume: Resume, today: Optional[date] = None, region: Optional[str] = None) -> ContentReport:
+    """`region` (P10.3) adds advice on personal details US / UK / European
+    employers don't expect; they are never removed."""
     today = today or date.today()
     report = ContentReport()
     add = lambda check, where, message: report.issues.append(LintIssue(check=check, where=where, message=message))
@@ -123,4 +127,7 @@ def lint(resume: Resume, today: Optional[date] = None) -> ContentReport:
         add("metrics", "resume", f"{report.bullets_with_metrics} of {report.bullets} bullets include a number. Where "
                                  "you have a real one (people helped or trained, budget, volume, time saved) it "
                                  "helps; many roles don't measure everything, and that's fine. Never invent one.")
+    advice = personal_details_advice(resume, region)
+    if advice:
+        add("personal_details", "resume", advice)
     return report

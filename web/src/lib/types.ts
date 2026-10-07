@@ -166,6 +166,17 @@ export interface LlmStatus {
   fix_hint: string;
 }
 
+/** Paper and date style for the job (P10.3), with the JD's words that decided it. */
+export interface RegionInfo {
+  region: string; // "us" | "uk_eu" | "india" | "other"
+  label: string; // "US (Letter)"
+  evidence: string | null; // "Austin, TX"; null when nothing in the JD said
+}
+
+export const REGION_LABELS: Record<string, string> = {
+  us: "US (Letter)", uk_eu: "UK / Europe (A4)", india: "India (A4)", other: "Other (A4)",
+};
+
 export interface ProposalsResult {
   details?: Details; // what the server holds after the corrections (added jobs included)
   proposals: Proposal[];
@@ -175,6 +186,7 @@ export interface ProposalsResult {
   gaps: GapRow[];
   pre_score: number;
   experience_options: { id: string; label: string }[];
+  region?: RegionInfo;
   llm: LlmStatus;
 }
 
@@ -208,6 +220,8 @@ export interface TailorResult {
   file_checks?: { serious: string[]; minor: string[] };
   /** What the Arrange screen edits (P8.13); null for "keep my layout". */
   arrangement?: Arrangement | null;
+  /** The region the files are formatted for (P10.3); null for "keep my layout". */
+  region?: RegionInfo | null;
 }
 
 export interface ArrangeBullet {
@@ -243,6 +257,7 @@ export interface Layout {
   pinned: string[];
   page_target: number | null;
   trim: boolean;
+  region?: string | null; // P10.3: null keeps the run's
 }
 
 export interface TrimmedItem {

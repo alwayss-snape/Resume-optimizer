@@ -77,3 +77,18 @@ test("section moves skip sections the screen doesn't show", async () => {
     "summary", 1, ["summary", "experience"]);
   expect(l.section_order.indexOf("experience")).toBeLessThan(l.section_order.indexOf("summary"));
 });
+
+test("paper and dates switch in Arrange and go with the layout (P10.3)", async () => {
+  vi.useFakeTimers({ shouldAdvanceTime: true });
+  const fetchMock = vi.fn(async (_url: string, init?: RequestInit) =>
+    new Response(JSON.stringify({ ...RESULT, arrangement: { ...ARRANGEMENT, layout: JSON.parse(String(init?.body)).layout } })));
+  vi.stubGlobal("fetch", fetchMock);
+  const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+  const result = { ...RESULT, region: { region: "us", label: "US (Letter)", evidence: "Austin, TX" } };
+  render(<Arrange result={result} onResult={() => undefined} onBack={() => undefined} />);
+  expect(screen.getByRole("radio", { name: "US (Letter)" })).toBeChecked();
+  expect(screen.getByText(/the job says “Austin, TX”/)).toBeInTheDocument();
+  await user.click(screen.getByRole("radio", { name: "India (A4)" }));
+  await act(async () => { vi.advanceTimersByTime(1000); });
+  expect(JSON.parse(String(fetchMock.mock.calls[0][1]?.body)).layout.region).toBe("india");
+});

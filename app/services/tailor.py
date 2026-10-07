@@ -42,6 +42,7 @@ from app.services.arrange import section_order as arranged_order
 from app.services.profile_store import ProfileStore
 from app.services.run_manager import RunManager
 from app.validation.content_lint import lint as content_lint
+from app.analysis.region import apply_region
 from app.validation.coverage import content_coverage, docx_text
 from app.validation.factual import FactualValidator
 from app.validation.output import OutputQAValidator
@@ -858,7 +859,10 @@ class TailorService:
         remember_answers: bool = True,
         progress: Optional[Callable[[str], None]] = None,
         conditions_confirmed: Optional[List[str]] = None,
+        region: Optional[str] = None,
     ) -> Dict[str, str]:
+        """`region` ("us", "uk_eu", "india", "other", P10.3) sets the paper
+        and date style; None keeps the template's default (A4, "Jan 2022")."""
         run_dir = self.run_manager.create_run(resume_path, jd_text) if self.run_manager else None
         clean_jd_text = self.safety_guard.sanitize(jd_text)
         
@@ -1120,6 +1124,8 @@ class TailorService:
 
         # Education goes first for someone early in their career (P2.1).
         resume_doc.presentation.section_order = section_order_for(resume)
+        if region:
+            apply_region(resume_doc.presentation, region)
         fit = None
 
         if mode == "PRESERVE" and not is_pdf:
@@ -1149,7 +1155,7 @@ class TailorService:
                 _append_progress(f"Keyword match rate after page fit: {score:.1f}%")
 
         # Content checks on what was rendered (P2.6): advice, never auto-applied.
-        content_report = content_lint(resume)
+        content_report = content_lint(resume, region=region)
 
         # Did every line of the uploaded file reach the output? (P8.2) Only
         # the template rebuilds the document; a PRESERVE patch keeps it all.
@@ -1333,6 +1339,7 @@ class TailorService:
         arrange_state = None
         if fit:
             layout = default_layout(full_doc.resume, full_doc.presentation.section_order)
+            layout.region = full_doc.presentation.region
             arrange_state = {
                 "full_doc": full_doc, "original": original_resume, "raw_doc": raw_doc, "job_desc": job_desc,
                 "relevance": relevance, "trim_candidates": trim_candidates, "initial_score": initial_score,
@@ -1378,6 +1385,8 @@ class TailorService:
         doc.resume = resume
         doc.presentation.section_order = arranged_order(layout, resume)
         doc.presentation.compact = False
+        if layout.region:  # switched in Arrange (P10.3); otherwise the run's
+            apply_region(doc.presentation, layout.region)
         # The user's removals and edits are theirs, not losses (P8.2).
         full = full_doc.resume
         removed_ids = set(layout.removed_bullets)
@@ -1451,7 +1460,7 @@ class TailorService:
         state["trimmed"] = trimmed_items(before_fit, resume)
         return {
             "docx": docx_path, "pdf": fit.pdf_path or "", "html": html_path, "changes_md": state["changes_md"],
-            "target_pages": page_target, "content_lint": content_lint(resume),
+            "target_pages": page_target, "content_lint": content_lint(resume, region=doc.presentation.region),
             "alignment_score": f"{keyword_report.rate:.1f}",
             "initial_alignment_score": f"{state['initial_score']:.1f}", "keyword_match": keyword_report,
             "warnings": warnings, "docx_warnings": docx_warnings, "pdf_warnings": pdf_warnings,

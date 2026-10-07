@@ -18,6 +18,10 @@ class ResumePresentation(BaseModel):
     font_family: str = "Arial"
     accent_color: str = "#1F4E79"
     page_size: Literal["A4", "Letter"] = "A4"
+    # P10.3: the job's region ("us", "uk_eu", "india", "other") sets the
+    # paper and the dates: "month" is "Jan 2022", "numeric" is "01/2022".
+    region: Optional[str] = None
+    date_style: Literal["month", "numeric"] = "month"
     margin_side_in: float = 0.7
     margin_vertical_in: float = 0.6
     compact: bool = False

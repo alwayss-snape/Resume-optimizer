@@ -151,21 +151,33 @@ def format_date(value: Optional[str], dayfirst: Optional[bool] = None) -> str:
     return f"{_MONTH_NAMES[month - 1]} {year}"
 
 
-def date_range(start: Optional[str], end: Optional[str]) -> str:
-    """'Jan 2022 – Present'; one side only when the other is missing. Both
-    sides read day-first or month-first alike ("01/09/2019 – 31/08/2023")."""
+_MONTH_YEAR_RE = re.compile(r"\b(" + "|".join(_MONTH_NAMES) + r") ((?:19|20)\d{2})\b")
+
+
+def numeric_dates(text: str) -> str:
+    """'Jan 2022 – Present' -> '01/2022 – Present' (US style, P10.3); a bare
+    year, "Present" and anything not written by format_date stay."""
+    return _MONTH_YEAR_RE.sub(lambda m: f"{_MONTH_NAMES.index(m.group(1)) + 1:02d}/{m.group(2)}", text)
+
+
+def date_range(start: Optional[str], end: Optional[str], style: str = "month") -> str:
+    """'Jan 2022 – Present' ('01/2022 – Present' in the "numeric" style); one
+    side only when the other is missing. Both sides read day-first or
+    month-first alike ("01/09/2019 – 31/08/2023")."""
     first = day_first(start, end)
-    return DATE_SEPARATOR.join(v for v in (format_date(start, first), format_date(end, first)) if v)
+    text = DATE_SEPARATOR.join(v for v in (format_date(start, first), format_date(end, first)) if v)
+    return numeric_dates(text) if style == "numeric" else text
 
 
-def format_date_text(text: Optional[str]) -> str:
+def format_date_text(text: Optional[str], style: str = "month") -> str:
     """A free-text range such as an education's '2016 - 2020' or
     'Aug 2016 to May 2020', written like a role's dates."""
     text = (text or "").strip()
     parts = re.split(r"\s*(?:–|—|-|\bto\b)\s*", text, maxsplit=1)
     if len(parts) == 2 and all(parts):
-        return date_range(parts[0], parts[1])
-    return format_date(text)
+        return date_range(parts[0], parts[1], style)
+    out = format_date(text)
+    return numeric_dates(out) if style == "numeric" else out
 
 
 def contact_parts(candidate: Candidate) -> List[str]:

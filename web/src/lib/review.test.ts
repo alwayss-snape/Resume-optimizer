@@ -58,3 +58,13 @@ test("an opt-in proposal (a summary replacing the user's own) starts unticked", 
   expect(r.decisions[props[0].id]).toBe("reject");
   expect(props.slice(1).every((p) => r.decisions[p.id] === "accept")).toBe(true);
 });
+
+test("the region starts as the JD's suggestion and goes with the request (P10.3)", () => {
+  const drafted = { ...DRAFTED, region: { region: "us", label: "US (Letter)", evidence: "Austin, TX" } };
+  const r = initialReview(drafted);
+  expect(r.region).toBe("us");
+  const opts = { keepLayout: false, strictFactual: false, rememberAnswers: true };
+  expect(tailorRequest(drafted.proposals, r, opts).region).toBe("us");
+  expect(tailorRequest(drafted.proposals, { ...r, region: "uk_eu" }, opts).region).toBe("uk_eu");
+  expect(tailorRequest(DRAFTED.proposals, initialReview(DRAFTED), opts).region).toBeNull();
+});

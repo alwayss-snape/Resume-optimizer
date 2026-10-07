@@ -30,6 +30,7 @@ from app.rendering.pdf_converter import pdf_page_images
 from app.ingestion import errors
 from app.ingestion.errors import UnreadableFile
 from app.validation.output import OutputQAValidator
+from app.analysis.region import DEFAULT_REGION, REGIONS, suggest_region
 from app.services.arrange import Layout
 from app.services.arrange import view as arrange_view
 from app.rendering.review_view import PROPOSAL_STATES, diff_spans, gap_table, proposal_state, score_breakdown
@@ -95,6 +96,7 @@ class TailorIn(BaseModel):
     strict_factual: bool = False
     remember_answers: bool = True
     conditions: List[str] = Field(default_factory=list)  # ids of job conditions the user meets (P8.20)
+    region: Optional[str] = None  # P10.3: the region the user confirmed on Review; None: the template's default
 
 
 # ---------------------------------------------------------------------------
@@ -506,6 +508,7 @@ def proposals(request: Request, body: ProposalsIn, session: Session = Depends(cu
         )
         session.data.pop("results", None)
         session.data["conditions"] = generated.get("conditions") or []
+        session.data["region_guess"] = suggest_region(session.data["jd_text"])
         report = generated.get("keyword_match")
         keywords = [r.keyword for r in getattr(report, "rows", [])]
         sections = _sections(parsed[1].resume)
@@ -522,6 +525,8 @@ def proposals(request: Request, body: ProposalsIn, session: Session = Depends(cu
             "gaps": gap_table(report, asked=[k for q in questions for k in q.keywords]),
             "pre_score": generated["alignment_score"],
             "experience_options": generated["experience_options"],
+            # P10.3: paper and dates for the job, with the JD's words that decided it.
+            "region": session.data["region_guess"].model_dump(),
             "llm": {**status, "available": generated["llm_available"],
                     "provider_label": forms.PROVIDER_LABELS.get(provider, provider),
                     "fix_hint": forms.PROVIDER_FIX_HINTS.get(provider, "")},
@@ -549,6 +554,8 @@ def tailor(request: Request, body: TailorIn, session: Session = Depends(current_
                                      role.start, role.end, role.description)
     if error:
         raise HTTPException(422, error)
+    if body.region is not None and body.region not in REGIONS:
+        raise HTTPException(422, "Unknown region.")
     exp_ids = [o["id"] for o in session.data.get("experience_options") or []]
     questions = session.data.get("gap_questions") or []
     answers = forms.gap_answers(questions, {k: v.model_dump() for k, v in body.gap_answers.items()}, exp_ids)
@@ -572,6 +579,7 @@ def tailor(request: Request, body: TailorIn, session: Session = Depends(current_
             job_desc=session.data.get("job_description"), gap_answers=answers, new_role=new_role,
             gap_questions=questions, remember_answers=body.remember_answers, progress=progress,
             conditions_confirmed=[c.text for c in session.data.get("conditions") or [] if c.id in set(body.conditions)],
+            region=body.region,
         )
         session.data["arrange"] = results.pop("arrange", None)
         session.data.pop("layout", None)  # a new run starts from its own arrangement
@@ -579,6 +587,18 @@ def tailor(request: Request, body: TailorIn, session: Session = Depends(current_
         return _results_out(session, results)
 
     return _stream(session, work)
+
+
+def _region_out(session: Session, state: Optional[Dict]) -> Optional[Dict]:
+    """The region the files are formatted for (P10.3), with the JD's evidence
+    when it is the suggested one; None for "keep my layout"."""
+    if not state:
+        return None
+    layout = session.data.get("layout")
+    region = (layout.region if layout else None) or state["full_doc"].presentation.region or DEFAULT_REGION
+    guess = session.data.get("region_guess")
+    evidence = guess.evidence if guess and guess.region == region else None
+    return {"region": region, "label": REGIONS[region], "evidence": evidence}
 
 
 def _results_out(session: Session, results: Dict) -> Dict:
@@ -610,6 +630,7 @@ def _results_out(session: Session, results: Dict) -> Dict:
                       if w.startswith(OutputQAValidator.ROUND_TRIP_PREFIX) and not OutputQAValidator.is_serious(w)],
         },
         "pages": pages,
+        "region": _region_out(session, state),
         "files": {kind: bool(results.get(key)) and os.path.exists(results[key])
                   for kind, key in FILE_KINDS.items()},
         # P8.13: what the Arrange screen edits; None for "keep my layout".
@@ -635,6 +656,8 @@ def arrange(request: Request, body: ArrangeIn, session: Session = Depends(curren
     if not state or not session.data.get("output_dir"):
         raise HTTPException(409, "Generate your resume first, then arrange it.")
     layout = body.layout
+    if layout.region is not None and layout.region not in REGIONS:
+        raise HTTPException(422, "Unknown region.")
     if layout.page_target not in (None, 1, 2, 3):
         raise HTTPException(422, "Choose 1, 2 or 3 pages.")
     if any(len(t) > MAX_EDIT_CHARS for t in layout.edits.values()):

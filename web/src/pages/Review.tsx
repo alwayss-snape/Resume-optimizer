@@ -11,6 +11,7 @@ import { type ProofView, ProposalCard } from "../components/ProposalCard";
 import { ProofStack } from "../components/ProofStack";
 import { ScoreDial, verdict } from "../components/ScoreDial";
 import { ApiError, friendlyError, matchPreview, tailorResume } from "../lib/api";
+import { RegionChoice } from "../components/RegionChoice";
 import { beginStep, isAbort } from "../lib/inflight";
 import {
   type Decision, type ReviewState, anyJobField, groupProposals, initialReview, isEdited, newJobProblem, selection, tailorRequest,
@@ -61,6 +62,11 @@ export function Review() {
     target?.focus({ preventScroll: true });
   }, [jump, updateRun, heading]);
 
+  // Paper and dates (P10.3): only the ATS template has them.
+  const regionChoice = (id: string, className: string) => run.template !== "keep" && drafted.region ? (
+    <RegionChoice id={id} className={className} value={review.region ?? drafted.region.region} suggested={drafted.region}
+      onChange={(region) => update((r) => ({ ...r, region }))} />
+  ) : null;
   const groups = useMemo(() => groupProposals(drafted.proposals), [drafted.proposals]);
   const selectionKey = JSON.stringify(selection(drafted.proposals, review));
 
@@ -361,6 +367,7 @@ export function Review() {
               <KeywordList match={(live ?? drafted.keyword_match)!} compact />
             </div>
           )}
+          {regionChoice("region-aside", "hidden lg:flex")}
           <p className="m-0 hidden text-xs text-muted lg:block">
             Output: {run.template === "keep" ? "your own DOCX layout" : "ATS template"}
             {settings.strictFactual ? " · strict factual mode" : ""}
@@ -370,6 +377,8 @@ export function Review() {
           </div>
         </aside>
       </div>
+
+      {regionChoice("region-phone", "mx-4 mb-6 lg:hidden")}
 
       {/* phones: the rate and the main action stay in reach */}
       <div className="sticky bottom-0 z-20 border-t border-line bg-bg lg:hidden">

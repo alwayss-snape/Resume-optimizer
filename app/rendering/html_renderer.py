@@ -21,9 +21,10 @@ class HtmlResumeRenderer:
         joined = " · ".join(html.escape(p) for p in parts if p)
         return f'<p class="meta">{joined}</p>' if joined else ""
 
-    @staticmethod
-    def _dates(role) -> str:
-        return date_range(role.start_date, role.end_date) if role else ""
+    _date_style = "month"  # the presentation's, set by render() (P10.3)
+
+    def _dates(self, role) -> str:
+        return date_range(role.start_date, role.end_date, self._date_style) if role else ""
 
     def _experience_entry(self, item) -> str:
         roles = item.all_roles()
@@ -76,6 +77,7 @@ class HtmlResumeRenderer:
         resume: Resume = document.resume
         presentation = document.presentation
         page = page_spec(presentation)
+        self._date_style = presentation.date_style
         contact = " | ".join(html.escape(value) for value in contact_parts(resume.candidate))
         headline = (f'<p class="headline">{html.escape(resume.candidate.headline)}</p>'
                     if resume.candidate.headline else "")
@@ -113,7 +115,7 @@ class HtmlResumeRenderer:
                     "<article class='entry'>"
                     "<div class='entry-head'>"
                     f"<h3>{html.escape(item.degree or item.institution)}</h3>"
-                    f"<span class='dates'>{html.escape(format_date_text(item.dates))}</span>"
+                    f"<span class='dates'>{html.escape(format_date_text(item.dates, self._date_style))}</span>"
                     "</div>"
                     f"{self._meta_line(item.institution if item.degree else '', item.location)}"
                     + "".join(f"<p>{html.escape(d)}</p>" for d in item.details)

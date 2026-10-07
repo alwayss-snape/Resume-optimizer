@@ -28,6 +28,7 @@ export interface ReviewState {
   addition: { text: string; target: string };
   newJob: NewJob;
   conditions?: string[]; // job conditions the user meets (P8.20)
+  region?: string | null; // paper and dates, suggested from the JD (P10.3)
 }
 
 export const EMPTY_JOB: NewJob = { company: "", title: "", location: "", current: false, start: "", end: "", description: "" };
@@ -43,6 +44,7 @@ export function initialReview(drafted: ProposalsResult): ReviewState {
     addition: { text: "", target: "auto" },
     newJob: EMPTY_JOB,
     conditions: [],
+    region: drafted.region?.region ?? null,
   };
 }
 
@@ -111,6 +113,7 @@ export function tailorRequest(proposals: Proposal[], review: ReviewState, option
     strict_factual: options.strictFactual,
     remember_answers: options.rememberAnswers,
     conditions: review.conditions ?? [],
+    region: review.region ?? null,
   };
 }
 

@@ -152,6 +152,12 @@ export function keepTrimmed(layout: Layout, item: TrimmedItem): Layout {
   return l;
 }
 
+export function setRegion(layout: Layout, region: string): Layout {
+  const l = clone(layout);
+  l.region = region;
+  return l;
+}
+
 export function setPageTarget(layout: Layout, target: number | null, trim: boolean): Layout {
   const l = clone(layout);
   l.page_target = target;

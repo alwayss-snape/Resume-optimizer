@@ -10,6 +10,48 @@ Timestamped record of every **major** commit (anything touching `app/`, `scripts
 
 <!-- entries below; newest first -->
 
+<!-- entry:2026-10-07T21:41:49+05:30 -->
+## 2026-10-07 21:41 (+0530) · P10.3: region suggested from the JD sets paper and dates, switchable in Arrange
+
+Kshitij Chaubey · branch `fb_ksh`
+
+**Why / details**
+
+> US employers expect Letter paper and 01/2022 dates; the template only did A4
+> and "Jan 2022". The owner's decision: suggest the region from the JD,
+> let the user confirm or change it, and only advise on personal details.
+>
+> analysis/region.py reads the JD deterministically (USAJOBS / GS grades,
+> Indian cities, "City, ST", country and city names, currency) and keeps the
+> matched words as evidence. apply_region sets page_size (P10.2) and a new
+> date_style; numeric dates are derived from the usual formatting, so years,
+> "Present" and "Expected" stay as they were. Review shows the suggestion
+> with its evidence as a select; Arrange switches it with no LLM call. For
+> US / UK / EU jobs, content checks point out a date of birth, father's name,
+> declaration and the like, without removing anything. The CLI and eval
+> pass no region, so their output is unchanged (eval 50 pass / 2 xfail).
+
+**Changed files**
+
+- Analysis: `A` app/analysis/region.py
+- Docs: `M` docs/ACTION_ITEMS.md, `M` docs/PROJECT_OVERVIEW.md
+- Domain models: `M` app/domain/resume_document.py
+- Rendering: `M` app/rendering/html_renderer.py, `M` app/rendering/layout.py, `M` app/rendering/template_renderer.py
+- Root: `A` web/src/components/RegionChoice.test.tsx, `A` web/src/components/RegionChoice.tsx, `M` web/src/lib/api.ts, `M` web/src/lib/arrange.ts, `M` web/src/lib/review.test.ts, `M` web/src/lib/review.ts, `M` web/src/lib/types.ts, `M` web/src/pages/Arrange.test.tsx, `M` web/src/pages/Arrange.tsx, `M` web/src/pages/Review.tsx
+- Services: `M` app/services/arrange.py, `M` app/services/tailor.py
+- Tests: `A` tests/unit/test_region_p103.py
+- Tooling: `M` scripts/update_docs.py
+- Validation: `M` app/validation/content_lint.py
+- Web API: `M` app/api/routes.py
+
+**Structure delta**
+
+- new module `app/analysis/region.py`: `class RegionGuess`
+- `app/api/routes.py`: added `_region_out()`
+- `app/rendering/layout.py`: added `numeric_dates()`
+
+---
+
 <!-- entry:2026-10-07T21:28:37+05:30 -->
 ## 2026-10-07 21:28 (+0530) · P10.2: one PageSpec for A4 and US Letter across DOCX, HTML and page-fit
 

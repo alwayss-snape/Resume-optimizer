@@ -24,6 +24,7 @@ class TemplateRenderer:
     """Standard single-column, ATS-safe DOCX renderer with support for ResumeDocument."""
 
     _gap = 1.0  # vertical spacing factor; 0.5 in compact mode
+    _date_style = "month"  # the presentation's, set per render (P10.3)
 
     def render_ats_default(self, resume_or_doc: Any, output_path: str) -> str:
         """Render the ATS template (P2.1): A4 or Letter, single column, Arial,
@@ -33,6 +34,7 @@ class TemplateRenderer:
             resume, presentation = resume_or_doc.resume, resume_or_doc.presentation
         else:
             resume, presentation = resume_or_doc, ResumePresentation()
+        self._date_style = presentation.date_style
 
         doc = docx.Document()
         # Compact spacing (page-fit, P2.4): vertical gaps are halved.
@@ -155,7 +157,7 @@ class TemplateRenderer:
         self._add_section_heading(doc, SECTION_TITLES["education"])
         for i, education in enumerate(resume.education):
             self._add_title_dates_line(doc, education.degree or education.institution or "",
-                                       format_date_text(education.dates), content_width,
+                                       format_date_text(education.dates, self._date_style), content_width,
                                        space_before=0 if i == 0 else 4)
             meta = " · ".join(v for v in (education.institution if education.degree else "", education.location) if v)
             if meta:
@@ -261,9 +263,8 @@ class TemplateRenderer:
         run.font.color.rgb = ACCENT_COLOR
         self._add_bottom_border(p, size=6)
 
-    @staticmethod
-    def _role_dates(role) -> str:
-        return date_range(role.start_date, role.end_date) if role else ""
+    def _role_dates(self, role) -> str:
+        return date_range(role.start_date, role.end_date, self._date_style) if role else ""
 
     def _add_meta_line(self, doc, text: str) -> None:
         """'Company · Location' in italic grey under a title line."""
