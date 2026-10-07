@@ -66,7 +66,7 @@ export function Review() {
   // Paper and dates (P10.3): only the ATS template has them.
   // and the CV type (P10.5).
   const regionChoice = (id: string, className: string) => run.template !== "keep" && drafted.region ? (
-    <div className={`flex-col gap-4 ${className}`}>
+    <div className={`grid gap-4 sm:grid-cols-2 ${className}`}>
       {drafted.cv_mode && (
         <CvModeChoice id={`${id}-mode`} value={review.cvMode ?? drafted.cv_mode.mode} suggested={drafted.cv_mode}
           onChange={(cvMode) => update((r) => ({ ...r, cvMode }))} />
@@ -211,6 +211,7 @@ export function Review() {
               </div>
             )}
           </div>
+          {regionChoice("region", "sheet rounded-[3px] p-4")}
           {liveError && (
             <p role="status" className="m-0 flex items-start gap-2 rounded-[3px] border border-warning bg-panel p-3 text-sm font-medium">
               <Icon name="alert" size={16} className="mt-0.5 shrink-0 text-warning" />{liveError}
@@ -375,7 +376,6 @@ export function Review() {
               <KeywordList match={(live ?? drafted.keyword_match)!} compact />
             </div>
           )}
-          {regionChoice("region-aside", "hidden lg:flex")}
           <p className="m-0 hidden text-xs text-muted lg:block">
             Output: {run.template === "keep" ? "your own DOCX layout" : "ATS template"}
             {settings.strictFactual ? " · strict factual mode" : ""}
@@ -385,8 +385,6 @@ export function Review() {
           </div>
         </aside>
       </div>
-
-      {regionChoice("region-phone", "mx-4 mb-6 flex lg:hidden")}
 
       {/* phones: the rate and the main action stay in reach */}
       <div className="sticky bottom-0 z-20 border-t border-line bg-bg lg:hidden">

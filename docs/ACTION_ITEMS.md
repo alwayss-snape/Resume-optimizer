@@ -1,7 +1,7 @@
 # Action Items — Best Tailored Resume per JD
 
 _Living tracker. Update an item's **Status** in the same commit that changes it; add a short note (commit subject or
-what's left). Last updated: 2026-10-07 (P0–P9 done, Stage N gate passed, P10.1, P10.10 and P10.11 done, Stage O gate passed; P10.2–P10.7 done (Stage P, gate pending); P5.7 shelved; the owner accepted the next round:
+what's left). Last updated: 2026-10-07 (P0–P9 done, Stage N gate passed, P10.1, P10.10 and P10.11 done, Stage O gate passed; P10.2–P10.7 and P10.12 done (Stage P, gate pending); P5.7 shelved; the owner accepted the next round:
 P9.7–P9.11 (quick fixes, coverage runs) and Phase 10 (LinkedIn import, output formats, cover letter, history), stages
 M–Q)._
 
@@ -24,8 +24,8 @@ JD-aligned rewrites, a Novoresume-style ATS layout that fits the right length, a
 | 7: Owner feedback on the flow | 2 | 2 | 0 | 0 |
 | 8: Cross-domain robustness and user control | 26 | 26 | 0 | 0 |
 | 9: Close-out and owner review | 25 | 25 | 0 | 0 |
-| 10: Inputs, outputs, cover letter and history | 11 | 9 | 0 | 2 |
-| **Total** | **118** | **113** | **0** | **3** |
+| 10: Inputs, outputs, cover letter and history | 12 | 10 | 0 | 2 |
+| **Total** | **119** | **114** | **0** | **3** |
 
 Phase 1's two open items (P1.15, P1.16) are ➖, moved into P8.9 and P8.18, so its row no longer adds up to 16.
 
@@ -363,6 +363,7 @@ and a check-in.
 | P10.9 | **History, opt-in, on this machine:** "Keep this run on this computer" on Results saves the JD, scores, keyword table, files, cover letter, parsed resume and arrange state under `data/history/<uuid>/` (gitignored first); list, reopen into Results and Arrange (re-render with no LLM), delete; off when hosted; privacy note updated | new `services/history.py`, `api/routes.py`, web | ⬜ | Stage Q. Size L |
 | P10.10 | **A long role lost to "max completion tokens"** (Stage O private live run): 2 of 3 runs on 2026-10-07 lost 10 of 12 bullets; Groq rejected the 10-bullet role call with `json_validate_failed` / "max completion tokens reached before generating a valid document" on every try, even at low effort, since the free tier caps a completion to what fits its 8K tokens per minute | `analysis/rewriter.py` | ✅ | Found in Stage O. 2026-10-07: a role call of 4+ bullets that comes back rejected as invalid JSON is tried again as two half-size calls (each needs half the output); the usual follow-up for skipped bullets still runs after. Normal runs make the same calls as before. `test_a_long_role_rejected_as_invalid_json_is_retried_in_halves_p1010`, `test_a_short_role_is_not_split_p1010` |
 | P10.11 | **Check details called information a problem** (Stage O walkthrough): the LinkedIn note showed as "Possible reading problem: Read as a LinkedIn profile…", and a LinkedIn role with no description said "If it isn't a job, remove it", nudging the user to delete a real job | `services/tailor.py`, `api/routes.py`, `web/src/pages/Details.tsx`, `App.tsx`, `lib/store.ts`, `lib/types.ts`, `components/Icon.tsx` | ✅ | Found in Stage O. 2026-10-07: `/api/parse` returns `parse_notes` apart from `parse_issues`; Check details shows notes in a plain box with an info icon, never under "Possible reading problem". For a layout-read file "experience without bullets" is no longer a reading problem (Results' content checks still suggest bullets). `test_the_api_returns_the_note_apart_from_the_issues_p1011`, App test "a note on how the file was read is not called a reading problem". The walkthrough script takes `RESUME` / `JD_FILE` to walk another file through |
+| P10.12 | **Review's CV type and paper choices hidden** (Stage P walkthrough): P10.3 / P10.5 put them at the bottom of the sticky desktop aside, below the fold and under the keyboard-hint bar, so they couldn't be reached at 1440 × 900; on phones the region note started in lower case ("the job says…") | `web/src/pages/Review.tsx`, `components/RegionChoice.tsx` | ✅ | Found in Stage P. 2026-10-07: one panel above the cards in the main column for every screen size (two columns from `sm`), so the aside is back to its old height; the region note reads "The job says “GS-0343-13”." or "Suggested US (Letter): the job says …". Checked in Chrome at 1440 light and 390 dark. App test "review: the CV type and paper choices show once, outside the sticky aside, and go with the request" |
 
 ---
 

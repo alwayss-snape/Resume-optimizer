@@ -361,3 +361,30 @@ test("review: an expired session says so instead of retrying forever", async () 
   await toReview(user);
   expect(await screen.findByText(/Your session has expired. Use Start over/, {}, { timeout: 2000 })).toBeInTheDocument();
 });
+
+test("review: the CV type and paper choices show once, outside the sticky aside, and go with the request (P10.12)", async () => {
+  const drafted = { ...DRAFTED, region: { region: "us", label: "US (Letter)", evidence: "Austin, TX" },
+    cv_mode: { mode: "standard", label: "Standard resume", evidence: [] } };
+  const calls = stubApi({
+    "/api/config": () => jsonResponse(CONFIG),
+    "/api/parse": () => jsonResponse({ details: DETAILS, parse_issues: [] }),
+    "/api/proposals": () => sseResponse([["result", drafted]]),
+    "/api/match-preview": () => jsonResponse({ ...DRAFTED.keyword_match, delta: 0 }),
+    "/api/tailor": () => sseResponse([["result", {
+      success: true, alignment_score: 50, initial_alignment_score: 40, keyword_match: null, content_lint: null,
+      addition_note: null, warnings: [], docx_warnings: [], pdf_warnings: [], target_pages: 1, pages: 1,
+      files: { docx: true, pdf: true, changes: true } }]]),
+  });
+  const user = userEvent.setup();
+  await toReview(user);
+  const formatted = screen.getAllByLabelText("Formatted for");
+  expect(formatted).toHaveLength(1);
+  expect(formatted[0].closest("aside")).toBeNull();
+  expect(screen.getAllByLabelText("CV type")).toHaveLength(1);
+  await user.selectOptions(formatted[0], "uk_eu");
+  await user.selectOptions(screen.getByLabelText("CV type"), "academic");
+  await user.click(screen.getAllByRole("button", { name: "Generate my resume" })[0]);
+  expect(await screen.findByRole("heading", { name: "Your resume is ready." })).toBeInTheDocument();
+  const body = JSON.parse(String(calls.find((c) => c.url === "/api/tailor")!.init!.body));
+  expect([body.region, body.cv_mode]).toEqual(["uk_eu", "academic"]);
+});

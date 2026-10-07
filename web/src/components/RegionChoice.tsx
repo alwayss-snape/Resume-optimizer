@@ -10,9 +10,9 @@ export function RegionChoice({ id, value, suggested, onChange, className = "" }:
   className?: string;
 }) {
   const why = suggested?.evidence && suggested.region === value
-    ? <>the job says “{suggested.evidence}”</>
-    : suggested?.evidence ? <>the job says “{suggested.evidence}” ({REGION_LABELS[suggested.region]})</>
-    : <>nothing in the job says where; A4 is the default</>;
+    ? <>The job says “{suggested.evidence}”</>
+    : suggested?.evidence ? <>Suggested {REGION_LABELS[suggested.region]}: the job says “{suggested.evidence}”</>
+    : <>Nothing in the job says where; A4 is the default</>;
   return (
     <div className={`flex flex-col gap-1.5 text-xs text-muted ${className}`}>
       <label htmlFor={id} className="font-medium text-ink">Formatted for</label>
