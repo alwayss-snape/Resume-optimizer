@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**62 app modules · 77 test files · 116 classes · 1158 functions/methods · 23,276 lines of Python** · source hash `27ed1f51a5237f87`
+**62 app modules · 78 test files · 116 classes · 1161 functions/methods · 23,349 lines of Python** · source hash `3dec549d3bec15f5`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -207,6 +207,7 @@ tests/
     test_stuffing_p819.py                        P8.19: a Skills line pasted from the JD no longer beats real experienc…
     test_summary_writer.py                       Summary tailoring (P1.5) and years of experience from dates.
     test_summary_years_p99.py                    P9.9: the summary reuses the years the resume itself states ("3.6 year…
+    test_tagged_pdf_p104.py                      P10.4: the PDF is tagged (accessible), and tagging changes nothing a
     test_tailor_planner.py                       test_tailor_planner(), test_semantic_only_match_produces_rewrite_with_…
     test_tailor_resume_flow.py                   tailor_resume orchestration: pre-approved proposals and Strict Factual…
     test_tailor_service_addition.py              _service(), test_incorporate_user_addition_appends_bullet_to_most_rece…
@@ -1112,17 +1113,18 @@ _Page-fit loop (P2.4): render, count pages, trim, render again._
 
 ### `app/rendering/pdf_converter.py`
 
-**Layer:** Rendering · **Stage:** 9 Render · **Lines:** 129
+**Layer:** Rendering · **Stage:** 9 Render · **Lines:** 158
 
-- class **`PdfConverter`** ([app/rendering/pdf_converter.py:35](../app/rendering/pdf_converter.py#L35))
-  - `find_libreoffice_binary()` :36
-  - `convert_docx_to_pdf()` :53
-- function **`_take_profile()`** ([app/rendering/pdf_converter.py:21](../app/rendering/pdf_converter.py#L21))
-- function **`_give_back()`** ([app/rendering/pdf_converter.py:31](../app/rendering/pdf_converter.py#L31))
-- function **`convert_to_docx()`** ([app/rendering/pdf_converter.py:102](../app/rendering/pdf_converter.py#L102)) — A .doc / .odt / .rtf as .docx through LibreOffice (P8.22), or None.
-- function **`pdf_page_images()`** ([app/rendering/pdf_converter.py:123](../app/rendering/pdf_converter.py#L123)) — Each PDF page as PNG bytes. Shown as images, a preview works in any
+- class **`PdfConverter`** ([app/rendering/pdf_converter.py:64](../app/rendering/pdf_converter.py#L64))
+  - `find_libreoffice_binary()` :65
+  - `convert_docx_to_pdf()` :82
+- function **`_enable_tagged_pdf()`** ([app/rendering/pdf_converter.py:34](../app/rendering/pdf_converter.py#L34)) — Add the tagged-PDF setting to the profile's registry (creating it for
+- function **`_take_profile()`** ([app/rendering/pdf_converter.py:49](../app/rendering/pdf_converter.py#L49))
+- function **`_give_back()`** ([app/rendering/pdf_converter.py:60](../app/rendering/pdf_converter.py#L60))
+- function **`convert_to_docx()`** ([app/rendering/pdf_converter.py:131](../app/rendering/pdf_converter.py#L131)) — A .doc / .odt / .rtf as .docx through LibreOffice (P8.22), or None.
+- function **`pdf_page_images()`** ([app/rendering/pdf_converter.py:152](../app/rendering/pdf_converter.py#L152)) — Each PDF page as PNG bytes. Shown as images, a preview works in any
 - **Imported by:** `api/routes.py`, `services/tailor.py`, `scripts/make_eval_cases.py`
-- **Tested by:** `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_ats_round_trip.py`, `tests/unit/test_pdf_converter.py`, `tests/unit/test_uploads_p822.py`
+- **Tested by:** `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_ats_round_trip.py`, `tests/unit/test_pdf_converter.py`, `tests/unit/test_tagged_pdf_p104.py`, `tests/unit/test_uploads_p822.py`
 
 ### `app/rendering/review_view.py`
 

@@ -18,6 +18,34 @@ _profiles_lock = threading.Lock()
 _profile_count = [0]
 
 
+# Tagged (accessible) PDF, P10.4: headings, paragraphs and lists marked up
+# for screen readers and text extraction. LibreOffice 7.3 has no JSON filter
+# options (7.4+), so it is switched on in each profile's settings, which
+# LibreOffice keeps when it rewrites them.
+_REGISTRY = "registrymodifications.xcu"
+_TAGGED_PDF_ITEM = ('<item oor:path="/org.openoffice.Office.Common/Filter/PDF/Export">'
+                    '<prop oor:name="UseTaggedPDF" oor:op="fuse"><value>true</value></prop></item>')
+_EMPTY_REGISTRY = ('<?xml version="1.0" encoding="UTF-8"?>\n'
+                   '<oor:items xmlns:oor="http://openoffice.org/2001/registry" '
+                   'xmlns:xs="http://www.w3.org/2001/XMLSchema" '
+                   'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">\n</oor:items>\n')
+
+
+def _enable_tagged_pdf(profile: str) -> None:
+    """Add the tagged-PDF setting to the profile's registry (creating it for
+    a new profile); a profile that has it already is left alone."""
+    path = os.path.join(profile, "user", _REGISTRY)
+    try:
+        text = open(path, encoding="utf-8").read() if os.path.exists(path) else _EMPTY_REGISTRY
+        if "UseTaggedPDF" in text:
+            return
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(text.replace("</oor:items>", _TAGGED_PDF_ITEM + "\n</oor:items>", 1))
+    except OSError as e:  # an untagged PDF is still a good PDF
+        logger.warning(f"Could not switch on tagged PDF: {e}")
+
+
 def _take_profile() -> str:
     with _profiles_lock:
         if _free_profiles:
@@ -25,6 +53,7 @@ def _take_profile() -> str:
         _profile_count[0] += 1
         path = os.path.join(_PROFILE_ROOT, f"{os.getpid()}_{_profile_count[0]}")
     os.makedirs(path, exist_ok=True)
+    _enable_tagged_pdf(path)
     return path
 
 

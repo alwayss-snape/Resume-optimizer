@@ -10,6 +10,32 @@ Timestamped record of every **major** commit (anything touching `app/`, `scripts
 
 <!-- entries below; newest first -->
 
+<!-- entry:2026-10-07T21:51:01+05:30 -->
+## 2026-10-07 21:51 (+0530) · P10.4: tagged (accessible) PDF from each pooled LibreOffice profile
+
+Kshitij Chaubey · branch `fb_ksh`
+
+**Why / details**
+
+> Screen readers and text extraction work better on a tagged PDF (headings,
+> paragraphs and lists marked up). LibreOffice 7.3 here has no JSON filter
+> options (7.4+), so UseTaggedPDF is written into each new pooled profile's
+> registrymodifications.xcu, which LibreOffice keeps when it rewrites it.
+> Checked on 7.3.4: same page count and the same extracted text as an
+> untagged PDF; eval 50 pass / 2 known xfail.
+
+**Changed files**
+
+- Docs: `M` docs/ACTION_ITEMS.md, `M` docs/PROJECT_OVERVIEW.md
+- Rendering: `M` app/rendering/pdf_converter.py
+- Tests: `A` tests/unit/test_tagged_pdf_p104.py
+
+**Structure delta**
+
+- `app/rendering/pdf_converter.py`: added `_enable_tagged_pdf()`
+
+---
+
 <!-- entry:2026-10-07T21:41:49+05:30 -->
 ## 2026-10-07 21:41 (+0530) · P10.3: region suggested from the JD sets paper and dates, switchable in Arrange
 

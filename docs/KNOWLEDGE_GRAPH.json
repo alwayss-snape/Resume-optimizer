@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "27ed1f51a5237f87",
+  "source_hash": "3dec549d3bec15f5",
   "stats": {
-    "files": 176,
-    "python_files": 150,
+    "files": 177,
+    "python_files": 151,
     "app_modules": 62,
-    "test_files": 77,
+    "test_files": 78,
     "classes": 116,
-    "functions": 1158,
-    "lines_of_python": 23276
+    "functions": 1161,
+    "lines_of_python": 23349
   },
   "axes": {
     "x": "location (path)",
@@ -3371,22 +3371,22 @@
       "stages": [
         "9 Render"
       ],
-      "lines": 129,
+      "lines": 158,
       "doc": "",
       "classes": [
         {
           "name": "PdfConverter",
-          "line": 35,
+          "line": 64,
           "doc": "",
           "methods": [
             {
               "name": "find_libreoffice_binary",
-              "line": 36,
+              "line": 65,
               "doc": ""
             },
             {
               "name": "convert_docx_to_pdf",
-              "line": 53,
+              "line": 82,
               "doc": ""
             }
           ]
@@ -3394,23 +3394,28 @@
       ],
       "functions": [
         {
+          "name": "_enable_tagged_pdf",
+          "line": 34,
+          "doc": "Add the tagged-PDF setting to the profile's registry (creating it for"
+        },
+        {
           "name": "_take_profile",
-          "line": 21,
+          "line": 49,
           "doc": ""
         },
         {
           "name": "_give_back",
-          "line": 31,
+          "line": 60,
           "doc": ""
         },
         {
           "name": "convert_to_docx",
-          "line": 102,
+          "line": 131,
           "doc": "A .doc / .odt / .rtf as .docx through LibreOffice (P8.22), or None."
         },
         {
           "name": "pdf_page_images",
-          "line": 123,
+          "line": 152,
           "doc": "Each PDF page as PNG bytes. Shown as images, a preview works in any"
         }
       ]
@@ -8285,6 +8290,27 @@
       ]
     },
     {
+      "id": "tests/unit/test_tagged_pdf_p104.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 44,
+      "doc": "P10.4: the PDF is tagged (accessible), and tagging changes nothing a",
+      "classes": [],
+      "functions": [
+        {
+          "name": "test_the_setting_is_added_once_and_keeps_existing_settings",
+          "line": 15,
+          "doc": ""
+        },
+        {
+          "name": "test_pdf_is_tagged_with_the_same_pages_and_text",
+          "line": 32,
+          "doc": ""
+        }
+      ]
+    },
+    {
       "id": "tests/unit/test_tailor_planner.py",
       "type": "python",
       "layer": "Tests",
@@ -11222,6 +11248,11 @@
     {
       "from": "app/rendering/pdf_converter.py",
       "to": "tests/unit/test_pdf_converter.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/rendering/pdf_converter.py",
+      "to": "tests/unit/test_tagged_pdf_p104.py",
       "type": "tested_by"
     },
     {
