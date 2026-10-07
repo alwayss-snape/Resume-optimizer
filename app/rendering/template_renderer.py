@@ -8,6 +8,7 @@ from docx.shared import Inches, Mm, Pt, RGBColor
 from typing import Any
 
 from app.domain.resume_document import ResumePresentation
+from app.analysis.cv_mode import experience_heading, is_publications
 from app.rendering.layout import (SECTION_TITLES, page_spec, fallback_font, contact_parts, date_range, display_skills, format_date_text,
                                   ordered_sections, other_section, skill_label)
 
@@ -25,6 +26,7 @@ class TemplateRenderer:
 
     _gap = 1.0  # vertical spacing factor; 0.5 in compact mode
     _date_style = "month"  # the presentation's, set per render (P10.3)
+    _academic = False  # Academic CV (P10.6)
 
     def render_ats_default(self, resume_or_doc: Any, output_path: str) -> str:
         """Render the ATS template (P2.1): A4 or Letter, single column, Arial,
@@ -35,6 +37,7 @@ class TemplateRenderer:
         else:
             resume, presentation = resume_or_doc, ResumePresentation()
         self._date_style = presentation.date_style
+        self._academic = presentation.cv_mode == "academic"
 
         doc = docx.Document()
         # Compact spacing (page-fit, P2.4): vertical gaps are halved.
@@ -106,7 +109,7 @@ class TemplateRenderer:
     def _add_experience(self, doc, resume, content_width) -> None:
         if not resume.experience:
             return
-        self._add_section_heading(doc, SECTION_TITLES["experience"])
+        self._add_section_heading(doc, experience_heading(resume) if self._academic else SECTION_TITLES["experience"])
         for i, exp in enumerate(resume.experience):
             roles = exp.all_roles()
             company = exp.company or ""
@@ -200,8 +203,11 @@ class TemplateRenderer:
         if not section or not section.lines:
             return
         self._add_section_heading(doc, section.heading)
+        numbered = self._academic and is_publications(section.heading)
         for line in section.lines:
-            if line.bullet:
+            if line.bullet and numbered:  # an Academic CV numbers its publications (P10.6); words as written
+                doc.add_paragraph(line.text, style="List Number").paragraph_format.space_after = Pt(1)
+            elif line.bullet:
                 self._add_bullets(doc, [line.text])
             else:
                 doc.add_paragraph(line.text).paragraph_format.space_after = Pt(2)

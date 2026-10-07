@@ -4,6 +4,7 @@ from typing import Iterable
 
 from app.domain.resume import Resume
 from app.domain.resume_document import ResumeDocument
+from app.analysis.cv_mode import experience_heading, is_publications
 from app.rendering.layout import (SECTION_TITLES, page_spec, contact_parts, date_range, display_skills, format_date_text,
                                   ordered_sections, other_section, skill_label)
 
@@ -22,6 +23,7 @@ class HtmlResumeRenderer:
         return f'<p class="meta">{joined}</p>' if joined else ""
 
     _date_style = "month"  # the presentation's, set by render() (P10.3)
+    _academic = False  # Academic CV (P10.6)
 
     def _dates(self, role) -> str:
         return date_range(role.start_date, role.end_date, self._date_style) if role else ""
@@ -60,16 +62,17 @@ class HtmlResumeRenderer:
         if not section or not section.lines:
             return ""
         parts, bullets = [], []
+        tag = "ol" if self._academic and is_publications(section.heading) else "ul"  # P10.6
         for line in section.lines:
             if line.bullet:
                 bullets.append(line.text)
                 continue
             if bullets:
-                parts.append(f"<ul>{self._items(bullets)}</ul>")
+                parts.append(f"<{tag}>{self._items(bullets)}</{tag}>")
                 bullets = []
             parts.append(f"<p>{html.escape(line.text)}</p>")
         if bullets:
-            parts.append(f"<ul>{self._items(bullets)}</ul>")
+            parts.append(f"<{tag}>{self._items(bullets)}</{tag}>")
         return self._section("other", "".join(parts), title=section.heading)
 
     def render(self, document: ResumeDocument) -> str:
@@ -78,6 +81,7 @@ class HtmlResumeRenderer:
         presentation = document.presentation
         page = page_spec(presentation)
         self._date_style = presentation.date_style
+        self._academic = presentation.cv_mode == "academic"
         contact = " | ".join(html.escape(value) for value in contact_parts(resume.candidate))
         headline = (f'<p class="headline">{html.escape(resume.candidate.headline)}</p>'
                     if resume.candidate.headline else "")
@@ -92,7 +96,8 @@ class HtmlResumeRenderer:
                 sections.append(self._section("summary", f"<p>{html.escape(resume.summary)}</p>"))
             elif section_name == "experience" and resume.experience:
                 entries = "".join(self._experience_entry(item) for item in resume.experience)
-                sections.append(self._section("experience", entries))
+                sections.append(self._section("experience", entries,
+                                              experience_heading(resume) if self._academic else ""))
             elif section_name == "projects" and resume.projects:
                 entries = "".join(
                     "<article class='entry'>"

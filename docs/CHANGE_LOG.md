@@ -10,6 +10,40 @@ Timestamped record of every **major** commit (anything touching `app/`, `scripts
 
 <!-- entries below; newest first -->
 
+<!-- entry:2026-10-07T22:13:40+05:30 -->
+## 2026-10-07 22:13 (+0530) · P10.6: Academic CV template: CV order, appointments as jobs, numbered publications
+
+Kshitij Chaubey · branch `fb_ksh`
+
+**Why / details**
+
+> An Academic CV follows its own conventions: Education before Appointments,
+> then grants, publications, teaching, talks and service in the author's
+> order; publications are never reworded, trimmed or reordered.
+>
+> In academic mode the section order is CV order (kept sections in file
+> order after Education and Appointments), the experience heading is
+> "Academic Appointments" when every role is academic, an appointment read
+> as education becomes a job with its words and dates unchanged, and a
+> bulleted publication list is numbered by the template (List Number / <ol>)
+> without touching its text. Publications were already kept verbatim as
+> their own section, which the rewriter and page-fit never touch. The
+> academic persona passes end to end with all 45 publications word for word.
+
+**Changed files**
+
+- Analysis: `M` app/analysis/cv_mode.py
+- Docs: `M` docs/ACTION_ITEMS.md, `M` docs/PROJECT_OVERVIEW.md
+- Rendering: `M` app/rendering/html_renderer.py, `M` app/rendering/template_renderer.py
+- Services: `M` app/services/tailor.py
+- Tests: `A` tests/unit/test_academic_cv_p106.py
+
+**Structure delta**
+
+- `app/analysis/cv_mode.py`: added `academic_section_order()`, `experience_heading()`, `is_publications()`, `move_appointments_from_education()`
+
+---
+
 <!-- entry:2026-10-07T22:03:29+05:30 -->
 ## 2026-10-07 22:03 (+0530) · P10.5: CV type (standard / Academic CV / US Federal) suggested and confirmed
 

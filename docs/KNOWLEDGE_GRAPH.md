@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**63 app modules · 79 test files · 117 classes · 1176 functions/methods · 23,589 lines of Python** · source hash `5e60ababa7c24a3d`
+**63 app modules · 80 test files · 117 classes · 1184 functions/methods · 23,733 lines of Python** · source hash `8e8e0fadd858f731`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -146,6 +146,7 @@ tests/
     test_persona_cases.py                        P8.1: the cross-domain user-testing personas as eval cases (offline, n…
     test_preserve_rewrite_end_to_end.py          test_approved_rewrite_appears_in_all_outputs()
   unit/
+    test_academic_cv_p106.py                     P10.6: the Academic CV template. Appointments are jobs, publications a…
     test_api.py                                  Web API (P5.1): the full flow through HTTP, plus the shared form helpe…
     test_ats_round_trip.py                       P2.5: the rendered template must read back exactly as rendered, and the
     test_check_parsed_resume.py                  P3.5: "Check parsed resume" step: corrections applied by the service
@@ -265,7 +266,7 @@ _Job conditions that aren't keywords (P8.20)._
 
 ### `app/analysis/cv_mode.py`
 
-**Layer:** Analysis · **Stage:** 9 Render · **Lines:** 96
+**Layer:** Analysis · **Stage:** 9 Render · **Lines:** 156
 
 _CV mode (P10.5): a standard resume, an Academic CV or a US Federal_
 
@@ -275,9 +276,13 @@ _CV mode (P10.5): a standard resume, an Academic CV or a US Federal_
 - function **`_resume_text()`** ([app/analysis/cv_mode.py:51](../app/analysis/cv_mode.py#L51))
 - function **`suggest_cv_mode()`** ([app/analysis/cv_mode.py:59](../app/analysis/cv_mode.py#L59)) — Federal: a federal JD (USAJOBS, a GS series), or two federal fields in
 - function **`apply_cv_mode()`** ([app/analysis/cv_mode.py:89](../app/analysis/cv_mode.py#L89)) — Set the mode on the presentation. Federal resumes are US documents
+- function **`is_publications()`** ([app/analysis/cv_mode.py:107](../app/analysis/cv_mode.py#L107))
+- function **`experience_heading()`** ([app/analysis/cv_mode.py:111](../app/analysis/cv_mode.py#L111)) — "Academic Appointments" when every role is an academic one, otherwise
+- function **`academic_section_order()`** ([app/analysis/cv_mode.py:120](../app/analysis/cv_mode.py#L120)) — CV order: sections kept from the top of the file, the summary,
+- function **`move_appointments_from_education()`** ([app/analysis/cv_mode.py:131](../app/analysis/cv_mode.py#L131)) — An appointment read as education ("Postdoctoral Fellow, Harvard
 - **Imports:** `analysis/region.py`, `domain/resume.py`
-- **Imported by:** `api/routes.py`, `services/tailor.py`
-- **Tested by:** `tests/unit/test_cv_mode_p105.py`
+- **Imported by:** `api/routes.py`, `rendering/html_renderer.py`, `rendering/template_renderer.py`, `services/tailor.py`
+- **Tested by:** `tests/unit/test_academic_cv_p106.py`, `tests/unit/test_cv_mode_p105.py`
 
 ### `app/analysis/experience.py`
 
@@ -770,7 +775,7 @@ _Per-visitor state for the web API (P5.1)._
 - class **`OtherSection`** ([app/domain/resume.py:98](../app/domain/resume.py#L98)) — A section the resume model has no fields for (Publications, Bar
 - class **`Resume`** ([app/domain/resume.py:110](../app/domain/resume.py#L110))
 - **Imported by:** `analysis/checklist.py`, `analysis/cv_mode.py`, `analysis/experience.py`, `analysis/keyword_match.py`, `analysis/region.py`, `analysis/resume_normalizer.py`, `analysis/rewriter.py`, `analysis/skills_tailor.py`, `analysis/structure_extractor.py`, `analysis/summary_writer.py`, `analysis/tailor_planner.py`, `domain/resume_document.py`, `eval/golden.py`, `rendering/html_renderer.py`, `rendering/layout.py`, `rendering/page_fit.py`, `services/arrange.py`, `services/tailor.py`, `validation/content_lint.py`, `validation/structural.py`
-- **Tested by:** `tests/integration/test_arrange.py`, `tests/unit/test_ats_round_trip.py`, `tests/unit/test_check_parsed_resume.py`, `tests/unit/test_checklist_p820.py`, `tests/unit/test_content_lint.py`, `tests/unit/test_cv_mode_p105.py`, `tests/unit/test_dates_p86.py`, `tests/unit/test_details_p826.py`, `tests/unit/test_docx_renderer.py`, `tests/unit/test_experience.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_global_p825.py`, `tests/unit/test_guidance_p821.py`, `tests/unit/test_html_renderer.py`, `tests/unit/test_jd_p818.py`, `tests/unit/test_keyword_match.py`, `tests/unit/test_matching_p817.py`, `tests/unit/test_new_role.py`, `tests/unit/test_page_fit.py`, `tests/unit/test_page_size_p102.py`, `tests/unit/test_parser_regressions_p42.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_region_p103.py`, `tests/unit/test_resume_document.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_review_view.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_skill_placement_p912.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_stuffing_p819.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_summary_years_p99.py`, `tests/unit/test_tailor_planner.py`, `tests/unit/test_tailor_service_addition.py`, `tests/unit/test_template_layout.py`, `tests/unit/test_template_renderer_standalone.py`
+- **Tested by:** `tests/integration/test_arrange.py`, `tests/unit/test_academic_cv_p106.py`, `tests/unit/test_ats_round_trip.py`, `tests/unit/test_check_parsed_resume.py`, `tests/unit/test_checklist_p820.py`, `tests/unit/test_content_lint.py`, `tests/unit/test_cv_mode_p105.py`, `tests/unit/test_dates_p86.py`, `tests/unit/test_details_p826.py`, `tests/unit/test_docx_renderer.py`, `tests/unit/test_experience.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_global_p825.py`, `tests/unit/test_guidance_p821.py`, `tests/unit/test_html_renderer.py`, `tests/unit/test_jd_p818.py`, `tests/unit/test_keyword_match.py`, `tests/unit/test_matching_p817.py`, `tests/unit/test_new_role.py`, `tests/unit/test_page_fit.py`, `tests/unit/test_page_size_p102.py`, `tests/unit/test_parser_regressions_p42.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_region_p103.py`, `tests/unit/test_resume_document.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_review_view.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_skill_placement_p912.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_stuffing_p819.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_summary_years_p99.py`, `tests/unit/test_tailor_planner.py`, `tests/unit/test_tailor_service_addition.py`, `tests/unit/test_template_layout.py`, `tests/unit/test_template_renderer_standalone.py`
 
 ### `app/domain/resume_document.py`
 
@@ -784,7 +789,7 @@ _Per-visitor state for the web API (P5.1)._
   - `snapshot()` :92 — Return a JSON-serializable, versioned document for storage or export.
 - **Imports:** `domain/resume.py`
 - **Imported by:** `analysis/region.py`, `analysis/resume_normalizer.py`, `analysis/structure_extractor.py`, `rendering/html_renderer.py`, `rendering/layout.py`, `rendering/page_fit.py`, `rendering/template_renderer.py`, `services/tailor.py`
-- **Tested by:** `tests/unit/test_ats_round_trip.py`, `tests/unit/test_check_parsed_resume.py`, `tests/unit/test_cv_mode_p105.py`, `tests/unit/test_details_p826.py`, `tests/unit/test_docx_renderer.py`, `tests/unit/test_html_renderer.py`, `tests/unit/test_kept_sections_p83.py`, `tests/unit/test_page_fit.py`, `tests/unit/test_page_size_p102.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_region_p103.py`, `tests/unit/test_resume_document.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_review_view.py`, `tests/unit/test_template_layout.py`, `tests/unit/test_template_renderer_standalone.py`
+- **Tested by:** `tests/unit/test_academic_cv_p106.py`, `tests/unit/test_ats_round_trip.py`, `tests/unit/test_check_parsed_resume.py`, `tests/unit/test_cv_mode_p105.py`, `tests/unit/test_details_p826.py`, `tests/unit/test_docx_renderer.py`, `tests/unit/test_html_renderer.py`, `tests/unit/test_kept_sections_p83.py`, `tests/unit/test_page_fit.py`, `tests/unit/test_page_size_p102.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_region_p103.py`, `tests/unit/test_resume_document.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_review_view.py`, `tests/unit/test_template_layout.py`, `tests/unit/test_template_renderer_standalone.py`
 
 ### `app/domain/tailoring.py`
 
@@ -1062,20 +1067,20 @@ _Plain-text resumes: a .txt upload or text pasted in the app (P8.22)._
 
 ### `app/rendering/html_renderer.py`
 
-**Layer:** Rendering · **Stage:** 9 Render · **Lines:** 165
+**Layer:** Rendering · **Stage:** 9 Render · **Lines:** 170
 
-- class **`HtmlResumeRenderer`** ([app/rendering/html_renderer.py:10](../app/rendering/html_renderer.py#L10)) — Render an ATS-safe, printable résumé from the canonical document.
-  - `_items()` :13
-  - `_meta_line()` :16 — A de-emphasized 'Company · Location' style line under a bolded
-  - `_dates()` :26
-  - `_experience_entry()` :29
-  - `_section()` :55
-  - `_other()` :58 — A kept section (P8.3), each line as written.
-  - `render()` :75 — Same sections, order and headings as the DOCX template (P2.1).
-  - `write_html()` :161
-- **Imports:** `domain/resume.py`, `domain/resume_document.py`, `rendering/layout.py`
+- class **`HtmlResumeRenderer`** ([app/rendering/html_renderer.py:11](../app/rendering/html_renderer.py#L11)) — Render an ATS-safe, printable résumé from the canonical document.
+  - `_items()` :14
+  - `_meta_line()` :17 — A de-emphasized 'Company · Location' style line under a bolded
+  - `_dates()` :28
+  - `_experience_entry()` :31
+  - `_section()` :57
+  - `_other()` :60 — A kept section (P8.3), each line as written.
+  - `render()` :78 — Same sections, order and headings as the DOCX template (P2.1).
+  - `write_html()` :166
+- **Imports:** `analysis/cv_mode.py`, `domain/resume.py`, `domain/resume_document.py`, `rendering/layout.py`
 - **Imported by:** `services/tailor.py`
-- **Tested by:** `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_html_renderer.py`, `tests/unit/test_kept_sections_p83.py`, `tests/unit/test_page_size_p102.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_region_p103.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_template_layout.py`
+- **Tested by:** `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_academic_cv_p106.py`, `tests/unit/test_html_renderer.py`, `tests/unit/test_kept_sections_p83.py`, `tests/unit/test_page_size_p102.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_region_p103.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_template_layout.py`
 
 ### `app/rendering/layout.py`
 
@@ -1164,31 +1169,31 @@ _What the proposal review screen shows (P3.4, served by the web API since_
 
 ### `app/rendering/template_renderer.py`
 
-**Layer:** Rendering · **Stage:** 9 Render · **Lines:** 318
+**Layer:** Rendering · **Stage:** 9 Render · **Lines:** 324
 
-- class **`TemplateRenderer`** ([app/rendering/template_renderer.py:23](../app/rendering/template_renderer.py#L23)) — Standard single-column, ATS-safe DOCX renderer with support for ResumeDocument.
-  - `render_ats_default()` :29 — Render the ATS template (P2.1): A4 or Letter, single column, Arial,
-  - `_add_header()` :68
-  - `_add_summary()` :100
-  - `_add_experience()` :106
-  - `_add_skills()` :141
-  - `_add_education()` :154
-  - `_add_projects()` :169
-  - `_add_certifications()` :192
-  - `_add_other()` :198 — A kept section (P8.3): its own heading, each line as written.
-  - `_add_achievements()` :209
-  - `_add_interests()` :214
-  - `_set_document_defaults()` :221 — The presentation's page (A4 or Letter, P10.2), the template's
-  - `_content_width()` :248
-  - `_add_section_heading()` :252 — A section label in the accent color with a rule underneath —
-  - `_role_dates()` :266
-  - `_add_meta_line()` :269 — 'Company · Location' in italic grey under a title line.
-  - `_add_bullets()` :278
-  - `_add_title_dates_line()` :283 — Title (bold) on the left, date range right-aligned on the same
-  - `_add_bottom_border()` :305 — Adds a single bottom border to a paragraph via raw OOXML — the
-- **Imports:** `domain/resume_document.py`, `rendering/layout.py`
+- class **`TemplateRenderer`** ([app/rendering/template_renderer.py:24](../app/rendering/template_renderer.py#L24)) — Standard single-column, ATS-safe DOCX renderer with support for ResumeDocument.
+  - `render_ats_default()` :31 — Render the ATS template (P2.1): A4 or Letter, single column, Arial,
+  - `_add_header()` :71
+  - `_add_summary()` :103
+  - `_add_experience()` :109
+  - `_add_skills()` :144
+  - `_add_education()` :157
+  - `_add_projects()` :172
+  - `_add_certifications()` :195
+  - `_add_other()` :201 — A kept section (P8.3): its own heading, each line as written.
+  - `_add_achievements()` :215
+  - `_add_interests()` :220
+  - `_set_document_defaults()` :227 — The presentation's page (A4 or Letter, P10.2), the template's
+  - `_content_width()` :254
+  - `_add_section_heading()` :258 — A section label in the accent color with a rule underneath —
+  - `_role_dates()` :272
+  - `_add_meta_line()` :275 — 'Company · Location' in italic grey under a title line.
+  - `_add_bullets()` :284
+  - `_add_title_dates_line()` :289 — Title (bold) on the left, date range right-aligned on the same
+  - `_add_bottom_border()` :311 — Adds a single bottom border to a paragraph via raw OOXML — the
+- **Imports:** `analysis/cv_mode.py`, `domain/resume_document.py`, `rendering/layout.py`
 - **Imported by:** `services/tailor.py`
-- **Tested by:** `tests/unit/test_ats_round_trip.py`, `tests/unit/test_docx_renderer.py`, `tests/unit/test_kept_sections_p83.py`, `tests/unit/test_page_size_p102.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_region_p103.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_template_layout.py`, `tests/unit/test_template_renderer_standalone.py`
+- **Tested by:** `tests/unit/test_academic_cv_p106.py`, `tests/unit/test_ats_round_trip.py`, `tests/unit/test_docx_renderer.py`, `tests/unit/test_kept_sections_p83.py`, `tests/unit/test_page_size_p102.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_region_p103.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_template_layout.py`, `tests/unit/test_template_renderer_standalone.py`
 
 ### `app/services/arrange.py`
 
@@ -1250,45 +1255,45 @@ _Local profile of facts the user has confirmed (P3.2)._
 
 ### `app/services/tailor.py`
 
-**Layer:** Services · **Stage:** all · **Lines:** 1529
+**Layer:** Services · **Stage:** all · **Lines:** 1535
 
-- class **`TailorService`** ([app/services/tailor.py:64](../app/services/tailor.py#L64))
-  - `__init__()` :65 — `keep_run=False` (the web app): nothing is written to data/runs, so
-  - `_save_run()` :101 — A run artifact for the CLI / eval; nothing when no run is kept (P9.8).
-  - `generate_preview_md()` :106
-  - `_patchable()` :152 — Proposals as in-place DOCX patches. A summary proposal targets the
-  - `_apply_gap_answers()` :172 — Ticked keywords join the skills section; a typed answer becomes a
-  - `_prefill_from_profile()` :231 — Answers confirmed for an earlier JD pre-fill the same questions
-  - `_draft_from_answer()` :243 — Polish the candidate's answer into one bullet that may use only
-  - `_split_description()` :262 — Pasted role description -> bullet-sized chunks: one per line (list
-  - `validate_new_role()` :272 — Check a new job before any work is done; raises ValueError with a
-  - `_new_experience()` :297 — An empty job from the "add a job" fields, validated.
-  - `_insert_by_date()` :305 — Place a job in date order: current jobs first, then most recent start.
-  - `add_new_role()` :318 — Add a job the resume doesn't have yet (P3.3). Each chunk of the
-  - `_skills_proposals()` :355 — The skills section with the JD's skills first, when that changes it (P1.6).
-  - `_summary_proposals()` :360 — The tailored summary as a proposal, when one was written (P1.5).
-  - `_embed()` :365 — Sentence embeddings for the planner, loaded lazily; raises when the
-  - `_fit_relevance()` :374 — Planner relevance per bullet for the page-fit loop. Bullets the user
-  - `_render_template()` :384 — One template render plus PDF conversion (the page-fit loop's step).
-  - `_coverage()` :392 — Content coverage of the rendered DOCX against the uploaded file (P8.2).
-  - `_apply_bullet_order()` :419 — Reorder bullets as planned (most relevant first within each
-  - `parse_resume()` :434 — File -> (raw document, ResumeDocument, evidence). The deterministic
-  - `read_file()` :441 — The uploaded file as raw blocks, or UnreadableFile with a message
-  - `normalize_raw()` :476
-  - `_copy_parsed()` :503 — Deep copies, so a parse kept in UI session state is never mutated.
-  - `preview_keyword_match()` :508 — Match rate if these proposals were applied (P3.4 "recalculate"):
-  - `apply_parse_corrections()` :531 — Apply the user's fixes from the "Check parsed resume" step (P3.5).
-  - `analyze_only()` :657
-  - `generate_proposals()` :687 — Generate rewrite proposals without applying them, plus questions
-  - `incorporate_user_addition()` :764 — Fold a user-supplied free-text addition (a project, an
-  - `tailor_resume()` :843 — `region` ("us", "uk_eu", "india", "other", P10.3) sets the paper
-  - `arrange()` :1382 — Re-render the tailored resume as the user arranged it (P8.13–P8.16):
-- function **`_progress()`** ([app/services/tailor.py:53](../app/services/tailor.py#L53)) — A progress reporter that can never break a run (P3.6).
-- function **`_hidden_text()`** ([app/services/tailor.py:1484](../app/services/tailor.py#L1484)) — Text of the sections the user hid, so coverage counts it as their choice.
-- function **`_merge_usage()`** ([app/services/tailor.py:1511](../app/services/tailor.py#L1511)) — Combine two LLMClient.get_usage_summary() dicts into one. When one
+- class **`TailorService`** ([app/services/tailor.py:65](../app/services/tailor.py#L65))
+  - `__init__()` :66 — `keep_run=False` (the web app): nothing is written to data/runs, so
+  - `_save_run()` :102 — A run artifact for the CLI / eval; nothing when no run is kept (P9.8).
+  - `generate_preview_md()` :107
+  - `_patchable()` :153 — Proposals as in-place DOCX patches. A summary proposal targets the
+  - `_apply_gap_answers()` :173 — Ticked keywords join the skills section; a typed answer becomes a
+  - `_prefill_from_profile()` :232 — Answers confirmed for an earlier JD pre-fill the same questions
+  - `_draft_from_answer()` :244 — Polish the candidate's answer into one bullet that may use only
+  - `_split_description()` :263 — Pasted role description -> bullet-sized chunks: one per line (list
+  - `validate_new_role()` :273 — Check a new job before any work is done; raises ValueError with a
+  - `_new_experience()` :298 — An empty job from the "add a job" fields, validated.
+  - `_insert_by_date()` :306 — Place a job in date order: current jobs first, then most recent start.
+  - `add_new_role()` :319 — Add a job the resume doesn't have yet (P3.3). Each chunk of the
+  - `_skills_proposals()` :356 — The skills section with the JD's skills first, when that changes it (P1.6).
+  - `_summary_proposals()` :361 — The tailored summary as a proposal, when one was written (P1.5).
+  - `_embed()` :366 — Sentence embeddings for the planner, loaded lazily; raises when the
+  - `_fit_relevance()` :375 — Planner relevance per bullet for the page-fit loop. Bullets the user
+  - `_render_template()` :385 — One template render plus PDF conversion (the page-fit loop's step).
+  - `_coverage()` :393 — Content coverage of the rendered DOCX against the uploaded file (P8.2).
+  - `_apply_bullet_order()` :420 — Reorder bullets as planned (most relevant first within each
+  - `parse_resume()` :435 — File -> (raw document, ResumeDocument, evidence). The deterministic
+  - `read_file()` :442 — The uploaded file as raw blocks, or UnreadableFile with a message
+  - `normalize_raw()` :477
+  - `_copy_parsed()` :504 — Deep copies, so a parse kept in UI session state is never mutated.
+  - `preview_keyword_match()` :509 — Match rate if these proposals were applied (P3.4 "recalculate"):
+  - `apply_parse_corrections()` :532 — Apply the user's fixes from the "Check parsed resume" step (P3.5).
+  - `analyze_only()` :658
+  - `generate_proposals()` :688 — Generate rewrite proposals without applying them, plus questions
+  - `incorporate_user_addition()` :765 — Fold a user-supplied free-text addition (a project, an
+  - `tailor_resume()` :844 — `region` ("us", "uk_eu", "india", "other", P10.3) sets the paper
+  - `arrange()` :1388 — Re-render the tailored resume as the user arranged it (P8.13–P8.16):
+- function **`_progress()`** ([app/services/tailor.py:54](../app/services/tailor.py#L54)) — A progress reporter that can never break a run (P3.6).
+- function **`_hidden_text()`** ([app/services/tailor.py:1490](../app/services/tailor.py#L1490)) — Text of the sections the user hid, so coverage counts it as their choice.
+- function **`_merge_usage()`** ([app/services/tailor.py:1517](../app/services/tailor.py#L1517)) — Combine two LLMClient.get_usage_summary() dicts into one. When one
 - **Imports:** `analysis/checklist.py`, `analysis/cv_mode.py`, `analysis/experience.py`, `analysis/gap_questions.py`, `analysis/jd_analyzer.py`, `analysis/keyword_match.py`, `analysis/language.py`, `analysis/matcher.py`, `analysis/region.py`, `analysis/resume_normalizer.py`, `analysis/rewriter.py`, `analysis/scoring.py`, `analysis/semantic_matcher.py`, `analysis/skills_tailor.py`, `analysis/structure_extractor.py`, `analysis/summary_writer.py`, `analysis/tailor_planner.py`, `domain/evidence.py`, `domain/job.py`, `domain/report.py`, `domain/resume.py`, `domain/resume_document.py`, `domain/tailoring.py`, `ingestion/docx.py`, `ingestion/linkedin.py`, `ingestion/pdf.py`, `ingestion/text.py`, `llm/client.py`, `rendering/docx_patcher.py`, `rendering/html_renderer.py`, `rendering/layout.py`, `rendering/page_fit.py`, `rendering/pdf_converter.py`, `rendering/template_renderer.py`, `services/arrange.py`, `services/profile_store.py`, `services/run_manager.py`, `validation/content_lint.py`, `validation/coverage.py`, `validation/factual.py`, `validation/output.py`, `validation/safety.py`, `validation/structural.py`
 - **Imported by:** `api/main.py`, `cli.py`, `eval/harness.py`, `scripts/walkthrough_server.py`
-- **Tested by:** `tests/integration/test_arrange.py`, `tests/integration/test_coverage_tailor.py`, `tests/integration/test_end_to_end.py`, `tests/unit/test_api.py`, `tests/unit/test_check_parsed_resume.py`, `tests/unit/test_cli.py`, `tests/unit/test_cli_parity.py`, `tests/unit/test_cv_mode_p105.py`, `tests/unit/test_details_p826.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_global_p825.py`, `tests/unit/test_linkedin_import_p101.py`, `tests/unit/test_new_role.py`, `tests/unit/test_privacy_p98.py`, `tests/unit/test_profile_store.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_region_p103.py`, `tests/unit/test_review_view.py`, `tests/unit/test_skill_placement_p912.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_tailor_resume_flow.py`, `tests/unit/test_tailor_service_addition.py`, `tests/unit/test_uploads_p822.py`
+- **Tested by:** `tests/integration/test_arrange.py`, `tests/integration/test_coverage_tailor.py`, `tests/integration/test_end_to_end.py`, `tests/unit/test_academic_cv_p106.py`, `tests/unit/test_api.py`, `tests/unit/test_check_parsed_resume.py`, `tests/unit/test_cli.py`, `tests/unit/test_cli_parity.py`, `tests/unit/test_cv_mode_p105.py`, `tests/unit/test_details_p826.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_global_p825.py`, `tests/unit/test_linkedin_import_p101.py`, `tests/unit/test_new_role.py`, `tests/unit/test_privacy_p98.py`, `tests/unit/test_profile_store.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_region_p103.py`, `tests/unit/test_review_view.py`, `tests/unit/test_skill_placement_p912.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_tailor_resume_flow.py`, `tests/unit/test_tailor_service_addition.py`, `tests/unit/test_uploads_p822.py`
 
 ### `app/validation/content_lint.py`
 
@@ -1550,10 +1555,12 @@ flowchart LR
   llm_client --> validation_safety
   rendering_docx_patcher --> analysis_rewriter
   rendering_docx_patcher --> rendering_document_map
+  rendering_html_renderer --> analysis_cv_mode
   rendering_html_renderer --> rendering_layout
   rendering_layout --> analysis_experience
   rendering_page_fit --> analysis_experience
   rendering_page_fit --> rendering_layout
+  rendering_template_renderer --> analysis_cv_mode
   rendering_template_renderer --> rendering_layout
   services_arrange --> analysis_experience
   services_arrange --> rendering_layout

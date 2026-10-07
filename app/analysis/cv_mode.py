@@ -94,3 +94,63 @@ def apply_cv_mode(presentation, mode: str):
     if presentation.cv_mode == "federal":
         apply_region(presentation, "us")
     return presentation
+
+
+# -- Academic CV (P10.6) -----------------------------------------------------
+
+_APPOINTMENT = re.compile(r"\b(?:professor|postdoc(?:toral)?|lecturer|research (?:fellow|associate|scientist)"
+                          r"|visiting (?:scholar|researcher)|reader in|instructor)\b", re.IGNORECASE)
+_PUBLICATIONS = re.compile(r"\b(?:publications?|papers|articles|preprints|book chapters|proceedings)\b", re.IGNORECASE)
+_YEAR = re.compile(r"(?:19|20)\d{2}")
+
+
+def is_publications(heading: str) -> bool:
+    return bool(_PUBLICATIONS.search(heading or ""))
+
+
+def experience_heading(resume: Resume) -> str:
+    """"Academic Appointments" when every role is an academic one, otherwise
+    "Professional Experience" (both read as experience by an ATS)."""
+    roles = [r for exp in resume.experience for r in exp.all_roles()]
+    if roles and all(_APPOINTMENT.search(r.title or "") for r in roles):
+        return "Academic Appointments"
+    return "Professional Experience"
+
+
+def academic_section_order(resume: Resume) -> List[str]:
+    """CV order: sections kept from the top of the file, the summary,
+    Education, Appointments, then every other kept section (Grants,
+    Publications, Teaching, Talks, Service...) in the file's order, then
+    skills and the rest."""
+    top = [f"other:{s.id}" for s in resume.other_sections if (s.after or "") == "header"]
+    rest = [f"other:{s.id}" for s in resume.other_sections if (s.after or "") != "header"]
+    return top + ["summary", "education", "experience"] + rest + [
+        "projects", "skills", "certifications", "achievements", "interests"]
+
+
+def move_appointments_from_education(resume: Resume) -> List[str]:
+    """An appointment read as education ("Postdoctoral Fellow, Harvard
+    University, 2016 – 2019") becomes a job, words unchanged; a degree
+    stays. Returns a note per move."""
+    from app.domain.resume import Experience
+    notes = []
+    for edu in list(resume.education):
+        title = edu.degree or ""
+        if not _APPOINTMENT.search(title) or re.search(r"\b(?:ph\.?d|m\.?s|b\.?s|degree|diploma)\b", title, re.I):
+            continue
+        start = end = None
+        if edu.dates:
+            parts = re.split(r"\s*(?:–|—|-|\bto\b)\s*", edu.dates.strip(), maxsplit=1)
+            start, end = (parts[0], parts[1]) if len(parts) == 2 else (parts[0], parts[0])
+        resume.education.remove(edu)
+        resume.experience.append(Experience(id=f"appt_{edu.id}", company=edu.institution, title=title,
+                                            location=edu.location, start_date=start, end_date=end,
+                                            details=list(edu.details)))
+        notes.append(f"Moved \"{title}\" from Education to your appointments (an Academic CV lists it as a job).")
+    if notes:
+        def newest_first(exp):
+            years = _YEAR.findall(f"{exp.end_date or ''} {exp.start_date or ''}")
+            ongoing = bool(re.search(r"present|current", exp.end_date or "", re.I))
+            return (ongoing, max(map(int, years)) if years else 0)
+        resume.experience.sort(key=newest_first, reverse=True)
+    return notes

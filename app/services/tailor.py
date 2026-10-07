@@ -43,7 +43,8 @@ from app.services.profile_store import ProfileStore
 from app.services.run_manager import RunManager
 from app.validation.content_lint import lint as content_lint
 from app.analysis.region import apply_region
-from app.analysis.cv_mode import CV_MODES, NO_PAGE_CAP, apply_cv_mode, suggest_cv_mode
+from app.analysis.cv_mode import (CV_MODES, NO_PAGE_CAP, academic_section_order, apply_cv_mode,
+                                  move_appointments_from_education, suggest_cv_mode)
 from app.validation.coverage import content_coverage, docx_text
 from app.validation.factual import FactualValidator
 from app.validation.output import OutputQAValidator
@@ -1133,6 +1134,11 @@ class TailorService:
         apply_cv_mode(resume_doc.presentation,
                       cv_mode if cv_mode in CV_MODES else suggest_cv_mode(resume, clean_jd_text).mode)
         capped = resume_doc.presentation.cv_mode not in NO_PAGE_CAP
+        if resume_doc.presentation.cv_mode == "academic":  # P10.6: CV order, appointments as jobs
+            for note in move_appointments_from_education(resume):
+                _append_progress(note)
+                warnings.append(note)
+            resume_doc.presentation.section_order = academic_section_order(resume)
         fit = None
 
         if mode == "PRESERVE" and not is_pdf:
