@@ -105,10 +105,17 @@ def resume_sections(resume: Resume) -> List[Tuple[str, str]]:
         parts.append(("headline", c.headline))
     if resume.summary:
         parts.append(("summary", resume.summary))
+    # Header lines kept as written ("Highest Grade: GS-12", "Active Secret
+    # clearance") and a job's field lines ("40 hours per week", "Series: 0343")
+    # are read by recruiters and ATSs too (P10.7).
+    for detail in c.details:
+        parts.append(("header", detail))
     for exp in resume.experience:
         label = exp.company or exp.title or "experience"
         for role in exp.all_roles():
             parts.append((f"{label} (title)", role.title))
+        for detail in exp.details:
+            parts.append((f"{label} (details)", detail))
         for group, bullets in exp.bullet_groups():
             if group:
                 parts.append((f"{label} (project)", group))

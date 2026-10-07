@@ -10,6 +10,38 @@ Timestamped record of every **major** commit (anything touching `app/`, `scripts
 
 <!-- entries below; newest first -->
 
+<!-- entry:2026-10-07T22:25:18+05:30 -->
+## 2026-10-07 22:25 (+0530) · P10.7: US Federal template: job fields one per line in USAJOBS order
+
+Kshitij Chaubey · branch `fb_ksh`
+
+**Why / details**
+
+> A USAJOBS resume lists each job's hours, salary, series / grade and
+> supervisor as fields. The normalizer already kept them verbatim as job
+> details; the federal template now prints each field on its own line, word
+> for word, in USAJOBS order, on Letter with MM/YYYY dates (P10.5).
+>
+> The persona failed on GS-12 because the keyword matcher never read header
+> details or job field lines; "Highest Grade: GS-12 Step 4" is something a
+> recruiter and an ATS read, so both now count for every resume. The ATS
+> round-trip checks job details field by field. FULL_XFAIL is empty: eval
+> 52 pass, no known failures.
+
+**Changed files**
+
+- Analysis: `M` app/analysis/cv_mode.py, `M` app/analysis/keyword_match.py
+- Docs: `M` docs/ACTION_ITEMS.md, `M` docs/PROJECT_OVERVIEW.md
+- Rendering: `M` app/rendering/html_renderer.py, `M` app/rendering/template_renderer.py
+- Tests: `M` tests/integration/test_persona_cases.py, `A` tests/unit/test_federal_p107.py
+- Validation: `M` app/validation/output.py
+
+**Structure delta**
+
+- `app/analysis/cv_mode.py`: added `federal_fields()`
+
+---
+
 <!-- entry:2026-10-07T22:13:40+05:30 -->
 ## 2026-10-07 22:13 (+0530) · P10.6: Academic CV template: CV order, appointments as jobs, numbered publications
 

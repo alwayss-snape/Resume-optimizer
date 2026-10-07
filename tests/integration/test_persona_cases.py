@@ -23,10 +23,9 @@ PERSONAS = [c for c in load_cases(include_private=False, include_personas=True) 
 CONTENT_XFAIL = {}
 # Scoring and page checks still fail for these (P9.15 cleared eight: custom
 # sections and slash-joined words now count, and places aren't attainable).
-# Academic passes since P10.5: an Academic CV has no page cap.
-FULL_XFAIL = {
-    'federal': 'GS-12 not matched: needs the federal template\'s field parsing (P10.7)',
-}
+# Academic passes since P10.5 (an Academic CV has no page cap), federal since
+# P10.7 (header and job field lines are read, so GS-12 is found).
+FULL_XFAIL = {}
 
 _RESULTS = {}
 

@@ -154,3 +154,30 @@ def move_appointments_from_education(resume: Resume) -> List[str]:
             return (ongoing, max(map(int, years)) if years else 0)
         resume.experience.sort(key=newest_first, reverse=True)
     return notes
+
+
+# -- US Federal (P10.7) --------------------------------------------------------
+
+# USAJOBS order for a job's fields; anything else follows, as written.
+_FEDERAL_FIELDS = [
+    re.compile(r"\b(?:address|street|\d{3,5}\s+\w+\s+(?:st|street|ave|avenue|rd|road|blvd|drive|dr)\b)", re.I),
+    re.compile(r"\bhours (?:per|a) week\b|\bhrs/wk\b", re.I),
+    re.compile(r"\bsalary\b|\$\s?\d", re.I),
+    re.compile(r"\b(?:series|grade)\b|\b(?:GS|GG|WG)-\d", re.I),
+    re.compile(r"\bsupervisor\b", re.I),
+    re.compile(r"\b(?:may|okay to|ok to|do not|don't) contact\b", re.I),
+]
+_FIELD_SPLIT = re.compile(r"\s*[|•·;]\s*")
+
+
+def federal_fields(details: List[str]) -> List[str]:
+    """A job's detail lines as USAJOBS fields, one per line and word for word,
+    in USAJOBS order (address, hours, salary, series / grade, supervisor,
+    may contact), then anything unmatched in its own order. A supervisor's
+    phone and "may contact" stay with the supervisor."""
+    parts = [p for line in details for p in _FIELD_SPLIT.split(line) if p.strip()]
+
+    def rank(part: str) -> int:
+        return next((i for i, field_re in enumerate(_FEDERAL_FIELDS) if field_re.search(part)), len(_FEDERAL_FIELDS))
+    return sorted(parts, key=rank)  # stable: same-rank parts keep their order
+

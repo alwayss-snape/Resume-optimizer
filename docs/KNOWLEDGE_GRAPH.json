@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "8e8e0fadd858f731",
+  "source_hash": "1537165aaba522a7",
   "stats": {
-    "files": 180,
-    "python_files": 154,
+    "files": 181,
+    "python_files": 155,
     "app_modules": 63,
-    "test_files": 80,
+    "test_files": 81,
     "classes": 117,
-    "functions": 1184,
-    "lines_of_python": 23733
+    "functions": 1188,
+    "lines_of_python": 23819
   },
   "axes": {
     "x": "location (path)",
@@ -305,7 +305,7 @@
       "stages": [
         "9 Render"
       ],
-      "lines": 156,
+      "lines": 183,
       "doc": "CV mode (P10.5): a standard resume, an Academic CV or a US Federal",
       "classes": [
         {
@@ -361,6 +361,11 @@
           "name": "move_appointments_from_education",
           "line": 131,
           "doc": "An appointment read as education (\"Postdoctoral Fellow, Harvard"
+        },
+        {
+          "name": "federal_fields",
+          "line": 173,
+          "doc": "A job's detail lines as USAJOBS fields, one per line and word for word,"
         }
       ]
     },
@@ -591,42 +596,42 @@
       "stages": [
         "5 Score"
       ],
-      "lines": 423,
+      "lines": 430,
       "doc": "Keyword-level match rate, the headline score (P1.2).",
       "classes": [
         {
           "name": "KeywordMatcher",
-          "line": 224,
+          "line": 231,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
-              "line": 225,
+              "line": 232,
               "doc": ""
             },
             {
               "name": "_slash_parts",
-              "line": 229,
+              "line": 236,
               "doc": "\"Compact/NLC\", \"English/Spanish\": words joined by a slash, each"
             },
             {
               "name": "_found_with_credit",
-              "line": 239,
+              "line": 246,
               "doc": ""
             },
             {
               "name": "_find",
-              "line": 261,
+              "line": 268,
               "doc": ""
             },
             {
               "name": "_title_credit",
-              "line": 290,
+              "line": 297,
               "doc": ""
             },
             {
               "name": "match",
-              "line": 300,
+              "line": 307,
               "doc": ""
             }
           ]
@@ -660,27 +665,27 @@
         },
         {
           "name": "is_place",
-          "line": 161,
+          "line": 168,
           "doc": "A location the JD names, not a skill (P8.17: \"Arizona\" and \"DC\" were"
         },
         {
           "name": "definitions",
-          "line": 180,
+          "line": 187,
           "doc": "acronym -> expansion (both lowercase), from \"Full Name (ACR)\" in texts."
         },
         {
           "name": "alternatives_of",
-          "line": 202,
+          "line": 209,
           "doc": "Token sequences that count as the keyword: \"OSHA 10 or 30\" -> OSHA 10,"
         },
         {
           "name": "guidance",
-          "line": 363,
+          "line": 370,
           "doc": "What a low match means (P8.21): a nurse applying to a sales job scored"
         },
         {
           "name": "reconcile",
-          "line": 397,
+          "line": 404,
           "doc": "A requirement can't read \"not shown\" while every job keyword in it is"
         }
       ]
@@ -3183,7 +3188,7 @@
       "stages": [
         "9 Render"
       ],
-      "lines": 170,
+      "lines": 173,
       "doc": "",
       "classes": [
         {
@@ -3203,32 +3208,32 @@
             },
             {
               "name": "_dates",
-              "line": 28,
+              "line": 29,
               "doc": ""
             },
             {
               "name": "_experience_entry",
-              "line": 31,
+              "line": 32,
               "doc": ""
             },
             {
               "name": "_section",
-              "line": 57,
+              "line": 59,
               "doc": ""
             },
             {
               "name": "_other",
-              "line": 60,
+              "line": 62,
               "doc": "A kept section (P8.3), each line as written."
             },
             {
               "name": "render",
-              "line": 78,
+              "line": 80,
               "doc": "Same sections, order and headings as the DOCX template (P2.1)."
             },
             {
               "name": "write_html",
-              "line": 166,
+              "line": 169,
               "doc": ""
             }
           ]
@@ -3546,7 +3551,7 @@
       "stages": [
         "9 Render"
       ],
-      "lines": 324,
+      "lines": 328,
       "doc": "",
       "classes": [
         {
@@ -3556,97 +3561,97 @@
           "methods": [
             {
               "name": "render_ats_default",
-              "line": 31,
+              "line": 32,
               "doc": "Render the ATS template (P2.1): A4 or Letter, single column, Arial,"
             },
             {
               "name": "_add_header",
-              "line": 71,
+              "line": 73,
               "doc": ""
             },
             {
               "name": "_add_summary",
-              "line": 103,
+              "line": 105,
               "doc": ""
             },
             {
               "name": "_add_experience",
-              "line": 109,
+              "line": 111,
               "doc": ""
             },
             {
               "name": "_add_skills",
-              "line": 144,
+              "line": 148,
               "doc": ""
             },
             {
               "name": "_add_education",
-              "line": 157,
+              "line": 161,
               "doc": ""
             },
             {
               "name": "_add_projects",
-              "line": 172,
+              "line": 176,
               "doc": ""
             },
             {
               "name": "_add_certifications",
-              "line": 195,
+              "line": 199,
               "doc": ""
             },
             {
               "name": "_add_other",
-              "line": 201,
+              "line": 205,
               "doc": "A kept section (P8.3): its own heading, each line as written."
             },
             {
               "name": "_add_achievements",
-              "line": 215,
+              "line": 219,
               "doc": ""
             },
             {
               "name": "_add_interests",
-              "line": 220,
+              "line": 224,
               "doc": ""
             },
             {
               "name": "_set_document_defaults",
-              "line": 227,
+              "line": 231,
               "doc": "The presentation's page (A4 or Letter, P10.2), the template's"
             },
             {
               "name": "_content_width",
-              "line": 254,
+              "line": 258,
               "doc": ""
             },
             {
               "name": "_add_section_heading",
-              "line": 258,
+              "line": 262,
               "doc": "A section label in the accent color with a rule underneath \u2014"
             },
             {
               "name": "_role_dates",
-              "line": 272,
+              "line": 276,
               "doc": ""
             },
             {
               "name": "_add_meta_line",
-              "line": 275,
+              "line": 279,
               "doc": "'Company \u00b7 Location' in italic grey under a title line."
             },
             {
               "name": "_add_bullets",
-              "line": 284,
+              "line": 288,
               "doc": ""
             },
             {
               "name": "_add_title_dates_line",
-              "line": 289,
+              "line": 293,
               "doc": "Title (bold) on the left, date range right-aligned on the same"
             },
             {
               "name": "_add_bottom_border",
-              "line": 311,
+              "line": 315,
               "doc": "Adds a single bottom border to a paragraph via raw OOXML \u2014 the"
             }
           ]
@@ -4265,32 +4270,32 @@
       "stages": [
         "8 Validate"
       ],
-      "lines": 167,
+      "lines": 170,
       "doc": "",
       "classes": [
         {
           "name": "OutputQAValidator",
-          "line": 7,
+          "line": 8,
           "doc": "",
           "methods": [
             {
               "name": "validate_docx",
-              "line": 8,
+              "line": 9,
               "doc": ""
             },
             {
               "name": "validate_pdf",
-              "line": 30,
+              "line": 31,
               "doc": ""
             },
             {
               "name": "is_serious",
-              "line": 72,
+              "line": 73,
               "doc": ""
             },
             {
               "name": "round_trip",
-              "line": 80,
+              "line": 81,
               "doc": "Re-parse a rendered DOCX / PDF the way an ATS would (our own"
             }
           ]
@@ -4999,33 +5004,33 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 62,
+      "lines": 61,
       "doc": "P8.1: the cross-domain user-testing personas as eval cases (offline, no LLM).",
       "classes": [],
       "functions": [
         {
           "name": "_failures",
-          "line": 34,
+          "line": 33,
           "doc": ""
         },
         {
           "name": "_params",
-          "line": 43,
+          "line": 42,
           "doc": ""
         },
         {
           "name": "test_persona_cases_exist",
-          "line": 48,
+          "line": 47,
           "doc": ""
         },
         {
           "name": "test_persona_content",
-          "line": 55,
+          "line": 54,
           "doc": ""
         },
         {
           "name": "test_persona_full",
-          "line": 61,
+          "line": 60,
           "doc": ""
         }
       ]
@@ -5977,6 +5982,32 @@
         {
           "name": "test_one_borrowed_word_is_a_check_not_a_rejection_and_spellings_match",
           "line": 117,
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "tests/unit/test_federal_p107.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 43,
+      "doc": "P10.7: the US Federal (USAJOBS-style) template. Each job's fields on",
+      "classes": [],
+      "functions": [
+        {
+          "name": "test_fields_one_per_line_in_usajobs_order_word_for_word",
+          "line": 16,
+          "doc": ""
+        },
+        {
+          "name": "test_header_and_job_fields_are_read_for_keywords",
+          "line": 23,
+          "doc": ""
+        },
+        {
+          "name": "test_the_federal_persona_end_to_end",
+          "line": 30,
           "doc": ""
         }
       ]
@@ -9014,6 +9045,11 @@
       "type": "tested_by"
     },
     {
+      "from": "app/analysis/cv_mode.py",
+      "to": "tests/unit/test_federal_p107.py",
+      "type": "tested_by"
+    },
+    {
       "from": "app/analysis/experience.py",
       "to": "app/domain/resume.py",
       "type": "imports"
@@ -9182,6 +9218,11 @@
       "from": "app/analysis/keyword_match.py",
       "to": "app/domain/resume.py",
       "type": "imports"
+    },
+    {
+      "from": "app/analysis/keyword_match.py",
+      "to": "tests/unit/test_federal_p107.py",
+      "type": "tested_by"
     },
     {
       "from": "app/analysis/keyword_match.py",
@@ -10336,6 +10377,11 @@
     {
       "from": "app/domain/resume.py",
       "to": "tests/unit/test_experience.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/resume.py",
+      "to": "tests/unit/test_federal_p107.py",
       "type": "tested_by"
     },
     {
@@ -11970,6 +12016,11 @@
     },
     {
       "from": "app/services/tailor.py",
+      "to": "tests/unit/test_federal_p107.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/services/tailor.py",
       "to": "tests/unit/test_gap_questions.py",
       "type": "tested_by"
     },
@@ -12162,6 +12213,11 @@
       "from": "app/validation/factual.py",
       "to": "tests/unit/test_validation.py",
       "type": "tested_by"
+    },
+    {
+      "from": "app/validation/output.py",
+      "to": "app/analysis/cv_mode.py",
+      "type": "imports"
     },
     {
       "from": "app/validation/output.py",

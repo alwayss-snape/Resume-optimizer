@@ -4,7 +4,7 @@ from typing import Iterable
 
 from app.domain.resume import Resume
 from app.domain.resume_document import ResumeDocument
-from app.analysis.cv_mode import experience_heading, is_publications
+from app.analysis.cv_mode import experience_heading, federal_fields, is_publications
 from app.rendering.layout import (SECTION_TITLES, page_spec, contact_parts, date_range, display_skills, format_date_text,
                                   ordered_sections, other_section, skill_label)
 
@@ -24,6 +24,7 @@ class HtmlResumeRenderer:
 
     _date_style = "month"  # the presentation's, set by render() (P10.3)
     _academic = False  # Academic CV (P10.6)
+    _federal = False  # US Federal (P10.7)
 
     def _dates(self, role) -> str:
         return date_range(role.start_date, role.end_date, self._date_style) if role else ""
@@ -39,7 +40,8 @@ class HtmlResumeRenderer:
             f"<h3>{html.escape(heading)}</h3>"
             f"<span class='dates'>{html.escape(self._dates(first))}</span></div>",
             self._meta_line(item.company if heading != item.company else "", item.location),
-            *(f"<p class='meta'>{html.escape(d)}</p>" for d in item.details),
+            *(f"<p class='meta'>{html.escape(d)}</p>"
+              for d in (federal_fields(item.details) if self._federal else item.details)),
         ]
         for role in roles[1:]:
             parts.append(
@@ -82,6 +84,7 @@ class HtmlResumeRenderer:
         page = page_spec(presentation)
         self._date_style = presentation.date_style
         self._academic = presentation.cv_mode == "academic"
+        self._federal = presentation.cv_mode == "federal"
         contact = " | ".join(html.escape(value) for value in contact_parts(resume.candidate))
         headline = (f'<p class="headline">{html.escape(resume.candidate.headline)}</p>'
                     if resume.candidate.headline else "")

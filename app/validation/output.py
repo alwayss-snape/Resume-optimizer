@@ -1,5 +1,6 @@
 import os
 import re
+from app.analysis.cv_mode import federal_fields
 from typing import List, Optional
 import docx
 import pymupdf as fitz  # PyMuPDF
@@ -157,7 +158,9 @@ class OutputQAValidator:
             missing = [line.text for line in section.lines if norm(line.text) not in raw_text]
             if missing:
                 problems.append(f"\"{section.heading}\": {len(missing)} line(s) not read back")
-        job_details = [d for e in expected.experience for d in getattr(e, "details", [])]
+        # Field by field: a federal resume prints each field of a job's
+        # "40 hours per week | Salary: ..." line on its own line (P10.7).
+        job_details = federal_fields([d for e in expected.experience for d in getattr(e, "details", [])])
         if any(norm(d) not in raw_text for d in job_details):
             problems.append("job details not read back")
         details = getattr(exp_c, "details", [])

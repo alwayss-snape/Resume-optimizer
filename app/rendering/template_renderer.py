@@ -8,7 +8,7 @@ from docx.shared import Inches, Mm, Pt, RGBColor
 from typing import Any
 
 from app.domain.resume_document import ResumePresentation
-from app.analysis.cv_mode import experience_heading, is_publications
+from app.analysis.cv_mode import experience_heading, federal_fields, is_publications
 from app.rendering.layout import (SECTION_TITLES, page_spec, fallback_font, contact_parts, date_range, display_skills, format_date_text,
                                   ordered_sections, other_section, skill_label)
 
@@ -27,6 +27,7 @@ class TemplateRenderer:
     _gap = 1.0  # vertical spacing factor; 0.5 in compact mode
     _date_style = "month"  # the presentation's, set per render (P10.3)
     _academic = False  # Academic CV (P10.6)
+    _federal = False  # US Federal (P10.7)
 
     def render_ats_default(self, resume_or_doc: Any, output_path: str) -> str:
         """Render the ATS template (P2.1): A4 or Letter, single column, Arial,
@@ -38,6 +39,7 @@ class TemplateRenderer:
             resume, presentation = resume_or_doc, ResumePresentation()
         self._date_style = presentation.date_style
         self._academic = presentation.cv_mode == "academic"
+        self._federal = presentation.cv_mode == "federal"
 
         doc = docx.Document()
         # Compact spacing (page-fit, P2.4): vertical gaps are halved.
@@ -122,7 +124,9 @@ class TemplateRenderer:
             meta = " · ".join(v for v in (company if heading != company else "", exp.location) if v)
             if meta:
                 self._add_meta_line(doc, meta)
-            for line in exp.details:  # "40 hours per week | Salary: ..." as written (P8.5)
+            # "40 hours per week | Salary: ..." as written (P8.5); a federal
+            # resume puts each field on its own line in USAJOBS order (P10.7).
+            for line in federal_fields(exp.details) if self._federal else exp.details:
                 dp = doc.add_paragraph()
                 dp.paragraph_format.space_after = Pt(2)
                 drun = dp.add_run(line)
