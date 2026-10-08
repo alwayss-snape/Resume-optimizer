@@ -25,6 +25,8 @@ class ResumePresentation(BaseModel):
     # P10.5: "academic" (Academic CV) and "federal" (USAJOBS) have their own
     # templates and no page cap.
     cv_mode: Literal["standard", "academic", "federal"] = "standard"
+    # P11.9: "classic" is company-first with bold figures and a serif font; an option, never the default.
+    style: Literal["standard", "classic"] = "standard"
     margin_side_in: float = 0.7
     margin_vertical_in: float = 0.6
     compact: bool = False
@@ -92,3 +94,14 @@ class ResumeDocument(BaseModel):
     def snapshot(self) -> Dict[str, Any]:
         """Return a JSON-serializable, versioned document for storage or export."""
         return self.model_dump(mode="json")
+
+
+STYLES = {"standard": "Standard", "classic": "Classic"}
+
+
+def apply_style(presentation: ResumePresentation, style: Optional[str]) -> None:
+    """P11.9: the template's look; Classic sets a serif font."""
+    if style not in STYLES:
+        return
+    presentation.style = style
+    presentation.font_family = "Cambria" if style == "classic" else "Arial"

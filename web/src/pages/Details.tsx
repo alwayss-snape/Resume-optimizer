@@ -4,7 +4,7 @@ import { Button } from "../components/Button";
 import { TextArea, TextField } from "../components/Field";
 import { Icon } from "../components/Icon";
 import { ProgressPanel, progressHandler, type Wait } from "../components/ProgressPanel";
-import { type Corrections, draftProposals, friendlyError } from "../lib/api";
+import { type Corrections, draftProposals, friendlyError, prepareRun } from "../lib/api";
 import { beginStep, isAbort } from "../lib/inflight";
 import { EMPTY_JOB, type NewJob, addedJob, anyJobField, newJobProblem } from "../lib/review";
 import { useApp } from "../lib/store";
@@ -110,11 +110,19 @@ export function Details() {
     const step = beginStep();
     try {
       const onProgress = progressHandler(setProgress, setWait);
-      const drafted = await draftProposals(changed ? corrections : null,
+      // P11.2: read the job and see what to ask first; the interview comes before any writing.
+      const prepared = await prepareRun(changed ? corrections : null,
         (m, w) => step.isCurrent() && onProgress(m, w), step.signal);
       if (!step.isCurrent()) return; // the user left this run
+      if (prepared.questions.length) {
+        updateRun({ details: prepared.details ?? fixed, prepared, answers: {}, drafted: null, results: null, review: null });
+        advance("questions");
+        return;
+      }
+      const drafted = await draftProposals(null, (m, w) => step.isCurrent() && onProgress(m, w), step.signal);
+      if (!step.isCurrent()) return;
       // The server's own read-back, so added jobs come back as ordinary ones.
-      updateRun({ details: drafted.details ?? fixed, drafted, results: null, review: null });
+      updateRun({ details: drafted.details ?? prepared.details ?? fixed, prepared, drafted, results: null, review: null });
       advance("review");
     } catch (e) {
       if (isAbort(e) || !step.isCurrent()) return;
@@ -129,10 +137,11 @@ export function Details() {
     return (
       <section className="mx-auto flex max-w-[760px] flex-col gap-6 px-4 py-14 md:px-8">
         <h1 ref={progressHeading} tabIndex={-1} className="font-display text-[40px] font-bold leading-tight tracking-[-0.03em] outline-none">
-          Drafting your rewrites
+          Reading the job
         </h1>
-        <p className="text-muted">Every rewrite is fact-checked against your resume. This usually takes 1–2 minutes, longer
-          when the free AI service asks us to wait.</p>
+        <p className="text-muted">Working out what the job needs and what to ask you. If there's nothing to ask, your rewrites
+          are drafted straight away; every one is fact-checked against your resume. Usually 1–2 minutes, longer when the
+          free AI service asks us to wait.</p>
         <ProgressPanel title="Working…" messages={progress.length ? progress : ["Starting"]} wait={wait} />
       </section>
     );

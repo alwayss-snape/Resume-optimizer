@@ -112,6 +112,23 @@ def keep_past_tense(original: str, rewritten: str) -> str:
     return rewritten
 
 
+_NUMBER_WORDS = {w: str(i) for i, w in enumerate(
+    "zero one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen "
+    "seventeen eighteen nineteen twenty".split())}
+
+
+def _digits_back(text: str, material: str) -> str:
+    """"eight customer actions" -> "8 customer actions" when the material
+    says 8 and never "eight" (P11.5): figures stay as written."""
+    def swap(m):
+        word = m.group(0)
+        digit = _NUMBER_WORDS[word.lower()]
+        if re.search(rf"(?<![\w.,]){digit}(?![\w.,])", material) and not re.search(rf"\b{word}\b", material, re.I):
+            return digit
+        return word
+    return re.sub(r"\b(?:" + "|".join(_NUMBER_WORDS) + r")\b", swap, text, flags=re.I)
+
+
 def _count(n: int, noun: str) -> str:
     """"1 bullet", "10 bullets" (P9.7: was "10 bullet(s)")."""
     return f"{n} {noun}" if n == 1 else f"{n} {noun}s"
@@ -279,6 +296,87 @@ class LLMRewriter:
                 out[bullet.bullet_id] = {"text": text, "keywords_used": used, "status": STATUS_OK}
         return out, None, STATUS_LLM_ERROR
 
+    def propose_projects(self, exp: Experience, groups: List[Tuple[str, List]], evidence_list: List[Evidence],
+                         brief=None, actions: Optional[Dict] = None) -> List[RewriteProposal]:
+        """Project (and heading) proposals for these projects of one job (P11.5):
+        drafting, and a project brought back on Review (P11.11)."""
+        actions = actions or {}
+        done = self.write_projects(exp, groups, evidence_list, brief)
+        out: List[RewriteProposal] = []
+        for name, bullets in groups:
+            if name not in done:
+                continue
+            heading, lines = done[name]
+            key = f"{exp.id}::{name}"
+            ids = {b.id for b in bullets}
+            ev_ids = [ev.id for ev in evidence_list if ev.source_id in ids or ev.source_id == key]
+            out.append(RewriteProposal(
+                id=f"prop_{uuid4().hex[:8]}", kind="project", target_semantic_id=key,
+                target_source_location_id=key, original_text="\n".join(b.text for b in bullets),
+                proposed_text="\n".join(lines), evidence_ids=ev_ids,
+                rationale="Written from everything about this project: what was built, how, and the result.",
+                status=STATUS_OK, relevance=max((actions[b.id].relevance for b in bullets if b.id in actions),
+                                                default=None)))
+            if heading and heading != name:
+                out.append(RewriteProposal(
+                    id=f"prop_{uuid4().hex[:8]}", kind="heading", target_semantic_id=key,
+                    target_source_location_id=key, original_text=name, proposed_text=heading, evidence_ids=ev_ids,
+                    rationale="A plain project title recruiters and applicant-tracking systems search for, "
+                              "from your own words.", status=STATUS_OK))
+        return out
+
+    def write_projects(self, exp: Experience, groups: List[Tuple[str, List]], evidence_list: List[Evidence],
+                       brief=None) -> Dict[str, Tuple[str, List[str]]]:
+        """P11.5: one call writes all of a job's projects from their material
+        (bullets, the owner's notes and answers), with the job's needs in
+        view. Returns {project: (heading, bullets)}; empty when the call
+        fails, so those projects go the bullet-by-bullet way."""
+        prompt_path = os.path.join(os.path.dirname(__file__), "..", "llm", "prompts", "write_project.txt")
+        with open(prompt_path, "r", encoding="utf-8") as f:
+            system_prompt = f.read()
+        roles = exp.all_roles()
+        titles = ", ".join(r.title for r in roles if r.title) or "(not given)"
+        current = bool(roles) and is_ongoing(roles[0].end_date)
+        lines = []
+        if brief is not None and getattr(brief, "competencies", None):
+            lines.append("The job's needs: " + "; ".join(
+                f"{c.name} ({c.kind})" for c in brief.competencies))
+        lines += ["", f"Company: {exp.company or '(not given)'}", f"Titles: {titles}"]
+        if current:
+            lines.append("This is the candidate's current job: finished work stays in the past tense.")
+        lines += ["", "Projects:"]
+        shows = getattr(brief, "project_evidence", {}) if brief is not None else {}
+        for i, (name, bullets) in enumerate(groups):
+            key = f"{exp.id}::{name}"
+            lines.append(f"{i}. heading: {name}")
+            lines += [f"   bullet: {b.text}" for b in bullets]
+            lines += [f"   note: {ev.text[:300]}" for ev in evidence_list if ev.source_id == key][:12]
+            for x in shows.get(key, []):
+                lines.append(f"   shows {x['competency']}: \"{x['quote']}\"")
+        try:
+            from app.llm.schemas import ProjectWriteResult
+            result = self.llm_client.generate_json(
+                messages=[{"role": "system", "content": system_prompt}, {"role": "user", "content": "\n".join(lines)}],
+                schema_model=ProjectWriteResult, temperature=0.2, effort="medium")
+        except Exception:
+            return {}
+        out: Dict[str, Tuple[str, List[str]]] = {}
+        for item in result.projects:
+            if not 0 <= item.project < len(groups):
+                continue
+            name, bullets = groups[item.project]
+            material = " ".join([b.text for b in bullets] + [ev.text for ev in evidence_list
+                                                              if ev.source_id == f"{exp.id}::{name}"])
+            new = [_digits_back(normalize_llm_text(t).lstrip("•- ").strip(), material)
+                   for t in item.bullets if (t or "").strip()][:3]
+            if current:
+                originals = [b.text for b in bullets]
+                new = [keep_past_tense(next((o for o in originals if o.split()[:1] and t.split()[:1] and
+                                             _past_forms(t.split()[0]) & {o.split()[0].lower()}), ""), t) for t in new]
+            if new and name not in out:
+                out[name] = (normalize_llm_text(item.heading or "").strip().rstrip(":."), new)
+        return out
+
     def rename_headings(self, exp: Experience, groups: List[Tuple[str, List[str]]]) -> Dict[str, str]:
         """Plain, searchable headings for one job's projects (P10.13), in one
         call: {old heading: new heading}, only those that changed. Empty when
@@ -314,6 +412,7 @@ class LLMRewriter:
         evidence_list: List[Evidence],
         job_description: JobDescription,
         progress=None,
+        brief=None,
     ) -> List[RewriteProposal]:
         """One LLM call per role (P1.4): all of a job's bullets that the
         planner marked REWRITE go together, so the model sees the whole role
@@ -389,8 +488,23 @@ class LLMRewriter:
             return results, error, missing_status
 
         step = progress or (lambda message: None)
+        # P11.5: a job's projects are written whole, from all their material,
+        # in one call per job; whatever that call doesn't cover goes the
+        # bullet-by-bullet way below.
+        left_out = {c.key for c in getattr(plan, "projects", []) if not c.chosen}
+        written: set = set()  # "<job id>::<project>" written whole
         for exp in resume.experience:
-            todo = [b for b in exp.bullets if b.id in actions]
+            groups = [(name, bullets) for name, bullets in exp.bullet_groups()
+                      if name and f"{exp.id}::{name}" not in left_out]
+            if not groups or not self.llm_client or not self.llm_client.is_available():
+                continue
+            step(f"Writing {_count(len(groups), 'project')} for {exp.company or exp.title or 'a job'}")
+            made = self.propose_projects(exp, groups, evidence_list, brief, actions)
+            written |= {p.target_semantic_id for p in made if p.kind == "project"}
+            proposals += made
+
+        for exp in resume.experience:
+            todo = [b for b in exp.bullets if b.id in actions and f"{exp.id}::{b.group}" not in written]
             if todo:
                 step(f"Rewriting {_count(len(todo), 'bullet')} for {exp.company or exp.title or 'a job'}")
                 collect(todo, *rewrite_with_follow_up(exp, [item_for(b, b.group) for b in todo]))
@@ -399,7 +513,8 @@ class LLMRewriter:
         kept = {(c.experience_id, c.name) for c in getattr(plan, "projects", []) if c.chosen}
         for exp in resume.experience:
             groups = [(name, bullets) for name, bullets in exp.bullet_groups()
-                      if name and ((exp.id, name) in kept or any(b.id in actions for b in bullets))]
+                      if name and f"{exp.id}::{name}" not in written
+                      and ((exp.id, name) in kept or any(b.id in actions for b in bullets))]
             if not groups:
                 continue
             step(f"Naming {_count(len(groups), 'project')} for {exp.company or exp.title or 'a job'}")

@@ -134,12 +134,52 @@ def _is_current(exp: Experience, index: int) -> bool:
     return index == 0 or bool(roles and is_ongoing(roles[0].end_date))
 
 
+COVERS_AT = 0.8  # a project "covers" a competency at this share of the best fit in its job
+
+
+def competency_fit(groups: Sequence[Sequence[str]], brief, embedder) -> List[List[float]]:
+    """projects x competencies, 0-1 (P11.4): embedding closeness to the
+    competency's name and look-for words, best line wins, scaled within the
+    job; a look-for word written in the project lifts it."""
+    comps = brief.competencies
+    if not groups or not comps:
+        return [[0.0] * len(comps) for _ in groups]
+    phrases = [f"{c.name}: {', '.join(c.look_for)}" for c in comps]
+    raw = [[0.0] * len(comps) for _ in groups]
+    if embedder is not None:
+        texts = [t for g in groups for t in g]
+        try:
+            vectors = embedder(phrases + texts)
+            c_vecs, t_vecs = vectors[:len(phrases)], vectors[len(phrases):]
+            i = 0
+            for gi, g in enumerate(groups):
+                rows = t_vecs[i:i + len(g)]
+                i += len(g)
+                raw[gi] = [max(_cosine(r, c) for r in rows) for c in c_vecs]
+        except Exception:
+            pass
+    tops = [max((raw[g][c] for g in range(len(groups))), default=0.0) or 1.0 for c in range(len(comps))]
+    out = []
+    for gi, g in enumerate(groups):
+        text = " " + " ".join(g).lower() + " "
+        row = []
+        for ci, comp in enumerate(comps):
+            named = any(re.search(rf"\b{re.escape(w)}", text) for w in comp.look_for if w)
+            row.append(round(min(1.0, raw[gi][ci] / tops[ci] + (0.3 if named else 0.0)), 3))
+        out.append(row)
+    return out
+
+
 def select_projects(resume: Resume, actions: Sequence[TailoringAction], job_desc: JobDescription,
-                    embedder=None) -> List[ProjectChoice]:
+                    embedder=None, brief=None, notes: Optional[Dict[str, List[str]]] = None) -> List[ProjectChoice]:
     """Every project of every job with more projects than it keeps, chosen
     or not, with the reason. Jobs with flat bullets, or few enough projects,
-    aren't listed: nothing to choose there."""
+    aren't listed: nothing to choose there. With a role brief (P11.4) the
+    projects are chosen to cover the job's competencies, different ones
+    first; `notes` (P11.1: a project's overviews and figures) count too."""
     by_id: Dict[str, TailoringAction] = {a.source_id: a for a in actions if a.source_id}
+    if brief is not None and getattr(brief, "source", "") == "llm" and brief.competencies:
+        return _select_by_competency(resume, by_id, brief, embedder, notes or {})
     thin = jd_is_thin(job_desc)
     choices: List[ProjectChoice] = []
     for index, exp in enumerate(resume.experience):
@@ -182,6 +222,74 @@ def select_projects(resume: Resume, actions: Sequence[TailoringAction], job_desc
                 key=f"{exp.id}::{name}", experience_id=exp.id, job=_job_label(exp), name=name,
                 bullet_ids=[b.id for b in bullets], chosen=chosen, reason=reason,
                 relevance=relevance, impact=imp))
+    return choices
+
+
+def _select_by_competency(resume: Resume, by_id: Dict[str, TailoringAction], brief, embedder,
+                          notes: Dict[str, List[str]]) -> List[ProjectChoice]:
+    choices: List[ProjectChoice] = []
+    names = [c.name for c in brief.competencies]
+    weights = [(1.0 if c.kind == "stated" else 0.5) * (1 - 0.08 * i) for i, c in enumerate(brief.competencies)]
+    for index, exp in enumerate(resume.experience):
+        groups = [(name, bullets) for name, bullets in exp.bullet_groups() if name]
+        limit = CURRENT_JOB_PROJECTS if _is_current(exp, index) else OLDER_JOB_PROJECTS
+        if len(groups) <= limit:
+            continue
+        texts = [[name, *(b.text for b in bullets), *notes.get(f"{exp.id}::{name}", [])] for name, bullets in groups]
+        mapped = getattr(brief, "project_evidence", None) or {}
+        if mapped:
+            # The AI's verified links (each with a quote of the project's own words) decide.
+            fit = [[1.0 if any(x["competency"] == c for x in mapped.get(f"{exp.id}::{name}", [])) else 0.0
+                    for c in names] for name, _ in groups]
+        else:
+            fit = competency_fit(texts, brief, embedder)
+        rows = []
+        for gi, (name, bullets) in enumerate(groups):
+            rel = sorted((by_id[b.id].relevance for b in bullets if b.id in by_id), reverse=True)
+            bullet_rel = sum(rel[:2]) / len(rel[:2]) if rel else 0.0
+            best = sorted(fit[gi], reverse=True)
+            # Judged mostly on its strongest match: clearly showing one need beats being near all of them.
+            strongest = 0.75 * best[0] + 0.25 * (best[1] if len(best) > 1 else 0.0)
+            relevance = round(0.3 * bullet_rel + 0.7 * strongest, 3)
+            imp, _ = impact(texts[gi])
+            covers = [names[c] for c in sorted(range(len(names)), key=lambda c: -fit[gi][c]) if fit[gi][c] >= COVERS_AT]
+            quotes = {x["competency"]: x["quote"] for x in mapped.get(f"{exp.id}::{name}", [])}
+            if mapped:  # coverage is the relevance: a stated need counts double an inferred one, earlier ones more
+                weight = sum(weights[names.index(c)] for c in covers)
+                relevance = round(0.3 * bullet_rel + 0.7 * min(1.0, weight / 1.5), 3)
+            rows.append({"name": name, "bullets": bullets, "relevance": relevance, "impact": imp, "covers": covers,
+                         "fit": fit[gi], "quotes": quotes})
+        # Greedy: the best next project, with a bonus for competencies none of the chosen ones covers yet.
+        chosen: List[dict] = []
+        covered: set = set()
+        while len(chosen) < limit:
+            def gain(r):
+                new = sum(weights[names.index(c)] for c in set(r["covers"]) - covered)
+                return 0.75 * r["relevance"] + 0.25 * r["impact"] + 0.15 * min(new, 1.5)
+            left = [r for r in rows if r not in chosen]
+            if not left:
+                break
+            pick = max(left, key=gain)
+            chosen.append(pick)
+            covered |= set(pick["covers"])
+        for r in rows:
+            kept = r in chosen
+            first = r["covers"][0] if r["covers"] else None
+            proof = f": \u201c{r['quotes'][first]}\u201d" if first and first in r["quotes"] else ""
+            if kept:
+                reason = (f"Shows {', '.join(r['covers'][:3])}{proof}" if r["covers"] and mapped
+                          else f"Nearest to {', '.join(r['covers'][:2])}" if r["covers"]
+                          else "Closest of the rest to what the job needs")
+            elif r["covers"] and set(r["covers"]) <= covered:
+                reason = f"Covered better by the projects kept ({', '.join(r['covers'][:2])})"
+            elif r["covers"]:
+                reason = f"Less relevant to this job than the projects kept ({', '.join(r['covers'][:2])})"
+            else:
+                reason = "Shows none of what this job needs" if mapped else "Less relevant to this job"
+            choices.append(ProjectChoice(
+                key=f"{exp.id}::{r['name']}", experience_id=exp.id, job=_job_label(exp), name=r["name"],
+                bullet_ids=[b.id for b in r["bullets"]], chosen=kept, reason=reason,
+                relevance=r["relevance"], impact=r["impact"], covers=r["covers"]))
     return choices
 
 

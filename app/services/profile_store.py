@@ -102,6 +102,35 @@ class ProfileStore:
             self.save(profile)
         return saved
 
+    @staticmethod
+    def interview_key(question) -> str:
+        """P11.2: an interview answer is saved per job, project and need."""
+        return "interview::" + "|".join((getattr(question, k, "") or "").strip().lower()
+                                        for k in ("job", "project", "competency", "kind"))
+
+    def record_interview(self, questions: Iterable, answers: Iterable) -> int:
+        by_id = {q.id: q for q in questions}
+        profile = self.load()
+        now = datetime.now(timezone.utc).isoformat(timespec="seconds")
+        saved = 0
+        for a in answers:
+            q = by_id.get(getattr(a, "id", ""))
+            text = (getattr(a, "answer", "") or "").strip()
+            if q and text:
+                key = self.interview_key(q)
+                profile.facts[key] = ConfirmedFact(keyword=key, answer=text, requirement=q.question, confirmed_at=now)
+                saved += 1
+        if saved:
+            self.save(profile)
+        return saved
+
+    def prefill_interview(self, questions: Iterable) -> None:
+        facts = self.load().facts
+        for q in questions:
+            fact = facts.get(self.interview_key(q))
+            if fact and fact.answer:
+                q.saved_answer = fact.answer
+
     def known(self, keywords: Iterable[str]) -> Dict[str, ConfirmedFact]:
         """Saved facts for these keywords (case-insensitive), keyed as given."""
         facts = self.load().facts

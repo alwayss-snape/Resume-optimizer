@@ -68,10 +68,48 @@ class SummaryWriter:
         career, value, n, months = max(claims)
         if computed and value < 0.5 * computed:
             return None
+        # P11.6: a job added in this run (from the notes or on Check details)
+        # makes the resume's own figure out of date ("3.6 years", now 4.2).
+        added = any(e.id.startswith("exp_user_") for e in resume.experience)
+        if added and computed and not n.endswith("+") and computed - value >= 0.5:
+            return None
         claim = f"{n} year" if n == "1" else f"{n} years"
         if months and not n.endswith("+"):  # "5+ years 2 months" reads oddly: "5+ years"
             claim += f" {months} month" if months == 1 else f" {months} months"
         return claim
+
+    _SENIORITY = re.compile(r"\b(?:senior|sr\.?|junior|jr\.?|lead|principal|staff|chief|head of|associate|"
+                            r"entry[- ]level|mid[- ]level)\b", re.I)
+
+    @staticmethod
+    def _brief_lines(brief) -> List[str]:
+        """What the job needs and what the candidate's work shows of it (P11.3,
+        P11.4): guidance on emphasis; the facts still come from the lines above."""
+        if brief is None or not getattr(brief, "competencies", None):
+            return []
+        lines = ["What the job most needs: " + ", ".join(c.name for c in brief.competencies)]
+        shown = [f"{x['competency']} (\"{x['quote']}\")" for links in getattr(brief, "project_evidence", {}).values()
+                 for x in links]
+        if shown:
+            lines.append("Of those, the candidate's work shows: " + "; ".join(dict.fromkeys(shown)))
+        if getattr(brief, "positioning", ""):
+            lines.append(f"Angle to take (emphasis only, not new facts): {brief.positioning}")
+        return lines
+
+    @classmethod
+    def evidenced_title(cls, jd_title: Optional[str], resume: Resume) -> str:
+        """P11.6: the JD's title as far as the candidate's own titles support
+        it: "Senior Data Scientist, Data & AI" -> "Data Scientist" for someone
+        who was a "Data Scientist II"; the seniority word only if they held it.
+        "" when their titles don't support it."""
+        title = re.split(r"[,(|–-]", jd_title or "")[0].strip()
+        if not title:
+            return ""
+        theirs = [r.title for e in resume.experience for r in e.all_roles() if r.title]
+        core = re.sub(r"\s+", " ", cls._SENIORITY.sub("", title)).strip()
+        if not core or not any(core.lower() in t.lower() for t in theirs):
+            return ""
+        return title if any(title.lower() in t.lower() for t in theirs) else core
 
     @classmethod
     def facts(cls, resume: Resume, keyword_report: KeywordMatchReport, today: Optional[date] = None) -> dict:
@@ -97,13 +135,17 @@ class SummaryWriter:
 
     def propose(
         self, resume: Resume, job: JobDescription, keyword_report: KeywordMatchReport,
-        evidence: List[Evidence], today: Optional[date] = None,
+        evidence: List[Evidence], today: Optional[date] = None, brief=None,
     ) -> Optional[ChangeProposal]:
         """A summary proposal, or None when there's nothing to write from
         (no roles) or no LLM is configured."""
         if not resume.experience:
             return None
         facts = self.facts(resume, keyword_report, today)
+        # P11.6: the title the job hires for, when the candidate's own titles support it.
+        aimed = self.evidenced_title(job.job_title, resume)
+        if aimed:
+            facts["title"] = aimed
         original = resume.summary or ""
         base = dict(
             id=f"prop_{uuid4().hex[:8]}", target_semantic_id="summary", target_source_location_id="summary",
@@ -134,6 +176,7 @@ class SummaryWriter:
             "Resume lines with real results:",
             *[f"- {r}" for r in facts["results"]],
             "Project names: " + (", ".join(facts["projects"]) or "(none)"),
+            *self._brief_lines(brief),
         ])
         try:
             result = self.llm_client.generate_json(

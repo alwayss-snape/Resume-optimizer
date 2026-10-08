@@ -36,11 +36,22 @@ def main(argv=None) -> int:
                    help="judge the outputs a previous run saved in DIR (its --out-dir) without regenerating")
     r.add_argument("--report", help="where the judge's markdown report goes (default: dated, under "
                                      "data/eval/private/reports/)")
+    ref = sub.add_parser("reference", help="P11.10: Tailores vs a reference resume, judged pairwise")
+    ref.add_argument("folder", help="a private case folder: resume.*, jd.txt, reference.*, optional bank.* and answers.json")
     r.add_argument("--check", action="store_true",
                    help="exit 1 if any case misses its expected.json (for CI / the stage gate)")
     args = parser.parse_args(argv)
 
     logging.basicConfig(level=logging.WARNING, format="%(levelname)s %(name)s: %(message)s")
+    if args.command == "reference":
+        from app.eval.reference import run_reference
+        if not os.path.abspath(args.folder).startswith(os.path.abspath("data/eval/private")):
+            print("A reference case holds a real resume: keep it under data/eval/private/.")
+            return 2
+        report = run_reference(args.folder)
+        print(json.dumps({k: report[k] for k in ("verdict", "tailores_wins", "reference_wins", "answered",
+                                                  "keyword_match", "projects_kept")}, indent=2))
+        return 0
     cases = load_cases(include_private=not args.no_private, include_personas=args.personas)
     if args.case:
         cases = [c for c in cases if c.name in args.case]

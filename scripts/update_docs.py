@@ -100,6 +100,8 @@ STAGE_MAP: Dict[str, List[str]] = {
     "app/analysis/tailor_planner.py": ["6 Plan"],
     "app/analysis/project_select.py": ["6 Plan"],
     "app/analysis/project_bank.py": ["1 Ingest"],
+    "app/analysis/role_brief.py": ["3 JD analysis", "6 Plan"],
+    "app/analysis/interview.py": ["6 Plan"],
     "app/domain/tailoring.py": ["6 Plan"],
     "app/analysis/rewriter.py": ["7 Rewrite"],
     "app/analysis/change_proposal.py": ["7 Rewrite"],
@@ -131,6 +133,7 @@ STAGE_MAP: Dict[str, List[str]] = {
     "app/eval/__init__.py": [],
     "app/eval/__main__.py": [],
     "app/eval/harness.py": STAGES,  # runs the whole pipeline per case
+    "app/eval/reference.py": STAGES,  # P11.10: the whole pipeline against a reference resume
     "app/eval/golden.py": ["2 Normalize"],
     "app/eval/judge.py": ["7 Rewrite", "8 Validate"],
 }

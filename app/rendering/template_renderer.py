@@ -1,4 +1,5 @@
 import os
+import re
 
 import docx
 from docx.enum.text import WD_TAB_ALIGNMENT
@@ -40,6 +41,7 @@ class TemplateRenderer:
         self._date_style = presentation.date_style
         self._academic = presentation.cv_mode == "academic"
         self._federal = presentation.cv_mode == "federal"
+        self._classic = presentation.style == "classic" and not (self._academic or self._federal)  # P11.9
 
         doc = docx.Document()
         # Compact spacing (page-fit, P2.4): vertical gaps are halved.
@@ -78,18 +80,19 @@ class TemplateRenderer:
             run = p.add_run(candidate.name)
             run.bold = True
             run.font.size = Pt(22)
-            run.font.color.rgb = ACCENT_COLOR
+            run.font.color.rgb = BODY_COLOR if self._classic else ACCENT_COLOR
         if candidate.headline:
             p = doc.add_paragraph()
             p.paragraph_format.space_after = Pt(2)
             run = p.add_run(candidate.headline)
             run.font.size = Pt(12)
+            run.bold = self._classic
             run.font.color.rgb = ACCENT_COLOR
         parts = contact_parts(candidate)
         if parts:
             p = doc.add_paragraph()
             p.paragraph_format.space_after = Pt(4)
-            run = p.add_run(" | ".join(parts))
+            run = p.add_run(("  •  " if self._classic else " | ").join(parts))
             run.font.size = Pt(10)
             run.font.color.rgb = META_COLOR
             if not candidate.details:
@@ -113,6 +116,9 @@ class TemplateRenderer:
             return
         self._add_section_heading(doc, experience_heading(resume) if self._academic else SECTION_TITLES["experience"])
         for i, exp in enumerate(resume.experience):
+            if self._classic:
+                self._add_classic_job(doc, exp, i, content_width)
+                continue
             roles = exp.all_roles()
             company = exp.company or ""
             first = roles[0] if roles else None
@@ -205,6 +211,9 @@ class TemplateRenderer:
         if not resume.certifications:
             return
         self._add_section_heading(doc, SECTION_TITLES["certifications"])
+        if self._classic and len(resume.certifications) <= 4:  # P11.9: one compact line
+            doc.add_paragraph("  •  ".join(" — ".join(v for v in c.values() if v) for c in resume.certifications))
+            return
         self._add_bullets(doc, (" — ".join(v for v in c.values() if v) for c in resume.certifications))
 
     def _add_other(self, doc, section) -> None:
@@ -293,8 +302,72 @@ class TemplateRenderer:
 
     def _add_bullets(self, doc, texts) -> None:
         for text in texts:
-            if text:
+            if not text:
+                continue
+            if not self._classic:
                 doc.add_paragraph(text, style="List Bullet").paragraph_format.space_after = Pt(1)
+                continue
+            p = doc.add_paragraph(style="List Bullet")
+            p.paragraph_format.space_after = Pt(1)
+            for part, bold in metric_runs(text):  # P11.9: figures in bold, the words as written
+                p.add_run(part).bold = bold or None
+
+    # -- Classic (P11.9) ---------------------------------------------------
+
+    def _add_classic_job(self, doc, exp, index: int, content_width) -> None:
+        """Company first (accent, place on the right), then each title with its
+        dates, the way the owner's own resume reads; a light rule before
+        every job but the first. Titles carry the dates so an ATS reads the
+        company and the role apart (P11.9: the read-back misread company + dates)."""
+        roles = [r for r in exp.all_roles() if r.title or r.start_date or r.end_date]
+        p = doc.add_paragraph()
+        p.paragraph_format.space_before = Pt((0 if index == 0 else 10) * self._gap)
+        p.paragraph_format.space_after = Pt(1)
+        p.paragraph_format.keep_with_next = True
+        if index:
+            self._add_top_border(p)
+        if exp.location:
+            p.paragraph_format.tab_stops.add_tab_stop(content_width, WD_TAB_ALIGNMENT.RIGHT)
+        run = p.add_run(exp.company or "")
+        run.bold = True
+        run.font.size = Pt(11.5)
+        run.font.color.rgb = ACCENT_COLOR
+        if exp.location:
+            p.add_run("\t")
+            lr = p.add_run(exp.location)
+            lr.italic = True
+            lr.font.size = Pt(10)
+        for role in roles:
+            self._add_title_dates_line(doc, role.title or "", self._role_dates(role), content_width)
+        for line in exp.details:
+            dp = doc.add_paragraph()
+            dp.paragraph_format.space_after = Pt(2)
+            drun = dp.add_run(line)
+            drun.font.size = Pt(9.5)
+            drun.font.color.rgb = META_COLOR
+        for group, bullets in exp.bullet_groups():
+            if group:
+                gp = doc.add_paragraph()
+                gp.paragraph_format.space_before = Pt(3 * self._gap)
+                gp.paragraph_format.space_after = Pt(1)
+                gp.paragraph_format.keep_with_next = True
+                grun = gp.add_run(group)
+                grun.bold = True
+                grun.italic = True
+                grun.font.size = Pt(10.5)
+            self._add_bullets(doc, (b.text for b in bullets))
+
+    @staticmethod
+    def _add_top_border(paragraph, color: str = "C9CDD3") -> None:
+        p_pr = paragraph._p.get_or_add_pPr()
+        p_bdr = OxmlElement("w:pBdr")
+        top = OxmlElement("w:top")
+        top.set(qn("w:val"), "single")
+        top.set(qn("w:sz"), "4")
+        top.set(qn("w:space"), "6")
+        top.set(qn("w:color"), color)
+        p_bdr.append(top)
+        p_pr.append(p_bdr)
 
     def _add_title_dates_line(self, doc: "docx.Document", title: str, dates: str, content_width,
                               bold: bool = True, space_before: float = 0) -> None:
@@ -332,3 +405,22 @@ class TemplateRenderer:
         bottom.set(qn("w:color"), color)
         p_bdr.append(bottom)
         p_pr.append(p_bdr)
+
+
+_METRIC = re.compile(r"(?<![\w$~])[$~]?\d[\d,.]*(?:\s?[–-]\s?\d[\d,.]*)?(?:[KMB]\b\+?|\+|%|x\b)?")
+
+
+def metric_runs(text: str):
+    """(text, bold) pieces of a bullet: figures bold (P11.9), years not."""
+    out, at = [], 0
+    for m in _METRIC.finditer(text or ""):
+        figure = m.group(0)
+        if re.fullmatch(r"(?:19|20)\d{2}", figure) or not re.search(r"\d", figure):
+            continue
+        if m.start() > at:
+            out.append((text[at:m.start()], False))
+        out.append((figure, True))
+        at = m.end()
+    if at < len(text or ""):
+        out.append((text[at:], False))
+    return out

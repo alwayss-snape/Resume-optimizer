@@ -164,6 +164,12 @@ export function setCvMode(layout: Layout, mode: string): Layout {
   return l;
 }
 
+export function setStyle(layout: Layout, style: string): Layout {
+  const l = clone(layout);
+  l.style = style;
+  return l;
+}
+
 export function setPageTarget(layout: Layout, target: number | null, trim: boolean): Layout {
   const l = clone(layout);
   l.page_target = target;

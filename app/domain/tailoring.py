@@ -34,6 +34,7 @@ class ProjectChoice(BaseModel):
     reason: str = ""
     relevance: float = 0.0
     impact: float = 0.0
+    covers: List[str] = Field(default_factory=list)  # P11.4: the role brief's competencies it shows
 
 class TailoringPlan(BaseModel):
     actions: List[TailoringAction] = Field(default_factory=list)

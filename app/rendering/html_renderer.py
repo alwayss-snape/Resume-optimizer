@@ -12,6 +12,10 @@ class HtmlResumeRenderer:
     """Render an ATS-safe, printable résumé from the canonical document."""
 
     def _items(self, values: Iterable[str]) -> str:
+        if getattr(self, "_classic", False):  # P11.9: figures in bold, as in the DOCX
+            from app.rendering.template_renderer import metric_runs
+            return "".join("<li>" + "".join(f"<strong>{html.escape(t)}</strong>" if bold else html.escape(t)
+                                            for t, bold in metric_runs(value)) + "</li>" for value in values if value)
         return "".join(f"<li>{html.escape(value)}</li>" for value in values if value)
 
     def _meta_line(self, *parts: str) -> str:
@@ -31,6 +35,8 @@ class HtmlResumeRenderer:
 
     def _experience_entry(self, item) -> str:
         roles = item.all_roles()
+        if getattr(self, "_classic", False):
+            return self._classic_entry(item, roles)
         first = roles[0] if roles else None
         # No title found in the file: the company takes the heading rather
         # than printing a placeholder.
@@ -49,6 +55,22 @@ class HtmlResumeRenderer:
                 f"<span>{html.escape(role.title)}</span>"
                 f"<span class='dates'>{html.escape(self._dates(role))}</span></div>"
             )
+        for group, bullets in item.bullet_groups():
+            if group:
+                parts.append(f"<p class='group'>{html.escape(group)}</p>")
+            parts.append(f"<ul>{self._items(bullet.text for bullet in bullets)}</ul>")
+        parts.append("</article>")
+        return "".join(parts)
+
+    def _classic_entry(self, item, roles) -> str:
+        """P11.9: company first, then each title with its dates."""
+        place = f"<span class='place'>{html.escape(item.location)}</span>" if item.location else ""
+        parts = [f"<article class='entry'><div class='entry-head'><h3 class='company'>{html.escape(item.company or '')}"
+                 f"</h3>{place}</div>"]
+        for role in roles:
+            parts.append(f"<div class='entry-head role'><strong>{html.escape(role.title or '')}</strong>"
+                         f"<span class='dates'>{html.escape(self._dates(role))}</span></div>")
+        parts += [f"<p class='meta'>{html.escape(d)}</p>" for d in item.details]
         for group, bullets in item.bullet_groups():
             if group:
                 parts.append(f"<p class='group'>{html.escape(group)}</p>")
@@ -85,6 +107,7 @@ class HtmlResumeRenderer:
         self._date_style = presentation.date_style
         self._academic = presentation.cv_mode == "academic"
         self._federal = presentation.cv_mode == "federal"
+        self._classic = presentation.style == "classic" and not (self._federal or presentation.cv_mode == "academic")
         contact = " | ".join(html.escape(value) for value in contact_parts(resume.candidate))
         headline = (f'<p class="headline">{html.escape(resume.candidate.headline)}</p>'
                     if resume.candidate.headline else "")
@@ -144,7 +167,7 @@ class HtmlResumeRenderer:
 <style>
 @page {{ size: {page.css_size}; margin: {presentation.margin_vertical_in}in {presentation.margin_side_in}in; }}
 * {{ box-sizing: border-box; }}
-body {{ font-family: {html.escape(presentation.font_family)}, Arial, "Noto Sans CJK SC", "Arial Unicode MS", "PingFang SC", sans-serif; color: #111827; font-size: 10.5pt; line-height: 1.4; max-width: {page.width_mm:g}mm; margin: 0 auto; padding: 24px 16px; background: #fff; }}
+body {{ font-family: {html.escape(presentation.font_family)}{', Georgia, serif' if self._classic else ''}, Arial, "Noto Sans CJK SC", "Arial Unicode MS", "PingFang SC", sans-serif; color: #111827; font-size: 10.5pt; line-height: 1.4; max-width: {page.width_mm:g}mm; margin: 0 auto; padding: 24px 16px; background: #fff; }}
 header {{ border-bottom: 1px solid {html.escape(presentation.accent_color)}; padding-bottom: 8px; margin-bottom: 12px; }}
 h1 {{ margin: 0; font-size: 22pt; font-weight: 700; letter-spacing: .2px; color: {html.escape(presentation.accent_color)}; }}
 .contact {{ margin: 5px 0 0; color: #4b5563; font-size: 10pt; }}
@@ -162,8 +185,12 @@ li {{ margin: 2px 0; }}
 .entry .meta {{ color: #111827; }}
 .entry-head.role {{ margin: 2px 0 0; }}
 .group {{ font-weight: 700; font-style: italic; font-size: 10pt; color: #4b5563; margin: 6px 0 0; }}
+.classic .entry + .entry {{ border-top: 1px solid #c9cdd3; padding-top: 8px; }}
+.classic h3.company {{ color: {html.escape(presentation.accent_color)}; font-size: 11.5pt; }}
+.classic .place {{ font-style: italic; font-size: 10pt; }}
+.classic .group {{ color: #111827; font-size: 10.5pt; }}
 strong {{ font-weight: 700; }}
-</style></head><body>
+</style></head><body{' class="classic"' if self._classic else ''}>
 <header><h1>{html.escape(resume.candidate.name)}</h1>{headline}<p class="contact">{contact}</p>{details}</header>
 {''.join(sections)}
 </body></html>"""

@@ -228,3 +228,43 @@ def test_each_new_job_starts_after_a_clear_gap():
     assert titles[1].paragraph_format.space_before.pt >= 12
     group = next(p for p in Document(path).paragraphs if p.text == "Kilo")
     assert group.runs[0].italic and group.runs[0].font.size.pt == 10
+
+
+def test_a_project_left_out_on_review_can_be_brought_back_in_arrange(tmp_path):
+    """P11.11: Arrange had no copy of left-out projects."""
+    service = TailorService(llm_client=None)
+    service.pdf_converter.convert_docx_to_pdf = MagicMock(return_value=None)
+    parsed, _ = service.apply_parse_corrections(service.parse_resume(REPLICA), {"added_jobs": [BANK]})
+    result = service.tailor_resume(REPLICA, JD, str(tmp_path), preapproved_proposals=[], parsed=parsed,
+                                   remember_answers=False)
+    state = result["arrange"]
+    layout = state["default_layout"]
+    out = layout.removed_bullets
+    assert out  # the left-out project's bullets, ready to bring back
+    full_texts = {b.id: b.text for e in state["full_doc"].resume.experience for b in e.bullets}
+    assert all(i in full_texts for i in out)
+    back = layout.model_copy(update={"removed_bullets": [], "trim": False})
+    arranged = service.arrange(state, back, str(tmp_path / "arranged"))
+    assert arranged["coverage"]["lost"] == []
+    import html
+    page = html.unescape(open(arranged["html"], encoding="utf-8").read())
+    assert all(full_texts[i] in page for i in out)
+
+
+def test_drafting_a_project_that_isnt_in_the_run_is_refused(tmp_path):
+    from app.api.main import create_app
+    from app.services.run_manager import RunManager
+    from tests.unit.test_api import _events
+
+    def make_service(model=None):
+        service = TailorService(llm_client=None)
+        service.run_manager = RunManager(base_runs_dir=str(tmp_path / "runs"))
+        service.pdf_converter.convert_docx_to_pdf = MagicMock(return_value=None)
+        return service
+
+    with TestClient(create_app(make_service=make_service, serve_web=False)) as client, open(REPLICA, "rb") as f:
+        client.post("/api/parse", files={"file": ("cv.pdf", f, "application/pdf")}, data={"jd_text": JD})
+        drafted = _events(client.post("/api/proposals", json={"corrections": {"added_jobs": [BANK]}}))[-1][1]
+        assert client.post("/api/draft-project", json={"key": "nope::Nothing"}).status_code == 404
+        left_out = next(p for p in drafted["projects"] if not p["chosen"])
+        assert client.post("/api/draft-project", json={"key": left_out["key"]}).json() == {"proposals": []}  # no AI here

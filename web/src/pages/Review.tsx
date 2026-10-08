@@ -10,8 +10,9 @@ import { ProgressPanel, progressHandler, type Wait } from "../components/Progres
 import { type ProofView, ProposalCard } from "../components/ProposalCard";
 import { ProofStack } from "../components/ProofStack";
 import { ProjectChoices } from "../components/ProjectChoices";
+import { RoleBriefPanel } from "../components/RoleBriefPanel";
 import { ScoreDial, verdict } from "../components/ScoreDial";
-import { ApiError, friendlyError, matchPreview, tailorResume } from "../lib/api";
+import { ApiError, draftProject, friendlyError, matchPreview, tailorResume } from "../lib/api";
 import { CvModeChoice } from "../components/CvModeChoice";
 import { RegionChoice } from "../components/RegionChoice";
 import { beginStep, isAbort } from "../lib/inflight";
@@ -74,6 +75,15 @@ export function Review() {
       )}
       <RegionChoice id={id} value={review.region ?? drafted.region.region} suggested={drafted.region}
         onChange={(region) => update((r) => ({ ...r, region }))} />
+      <label className="flex flex-col gap-1.5 text-xs text-muted">
+        <span className="font-medium text-ink">Look</span>
+        <select value={review.style ?? "standard"} onChange={(e) => { const style = e.target.value; update((r) => ({ ...r, style })); }}
+          className="h-11 rounded-[3px] border border-field bg-panel px-3 text-sm text-ink">
+          <option value="standard">Standard</option>
+          <option value="classic">Classic: company first, figures in bold, serif</option>
+        </select>
+        <span>Both read cleanly in applicant-tracking systems; change it later in Arrange.</span>
+      </label>
     </div>
   ) : null;
   // P10.13: cards of a left-out project hide, and don't count.
@@ -116,10 +126,24 @@ export function Review() {
     });
   const setAll = (d: Decision) =>
     update((r) => ({ ...r, decisions: { ...r.decisions, ...Object.fromEntries(shown.map((p) => [p.id, d])) } }));
-  const toggleProject = (key: string) => update((r) => {
-    const now = r.leftOut ?? [];
-    return { ...r, leftOut: now.includes(key) ? now.filter((k) => k !== key) : [...now, key] };
-  });
+  const [drafting, setDrafting] = useState<string | null>(null);
+  const toggleProject = (key: string) => {
+    const bringingBack = (useApp.getState().run.review?.leftOut ?? []).includes(key);
+    update((r) => {
+      const now = r.leftOut ?? [];
+      return { ...r, leftOut: now.includes(key) ? now.filter((k) => k !== key) : [...now, key] };
+    });
+    // P11.11: a project brought back wasn't written while it was out; write it now.
+    if (bringingBack && !drafted.proposals.some((p) => p.target === key && p.kind === "project")) {
+      setDrafting(key);
+      draftProject(key).then(({ proposals }) => {
+        const run = useApp.getState().run;
+        if (!run.drafted || !proposals.length) return;
+        updateRun({ drafted: { ...run.drafted, proposals: [...run.drafted.proposals, ...proposals] } });
+        update((r) => ({ ...r, decisions: { ...r.decisions, ...Object.fromEntries(proposals.map((p) => [p.id, "accept" as Decision])) } }));
+      }).catch(() => undefined).finally(() => setDrafting(null));
+    }
+  };
   const navigate = (from: number, step: 1 | -1) => cards.current[from + step]?.focus();
 
   const targets: TargetOption[] = [
@@ -220,9 +244,14 @@ export function Review() {
               </div>
             )}
           </div>
+          {drafted.role_brief && drafted.role_brief.competencies.length > 0 && (
+            <RoleBriefPanel brief={drafted.role_brief}
+              value={review.brief ?? { title: drafted.role_brief.headline ?? "", positioning: drafted.role_brief.positioning }}
+              onChange={(brief) => update((r) => ({ ...r, brief }))} />
+          )}
           {regionChoice("region", "sheet rounded-[3px] p-4")}
           <ProjectChoices projects={drafted.projects ?? []} rankedByImpact={Boolean(drafted.projects_ranked_by_impact)}
-            leftOut={review.leftOut ?? []} onToggle={toggleProject} />
+            leftOut={review.leftOut ?? []} onToggle={toggleProject} drafting={drafting} />
           {liveError && (
             <p role="status" className="m-0 flex items-start gap-2 rounded-[3px] border border-warning bg-panel p-3 text-sm font-medium">
               <Icon name="alert" size={16} className="mt-0.5 shrink-0 text-warning" />{liveError}

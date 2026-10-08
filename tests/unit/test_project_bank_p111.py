@@ -119,3 +119,13 @@ def test_without_the_ai_the_notes_are_not_read_and_the_page_says_so():
     parsed = service.parse_resume(REPLICA)
     same, notes, to_verify = service.apply_bank(parsed, bank_text=BANK_TEXT)
     assert same is parsed and to_verify == [] and "couldn't be read" in notes[0]
+
+
+def test_a_project_with_notes_only_uses_them_as_its_bullets():
+    lines = ["Part A - Harbor Foods (2024 - Present)", "A9. Demand Forecasting",
+             "Large-scale demand forecasting covering 500K+ model IDs.", "Tech: Python, LightGBM"]
+    s = BankStructure(jobs=[{"company": "Harbor Foods", "start_date": "2024", "end_date": "Present", "line": 0}],
+                      projects=[{"name": "Demand Forecasting", "job": 0, "heading_line": 1, "last_line": 3}])
+    project = structure_to_bank(lines, s).jobs[0].projects[0]
+    assert project.bullets == ["Large-scale demand forecasting covering 500K+ model IDs."]
+    assert project.notes == ["Tech: Python, LightGBM"]

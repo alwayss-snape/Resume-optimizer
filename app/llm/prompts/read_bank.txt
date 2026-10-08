@@ -4,7 +4,7 @@ You get numbered lines. Return:
 - jobs: each employer the notes describe, with company and title as written, start_date and end_date as written (end_date "Present" for a current job, "" if not given), and the line that names the job.
 - projects: each project or piece of work under a job, with its name exactly as written on its heading line (without numbering like "A1."), the job's index in your jobs list, its heading_line, and last_line (the last line that belongs to it, before the next project, job or section).
 - bullet_lines: lines inside a project that state work done, the way a resume bullet would (built, led, reduced X by Y...). Overviews, tech lists, "Key numbers:", explanations and plans are NOT bullets; leave them out (they still count as notes of the project).
-- to_verify_lines: lines the notes themselves mark as uncertain or to check ("To verify", "confirm", "TBD", "to add"), and claims inside a project explicitly flagged as unconfirmed.
+- to_verify_lines: lines the notes themselves mark as uncertain or to check ("To verify", "confirm", "TBD", "to add"); AND every line such a note refers to (if a note says to confirm the "hours to seconds" figure, the lines containing that figure); AND lines the notes say are superseded, outdated or wrong (if a note says "it ran on platform X, not platform Y; use the revised bullets below", the older bullets it replaces). Be thorough: anything the notes themselves doubt must not be used.
 - achievement_lines: wins, awards, recognitions (a hackathon won, an award), wherever they appear.
 - skill_lines: lines that list skills, tools or methods in a skills section.
 

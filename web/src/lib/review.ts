@@ -31,6 +31,8 @@ export interface ReviewState {
   region?: string | null; // paper and dates, suggested from the JD (P10.3)
   cvMode?: string | null; // standard / academic / federal, suggested from the resume and JD (P10.5)
   leftOut?: string[]; // project keys left out (P10.13), starting with the ones not suggested
+  brief?: { title: string; positioning: string }; // P11.3: the owner's edits to the role brief
+  style?: string; // P11.9: "standard" or "classic"
 }
 
 export const EMPTY_JOB: NewJob = { company: "", title: "", location: "", current: false, start: "", end: "", description: "" };
@@ -49,6 +51,7 @@ export function initialReview(drafted: ProposalsResult): ReviewState {
     region: drafted.region?.region ?? null,
     cvMode: drafted.cv_mode?.mode ?? null,
     leftOut: (drafted.projects ?? []).filter((p) => !p.chosen).map((p) => p.key),
+    brief: { title: drafted.role_brief?.headline ?? "", positioning: drafted.role_brief?.positioning ?? "" },
   };
 }
 
@@ -133,6 +136,8 @@ export function tailorRequest(proposals: Proposal[], review: ReviewState, option
     region: review.region ?? null,
     cv_mode: review.cvMode ?? null,
     left_out: review.leftOut ?? null,
+    role_brief: review.brief ?? null,
+    style: review.style ?? null,
   };
 }
 
@@ -147,8 +152,8 @@ export function groupProposals(proposals: Proposal[]): { key: string; label: str
   for (const p of proposals.filter((x) => x.kind === "summary")) find("summary", "Professional summary").items.push(p);
   for (const p of proposals.filter((x) => x.kind === "skills")) find("skills", "Skills").items.push(p);
   // A job's project headings first, then its bullets (P10.13).
-  for (const p of proposals.filter((x) => x.kind === "heading" || x.kind === "bullet").sort((a, b) =>
-    Number(a.kind === "bullet") - Number(b.kind === "bullet"))) {
+  const order = { heading: 0, project: 1, bullet: 2 } as Record<string, number>;
+  for (const p of proposals.filter((x) => x.kind in order).sort((a, b) => order[a.kind] - order[b.kind])) {
     find(p.section?.id ?? "other", p.section?.label ?? "Other bullets").items.push(p);
   }
   return groups;

@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "161178eb4bd2b4f4",
+  "source_hash": "3c53564930c91bf4",
   "stats": {
-    "files": 188,
-    "python_files": 160,
-    "app_modules": 65,
-    "test_files": 84,
-    "classes": 128,
-    "functions": 1250,
-    "lines_of_python": 25015
+    "files": 202,
+    "python_files": 170,
+    "app_modules": 68,
+    "test_files": 91,
+    "classes": 148,
+    "functions": 1337,
+    "lines_of_python": 26857
   },
   "axes": {
     "x": "location (path)",
@@ -475,6 +475,57 @@
       ]
     },
     {
+      "id": "app/analysis/interview.py",
+      "type": "python",
+      "layer": "Analysis",
+      "stages": [
+        "6 Plan"
+      ],
+      "lines": 160,
+      "doc": "The interview (P11.2): ask before writing, the way a good recruiter does.",
+      "classes": [
+        {
+          "name": "InterviewQuestion",
+          "line": 27,
+          "doc": "",
+          "methods": []
+        },
+        {
+          "name": "InterviewAnswer",
+          "line": 41,
+          "doc": "",
+          "methods": []
+        }
+      ],
+      "functions": [
+        {
+          "name": "_project_texts",
+          "line": 48,
+          "doc": "(key, experience id, project, texts) for every project of every job."
+        },
+        {
+          "name": "build_interview",
+          "line": 59,
+          "doc": ""
+        },
+        {
+          "name": "_has_number",
+          "line": 117,
+          "doc": "Any figure but a year (\"500 stores\", \"3 packages\", \"60%\")."
+        },
+        {
+          "name": "_clean_answer",
+          "line": 122,
+          "doc": ""
+        },
+        {
+          "name": "apply_interview",
+          "line": 127,
+          "doc": "Each answer becomes a bullet of its project (or job) in the"
+        }
+      ]
+    },
+    {
       "id": "app/analysis/jd_analyzer.py",
       "type": "python",
       "layer": "Analysis",
@@ -773,7 +824,7 @@
       "stages": [
         "1 Ingest"
       ],
-      "lines": 208,
+      "lines": 212,
       "doc": "A project bank as a document (P11.1).",
       "classes": [
         {
@@ -823,27 +874,27 @@
         },
         {
           "name": "_tokens",
-          "line": 124,
-          "doc": ""
-        },
-        {
-          "name": "_same_company",
           "line": 128,
           "doc": ""
         },
         {
+          "name": "_same_company",
+          "line": 132,
+          "doc": ""
+        },
+        {
           "name": "_same_text",
-          "line": 133,
+          "line": 137,
           "doc": ""
         },
         {
           "name": "_same_project",
-          "line": 138,
+          "line": 142,
           "doc": ""
         },
         {
           "name": "merge_bank",
-          "line": 143,
+          "line": 147,
           "doc": "Merge the bank into the parsed resume, in place. Returns plain notes"
         }
       ]
@@ -855,7 +906,7 @@
       "stages": [
         "6 Plan"
       ],
-      "lines": 270,
+      "lines": 378,
       "doc": "Choose projects, not lines (P10.13).",
       "classes": [],
       "functions": [
@@ -905,33 +956,43 @@
           "doc": ""
         },
         {
+          "name": "competency_fit",
+          "line": 140,
+          "doc": "projects x competencies, 0-1 (P11.4): embedding closeness to the"
+        },
+        {
           "name": "select_projects",
-          "line": 137,
+          "line": 173,
           "doc": "Every project of every job with more projects than it keeps, chosen"
         },
         {
+          "name": "_select_by_competency",
+          "line": 228,
+          "doc": ""
+        },
+        {
           "name": "apply_to_plan",
-          "line": 188,
+          "line": 296,
           "doc": "Bullets of a project left out aren't rewritten (no LLM call). A kept"
         },
         {
           "name": "left_out_ids",
-          "line": 229,
+          "line": 337,
           "doc": "Bullet ids to leave out: the user's choice (project keys) when given,"
         },
         {
           "name": "remove_bullets",
-          "line": 236,
+          "line": 344,
           "doc": "Take the left-out bullets off the resume; returns their text (and the"
         },
         {
           "name": "_stem",
-          "line": 253,
+          "line": 361,
           "doc": ""
         },
         {
           "name": "heading_problem",
-          "line": 257,
+          "line": 365,
           "doc": "Why a proposed project heading can't be used, or None. Every word must"
         }
       ]
@@ -1215,42 +1276,52 @@
       "stages": [
         "7 Rewrite"
       ],
-      "lines": 428,
+      "lines": 543,
       "doc": "",
       "classes": [
         {
           "name": "LLMRewriter",
-          "line": 126,
+          "line": 143,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
-              "line": 127,
+              "line": 144,
               "doc": ""
             },
             {
               "name": "rewrite_bullet",
-              "line": 130,
+              "line": 147,
               "doc": "Rewrite (or, given a single free-text `original_text` with no"
             },
             {
               "name": "rewrite_bullet_with_status",
-              "line": 150,
+              "line": 167,
               "doc": "Like rewrite_bullet, plus what happened, so failures are visible"
             },
             {
               "name": "rewrite_role",
-              "line": 208,
+              "line": 225,
               "doc": "Rewrite several bullets of one role in ONE call (P1.4)."
             },
             {
+              "name": "propose_projects",
+              "line": 299,
+              "doc": "Project (and heading) proposals for these projects of one job (P11.5):"
+            },
+            {
+              "name": "write_projects",
+              "line": 328,
+              "doc": "P11.5: one call writes all of a job's projects from their material"
+            },
+            {
               "name": "rename_headings",
-              "line": 282,
+              "line": 380,
               "doc": "Plain, searchable headings for one job's projects (P10.13), in one"
             },
             {
               "name": "execute_plan",
-              "line": 310,
+              "line": 408,
               "doc": "One LLM call per role (P1.4): all of a job's bullets that the"
             }
           ]
@@ -1288,9 +1359,82 @@
           "doc": "For a current job (P11.8): finished work written in the past tense"
         },
         {
+          "name": "_digits_back",
+          "line": 120,
+          "doc": "\"eight customer actions\" -> \"8 customer actions\" when the material"
+        },
+        {
           "name": "_count",
-          "line": 115,
+          "line": 132,
           "doc": "\"1 bullet\", \"10 bullets\" (P9.7: was \"10 bullet(s)\")."
+        }
+      ]
+    },
+    {
+      "id": "app/analysis/role_brief.py",
+      "type": "python",
+      "layer": "Analysis",
+      "stages": [
+        "3 JD analysis",
+        "6 Plan"
+      ],
+      "lines": 171,
+      "doc": "Role brief (P11.3): what the job really needs, before choosing or writing.",
+      "classes": [
+        {
+          "name": "Competency",
+          "line": 23,
+          "doc": "",
+          "methods": []
+        },
+        {
+          "name": "RoleBrief",
+          "line": 30,
+          "doc": "",
+          "methods": [
+            {
+              "name": "terms",
+              "line": 40,
+              "doc": "Every competency's name and look-for words, for matching projects."
+            }
+          ]
+        }
+      ],
+      "functions": [
+        {
+          "name": "_norm",
+          "line": 50,
+          "doc": ""
+        },
+        {
+          "name": "resume_overview",
+          "line": 54,
+          "doc": "Jobs and project names with a line each, for the positioning sentence."
+        },
+        {
+          "name": "fallback_brief",
+          "line": 67,
+          "doc": ""
+        },
+        {
+          "name": "write_brief",
+          "line": 74,
+          "doc": ""
+        },
+        {
+          "name": "checked_brief",
+          "line": 90,
+          "doc": "Keep what the JD backs: a competency's JD words must be in the JD; a"
+        },
+        {
+          "name": "map_projects",
+          "line": 117,
+          "doc": "Which competencies each project really shows (P11.4), in one AI call."
+        },
+        {
+          "name": "with_headline",
+          "line": 166,
+          "doc": "The headline under the name (P11.6): the job's title as far as the"
         }
       ]
     },
@@ -1383,7 +1527,7 @@
       "stages": [
         "7 Rewrite"
       ],
-      "lines": 186,
+      "lines": 252,
       "doc": "Skills tailoring (P1.6), deterministic: no LLM, nothing added.",
       "classes": [
         {
@@ -1444,6 +1588,16 @@
           "name": "skill_category",
           "line": 176,
           "doc": "The category a confirmed skill belongs under: an existing one of its"
+        },
+        {
+          "name": "_in_material",
+          "line": 199,
+          "doc": ""
+        },
+        {
+          "name": "rebuild_skills",
+          "line": 204,
+          "doc": "A skills proposal rebuilt from evidence, or None (no AI, nothing usable)."
         }
       ]
     },
@@ -1511,7 +1665,7 @@
       "stages": [
         "7 Rewrite"
       ],
-      "lines": 159,
+      "lines": 202,
       "doc": "Tailored professional summary (P1.5).",
       "classes": [
         {
@@ -1535,13 +1689,23 @@
               "doc": "The years of experience the resume itself states, if it states"
             },
             {
+              "name": "_brief_lines",
+              "line": 85,
+              "doc": "What the job needs and what the candidate's work shows of it (P11.3,"
+            },
+            {
+              "name": "evidenced_title",
+              "line": 100,
+              "doc": "P11.6: the JD's title as far as the candidate's own titles support"
+            },
+            {
               "name": "facts",
-              "line": 77,
+              "line": 115,
               "doc": "The inputs code decides; the LLM only phrases them."
             },
             {
               "name": "propose",
-              "line": 98,
+              "line": 136,
               "doc": "A summary proposal, or None when there's nothing to write from"
             }
           ]
@@ -1556,7 +1720,7 @@
       "stages": [
         "6 Plan"
       ],
-      "lines": 189,
+      "lines": 198,
       "doc": "",
       "classes": [
         {
@@ -1581,7 +1745,7 @@
             },
             {
               "name": "rank_missing_requirements",
-              "line": 172,
+              "line": 181,
               "doc": "Order MISSING matches so the most important, still-unaddressed"
             }
           ]
@@ -1740,71 +1904,83 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 776,
+      "lines": 853,
       "doc": "HTTP endpoints, one per step of the review flow (P5.1).",
       "classes": [
         {
           "name": "ProposalsIn",
-          "line": 55,
+          "line": 57,
+          "doc": "",
+          "methods": []
+        },
+        {
+          "name": "PrepareIn",
+          "line": 66,
           "doc": "",
           "methods": []
         },
         {
           "name": "SelectionItem",
-          "line": 62,
+          "line": 70,
           "doc": "",
           "methods": []
         },
         {
           "name": "MatchPreviewIn",
-          "line": 67,
+          "line": 75,
           "doc": "",
           "methods": []
         },
         {
           "name": "GapInput",
-          "line": 72,
+          "line": 80,
           "doc": "",
           "methods": []
         },
         {
           "name": "AdditionIn",
-          "line": 78,
+          "line": 86,
           "doc": "",
           "methods": []
         },
         {
           "name": "NewRoleIn",
-          "line": 83,
+          "line": 91,
           "doc": "",
           "methods": []
         },
         {
           "name": "TailorIn",
-          "line": 93,
+          "line": 101,
           "doc": "",
           "methods": []
         },
         {
           "name": "RateLimiter",
-          "line": 110,
+          "line": 120,
           "doc": "At most `limit` calls per `window` seconds per key (visitor IP).",
           "methods": [
             {
               "name": "__init__",
-              "line": 113,
+              "line": 123,
               "doc": ""
             },
             {
               "name": "check",
-              "line": 118,
+              "line": 128,
               "doc": ""
             }
           ]
         },
         {
+          "name": "DraftProjectIn",
+          "line": 614,
+          "doc": "",
+          "methods": []
+        },
+        {
           "name": "ArrangeIn",
-          "line": 688,
+          "line": 763,
           "doc": "",
           "methods": []
         }
@@ -1812,177 +1988,187 @@
       "functions": [
         {
           "name": "rate_limited",
-          "line": 129,
+          "line": 139,
           "doc": ""
         },
         {
           "name": "current_session",
-          "line": 133,
+          "line": 143,
           "doc": ""
         },
         {
           "name": "_require",
-          "line": 140,
+          "line": 150,
           "doc": ""
         },
         {
           "name": "_claim",
-          "line": 145,
+          "line": 155,
           "doc": ""
         },
         {
           "name": "_save_upload",
-          "line": 150,
+          "line": 160,
           "doc": "The upload (or pasted text) as a temp file, after checking its type"
         },
         {
           "name": "_mostly_binary",
-          "line": 201,
+          "line": 211,
           "doc": "Control characters (other than tabs and line breaks) in more than 2% of"
         },
         {
           "name": "_check_jd",
-          "line": 210,
+          "line": 220,
           "doc": ""
         },
         {
           "name": "_event",
-          "line": 219,
+          "line": 229,
           "doc": ""
         },
         {
           "name": "_progress_event",
-          "line": 223,
+          "line": 233,
           "doc": "A step's progress line, or an AI wait as its own event so the page"
         },
         {
           "name": "_stream",
-          "line": 232,
+          "line": 242,
           "doc": "Run `work(progress)` in a thread (the session must already be"
         },
         {
           "name": "_service",
-          "line": 267,
+          "line": 277,
           "doc": "A TailorService for one step. With a session, saved gap answers come"
         },
         {
           "name": "plain_issue",
-          "line": 293,
+          "line": 303,
           "doc": "A parse issue in plain words (P8.26: \"experience without a company"
         },
         {
           "name": "unplaced_lines",
-          "line": 303,
+          "line": 313,
           "doc": "Lines of the file that ended up in no field the resume shows (P8.26),"
         },
         {
           "name": "_resume_texts",
-          "line": 318,
+          "line": 328,
           "doc": ""
         },
         {
           "name": "_details",
-          "line": 335,
+          "line": 345,
           "doc": "What the \"check details\" step shows and edits (P3.5)."
         },
         {
           "name": "_sections",
-          "line": 365,
+          "line": 375,
           "doc": "Bullet id -> the job or project it belongs to, for grouping cards."
         },
         {
           "name": "_proposal_out",
-          "line": 379,
+          "line": 389,
           "doc": ""
         },
         {
           "name": "_match_out",
-          "line": 394,
+          "line": 404,
           "doc": ""
         },
         {
           "name": "_selected",
-          "line": 400,
-          "doc": ""
-        },
-        {
-          "name": "health",
           "line": 410,
           "doc": ""
         },
         {
-          "name": "config",
-          "line": 415,
+          "name": "health",
+          "line": 420,
           "doc": ""
         },
         {
-          "name": "_model",
+          "name": "config",
           "line": 425,
           "doc": ""
         },
         {
+          "name": "_model",
+          "line": 435,
+          "doc": ""
+        },
+        {
           "name": "analyze",
-          "line": 432,
+          "line": 442,
           "doc": "\"Just check my match\": score only, nothing kept."
         },
         {
           "name": "parse",
-          "line": 452,
+          "line": 462,
           "doc": "Step 1: read the resume and start a fresh session for this run."
         },
         {
+          "name": "prepare",
+          "line": 517,
+          "doc": "Step 2b (P11.2): apply the user's fixes, read the job, write the role"
+        },
+        {
           "name": "proposals",
-          "line": 507,
+          "line": 544,
           "doc": "Step 2: apply the user's fixes, then draft rewrites and gap"
         },
         {
+          "name": "draft_project",
+          "line": 619,
+          "doc": "P11.11: write a project the user ticked back on Review; its cards join the rest."
+        },
+        {
           "name": "match_preview",
-          "line": 568,
+          "line": 640,
           "doc": "The match rate if the selected (and edited) proposals were applied."
         },
         {
           "name": "tailor",
-          "line": 579,
+          "line": 651,
           "doc": "Step 3: apply the review and generate the files. Streams progress."
         },
         {
           "name": "_region_out",
-          "line": 624,
+          "line": 699,
           "doc": "The region the files are formatted for (P10.3), with the JD's evidence"
         },
         {
           "name": "_mode_out",
-          "line": 636,
+          "line": 711,
           "doc": "The CV type the files use (P10.5), with the signals when it is the"
         },
         {
           "name": "_results_out",
-          "line": 647,
+          "line": 722,
           "doc": "What the Results (and Arrange) screen gets after a run."
         },
         {
           "name": "arrange",
-          "line": 696,
+          "line": 771,
           "doc": "Re-render the tailored resume as the user arranged it (P8.13). No LLM"
         },
         {
           "name": "_result_path",
-          "line": 739,
+          "line": 816,
           "doc": ""
         },
         {
           "name": "download",
-          "line": 747,
+          "line": 824,
           "doc": ""
         },
         {
           "name": "preview",
-          "line": 755,
+          "line": 832,
           "doc": "One page of the tailored PDF as a PNG (Chrome blocks embedded PDFs)."
         },
         {
           "name": "reset",
-          "line": 764,
+          "line": 841,
           "doc": "Start over: delete this visitor's files and state. If a step is still"
         }
       ]
@@ -2310,7 +2496,7 @@
         "2 Normalize",
         "9 Render"
       ],
-      "lines": 94,
+      "lines": 107,
       "doc": "",
       "classes": [
         {
@@ -2321,35 +2507,41 @@
         },
         {
           "name": "ResumeSource",
-          "line": 33,
+          "line": 35,
           "doc": "",
           "methods": []
         },
         {
           "name": "ResumeRevision",
-          "line": 39,
+          "line": 41,
           "doc": "",
           "methods": []
         },
         {
           "name": "ResumeDocument",
-          "line": 51,
+          "line": 53,
           "doc": "Versioned source of truth for editing, tailoring, and rendering.",
           "methods": [
             {
               "name": "record_revision",
-              "line": 67,
+              "line": 69,
               "doc": ""
             },
             {
               "name": "snapshot",
-              "line": 92,
+              "line": 94,
               "doc": "Return a JSON-serializable, versioned document for storage or export."
             }
           ]
         }
       ],
-      "functions": []
+      "functions": [
+        {
+          "name": "apply_style",
+          "line": 102,
+          "doc": "P11.9: the template's look; Classic sets a serif font."
+        }
+      ]
     },
     {
       "id": "app/domain/tailoring.py",
@@ -2358,7 +2550,7 @@
       "stages": [
         "6 Plan"
       ],
-      "lines": 45,
+      "lines": 46,
       "doc": "",
       "classes": [
         {
@@ -2375,7 +2567,7 @@
         },
         {
           "name": "TailoringPlan",
-          "line": 38,
+          "line": 39,
           "doc": "",
           "methods": []
         }
@@ -2397,7 +2589,7 @@
       "type": "python",
       "layer": "Root",
       "stages": [],
-      "lines": 91,
+      "lines": 102,
       "doc": "python -m app.eval run [--live] [--tailor] [--case NAME] [--compare BASELINE] [--save PATH]",
       "classes": [],
       "functions": [
@@ -2668,6 +2860,48 @@
           "name": "report_markdown",
           "line": 87,
           "doc": "A dated, human-readable judge report for a run."
+        }
+      ]
+    },
+    {
+      "id": "app/eval/reference.py",
+      "type": "python",
+      "layer": "Root",
+      "stages": [
+        "1 Ingest",
+        "2 Normalize",
+        "3 JD analysis",
+        "4 Match",
+        "5 Score",
+        "6 Plan",
+        "7 Rewrite",
+        "8 Validate",
+        "9 Render",
+        "10 Report"
+      ],
+      "lines": 106,
+      "doc": "Reference eval (P11.10): Tailores against a resume made another way.",
+      "classes": [],
+      "functions": [
+        {
+          "name": "_find",
+          "line": 27,
+          "doc": ""
+        },
+        {
+          "name": "_text",
+          "line": 35,
+          "doc": ""
+        },
+        {
+          "name": "match_answers",
+          "line": 40,
+          "doc": "answers.json keys -> this run's questions: a need by its name, a"
+        },
+        {
+          "name": "run_reference",
+          "line": 52,
+          "doc": ""
         }
       ]
     },
@@ -3188,6 +3422,13 @@
       "lines": 3
     },
     {
+      "id": "app/llm/prompts/project_evidence.txt",
+      "type": "prompt",
+      "layer": "LLM",
+      "stages": [],
+      "lines": 12
+    },
+    {
       "id": "app/llm/prompts/read_bank.txt",
       "type": "prompt",
       "layer": "LLM",
@@ -3216,11 +3457,32 @@
       "lines": 20
     },
     {
+      "id": "app/llm/prompts/role_brief.txt",
+      "type": "prompt",
+      "layer": "LLM",
+      "stages": [],
+      "lines": 10
+    },
+    {
+      "id": "app/llm/prompts/skills_rebuild.txt",
+      "type": "prompt",
+      "layer": "LLM",
+      "stages": [],
+      "lines": 8
+    },
+    {
       "id": "app/llm/prompts/summary.txt",
       "type": "prompt",
       "layer": "LLM",
       "stages": [],
-      "lines": 16
+      "lines": 18
+    },
+    {
+      "id": "app/llm/prompts/write_project.txt",
+      "type": "prompt",
+      "layer": "LLM",
+      "stages": [],
+      "lines": 21
     },
     {
       "id": "app/llm/schemas.py",
@@ -3230,7 +3492,7 @@
         "3 JD analysis",
         "7 Rewrite"
       ],
-      "lines": 134,
+      "lines": 185,
       "doc": "",
       "classes": [
         {
@@ -3324,20 +3586,74 @@
           "methods": []
         },
         {
-          "name": "SummaryResult",
+          "name": "BriefCompetency",
           "line": 112,
+          "doc": "",
+          "methods": []
+        },
+        {
+          "name": "RoleBriefResult",
+          "line": 119,
+          "doc": "What the job really needs (P11.3), read from even a short post.",
+          "methods": []
+        },
+        {
+          "name": "ProjectShows",
+          "line": 126,
+          "doc": "",
+          "methods": []
+        },
+        {
+          "name": "ProjectEvidenceItem",
+          "line": 131,
+          "doc": "",
+          "methods": []
+        },
+        {
+          "name": "ProjectEvidenceResult",
+          "line": 136,
+          "doc": "Which of the job's competencies each project really shows (P11.4).",
+          "methods": []
+        },
+        {
+          "name": "WrittenProject",
+          "line": 141,
+          "doc": "",
+          "methods": []
+        },
+        {
+          "name": "ProjectWriteResult",
+          "line": 147,
+          "doc": "A job's projects written from all their material (P11.5).",
+          "methods": []
+        },
+        {
+          "name": "SkillGroup",
+          "line": 152,
+          "doc": "",
+          "methods": []
+        },
+        {
+          "name": "SkillsRebuildResult",
+          "line": 157,
+          "doc": "The Skills section rebuilt from the candidate's evidence (P11.7).",
+          "methods": []
+        },
+        {
+          "name": "SummaryResult",
+          "line": 163,
           "doc": "A tailored professional summary (P1.5).",
           "methods": []
         },
         {
           "name": "JudgeRubric",
-          "line": 119,
+          "line": 170,
           "doc": "LLM-as-judge rubric for one tailored resume (P4.3).",
           "methods": []
         },
         {
           "name": "JudgePairwise",
-          "line": 131,
+          "line": 182,
           "doc": "Which of two resume versions is better for the JD (P4.3).",
           "methods": []
         }
@@ -3418,7 +3734,7 @@
       "stages": [
         "9 Render"
       ],
-      "lines": 175,
+      "lines": 202,
       "doc": "",
       "classes": [
         {
@@ -3433,37 +3749,42 @@
             },
             {
               "name": "_meta_line",
-              "line": 17,
+              "line": 21,
               "doc": "A de-emphasized 'Company \u00b7 Location' style line under a bolded"
             },
             {
               "name": "_dates",
-              "line": 29,
+              "line": 33,
               "doc": ""
             },
             {
               "name": "_experience_entry",
-              "line": 32,
+              "line": 36,
               "doc": ""
             },
             {
+              "name": "_classic_entry",
+              "line": 65,
+              "doc": "P11.9: company first, then each title with its dates."
+            },
+            {
               "name": "_section",
-              "line": 59,
+              "line": 81,
               "doc": ""
             },
             {
               "name": "_other",
-              "line": 62,
+              "line": 84,
               "doc": "A kept section (P8.3), each line as written."
             },
             {
               "name": "render",
-              "line": 80,
+              "line": 102,
               "doc": "Same sections, order and headings as the DOCX template (P2.1)."
             },
             {
               "name": "write_html",
-              "line": 171,
+              "line": 198,
               "doc": ""
             }
           ]
@@ -3781,113 +4102,129 @@
       "stages": [
         "9 Render"
       ],
-      "lines": 334,
+      "lines": 426,
       "doc": "",
       "classes": [
         {
           "name": "TemplateRenderer",
-          "line": 24,
+          "line": 25,
           "doc": "Standard single-column, ATS-safe DOCX renderer with support for ResumeDocument.",
           "methods": [
             {
               "name": "render_ats_default",
-              "line": 32,
+              "line": 33,
               "doc": "Render the ATS template (P2.1): A4 or Letter, single column, Arial,"
             },
             {
               "name": "_add_header",
-              "line": 73,
+              "line": 75,
               "doc": ""
             },
             {
               "name": "_add_summary",
-              "line": 105,
+              "line": 108,
               "doc": ""
             },
             {
               "name": "_add_experience",
-              "line": 111,
+              "line": 114,
               "doc": ""
             },
             {
               "name": "_add_skills",
-              "line": 153,
+              "line": 159,
               "doc": ""
             },
             {
               "name": "_add_education",
-              "line": 166,
+              "line": 172,
               "doc": ""
             },
             {
               "name": "_add_projects",
-              "line": 181,
+              "line": 187,
               "doc": ""
             },
             {
               "name": "_add_certifications",
-              "line": 204,
+              "line": 210,
               "doc": ""
             },
             {
               "name": "_add_other",
-              "line": 210,
+              "line": 219,
               "doc": "A kept section (P8.3): its own heading, each line as written."
             },
             {
               "name": "_add_achievements",
-              "line": 224,
+              "line": 233,
               "doc": ""
             },
             {
               "name": "_add_interests",
-              "line": 229,
+              "line": 238,
               "doc": ""
             },
             {
               "name": "_set_document_defaults",
-              "line": 236,
+              "line": 245,
               "doc": "The presentation's page (A4 or Letter, P10.2), the template's"
             },
             {
               "name": "_content_width",
-              "line": 263,
+              "line": 272,
               "doc": ""
             },
             {
               "name": "_add_section_heading",
-              "line": 267,
+              "line": 276,
               "doc": "A section label in the accent color with a rule underneath \u2014"
             },
             {
               "name": "_role_dates",
-              "line": 281,
+              "line": 290,
               "doc": ""
             },
             {
               "name": "_add_meta_line",
-              "line": 284,
+              "line": 293,
               "doc": "'Company \u00b7 Location' in italic under a title line (the employer in"
             },
             {
               "name": "_add_bullets",
-              "line": 294,
+              "line": 303,
+              "doc": ""
+            },
+            {
+              "name": "_add_classic_job",
+              "line": 317,
+              "doc": "Company first (accent, place on the right), then each title with its"
+            },
+            {
+              "name": "_add_top_border",
+              "line": 361,
               "doc": ""
             },
             {
               "name": "_add_title_dates_line",
-              "line": 299,
+              "line": 372,
               "doc": "Title (bold) on the left, date range right-aligned on the same"
             },
             {
               "name": "_add_bottom_border",
-              "line": 321,
+              "line": 394,
               "doc": "Adds a single bottom border to a paragraph via raw OOXML \u2014 the"
             }
           ]
         }
       ],
-      "functions": []
+      "functions": [
+        {
+          "name": "metric_runs",
+          "line": 413,
+          "doc": "(text, bold) pieces of a bullet: figures bold (P11.9), years not."
+        }
+      ]
     },
     {
       "id": "app/services/arrange.py",
@@ -3896,7 +4233,7 @@
       "stages": [
         "9 Render"
       ],
-      "lines": 239,
+      "lines": 240,
       "doc": "Arrange and edit before download (P8.13\u2013P8.16).",
       "classes": [
         {
@@ -3909,67 +4246,67 @@
       "functions": [
         {
           "name": "_owners",
-          "line": 47,
+          "line": 48,
           "doc": ""
         },
         {
           "name": "default_layout",
-          "line": 51,
+          "line": 52,
           "doc": "The layout tailoring produced: everything shown, in its current order."
         },
         {
           "name": "_ordered",
-          "line": 61,
+          "line": 62,
           "doc": "Items in `order`; any not listed keep their place after the listed ones."
         },
         {
           "name": "_keep_groups_together",
-          "line": 67,
+          "line": 68,
           "doc": "A sub-heading's bullets stay together (R3): whatever order arrives, a"
         },
         {
           "name": "apply_layout",
-          "line": 77,
+          "line": 78,
           "doc": "A copy of `full` arranged as `layout` says. Unknown ids are ignored;"
         },
         {
           "name": "_had_bullets",
-          "line": 109,
+          "line": 110,
           "doc": ""
         },
         {
           "name": "emptied",
-          "line": 113,
+          "line": 114,
           "doc": "Jobs and projects the user took every bullet out of."
         },
         {
           "name": "section_order",
-          "line": 119,
+          "line": 120,
           "doc": "The render order: the user's order, then anything it doesn't list."
         },
         {
           "name": "notes_for",
-          "line": 127,
+          "line": 128,
           "doc": "Things worth pointing out about the user's arrangement. Advice only."
         },
         {
           "name": "_today",
-          "line": 155,
+          "line": 156,
           "doc": ""
         },
         {
           "name": "_all_text",
-          "line": 160,
+          "line": 161,
           "doc": ""
         },
         {
           "name": "view",
-          "line": 167,
+          "line": 168,
           "doc": "What the Arrange screen shows: every section with its entries and"
         },
         {
           "name": "trimmed_items",
-          "line": 224,
+          "line": 225,
           "doc": "What page-fit removed: bullets (with their job), projects, Interests."
         }
       ]
@@ -3981,7 +4318,7 @@
       "stages": [
         "7 Rewrite"
       ],
-      "lines": 136,
+      "lines": 165,
       "doc": "Local profile of facts the user has confirmed (P3.2).",
       "classes": [
         {
@@ -4022,35 +4359,50 @@
               "doc": "Save the confirmed keywords (and answer text) from gap answers."
             },
             {
+              "name": "interview_key",
+              "line": 106,
+              "doc": "P11.2: an interview answer is saved per job, project and need."
+            },
+            {
+              "name": "record_interview",
+              "line": 111,
+              "doc": ""
+            },
+            {
+              "name": "prefill_interview",
+              "line": 127,
+              "doc": ""
+            },
+            {
               "name": "known",
-              "line": 105,
+              "line": 134,
               "doc": "Saved facts for these keywords (case-insensitive), keyed as given."
             },
             {
               "name": "forget",
-              "line": 110,
+              "line": 139,
               "doc": "Forget one keyword, or everything when keyword is None. Returns how many were removed."
             }
           ]
         },
         {
           "name": "MemoryProfileStore",
-          "line": 123,
+          "line": 152,
           "doc": "A profile kept in memory, one per web visitor (P5.1): answers are",
           "methods": [
             {
               "name": "__init__",
-              "line": 128,
+              "line": 157,
               "doc": ""
             },
             {
               "name": "load",
-              "line": 132,
+              "line": 161,
               "doc": ""
             },
             {
               "name": "save",
-              "line": 135,
+              "line": 164,
               "doc": ""
             }
           ]
@@ -4109,177 +4461,202 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 1660,
+      "lines": 1815,
       "doc": "",
       "classes": [
         {
           "name": "TailorService",
-          "line": 66,
+          "line": 67,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
-              "line": 67,
+              "line": 68,
               "doc": "`keep_run=False` (the web app): nothing is written to data/runs, so"
             },
             {
               "name": "_save_run",
-              "line": 103,
+              "line": 104,
               "doc": "A run artifact for the CLI / eval; nothing when no run is kept (P9.8)."
             },
             {
               "name": "generate_preview_md",
-              "line": 108,
+              "line": 109,
               "doc": ""
             },
             {
               "name": "_patchable",
-              "line": 154,
+              "line": 155,
               "doc": "Proposals as in-place DOCX patches. A summary proposal targets the"
             },
             {
               "name": "_apply_gap_answers",
-              "line": 174,
+              "line": 175,
               "doc": "Ticked keywords join the skills section; a typed answer becomes a"
             },
             {
               "name": "_prefill_from_profile",
-              "line": 233,
+              "line": 234,
               "doc": "Answers confirmed for an earlier JD pre-fill the same questions"
             },
             {
               "name": "_draft_from_answer",
-              "line": 245,
+              "line": 246,
               "doc": "Polish the candidate's answer into one bullet that may use only"
             },
             {
               "name": "_project_lines",
-              "line": 266,
+              "line": 267,
               "doc": "An added job's notes -> (project, line) pairs. A short line ending"
             },
             {
               "name": "_split_description",
-              "line": 285,
+              "line": 286,
               "doc": "Pasted role description -> bullet-sized chunks: one per line (list"
             },
             {
               "name": "validate_new_role",
-              "line": 295,
+              "line": 296,
               "doc": "Check a new job before any work is done; raises ValueError with a"
             },
             {
               "name": "_new_experience",
-              "line": 320,
+              "line": 321,
               "doc": "An empty job from the \"add a job\" fields, validated."
             },
             {
               "name": "_insert_by_date",
-              "line": 328,
+              "line": 329,
               "doc": "Place a job in date order: current jobs first, then most recent start."
             },
             {
               "name": "add_new_role",
-              "line": 341,
+              "line": 342,
               "doc": "Add a job the resume doesn't have yet (P3.3). Each chunk of the"
             },
             {
               "name": "_skills_proposals",
-              "line": 378,
-              "doc": "The skills section with the JD's skills first, when that changes it (P1.6)."
+              "line": 379,
+              "doc": "The skills section rebuilt from the candidate's evidence for this job"
             },
             {
               "name": "_summary_proposals",
-              "line": 383,
+              "line": 389,
               "doc": "The tailored summary as a proposal, when one was written (P1.5)."
             },
             {
               "name": "_embed",
-              "line": 388,
+              "line": 394,
               "doc": "Sentence embeddings for the planner, loaded lazily; raises when the"
             },
             {
               "name": "_fit_relevance",
-              "line": 397,
+              "line": 403,
               "doc": "Planner relevance per bullet for the page-fit loop. Bullets the user"
             },
             {
               "name": "_render_template",
-              "line": 407,
+              "line": 413,
               "doc": "One template render plus PDF conversion (the page-fit loop's step)."
             },
             {
               "name": "_coverage",
-              "line": 415,
+              "line": 421,
               "doc": "Content coverage of the rendered DOCX against the uploaded file (P8.2)."
             },
             {
+              "name": "_project_notes",
+              "line": 451,
+              "doc": "A project's notes from the owner's project bank (P11.1), by project key."
+            },
+            {
+              "name": "_apply_projects",
+              "line": 460,
+              "doc": "Replace each accepted project's bullets with its new ones (P11.5),"
+            },
+            {
               "name": "_rename_headings",
-              "line": 445,
+              "line": 486,
               "doc": "Rename each project the user accepted a new heading for; the old"
             },
             {
               "name": "_apply_bullet_order",
-              "line": 474,
+              "line": 515,
               "doc": "Reorder bullets as planned (most relevant first within each"
             },
             {
               "name": "parse_resume",
-              "line": 489,
+              "line": 530,
               "doc": "File -> (raw document, ResumeDocument, evidence). The deterministic"
             },
             {
               "name": "read_file",
-              "line": 496,
+              "line": 537,
               "doc": "The uploaded file as raw blocks, or UnreadableFile with a message"
             },
             {
               "name": "apply_bank",
-              "line": 531,
+              "line": 572,
               "doc": "Read the owner's project notes (P11.1) and merge them into the"
             },
             {
               "name": "normalize_raw",
-              "line": 561,
+              "line": 602,
               "doc": ""
             },
             {
               "name": "_copy_parsed",
-              "line": 588,
+              "line": 629,
               "doc": "Deep copies, so a parse kept in UI session state is never mutated."
             },
             {
               "name": "preview_keyword_match",
-              "line": 593,
+              "line": 634,
               "doc": "Match rate if these proposals were applied (P3.4 \"recalculate\"):"
             },
             {
               "name": "apply_parse_corrections",
-              "line": 620,
+              "line": 670,
               "doc": "Apply the user's fixes from the \"Check parsed resume\" step (P3.5)."
             },
             {
               "name": "analyze_only",
-              "line": 755,
+              "line": 805,
               "doc": ""
             },
             {
+              "name": "prepare",
+              "line": 835,
+              "doc": "Before drafting (P11.2): read the job, write the role brief, map"
+            },
+            {
+              "name": "draft_project",
+              "line": 861,
+              "doc": "P11.11: a project ticked back on Review is written like the rest"
+            },
+            {
+              "name": "apply_answers",
+              "line": 878,
+              "doc": "The interview's answers as evidence and bullets of their projects"
+            },
+            {
               "name": "generate_proposals",
-              "line": 785,
+              "line": 894,
               "doc": "Generate rewrite proposals without applying them, plus questions"
             },
             {
               "name": "incorporate_user_addition",
-              "line": 865,
+              "line": 983,
               "doc": "Fold a user-supplied free-text addition (a project, an"
             },
             {
               "name": "tailor_resume",
-              "line": 944,
+              "line": 1062,
               "doc": "`region` (\"us\", \"uk_eu\", \"india\", \"other\", P10.3) sets the paper"
             },
             {
               "name": "arrange",
-              "line": 1513,
+              "line": 1666,
               "doc": "Re-render the tailored resume as the user arranged it (P8.13\u2013P8.16):"
             }
           ]
@@ -4288,17 +4665,17 @@
       "functions": [
         {
           "name": "_progress",
-          "line": 55,
+          "line": 56,
           "doc": "A progress reporter that can never break a run (P3.6)."
         },
         {
           "name": "_hidden_text",
-          "line": 1615,
+          "line": 1770,
           "doc": "Text of the sections the user hid, so coverage counts it as their choice."
         },
         {
           "name": "_merge_usage",
-          "line": 1642,
+          "line": 1797,
           "doc": "Combine two LLMClient.get_usage_summary() dicts into one. When one"
         }
       ]
@@ -4403,7 +4780,7 @@
       "stages": [
         "8 Validate"
       ],
-      "lines": 515,
+      "lines": 559,
       "doc": "",
       "classes": [
         {
@@ -4464,48 +4841,53 @@
               "doc": "(token, starts_a_sentence) pairs, so the capital of every"
             },
             {
-              "name": "_validate_heading",
+              "name": "_validate_project",
               "line": 239,
+              "doc": "A project written whole (P11.5): every new bullet is checked like a"
+            },
+            {
+              "name": "_validate_heading",
+              "line": 273,
               "doc": "A project heading (P10.13) may only reword what the old heading and"
             },
             {
               "name": "_validate_skills",
-              "line": 250,
-              "doc": "The skills section may be reordered and respelled, never extended (P1.6)."
+              "line": 284,
+              "doc": "The skills section may be reordered and respelled, and gain what the"
             },
             {
               "name": "_validate_summary",
-              "line": 262,
+              "line": 300,
               "doc": "A summary may draw on the whole resume (P1.5): every factual term"
             },
             {
               "name": "_owner_prefix",
-              "line": 318,
+              "line": 356,
               "doc": "'exp_001_b03' -> 'exp_001_': the job (or project) a bullet belongs to."
             },
             {
               "name": "_content_tokens",
-              "line": 323,
+              "line": 361,
               "doc": "Plain words of a text in order, hyphenated words split into parts"
             },
             {
               "name": "_is_plain",
-              "line": 331,
+              "line": 369,
               "doc": ""
             },
             {
               "name": "_new_words",
-              "line": 336,
+              "line": 374,
               "doc": "Plain words a rewrite adds (P8.9): (borrowed from the JD only,"
             },
             {
               "name": "_words_from_elsewhere",
-              "line": 355,
+              "line": 393,
               "doc": "Runs of consecutive plain words that the resume uses only under"
             },
             {
               "name": "validate_proposal",
-              "line": 376,
+              "line": 414,
               "doc": ""
             }
           ]
@@ -4771,118 +5153,118 @@
       "type": "python",
       "layer": "Tooling",
       "stages": [],
-      "lines": 748,
+      "lines": 751,
       "doc": "Regenerate the repo's living docs: the knowledge graph and the change log.",
       "classes": [],
       "functions": [
         {
           "name": "git",
-          "line": 143,
+          "line": 146,
           "doc": ""
         },
         {
           "name": "layer_of",
-          "line": 150,
+          "line": 153,
           "doc": ""
         },
         {
           "name": "module_name",
-          "line": 157,
+          "line": 160,
           "doc": ""
         },
         {
           "name": "first_line",
-          "line": 164,
+          "line": 167,
           "doc": ""
         },
         {
           "name": "list_files",
-          "line": 173,
+          "line": 176,
           "doc": "Tracked + new (not ignored) files, restricted to the project map."
         },
         {
           "name": "parse_python",
-          "line": 191,
+          "line": 194,
           "doc": ""
         },
         {
           "name": "symbols_of",
-          "line": 219,
+          "line": 222,
           "doc": ""
         },
         {
           "name": "settings_fields",
-          "line": 232,
+          "line": 235,
           "doc": ""
         },
         {
           "name": "build_graph",
-          "line": 251,
+          "line": 254,
           "doc": ""
         },
         {
           "name": "render_graph_md",
-          "line": 325,
+          "line": 328,
           "doc": ""
         },
         {
           "name": "write_graph",
-          "line": 523,
+          "line": 526,
           "doc": ""
         },
         {
           "name": "commit_info",
-          "line": 566,
+          "line": 569,
           "doc": ""
         },
         {
           "name": "changed_files",
-          "line": 577,
+          "line": 580,
           "doc": ""
         },
         {
           "name": "is_major",
-          "line": 590,
+          "line": 593,
           "doc": ""
         },
         {
           "name": "blob",
-          "line": 599,
+          "line": 602,
           "doc": ""
         },
         {
           "name": "structure_delta",
-          "line": 604,
+          "line": 607,
           "doc": ""
         },
         {
           "name": "render_entry",
-          "line": 627,
+          "line": 630,
           "doc": ""
         },
         {
           "name": "_split_entries",
-          "line": 670,
+          "line": 673,
           "doc": ""
         },
         {
           "name": "_join",
-          "line": 685,
+          "line": 688,
           "doc": ""
         },
         {
           "name": "log_entry",
-          "line": 689,
+          "line": 692,
           "doc": ""
         },
         {
           "name": "backfill",
-          "line": 707,
+          "line": 710,
           "doc": ""
         },
         {
           "name": "main",
-          "line": 724,
+          "line": 727,
           "doc": ""
         }
       ]
@@ -5678,6 +6060,32 @@
       ]
     },
     {
+      "id": "tests/unit/test_classic_template_p119.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 41,
+      "doc": "P11.9: the Classic template, an option that must read back like the standard one.",
+      "classes": [],
+      "functions": [
+        {
+          "name": "test_figures_are_bold_and_years_are_not",
+          "line": 14,
+          "doc": ""
+        },
+        {
+          "name": "test_standard_stays_the_default_and_classic_sets_a_serif",
+          "line": 20,
+          "doc": ""
+        },
+        {
+          "name": "test_classic_reads_back_cleanly",
+          "line": 30,
+          "doc": ""
+        }
+      ]
+    },
+    {
       "id": "tests/unit/test_cli.py",
       "type": "python",
       "layer": "Tests",
@@ -5708,7 +6116,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 157,
+      "lines": 158,
       "doc": "P3.6: progress reporting, and the CLI doing what the UI does (review,",
       "classes": [],
       "functions": [
@@ -5724,52 +6132,52 @@
         },
         {
           "name": "test_a_broken_progress_callback_never_breaks_a_run",
-          "line": 41,
+          "line": 42,
           "doc": ""
         },
         {
           "name": "test_proposals_file_round_trip_applies_exactly_the_review",
-          "line": 47,
+          "line": 48,
           "doc": ""
         },
         {
           "name": "test_rejected_proposals_start_unticked",
-          "line": 77,
+          "line": 78,
           "doc": ""
         },
         {
           "name": "test_cli_propose_and_tailor_end_to_end",
-          "line": 82,
+          "line": 83,
           "doc": ""
         },
         {
           "name": "_file",
-          "line": 101,
+          "line": 102,
           "doc": ""
         },
         {
           "name": "test_emptied_keywords_withdraw_an_unchanged_saved_answer",
-          "line": 109,
+          "line": 110,
           "doc": ""
         },
         {
           "name": "test_gap_questions_are_passed_on_for_requirement_context",
-          "line": 117,
+          "line": 118,
           "doc": ""
         },
         {
           "name": "test_mirror_keys_are_not_written_and_string_false_rejects",
-          "line": 124,
+          "line": 125,
           "doc": ""
         },
         {
           "name": "test_bad_files_fail_early_with_a_readable_error",
-          "line": 135,
+          "line": 136,
           "doc": ""
         },
         {
           "name": "test_cli_prints_error_instead_of_traceback",
-          "line": 149,
+          "line": 150,
           "doc": ""
         }
       ]
@@ -6417,6 +6825,37 @@
       ]
     },
     {
+      "id": "tests/unit/test_headline_summary_p116.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 43,
+      "doc": "P11.6: headline and summary aimed at the job, from evidence.",
+      "classes": [],
+      "functions": [
+        {
+          "name": "_resume",
+          "line": 9,
+          "doc": ""
+        },
+        {
+          "name": "test_the_jobs_title_as_far_as_the_candidates_titles_support_it",
+          "line": 16,
+          "doc": ""
+        },
+        {
+          "name": "test_a_years_claim_the_dated_roles_have_outgrown_is_stale",
+          "line": 23,
+          "doc": ""
+        },
+        {
+          "name": "test_the_confirmed_headline_goes_under_the_name",
+          "line": 34,
+          "doc": ""
+        }
+      ]
+    },
+    {
       "id": "tests/unit/test_html_renderer.py",
       "type": "python",
       "layer": "Tests",
@@ -6428,6 +6867,52 @@
         {
           "name": "test_html_renderer_outputs_ats_sections_and_escapes_content",
           "line": 5,
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "tests/unit/test_interview_p112.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 112,
+      "doc": "P11.2: the interview, asked before anything is written.",
+      "classes": [],
+      "functions": [
+        {
+          "name": "_resume",
+          "line": 23,
+          "doc": ""
+        },
+        {
+          "name": "_choices",
+          "line": 31,
+          "doc": ""
+        },
+        {
+          "name": "test_asks_about_a_need_nothing_shows_at_the_closest_project_and_for_missing_figures",
+          "line": 36,
+          "doc": ""
+        },
+        {
+          "name": "test_an_answer_becomes_a_bullet_of_its_project_and_shows_the_need",
+          "line": 49,
+          "doc": ""
+        },
+        {
+          "name": "test_answers_are_saved_and_offered_next_time",
+          "line": 66,
+          "doc": ""
+        },
+        {
+          "name": "test_prepare_then_draft_with_answers_through_the_api",
+          "line": 75,
+          "doc": ""
+        },
+        {
+          "name": "test_a_needs_answer_goes_where_the_user_says",
+          "line": 103,
           "doc": ""
         }
       ]
@@ -7875,7 +8360,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 121,
+      "lines": 131,
       "doc": "P11.1: a project bank read as a document beside the resume.",
       "classes": [
         {
@@ -7921,6 +8406,11 @@
           "name": "test_without_the_ai_the_notes_are_not_read_and_the_page_says_so",
           "line": 117,
           "doc": ""
+        },
+        {
+          "name": "test_a_project_with_notes_only_uses_them_as_its_bullets",
+          "line": 124,
+          "doc": ""
         }
       ]
     },
@@ -7960,7 +8450,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 230,
+      "lines": 270,
       "doc": "P10.13: choose projects, not lines.",
       "classes": [
         {
@@ -8075,6 +8565,119 @@
         {
           "name": "test_each_new_job_starts_after_a_clear_gap",
           "line": 219,
+          "doc": ""
+        },
+        {
+          "name": "test_a_project_left_out_on_review_can_be_brought_back_in_arrange",
+          "line": 233,
+          "doc": "P11.11: Arrange had no copy of left-out projects."
+        },
+        {
+          "name": "test_drafting_a_project_that_isnt_in_the_run_is_refused",
+          "line": 254,
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "tests/unit/test_project_writing_p115.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 104,
+      "doc": "P11.5: projects written whole, from all their material, and fact-checked.",
+      "classes": [
+        {
+          "name": "_WriterLLM",
+          "line": 34,
+          "doc": "",
+          "methods": [
+            {
+              "name": "__init__",
+              "line": 37,
+              "doc": ""
+            },
+            {
+              "name": "is_available",
+              "line": 40,
+              "doc": ""
+            },
+            {
+              "name": "generate_json",
+              "line": 43,
+              "doc": ""
+            }
+          ]
+        }
+      ],
+      "functions": [
+        {
+          "name": "_resume",
+          "line": 14,
+          "doc": ""
+        },
+        {
+          "name": "_plan",
+          "line": 53,
+          "doc": ""
+        },
+        {
+          "name": "test_a_project_is_written_whole_and_its_loose_bullets_go_bullet_by_bullet",
+          "line": 62,
+          "doc": ""
+        },
+        {
+          "name": "_project",
+          "line": 77,
+          "doc": ""
+        },
+        {
+          "name": "test_the_project_check_takes_facts_from_the_notes_and_rejects_new_ones",
+          "line": 83,
+          "doc": ""
+        },
+        {
+          "name": "test_an_accepted_project_replaces_its_bullets_and_nothing_counts_as_lost",
+          "line": 93,
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "tests/unit/test_reference_eval_p1110.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 41,
+      "doc": "P11.10: Tailores against a reference resume, judged both ways round.",
+      "classes": [
+        {
+          "name": "_Judge",
+          "line": 19,
+          "doc": "",
+          "methods": [
+            {
+              "name": "__init__",
+              "line": 20,
+              "doc": ""
+            },
+            {
+              "name": "prefer",
+              "line": 23,
+              "doc": ""
+            }
+          ]
+        }
+      ],
+      "functions": [
+        {
+          "name": "test_answers_are_matched_to_this_runs_questions",
+          "line": 11,
+          "doc": ""
+        },
+        {
+          "name": "test_a_win_needs_both_orders",
+          "line": 28,
           "doc": ""
         }
       ]
@@ -8451,6 +9054,87 @@
       ]
     },
     {
+      "id": "tests/unit/test_role_brief_p113.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 121,
+      "doc": "P11.3: the role brief, what the job really needs.",
+      "classes": [
+        {
+          "name": "_BriefLLM",
+          "line": 43,
+          "doc": "",
+          "methods": [
+            {
+              "name": "is_available",
+              "line": 44,
+              "doc": ""
+            },
+            {
+              "name": "generate_json",
+              "line": 47,
+              "doc": ""
+            }
+          ]
+        },
+        {
+          "name": "_MapLLM",
+          "line": 84,
+          "doc": "Links projects to competencies; one quote is made up.",
+          "methods": [
+            {
+              "name": "is_available",
+              "line": 86,
+              "doc": ""
+            },
+            {
+              "name": "generate_json",
+              "line": 89,
+              "doc": ""
+            }
+          ]
+        }
+      ],
+      "functions": [
+        {
+          "name": "_result",
+          "line": 13,
+          "doc": ""
+        },
+        {
+          "name": "test_a_competency_must_rest_on_the_jds_own_words",
+          "line": 26,
+          "doc": ""
+        },
+        {
+          "name": "test_a_title_the_jd_doesnt_give_falls_back_to_its_own",
+          "line": 33,
+          "doc": ""
+        },
+        {
+          "name": "test_nothing_usable_or_no_ai_gives_the_jds_own_skills",
+          "line": 37,
+          "doc": ""
+        },
+        {
+          "name": "test_the_brief_is_written_with_the_resume_in_view",
+          "line": 52,
+          "doc": ""
+        },
+        {
+          "name": "test_projects_are_chosen_to_cover_different_competencies",
+          "line": 57,
+          "doc": "P11.4: two forecasting projects and one pricing project; the job needs both."
+        },
+        {
+          "name": "test_the_ai_map_keeps_only_links_with_the_projects_own_words",
+          "line": 100,
+          "doc": ""
+        }
+      ]
+    },
+    {
       "id": "tests/unit/test_scoring.py",
       "type": "python",
       "layer": "Tests",
@@ -8619,6 +9303,45 @@
         {
           "name": "test_jd_spelling",
           "line": 72,
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "tests/unit/test_skills_rebuild_p117.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 43,
+      "doc": "P11.7: the Skills section rebuilt from the candidate's evidence.",
+      "classes": [
+        {
+          "name": "_SkillsLLM",
+          "line": 16,
+          "doc": "",
+          "methods": [
+            {
+              "name": "is_available",
+              "line": 17,
+              "doc": ""
+            },
+            {
+              "name": "generate_json",
+              "line": 20,
+              "doc": ""
+            }
+          ]
+        }
+      ],
+      "functions": [
+        {
+          "name": "test_skills_come_only_from_the_candidates_material",
+          "line": 29,
+          "doc": ""
+        },
+        {
+          "name": "test_the_check_allows_evidenced_skills_and_rejects_others",
+          "line": 37,
           "doc": ""
         }
       ]
@@ -9520,6 +10243,11 @@
     },
     {
       "from": "app/analysis/experience.py",
+      "to": "tests/unit/test_headline_summary_p116.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/analysis/experience.py",
       "to": "tests/unit/test_summary_writer.py",
       "type": "tested_by"
     },
@@ -9571,6 +10299,41 @@
     {
       "from": "app/analysis/gap_questions.py",
       "to": "tests/unit/test_skill_placement_p912.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/analysis/interview.py",
+      "to": "app/analysis/interview.py::InterviewAnswer",
+      "type": "contains"
+    },
+    {
+      "from": "app/analysis/interview.py",
+      "to": "app/analysis/interview.py::InterviewQuestion",
+      "type": "contains"
+    },
+    {
+      "from": "app/analysis/interview.py",
+      "to": "app/analysis/project_select.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/analysis/interview.py",
+      "to": "app/domain/evidence.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/analysis/interview.py",
+      "to": "app/domain/resume.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/analysis/interview.py",
+      "to": "tests/unit/test_interview_p112.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/analysis/interview.py",
+      "to": "tests/unit/test_reference_eval_p1110.py",
       "type": "tested_by"
     },
     {
@@ -9834,6 +10597,11 @@
       "type": "tested_by"
     },
     {
+      "from": "app/analysis/project_select.py",
+      "to": "tests/unit/test_role_brief_p113.py",
+      "type": "tested_by"
+    },
+    {
       "from": "app/analysis/region.py",
       "to": "app/analysis/region.py::RegionGuess",
       "type": "contains"
@@ -10015,6 +10783,11 @@
     },
     {
       "from": "app/analysis/rewriter.py",
+      "to": "app/llm/prompts/write_project.txt",
+      "type": "uses_prompt"
+    },
+    {
+      "from": "app/analysis/rewriter.py",
       "to": "app/llm/schemas.py",
       "type": "imports"
     },
@@ -10055,7 +10828,17 @@
     },
     {
       "from": "app/analysis/rewriter.py",
+      "to": "tests/unit/test_project_writing_p115.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/analysis/rewriter.py",
       "to": "tests/unit/test_rewriter.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/analysis/rewriter.py",
+      "to": "tests/unit/test_skills_rebuild_p117.py",
       "type": "tested_by"
     },
     {
@@ -10071,6 +10854,56 @@
     {
       "from": "app/analysis/rewriter.py",
       "to": "tests/unit/test_validation.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/analysis/role_brief.py",
+      "to": "app/analysis/role_brief.py::Competency",
+      "type": "contains"
+    },
+    {
+      "from": "app/analysis/role_brief.py",
+      "to": "app/analysis/role_brief.py::RoleBrief",
+      "type": "contains"
+    },
+    {
+      "from": "app/analysis/role_brief.py",
+      "to": "app/analysis/summary_writer.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/analysis/role_brief.py",
+      "to": "app/domain/job.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/analysis/role_brief.py",
+      "to": "app/domain/resume.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/analysis/role_brief.py",
+      "to": "app/llm/prompts/project_evidence.txt",
+      "type": "uses_prompt"
+    },
+    {
+      "from": "app/analysis/role_brief.py",
+      "to": "app/llm/prompts/role_brief.txt",
+      "type": "uses_prompt"
+    },
+    {
+      "from": "app/analysis/role_brief.py",
+      "to": "app/llm/schemas.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/analysis/role_brief.py",
+      "to": "tests/unit/test_interview_p112.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/analysis/role_brief.py",
+      "to": "tests/unit/test_role_brief_p113.py",
       "type": "tested_by"
     },
     {
@@ -10160,7 +10993,22 @@
     },
     {
       "from": "app/analysis/skills_tailor.py",
+      "to": "app/llm/prompts/skills_rebuild.txt",
+      "type": "uses_prompt"
+    },
+    {
+      "from": "app/analysis/skills_tailor.py",
+      "to": "app/llm/schemas.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/analysis/skills_tailor.py",
       "to": "tests/unit/test_skill_placement_p912.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/analysis/skills_tailor.py",
+      "to": "tests/unit/test_skills_rebuild_p117.py",
       "type": "tested_by"
     },
     {
@@ -10277,6 +11125,11 @@
       "from": "app/analysis/summary_writer.py",
       "to": "app/llm/schemas.py",
       "type": "imports"
+    },
+    {
+      "from": "app/analysis/summary_writer.py",
+      "to": "tests/unit/test_headline_summary_p116.py",
+      "type": "tested_by"
     },
     {
       "from": "app/analysis/summary_writer.py",
@@ -10400,6 +11253,11 @@
     },
     {
       "from": "app/api/main.py",
+      "to": "tests/unit/test_interview_p112.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/api/main.py",
       "to": "tests/unit/test_linkedin_import_p101.py",
       "type": "tested_by"
     },
@@ -10426,6 +11284,11 @@
     {
       "from": "app/api/routes.py",
       "to": "app/analysis/cv_mode.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/api/routes.py",
+      "to": "app/analysis/interview.py",
       "type": "imports"
     },
     {
@@ -10465,6 +11328,11 @@
     },
     {
       "from": "app/api/routes.py",
+      "to": "app/api/routes.py::DraftProjectIn",
+      "type": "contains"
+    },
+    {
+      "from": "app/api/routes.py",
       "to": "app/api/routes.py::GapInput",
       "type": "contains"
     },
@@ -10476,6 +11344,11 @@
     {
       "from": "app/api/routes.py",
       "to": "app/api/routes.py::NewRoleIn",
+      "type": "contains"
+    },
+    {
+      "from": "app/api/routes.py",
+      "to": "app/api/routes.py::PrepareIn",
       "type": "contains"
     },
     {
@@ -10501,6 +11374,11 @@
     {
       "from": "app/api/routes.py",
       "to": "app/api/sessions.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/api/routes.py",
+      "to": "app/domain/resume_document.py",
       "type": "imports"
     },
     {
@@ -10640,6 +11518,11 @@
     },
     {
       "from": "app/domain/evidence.py",
+      "to": "tests/unit/test_project_writing_p115.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/evidence.py",
       "to": "tests/unit/test_resume_normalizer.py",
       "type": "tested_by"
     },
@@ -10651,6 +11534,11 @@
     {
       "from": "app/domain/evidence.py",
       "to": "tests/unit/test_semantic_matcher.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/evidence.py",
+      "to": "tests/unit/test_skills_rebuild_p117.py",
       "type": "tested_by"
     },
     {
@@ -10695,6 +11583,11 @@
     },
     {
       "from": "app/domain/job.py",
+      "to": "tests/unit/test_interview_p112.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/job.py",
       "to": "tests/unit/test_jd_analyzer.py",
       "type": "tested_by"
     },
@@ -10735,12 +11628,22 @@
     },
     {
       "from": "app/domain/job.py",
+      "to": "tests/unit/test_project_writing_p115.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/job.py",
       "to": "tests/unit/test_review_view.py",
       "type": "tested_by"
     },
     {
       "from": "app/domain/job.py",
       "to": "tests/unit/test_rewriter.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/job.py",
+      "to": "tests/unit/test_role_brief_p113.py",
       "type": "tested_by"
     },
     {
@@ -10965,7 +11868,17 @@
     },
     {
       "from": "app/domain/resume.py",
+      "to": "tests/unit/test_headline_summary_p116.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/resume.py",
       "to": "tests/unit/test_html_renderer.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/resume.py",
+      "to": "tests/unit/test_interview_p112.py",
       "type": "tested_by"
     },
     {
@@ -11025,6 +11938,11 @@
     },
     {
       "from": "app/domain/resume.py",
+      "to": "tests/unit/test_project_writing_p115.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/resume.py",
       "to": "tests/unit/test_region_p103.py",
       "type": "tested_by"
     },
@@ -11055,7 +11973,17 @@
     },
     {
       "from": "app/domain/resume.py",
+      "to": "tests/unit/test_role_brief_p113.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/resume.py",
       "to": "tests/unit/test_skill_placement_p912.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/resume.py",
+      "to": "tests/unit/test_skills_rebuild_p117.py",
       "type": "tested_by"
     },
     {
@@ -11140,6 +12068,11 @@
     },
     {
       "from": "app/domain/resume_document.py",
+      "to": "tests/unit/test_classic_template_p119.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/resume_document.py",
       "to": "tests/unit/test_cv_mode_p105.py",
       "type": "tested_by"
     },
@@ -11181,6 +12114,11 @@
     {
       "from": "app/domain/resume_document.py",
       "to": "tests/unit/test_project_rewrites.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/resume_document.py",
+      "to": "tests/unit/test_project_writing_p115.py",
       "type": "tested_by"
     },
     {
@@ -11230,6 +12168,11 @@
     },
     {
       "from": "app/domain/tailoring.py",
+      "to": "tests/unit/test_interview_p112.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/tailoring.py",
       "to": "tests/unit/test_new_role.py",
       "type": "tested_by"
     },
@@ -11240,7 +12183,17 @@
     },
     {
       "from": "app/domain/tailoring.py",
+      "to": "tests/unit/test_project_writing_p115.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/tailoring.py",
       "to": "tests/unit/test_rewriter.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/tailoring.py",
+      "to": "tests/unit/test_role_brief_p113.py",
       "type": "tested_by"
     },
     {
@@ -11261,6 +12214,11 @@
     {
       "from": "app/eval/__main__.py",
       "to": "app/eval/judge.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/eval/__main__.py",
+      "to": "app/eval/reference.py",
       "type": "imports"
     },
     {
@@ -11451,6 +12409,31 @@
     {
       "from": "app/eval/judge.py",
       "to": "tests/unit/test_judge.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/eval/reference.py",
+      "to": "app/analysis/interview.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/eval/reference.py",
+      "to": "app/eval/judge.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/eval/reference.py",
+      "to": "app/services/profile_store.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/eval/reference.py",
+      "to": "app/services/tailor.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/eval/reference.py",
+      "to": "tests/unit/test_reference_eval_p1110.py",
       "type": "tested_by"
     },
     {
@@ -11755,6 +12738,11 @@
     },
     {
       "from": "app/llm/schemas.py",
+      "to": "app/llm/schemas.py::BriefCompetency",
+      "type": "contains"
+    },
+    {
+      "from": "app/llm/schemas.py",
       "to": "app/llm/schemas.py::BulletRewriteResult",
       "type": "contains"
     },
@@ -11815,6 +12803,31 @@
     },
     {
       "from": "app/llm/schemas.py",
+      "to": "app/llm/schemas.py::ProjectEvidenceItem",
+      "type": "contains"
+    },
+    {
+      "from": "app/llm/schemas.py",
+      "to": "app/llm/schemas.py::ProjectEvidenceResult",
+      "type": "contains"
+    },
+    {
+      "from": "app/llm/schemas.py",
+      "to": "app/llm/schemas.py::ProjectShows",
+      "type": "contains"
+    },
+    {
+      "from": "app/llm/schemas.py",
+      "to": "app/llm/schemas.py::ProjectWriteResult",
+      "type": "contains"
+    },
+    {
+      "from": "app/llm/schemas.py",
+      "to": "app/llm/schemas.py::RoleBriefResult",
+      "type": "contains"
+    },
+    {
+      "from": "app/llm/schemas.py",
       "to": "app/llm/schemas.py::RoleBulletRewrite",
       "type": "contains"
     },
@@ -11825,12 +12838,32 @@
     },
     {
       "from": "app/llm/schemas.py",
+      "to": "app/llm/schemas.py::SkillGroup",
+      "type": "contains"
+    },
+    {
+      "from": "app/llm/schemas.py",
+      "to": "app/llm/schemas.py::SkillsRebuildResult",
+      "type": "contains"
+    },
+    {
+      "from": "app/llm/schemas.py",
       "to": "app/llm/schemas.py::SummaryResult",
       "type": "contains"
     },
     {
       "from": "app/llm/schemas.py",
+      "to": "app/llm/schemas.py::WrittenProject",
+      "type": "contains"
+    },
+    {
+      "from": "app/llm/schemas.py",
       "to": "tests/unit/test_cli.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/llm/schemas.py",
+      "to": "tests/unit/test_interview_p112.py",
       "type": "tested_by"
     },
     {
@@ -11870,7 +12903,22 @@
     },
     {
       "from": "app/llm/schemas.py",
+      "to": "tests/unit/test_project_writing_p115.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/llm/schemas.py",
       "to": "tests/unit/test_rewriter.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/llm/schemas.py",
+      "to": "tests/unit/test_role_brief_p113.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/llm/schemas.py",
+      "to": "tests/unit/test_skills_rebuild_p117.py",
       "type": "tested_by"
     },
     {
@@ -11970,12 +13018,22 @@
     },
     {
       "from": "app/rendering/html_renderer.py",
+      "to": "app/rendering/template_renderer.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/rendering/html_renderer.py",
       "to": "tests/integration/test_preserve_rewrite_end_to_end.py",
       "type": "tested_by"
     },
     {
       "from": "app/rendering/html_renderer.py",
       "to": "tests/unit/test_academic_cv_p106.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/rendering/html_renderer.py",
+      "to": "tests/unit/test_classic_template_p119.py",
       "type": "tested_by"
     },
     {
@@ -12200,6 +13258,11 @@
     },
     {
       "from": "app/rendering/template_renderer.py",
+      "to": "tests/unit/test_classic_template_p119.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/rendering/template_renderer.py",
       "to": "tests/unit/test_docx_renderer.py",
       "type": "tested_by"
     },
@@ -12300,6 +13363,11 @@
     },
     {
       "from": "app/services/profile_store.py",
+      "to": "tests/unit/test_interview_p112.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/services/profile_store.py",
       "to": "tests/unit/test_profile_store.py",
       "type": "tested_by"
     },
@@ -12331,6 +13399,11 @@
     {
       "from": "app/services/run_manager.py",
       "to": "tests/unit/test_gap_questions.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/services/run_manager.py",
+      "to": "tests/unit/test_interview_p112.py",
       "type": "tested_by"
     },
     {
@@ -12405,6 +13478,11 @@
     },
     {
       "from": "app/services/tailor.py",
+      "to": "app/analysis/interview.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/services/tailor.py",
       "to": "app/analysis/jd_analyzer.py",
       "type": "imports"
     },
@@ -12446,6 +13524,11 @@
     {
       "from": "app/services/tailor.py",
       "to": "app/analysis/rewriter.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/services/tailor.py",
+      "to": "app/analysis/role_brief.py",
       "type": "imports"
     },
     {
@@ -12645,6 +13728,11 @@
     },
     {
       "from": "app/services/tailor.py",
+      "to": "tests/unit/test_classic_template_p119.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/services/tailor.py",
       "to": "tests/unit/test_cli.py",
       "type": "tested_by"
     },
@@ -12680,6 +13768,16 @@
     },
     {
       "from": "app/services/tailor.py",
+      "to": "tests/unit/test_headline_summary_p116.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/services/tailor.py",
+      "to": "tests/unit/test_interview_p112.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/services/tailor.py",
       "to": "tests/unit/test_linkedin_import_p101.py",
       "type": "tested_by"
     },
@@ -12711,6 +13809,16 @@
     {
       "from": "app/services/tailor.py",
       "to": "tests/unit/test_project_select_p1013.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/services/tailor.py",
+      "to": "tests/unit/test_project_writing_p115.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/services/tailor.py",
+      "to": "tests/unit/test_reference_eval_p1110.py",
       "type": "tested_by"
     },
     {
@@ -12865,6 +13973,16 @@
     },
     {
       "from": "app/validation/factual.py",
+      "to": "tests/unit/test_project_writing_p115.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/validation/factual.py",
+      "to": "tests/unit/test_skills_rebuild_p117.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/validation/factual.py",
       "to": "tests/unit/test_skills_tailor.py",
       "type": "tested_by"
     },
@@ -12921,6 +14039,11 @@
     {
       "from": "app/validation/output.py",
       "to": "tests/unit/test_ats_round_trip.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/validation/output.py",
+      "to": "tests/unit/test_classic_template_p119.py",
       "type": "tested_by"
     },
     {
@@ -13010,6 +14133,11 @@
     },
     {
       "from": "tests/unit/test_api.py",
+      "to": "tests/unit/test_interview_p112.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "tests/unit/test_api.py",
       "to": "tests/unit/test_project_select_p1013.py",
       "type": "tested_by"
     },
@@ -13051,6 +14179,31 @@
     {
       "from": "tests/unit/test_project_select_p1013.py",
       "to": "tests/unit/test_project_select_p1013.py::_HeadingLLM",
+      "type": "contains"
+    },
+    {
+      "from": "tests/unit/test_project_writing_p115.py",
+      "to": "tests/unit/test_project_writing_p115.py::_WriterLLM",
+      "type": "contains"
+    },
+    {
+      "from": "tests/unit/test_reference_eval_p1110.py",
+      "to": "tests/unit/test_reference_eval_p1110.py::_Judge",
+      "type": "contains"
+    },
+    {
+      "from": "tests/unit/test_role_brief_p113.py",
+      "to": "tests/unit/test_role_brief_p113.py::_BriefLLM",
+      "type": "contains"
+    },
+    {
+      "from": "tests/unit/test_role_brief_p113.py",
+      "to": "tests/unit/test_role_brief_p113.py::_MapLLM",
+      "type": "contains"
+    },
+    {
+      "from": "tests/unit/test_skills_rebuild_p117.py",
+      "to": "tests/unit/test_skills_rebuild_p117.py::_SkillsLLM",
       "type": "contains"
     },
     {

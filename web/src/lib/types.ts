@@ -122,7 +122,7 @@ export type ProposalState = "failed" | "dropped" | "check" | "unchanged" | "pass
 
 export interface Proposal {
   id: string;
-  kind: "bullet" | "summary" | "skills" | "heading";
+  kind: "bullet" | "summary" | "skills" | "heading" | "project";
   section: { id: string; kind: "experience" | "project"; label: string } | null;
   target?: string | null; // the bullet's id (P10.13: its card hides with a left-out project)
   original: string;
@@ -204,6 +204,36 @@ export interface ProjectChoice {
   impact: number;
 }
 
+/** What the job really needs (P11.3): stated by the JD or inferred from its words. */
+export interface RoleBrief {
+  target_title: string;
+  competencies: { name: string; kind: "stated" | "inferred"; jd_words: string; look_for: string[] }[];
+  positioning: string;
+  source: "llm" | "heuristic";
+  headline?: string; // the target title as far as your own titles support it (P11.6)
+}
+
+/** A question asked before drafting (P11.2): a job need no project shows
+ *  yet, or a project with no number on it. */
+export interface InterviewQuestion {
+  id: string;
+  kind: "need" | "figure";
+  competency: string;
+  experience_id: string;
+  project: string;
+  job: string;
+  question: string;
+  hint: string;
+  saved_answer: string;
+  options?: { experience_id: string; project: string; label: string }[]; // where a need's answer can go
+}
+
+export interface PrepareResult {
+  details?: Details;
+  role_brief: RoleBrief | null;
+  questions: InterviewQuestion[];
+}
+
 export interface ProposalsResult {
   details?: Details; // what the server holds after the corrections (added jobs included)
   proposals: Proposal[];
@@ -216,6 +246,7 @@ export interface ProposalsResult {
   region?: RegionInfo;
   cv_mode?: CvModeInfo;
   projects?: ProjectChoice[]; // P10.13
+  role_brief?: RoleBrief | null; // P11.3
   projects_ranked_by_impact?: boolean; // the job description was too short to rank projects by
   llm: LlmStatus;
 }
@@ -291,7 +322,10 @@ export interface Layout {
   trim: boolean;
   region?: string | null; // P10.3: null keeps the run's
   cv_mode?: string | null; // P10.5: null keeps the run's
+  style?: string | null; // P11.9: "standard" or "classic"; null keeps the run's
 }
+
+export const STYLE_LABELS: Record<string, string> = { standard: "Standard", classic: "Classic" };
 
 export interface TrimmedItem {
   kind: "bullet" | "project" | "interests";

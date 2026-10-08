@@ -8,6 +8,7 @@ import { type Intent, resolveModel, useApp } from "./lib/store";
 import { useTheme } from "./lib/useTheme";
 import { Details } from "./pages/Details";
 import { Landing } from "./pages/Landing";
+import { Questions } from "./pages/Questions";
 import { Report } from "./pages/Report";
 import { Review } from "./pages/Review";
 import { Results } from "./pages/Results";
@@ -48,7 +49,7 @@ export function App() {
    *  even if this one fails (the server has already reset its side). */
   const freshRun = (intent: Intent, file: File, jdText: string, template = run.template, notes = run.notes) => {
     updateRun({ intent, file, notes, jdText, template, report: null, details: null, parseIssues: [], parseNotes: [], unplaced: [],
-      toVerify: [], drafted: null, review: null, results: null });
+      toVerify: [], prepared: null, answers: {}, drafted: null, review: null, results: null });
     useApp.setState({ reached: 0 });
   };
 
@@ -85,6 +86,9 @@ export function App() {
   switch (step) {
     case "details":
       page = run.details ? <Details /> : null;
+      break;
+    case "questions":
+      page = run.prepared ? <Questions /> : null;
       break;
     case "review":
       page = run.drafted ? <Review /> : null;

@@ -4,9 +4,9 @@ import { Icon } from "../components/Icon";
 import { arrangeResume, friendlyError, previewUrl } from "../lib/api";
 import {
   dropBullet, editBullet, keepTrimmed, moveBullet, moveEntry, moveGroup, moveSection, orderedEntries, orderedGroups,
-  orderedSections, placeBefore, reordered, restoreOriginalOrder, sameLayout, setCvMode, setPageTarget, setRegion, toggleBullet, toggleSection,
+  orderedSections, placeBefore, reordered, restoreOriginalOrder, sameLayout, setCvMode, setPageTarget, setRegion, setStyle, toggleBullet, toggleSection,
 } from "../lib/arrange";
-import { CV_MODE_LABELS, REGION_LABELS, type ArrangeBullet, type ArrangeEntry, type ArrangeSection, type Arrangement, type Layout, type TailorResult } from "../lib/types";
+import { CV_MODE_LABELS, REGION_LABELS, STYLE_LABELS, type ArrangeBullet, type ArrangeEntry, type ArrangeSection, type Arrangement, type Layout, type TailorResult } from "../lib/types";
 import { useFocusHeading } from "../lib/useFocusHeading";
 
 const UPDATE_DELAY_MS = 900;
@@ -311,6 +311,24 @@ export function Arrange({ result, onResult, onBack }: {
             <p className="m-0 text-xs text-muted">
               Automatic fits 1 page under 8 years of experience and 2 from 8 years (an Academic CV or US Federal resume: its full length). Don't trim keeps everything, however long.
               Lines you keep or reword are never trimmed; to make room, something less relevant may be.
+            </p>
+          </fieldset>
+
+          <fieldset className="sheet flex flex-col gap-3 rounded-[3px] p-5 md:p-6">
+            <legend className="float-left mb-2 text-[15px] font-bold">Look</legend>
+            <div className="clear-both flex flex-wrap gap-2.5">
+              {Object.entries(STYLE_LABELS).map(([value, label]) => (
+                <label key={value} className={`flex min-h-11 cursor-pointer items-center gap-2 rounded-[3px] border px-4 text-sm font-medium has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-pencil ${
+                  (layout.style ?? "standard") === value ? "border-pencil bg-pencil-soft" : "border-field hover:border-ink"}`}>
+                  <input type="radio" name="style" className="size-4" checked={(layout.style ?? "standard") === value}
+                    onChange={() => change(setStyle(layout, value))} />
+                  {label}
+                </label>
+              ))}
+            </div>
+            <p className="m-0 text-xs text-muted">
+              Classic puts each company first, with a rule between jobs, figures in bold and a serif font. Both read cleanly in
+              applicant-tracking systems.
             </p>
           </fieldset>
 

@@ -1,6 +1,6 @@
 # Project Overview — Resume-optimizer
 
-_Start here. Last reviewed: 2026-10-07 (branch `fb_ksh`). Hand-maintained — update it when capabilities or open
+_Start here. Last reviewed: 2026-10-09 (branch `fb_ksh`). Hand-maintained — update it when capabilities or open
 issues change. For "where is X in the code" see [KNOWLEDGE_GRAPH.md](KNOWLEDGE_GRAPH.md); for "what changed when"
 see [CHANGE_LOG.md](CHANGE_LOG.md)._
 
@@ -68,7 +68,12 @@ Semantic matching uses a local embedding model (`all-MiniLM-L6-v2`).
 | Resumes outside tech, outside the US, not in English | ✅ Works | Unknown sections kept verbatim under their own heading; header details kept; non-tech job-line formats, EU / US numeric dates, seasons, "Till Date"; phone formats worldwide; text boxes; .txt, pasted text, .doc / .odt / .rtf; a content coverage check fails any run that loses a line (P8.1–P8.8, P8.22). Non-English text is kept and named "English only for now" (P8.25) |
 | Fair score | ✅ Works | Alternatives, slash terms ("Compact/NLC", "PL/SQL"), acronyms, degree levels, places excluded, sections kept verbatim (Clinical Rotations, Volunteer) read too (P9.15), skills-only keywords at a quarter credit, perks never keywords, low scores explained, job conditions (licences, shifts, lifting…) as a separate checklist (P8.17–P8.21) |
 | Multiple JDs / history / cover letter | ❌ Not built | Backlog in Phase 8 |
-| Strategist mode (interview, role brief, project-level writing, skills from evidence, classic template) | ❌ Planned | Phase 11, P11.1–P11.10, after a 2026-10-08 comparison with a Claude-chat resume |
+| Project notes beside the resume | ✅ Works | A project bank file or pasted notes: new jobs and projects merged in, overviews and figures kept as project evidence, lines the notes doubt ("to verify", superseded) held back and listed (P11.1) |
+| Role brief and project choice | ✅ Works | What the job really needs (stated or inferred from its words), a map of which projects show each need with a quote of their own words, projects chosen to cover different needs (P11.3, P11.4) |
+| Questions before writing | ✅ Works | A Questions step asks about needs nothing shows yet and projects with no figure; answers become that project's evidence and bullets, saved for next time (P11.2) |
+| Project-level writing | ✅ Works | Each project written whole from all its material (built → how → result), every new bullet fact-checked against that material; headline from the job's title as far as the owner's titles support it; Skills rebuilt from evidence (P11.5–P11.7) |
+| Classic template | ✅ Works (option) | Company first, rule between jobs, figures in bold, serif; reads back like the standard one (P11.9) |
+| Reference eval | 🟡 Built | `python -m app.eval reference <private case>`: Tailores vs another resume, judged both ways round; the live gate waits for the owner's answers (P11.10) |
 
 ## Open issues
 
@@ -80,21 +85,27 @@ and unused prompts (P0.8, P1.10) are all fixed. What remains:
    nowhere on GitHub, so it never granted access. It's untracked, gitignored and deleted locally, but still in history,
    so **never register that key anywhere**.
 2. **Groq free-tier daily limit (200K tokens/day)** is shared by all development runs; a full real-resume run costs
-   ~13K. Live gate runs can be blocked for hours. Local Ollama (`qwen3:4b`) is too heavy for the 8 GB development
+   ~13K; with Phase 11 (notes, brief, project map, project writing, skills) a run with a large project bank costs
+   ~27K over about 8 calls, so about 7 such runs a day, and per-minute 429 waits stretch it to ~3 minutes.
+   Live gate runs can be blocked for hours. Local Ollama (`qwen3:4b`) is too heavy for the 8 GB development
    machine; its config fixes are parked in `git stash` ("ollama backup").
 3. **Summary years** (resolved 2026-10-05, P9.9): the summary reuses the years the resume itself states ("3.6 years",
    "3 years 7 months"); the figure computed from role dates ("4+ years") is used only when the resume states none.
-   The user can still edit the summary in Review.
-4. **User's source resume** has "LinkedIn | Email | Leetcode" placeholder text with no hyperlinks (to fix in their
+   The user can still edit the summary in Review. Since P11.6 a job added in the run (from notes or on Check
+   details) makes the stated figure out of date, and the computed years are used.
+4. **LinkedIn export education doesn't read back** (seen 2026-10-09 with both templates): "Bachelor of Engineering -
+   BE, Computer Science  2013 – 2017" is rendered but the ATS read-back doesn't find the entry. Pre-existing, not logged
+   as an item yet.
+5. **User's source resume** has "LinkedIn | Email | Leetcode" placeholder text with no hyperlinks (to fix in their
    own file).
-5. **Rewrites can borrow the job's wording** (was P1.15, now P8.9): a fact-checked rewrite added "batch pipeline",
+6. **Rewrites can borrow the job's wording** (was P1.15, now P8.9): a fact-checked rewrite added "batch pipeline",
    which appears only in the JD. **Report status vs keywords** (was P1.16, now P8.18): a requirement can read "not
    shown" while all its keywords are found.
-6. **Cross-domain user testing (2026-10-02), Phase 8 (all 26 items done 2026-10-03, stages H–L):** 39 findings (U1–U39) from 19 non-tech, non-US and
+7. **Cross-domain user testing (2026-10-02), Phase 8 (all 26 items done 2026-10-03, stages H–L):** 39 findings (U1–U39) from 19 non-tech, non-US and
    non-English personas, including silent section loss, misattributed facts, dropped phone numbers and an unfair
    score. See [user_testing/2026-10-02/FINDINGS.md](user_testing/2026-10-02/FINDINGS.md). Planned in
    [ACTION_ITEMS.md](ACTION_ITEMS.md) as P8.1–P8.26, stages H–L.
-7. **Phase 9 close-out (P9.1–P9.5 done 2026-10-04):** the Stage L gate is finished: an independent review of
+8. **Phase 9 close-out (P9.1–P9.5 done 2026-10-04):** the Stage L gate is finished: an independent review of
    P8.22–P8.26 (6 issues fixed, the worst being every section heading added to the output as "Additional
    information"), a timed edge-file sweep with no 500s, a real-browser walkthrough, and a live private run of the
    owner's resume (golden parse, 12/12 bullets handled, 100% coverage, clean read-back, 1 page; Groq per-minute
@@ -106,7 +117,7 @@ and unused prompts (P0.8, P1.10) are all fixed. What remains:
    and india found seven real problems, all fixed (P9.15–P9.21: custom sections and slash words in the match, usage
    counted twice, a repeated "Skills:" label, unchanged bullets listed as rewrites, a comma title read back wrong, a
    city kept in the company); the live-AI browser walkthrough passed (P9.11). **Stage N done (2026-10-06):** eu_cv passes (German kept verbatim); academic found three more problems, all fixed (P9.23 JD skills matched inside longer words, P9.24 a current job's bullets turned into the past tense, P9.25 "Grants And Funding"); its 3 pages wait for the Academic CV template (P10.6). Private live run clean. **Stage O (2026-10-07):** LinkedIn "Save to PDF" import built (P10.1) against an anonymized fixture and golden file; gate passed. **Stage P, output formats (P10.2–P10.7), in progress:** one page spec (A4 or US Letter) drives the DOCX, the HTML preview and page-fit (P10.2). The region is suggested from the JD with its evidence, confirmed on Review and switchable in Arrange: US gets Letter and 01/2022 dates; personal details get advice for US / UK / EU jobs (P10.3). PDFs are tagged for screen readers (P10.4). The CV type (standard, Academic CV, US Federal) is suggested from resume and JD signals and confirmed by the user; academic and federal have no page cap (P10.5). The Academic CV uses CV order, "Academic Appointments", appointments listed under Education moved to jobs, and publications word for word and numbered (P10.6). The US Federal resume prints each job's fields (hours, salary, series / grade, supervisor) on their own lines, word for word, in USAJOBS order; header and job field lines now count for keyword matching (P10.7). Groq strict-JSON rejections that repeat now fall back to plain JSON mode with a readable error (P9.22).
-8. **Groq free tier, per minute:** 8K tokens per minute means role rewrites can wait 30–60 s each on a busy run.
+9. **Groq free tier, per minute:** 8K tokens per minute means role rewrites can wait 30–60 s each on a busy run.
    That is now waited out (shown as progress), so a real run takes ~1–2 minutes of drafting. The same cap can leave a long role's answer
    out of completion tokens on every try; such a role is now retried in two halves (P10.10).
 

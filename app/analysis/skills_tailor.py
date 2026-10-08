@@ -184,3 +184,69 @@ def skill_category(skills: Dict[str, List[str]], term: str) -> str:
                 return cat
         return _NEW_CATEGORY[kind]
     return next((c for c in skills if _GENERIC_CATEGORY_RE.match(c)), OTHER_SKILLS)
+
+
+# ---------------------------------------------------------------------------
+# Skills rebuilt from evidence (P11.7)
+#
+# The section was reorder-only (P1.6), so a resume kept its 2022 skills list
+# while the bullets and notes named BigQuery, MLflow and Prophet. Now one AI
+# call groups what the candidate's own material names, under categories
+# shaped by the job; code keeps an item only when it is found in the material
+# (the resume, the project notes, the interview answers) or the old section.
+# ---------------------------------------------------------------------------
+
+def _in_material(item: str, material_keys: str) -> bool:
+    key = _key(item)
+    return bool(key) and f" {key} " in material_keys
+
+
+def rebuild_skills(resume: Resume, evidence, brief, llm_client) -> Optional[ChangeProposal]:
+    """A skills proposal rebuilt from evidence, or None (no AI, nothing usable)."""
+    if not llm_client or not llm_client.is_available():
+        return None
+    import os
+    from app.llm.schemas import SkillsRebuildResult
+    texts = [b.text for e in resume.experience for b in e.bullets] + [b.text for p in resume.projects for b in p.bullets]
+    texts += [ev.text for ev in evidence if ev.source_type in ("general", "skill", "experience", "project")]
+    current = format_skills(resume.skills) if resume.skills else "(none)"
+    material = list(dict.fromkeys(t for t in texts if t))
+    needs = ", ".join(c.name for c in getattr(brief, "competencies", []) or []) or "(not given)"
+    user = "\n".join([f"The job's needs: {needs}", "", "Current Skills section:", current, "", "Material:",
+                       *[f"- {t[:240]}" for t in material[:120]]])
+    path = os.path.join(os.path.dirname(__file__), "..", "llm", "prompts", "skills_rebuild.txt")
+    with open(path, encoding="utf-8") as f:
+        system = f.read()
+    try:
+        result = llm_client.generate_json(
+            messages=[{"role": "system", "content": system}, {"role": "user", "content": user}],
+            schema_model=SkillsRebuildResult, temperature=0.0, effort="medium")
+    except Exception:
+        return None
+    keys = " " + " ".join(_key(t) for t in material + [current]) + " "
+    groups: Dict[str, List[str]] = {}
+    seen = set()
+    for g in result.groups:
+        name = re.sub(r"\s+", " ", g.category or "").strip().rstrip(":")
+        if not name or len(name.split()) > 4:
+            continue
+        for item in g.items:
+            item = re.sub(r"\s+", " ", item or "").strip()
+            if item and _key(item) not in seen and _in_material(item, keys):
+                groups.setdefault(name, []).append(item)
+                seen.add(_key(item))
+    if sum(len(v) for v in groups.values()) < 4:
+        return None
+    dropped = [d for d in result.dropped if any(_key(d) == _key(i) for items in resume.skills.values() for i in items)]
+    added = [i for items in groups.values() for i in items
+             if not any(_key(i) == _key(o) for items_o in resume.skills.values() for o in items_o)]
+    rationale = "Skills rebuilt from your own bullets and notes, grouped for this job"
+    if added:
+        rationale += f"; added from your work: {', '.join(added[:8])}" + ("…" if len(added) > 8 else "")
+    if dropped:
+        rationale += f"; left out: {', '.join(dropped[:6])}"
+    return ChangeProposal(
+        id=f"prop_{uuid4().hex[:8]}", target_semantic_id=SKILLS_TARGET, target_source_location_id=SKILLS_TARGET,
+        kind="skills", original_text=format_skills(resume.skills) if resume.skills else "",
+        proposed_text=format_skills(groups), rationale=rationale, status="ok",
+    )

@@ -2,11 +2,12 @@ import type { ProjectChoice } from "../lib/types";
 
 /** Which projects each job keeps for this job description (P10.13): the
  *  suggestion with its reason, and a tick to keep or leave out any project. */
-export function ProjectChoices({ projects, rankedByImpact, leftOut, onToggle }: {
+export function ProjectChoices({ projects, rankedByImpact, leftOut, onToggle, drafting = null }: {
   projects: ProjectChoice[];
   rankedByImpact: boolean;
   leftOut: string[];
   onToggle: (key: string) => void;
+  drafting?: string | null; // a project brought back, being written (P11.11)
 }) {
   if (!projects.length) return null;
   const jobs: { id: string; label: string; items: ProjectChoice[] }[] = [];
@@ -24,7 +25,7 @@ export function ProjectChoices({ projects, rankedByImpact, leftOut, onToggle }: 
           {rankedByImpact
             ? "The job description is short, so projects are ranked mostly by impact: in production, scale and results, awards. "
             : "Each job keeps the projects closest to this job. "}
-          Untick a project to leave it out, or tick one to bring it back. A project brought back keeps your wording.
+          Untick a project to leave it out, or tick one to bring it back; it's written like the rest.
         </p>
       </div>
       {jobs.map((job) => (
@@ -46,6 +47,7 @@ export function ProjectChoices({ projects, rankedByImpact, leftOut, onToggle }: 
                   <span className={kept ? "font-medium text-ink" : "text-muted line-through decoration-1"}>{p.name}</span>
                   <span id={`${id}-why`} className="text-[13px] text-muted">
                     {p.chosen ? "Suggested. " : "Not suggested. "}{p.reason}.
+                    {drafting === p.key ? <span role="status" className="ml-1 text-pencil">Writing it now…</span> : null}
                   </span>
                 </label>
               </div>

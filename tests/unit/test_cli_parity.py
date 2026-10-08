@@ -29,7 +29,8 @@ def _service(tmp_path):
 def test_progress_is_reported_for_both_steps(tmp_path):
     service, seen = _service(tmp_path), []
     generated = service.generate_proposals(RESUME, JD, progress=seen.append)
-    assert seen[:3] == ["Reading your resume", "Analysing the job description",
+    assert seen[:4] == ["Reading your resume", "Analysing the job description",
+                        "Working out what the job really needs",  # the role brief (P11.3)
                         "Matching your resume to the job's keywords"]
     assert any(m.startswith("Rewriting") for m in seen)
     seen.clear()

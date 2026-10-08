@@ -14,6 +14,7 @@ from app.analysis.jd_analyzer import JDAnalyzer
 from app.analysis.keyword_match import KeywordMatcher, _contains_seq, reconcile, resume_sections, tokens
 from app.analysis.matcher import EvidenceMatcher
 from app.analysis.project_select import left_out_ids, remove_bullets
+from app.analysis.role_brief import map_projects, with_headline, write_brief
 from app.analysis.resume_normalizer import ResumeNormalizer
 from app.analysis.rewriter import FAILED_STATUSES, LLMRewriter, RewriteProposal
 from app.analysis.scoring import AlignmentScorer
@@ -26,7 +27,7 @@ from app.domain.evidence import Evidence
 from app.domain.job import JobDescription
 from app.domain.report import TailoringReport
 from app.domain.resume import Experience, OtherSection, Project, Resume, ResumeBullet, Role, SectionLine
-from app.domain.resume_document import ResumeDocument, ResumeSource
+from app.domain.resume_document import STYLES, ResumeDocument, ResumeSource, apply_style
 from app.domain.tailoring import TailoringPlan
 from app.ingestion.docx import DocxParser
 from app.ingestion.linkedin import LAYOUT as LINKEDIN_LAYOUT, NOTE as LINKEDIN_NOTE
@@ -375,14 +376,19 @@ class TailorService:
                      + f" with {len(exp.bullets)} bullet(s) from your description.")
         return resume, evidence_list, notes
 
-    def _skills_proposals(self, resume, keyword_report) -> List[RewriteProposal]:
-        """The skills section with the JD's skills first, when that changes it (P1.6)."""
+    def _skills_proposals(self, resume, keyword_report, evidence_list=None, brief=None) -> List[RewriteProposal]:
+        """The skills section rebuilt from the candidate's evidence for this job
+        (P11.7), or else with the JD's skills first, when that changes it (P1.6)."""
+        from app.analysis.skills_tailor import rebuild_skills
+        rebuilt = rebuild_skills(resume, evidence_list or [], brief, self.llm_client) if brief is not None else None
+        if rebuilt is not None:
+            return [rebuilt]
         proposal = self.skills_tailor.propose(resume, keyword_report)
         return [proposal] if proposal is not None else []
 
-    def _summary_proposals(self, resume, job_desc, keyword_report, evidence_list) -> List[RewriteProposal]:
+    def _summary_proposals(self, resume, job_desc, keyword_report, evidence_list, brief=None) -> List[RewriteProposal]:
         """The tailored summary as a proposal, when one was written (P1.5)."""
-        proposal = self.summary_writer.propose(resume, job_desc, keyword_report, evidence_list)
+        proposal = self.summary_writer.propose(resume, job_desc, keyword_report, evidence_list, brief=brief)
         return [proposal] if proposal is not None and proposal.status == "ok" else []
 
     def _embed(self, texts):
@@ -440,6 +446,41 @@ class TailorService:
         return content_coverage(raw_doc.blocks, docx_text(docx_path), heading_texts=resume_doc.section_headings,
                                 reworded_blocks=reworded, trimmed_blocks=trimmed, removed_text="\n".join(removed),
                                 ignore_words=list(original.skills))
+
+    @staticmethod
+    def _project_notes(evidence_list) -> Dict[str, List[str]]:
+        """A project's notes from the owner's project bank (P11.1), by project key."""
+        notes: Dict[str, List[str]] = {}
+        for ev in evidence_list:
+            if "::" in (ev.source_id or ""):
+                notes.setdefault(ev.source_id, []).append(ev.text)
+        return notes
+
+    @staticmethod
+    def _apply_projects(resume: Resume, resume_doc: ResumeDocument, approved: List, evidence_list: List) -> int:
+        """Replace each accepted project's bullets with its new ones (P11.5),
+        in place; the old lines count as reworded, not lost, and stay as evidence."""
+        done = 0
+        for p in approved:
+            if getattr(p, "kind", "bullet") != "project":
+                continue
+            exp_id, _, name = (getattr(p, "target_semantic_id", "") or "").partition("::")
+            lines = [l.strip() for l in (getattr(p, "proposed_text", None) or "").splitlines() if l.strip()]
+            exp = next((e for e in resume.experience if e.id == exp_id), None)
+            if not exp or not lines:
+                continue
+            old = [b for b in exp.bullets if b.group == name]
+            if not old:
+                continue  # left out after all
+            at = exp.bullets.index(old[0])
+            new = [ResumeBullet(id=f"{exp.id}_w{uuid4().hex[:6]}", text=line, group=name) for line in lines]
+            exp.bullets = [b for b in exp.bullets if b.group != name]
+            exp.bullets[at:at] = new
+            resume_doc.user_changed_blocks.extend(b.source_location_id for b in old if b.source_location_id)
+            evidence_list.extend(Evidence(id=f"ev_proj_{uuid4().hex[:6]}", source_type="experience", source_id=b.id,
+                                          text=f"{exp.company}: {b.text}") for b in new)
+            done += 1
+        return done
 
     @staticmethod
     def _rename_headings(resume: Resume, resume_doc: ResumeDocument, raw_doc, approved: List, kept_projects: set,
@@ -615,6 +656,15 @@ class TailorService:
                     for b in section.bullets:
                         if b.id == p.get("target_semantic_id"):
                             b.text = text
+            elif kind == "project":  # P11.5: the project's new bullets, in place of its old ones
+                exp_id, _, name = (p.get("target_semantic_id") or "").partition("::")
+                for e in resume.experience:
+                    if e.id == exp_id and any(b.group == name for b in e.bullets):
+                        at = next(i for i, b in enumerate(e.bullets) if b.group == name)
+                        new = [ResumeBullet(id=f"{e.id}_preview{i}", text=l.strip(), group=name)
+                               for i, l in enumerate(text.splitlines()) if l.strip()]
+                        e.bullets = [b for b in e.bullets if b.group != name]
+                        e.bullets[at:at] = new
         return self.keyword_matcher.match(job_desc, resume)
 
     def apply_parse_corrections(self, parsed, corrections: Dict):
@@ -782,8 +832,68 @@ class TailorService:
                 ("resume", other_language(raw_doc.raw_text)), ("job description", other_language(jd_text))) if lang],
         )
 
+    def prepare(self, parsed, jd_text: str, progress: Optional[Callable[[str], None]] = None) -> Dict:
+        """Before drafting (P11.2): read the job, write the role brief, map
+        the projects to it, and build the interview. Returns {job_description,
+        role_brief, questions}; drafting reuses all of it."""
+        from app.analysis.interview import build_interview
+        step = _progress(progress)
+        if self.llm_client is not None and progress is not None:
+            self.llm_client.on_wait = step
+        _raw, resume_doc, evidence_list = parsed
+        resume = resume_doc.resume
+        step("Analysing the job description")
+        job_desc = self.jd_analyzer.analyze(self.safety_guard.sanitize(jd_text))
+        step("Working out what the job really needs")
+        notes = self._project_notes(evidence_list)
+        brief = map_projects(write_brief(job_desc, resume, self.llm_client), resume, notes, self.llm_client)
+        brief = with_headline(brief, job_desc, resume)
+        step("Finding what to ask you")
+        matches = self.matcher.match(job_desc, evidence_list)
+        plan = self.planner.create_plan(resume, job_desc, evidence_list, matches, brief=brief)
+        questions = build_interview(resume, brief, plan.projects, embedder=self._embed, notes=notes)
+        try:
+            self.profile_store.prefill_interview(questions)
+        except Exception:
+            pass  # a saved answer is a convenience, never a reason to fail
+        return {"job_description": job_desc, "role_brief": brief, "questions": questions}
+
+    def draft_project(self, parsed, key: str, job_desc: JobDescription, brief=None) -> List[RewriteProposal]:
+        """P11.11: a project ticked back on Review is written like the rest
+        (it wasn't sent to the AI while left out); fact-checked here."""
+        _raw, resume_doc, evidence_list = parsed
+        exp_id, _, name = key.partition("::")
+        exp = next((e for e in resume_doc.resume.experience if e.id == exp_id), None)
+        bullets = [b for b in exp.bullets if b.group == name] if exp else []
+        if not bullets or not self.llm_client or not self.llm_client.is_available():
+            return []
+        proposals = self.rewriter.propose_projects(exp, [(name, bullets)], evidence_list, brief)
+        for prop in proposals:
+            res = self.validator.validate_proposal(prop, evidence_list, jd_keywords=job_desc.keywords,
+                                                 jd_text=job_desc.raw_text)
+            prop.validation = res.verdict
+            prop.validation_note = "; ".join(res.warnings) or None
+        return proposals
+
+    def apply_answers(self, parsed, brief, questions, answers, remember: bool = True):
+        """The interview's answers as evidence and bullets of their projects
+        (P11.2), on a copy of the parsed resume. Returns (parsed, brief, notes)."""
+        from app.analysis.interview import apply_interview
+        if not answers:
+            return parsed, brief, []
+        raw_doc, resume_doc, evidence_list = self._copy_parsed(parsed)
+        brief = brief.model_copy(deep=True) if brief is not None else None
+        notes = apply_interview(resume_doc.resume, evidence_list, brief, questions, answers)
+        if remember:
+            try:
+                self.profile_store.record_interview(questions, answers)
+            except Exception:
+                pass
+        return (raw_doc, resume_doc, evidence_list), brief, notes
+
     def generate_proposals(self, resume_path: str, jd_text: str, suggestion_limit: int = 5,
-                           parsed=None, progress: Optional[Callable[[str], None]] = None) -> Dict:
+                           parsed=None, progress: Optional[Callable[[str], None]] = None,
+                           job_desc: Optional[JobDescription] = None, brief=None) -> Dict:
         """Generate rewrite proposals without applying them, plus questions
         about JD keywords the resume doesn't show (P3.1).
 
@@ -802,19 +912,26 @@ class TailorService:
             self._copy_parsed(parsed) if parsed is not None else self.parse_resume(resume_path)
         )
         resume = resume_doc.resume
-        step("Analysing the job description")
-        job_desc = self.jd_analyzer.analyze(clean_jd_text)
+        # Prepared before the interview (P11.2) when given; otherwise read now.
+        if job_desc is None:
+            step("Analysing the job description")
+            job_desc = self.jd_analyzer.analyze(clean_jd_text)
+        if brief is None:
+            step("Working out what the job really needs")
+            brief = write_brief(job_desc, resume, self.llm_client)  # P11.3
+            brief = map_projects(brief, resume, self._project_notes(evidence_list), self.llm_client)  # P11.4
+            brief = with_headline(brief, job_desc, resume)
         step("Matching your resume to the job's keywords")
         matches = self.matcher.match(job_desc, evidence_list)
         matches = self.semantic_matcher.match(job_desc.requirements, evidence_list, matches)
         matches = reconcile(matches, self.keyword_matcher.match(job_desc, resume))
         keyword_report = self.keyword_matcher.match(job_desc, resume)
         score = keyword_report.rate
-        plan = self.planner.create_plan(resume, job_desc, evidence_list, matches)
+        plan = self.planner.create_plan(resume, job_desc, evidence_list, matches, brief=brief)
         step("Writing a tailored summary")
-        proposals = self._summary_proposals(resume, job_desc, keyword_report, evidence_list)
-        proposals += self._skills_proposals(resume, keyword_report)
-        proposals += self.rewriter.execute_plan(resume, plan, evidence_list, job_desc, progress=step)
+        proposals = self._summary_proposals(resume, job_desc, keyword_report, evidence_list, brief=brief)
+        proposals += self._skills_proposals(resume, keyword_report, evidence_list, brief)
+        proposals += self.rewriter.execute_plan(resume, plan, evidence_list, job_desc, progress=step, brief=brief)
         step("Fact-checking every proposal")
         # Fact-check now so the review UI can show each proposal's verdict
         # (and what would be dropped) before the user applies anything.
@@ -857,6 +974,7 @@ class TailorService:
             "llm_usage": self.llm_client.get_usage_summary() if self.llm_client else None,
             "parse_issues": list(self.last_parse_issues),
             "experience_options": [{"id": e.id, "label": " — ".join(v for v in (e.company, e.title) if v) or e.id} for e in resume.experience],
+            "role_brief": brief,
             # P10.13: projects kept and left out per job, with the reason.
             "projects": list(plan.projects),
             "projects_ranked_by_impact": plan.ranked_by_impact,
@@ -964,6 +1082,9 @@ class TailorService:
         region: Optional[str] = None,
         cv_mode: Optional[str] = None,
         left_out_projects: Optional[List[str]] = None,
+        role_brief=None,
+        brief_edits: Optional[Dict[str, str]] = None,
+        style: Optional[str] = None,
     ) -> Dict[str, str]:
         """`region` ("us", "uk_eu", "india", "other", P10.3) sets the paper
         and date style; None keeps the template's default (A4, "Jan 2022").
@@ -1048,7 +1169,11 @@ class TailorService:
 
         # The planner is deterministic (no LLM calls), so it always runs: its
         # plan feeds plan.json and the unsupported-requirements report.
-        plan = self.planner.create_plan(resume, job_desc, evidence_list, matches)
+        # The role brief from drafting (P11.3); the CLI, with no drafting step, writes its own.
+        if role_brief is None:
+            role_brief = write_brief(job_desc, resume, self.llm_client)
+            role_brief = map_projects(role_brief, resume, self._project_notes(evidence_list), self.llm_client)
+        plan = self.planner.create_plan(resume, job_desc, evidence_list, matches, brief=role_brief)
         if preapproved_proposals is not None:
             # The user already reviewed proposals in the UI. Re-running the
             # rewriter here would repeat every LLM call and then throw the
@@ -1058,7 +1183,7 @@ class TailorService:
         else:
             proposals = self._summary_proposals(resume, job_desc, initial_keywords, evidence_list)
             proposals += self._skills_proposals(resume, initial_keywords)
-            proposals += self.rewriter.execute_plan(resume, plan, evidence_list, job_desc)
+            proposals += self.rewriter.execute_plan(resume, plan, evidence_list, job_desc, brief=role_brief)
             # Nobody reviewed these: an opt-in proposal (a summary replacing
             # the user's own) stays out unless chosen (Stage I review).
             proposals = [p for p in proposals if not getattr(p, "opt_in", False)]
@@ -1177,6 +1302,18 @@ class TailorService:
                 pass  # revision history is best-effort; never fail the run for it
             _append_progress(f"Applied {len(approved_proposals)} approved rewrites to canonical resume model")
 
+        # The headline under the name (P11.6): as confirmed on Review; with no one
+        # to ask (CLI), the evidenced title fills an empty one.
+        title = ((brief_edits or {}).get("title") if brief_edits is not None
+                 else (getattr(role_brief, "headline", "") if not resume.candidate.headline else ""))
+        if title and title.strip() and title.strip() != (resume.candidate.headline or ""):
+            old_headline = (resume.candidate.headline or "").strip()
+            if old_headline and raw_doc is not None:  # the file's own headline line: reworded, not lost
+                resume_doc.user_changed_blocks.extend(
+                    b.id for b in raw_doc.blocks if re.sub(r"\s+", " ", b.text).strip() == old_headline)
+            resume.candidate.headline = title.strip()
+            _append_progress(f"Headline: {resume.candidate.headline}")
+
         # Choose projects, not lines (P10.13): a job keeps its best few
         # projects. Only the template can drop them; a DOCX patch keeps all.
         left_out_text: List[str] = []
@@ -1185,9 +1322,16 @@ class TailorService:
         kept_projects = {c.key for c in plan.projects if not set(c.bullet_ids) <= set(leave_out)}
         # Accepted project headings (plain, searchable titles, P10.13).
         if mode != "PRESERVE" or is_pdf:
+            # Projects written whole (P11.5) first: they're keyed by the old heading.
+            written = self._apply_projects(resume, resume_doc, approved_proposals, evidence_list)
+            if written:
+                _append_progress(f"Rewrote {written} project(s) from all their material")
             kept_projects = self._rename_headings(resume, resume_doc, raw_doc, approved_proposals, kept_projects,
                                                   _append_progress)
+        left_out_bullets: List[Tuple[str, ResumeBullet]] = []  # (job id, bullet): Arrange can bring them back
         if leave_out and (mode != "PRESERVE" or is_pdf):
+            gone_ids = set(leave_out)
+            left_out_bullets = [(e.id, b.model_copy()) for e in resume.experience for b in e.bullets if b.id in gone_ids]
             left_out_text = remove_bullets(resume, leave_out)
             gone = set(leave_out)
             evidence_list[:] = [ev for ev in evidence_list if ev.source_id not in gone]
@@ -1255,6 +1399,7 @@ class TailorService:
             apply_region(resume_doc.presentation, region)
         apply_cv_mode(resume_doc.presentation,
                       cv_mode if cv_mode in CV_MODES else suggest_cv_mode(resume, clean_jd_text).mode)
+        apply_style(resume_doc.presentation, style)  # P11.9: None keeps the standard look
         capped = resume_doc.presentation.cv_mode not in NO_PAGE_CAP
         if resume_doc.presentation.cv_mode == "academic":  # P10.6: CV order, appointments as jobs
             for note in move_appointments_from_education(resume):
@@ -1273,6 +1418,11 @@ class TailorService:
             page_target = target_pages(resume)
             before_fit = copy.deepcopy(resume)
             full_doc = resume_doc.model_copy(deep=True)  # for Arrange (P8.13): nothing trimmed yet
+            # P11.11: projects left out on Review are in Arrange too, as removed bullets to bring back.
+            for exp_id, bullet in left_out_bullets:
+                owner = next((e for e in full_doc.resume.experience if e.id == exp_id), None)
+                if owner is not None:
+                    owner.bullets.append(bullet)
             relevance = self._fit_relevance(resume, plan)
             trim_candidates = {a.source_id for a in plan.actions if a.trim_candidate}
             fit = PageFitter(self._render_template).fit(
@@ -1475,14 +1625,17 @@ class TailorService:
         arrange_state = None
         if fit:
             layout = default_layout(full_doc.resume, full_doc.presentation.section_order)
+            layout.removed_bullets = [b.id for _, b in left_out_bullets]  # P11.11: out, until brought back
             layout.region = full_doc.presentation.region
             layout.cv_mode = full_doc.presentation.cv_mode
+            layout.style = full_doc.presentation.style
             arrange_state = {
                 "full_doc": full_doc, "original": original_resume, "raw_doc": raw_doc, "job_desc": job_desc,
                 "relevance": relevance, "trim_candidates": trim_candidates, "initial_score": initial_score,
                 "applied": applied, "changes_md": report_md_path, "default_layout": layout,
                 "trimmed": trimmed_items(before_fit, resume),
-                "left_out_text": left_out_text,  # P10.13: left out on Review, not lost
+                # P10.13: left out on Review, not lost (P11.11: Arrange counts them as removed bullets)
+                "left_out_text": [] if left_out_bullets else left_out_text,
                 "kept_projects": kept_projects,
             }
 
@@ -1528,6 +1681,8 @@ class TailorService:
             apply_region(doc.presentation, layout.region)
         if layout.cv_mode:  # P10.5
             apply_cv_mode(doc.presentation, layout.cv_mode)
+        if layout.style:  # P11.9
+            apply_style(doc.presentation, layout.style)
         # Academic and federal CVs run to their full length unless the user picks a page target.
         uncapped = doc.presentation.cv_mode in NO_PAGE_CAP and layout.page_target is None
         # The user's removals and edits are theirs, not losses (P8.2).

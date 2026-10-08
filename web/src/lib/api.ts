@@ -3,7 +3,7 @@ import type { ProjectNotes } from "./store";
 // Vite proxies /api in development and FastAPI serves this app in
 // production, so the session cookie just works.
 
-import type { AnalysisReport, Details, Layout, MatchPreview, ParseResult, ProposalsResult, TailorResult } from "./types";
+import type { Proposal, PrepareResult, AnalysisReport, Details, Layout, MatchPreview, ParseResult, ProposalsResult, TailorResult } from "./types";
 
 export interface AppConfig {
   provider: string;
@@ -168,8 +168,17 @@ export interface AddedJob {
 export type Corrections = Details & { removed_jobs?: string[]; added_jobs?: AddedJob[];
   placed?: { id: string; target: string }[] }; // unplaced lines -> summary / skills / a job id / "other" (P8.26)
 
-export const draftProposals = (corrections: Corrections | null, onProgress: OnProgress, signal?: AbortSignal) =>
-  streamStep<ProposalsResult>("/api/proposals", { corrections }, onProgress, signal);
+export const draftProposals = (corrections: Corrections | null, onProgress: OnProgress, signal?: AbortSignal,
+  answers: { id: string; answer: string; experience_id: string; project: string }[] = []) =>
+  streamStep<ProposalsResult>("/api/proposals", { corrections, answers }, onProgress, signal);
+
+/** P11.11: write a project ticked back on Review. */
+export const draftProject = (key: string) =>
+  request<{ proposals: Proposal[] }>("/api/draft-project", json({ key }));
+
+/** P11.2: read the job and build the interview, before drafting. */
+export const prepareRun = (corrections: Corrections | null, onProgress: OnProgress, signal?: AbortSignal) =>
+  streamStep<PrepareResult>("/api/prepare", { corrections }, onProgress, signal);
 
 export interface Selection {
   id: string;
@@ -199,6 +208,8 @@ export interface TailorRequest {
   region?: string | null; // P10.3: confirmed on Review
   cv_mode?: string | null; // P10.5: confirmed on Review
   left_out?: string[] | null; // P10.13: project keys left out; null: as suggested
+  role_brief?: { title: string; positioning: string } | null; // P11.3: as confirmed on Review
+  style?: string | null; // P11.9: the template's look
 }
 
 export const tailorResume = (body: TailorRequest, onProgress: OnProgress, signal?: AbortSignal) =>

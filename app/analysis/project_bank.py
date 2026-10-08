@@ -112,6 +112,10 @@ def structure_to_bank(lines: List[str], s: BankStructure) -> Optional[Bank]:
                 continue
             used.add(i)
             (project.bullets if i in bullets else project.notes).append(_clean(lines[i]))
+        if not project.bullets and project.notes:
+            # Notes only (an overview, a plan): its own lines are its bullets, a few at most.
+            work = [l for l in project.notes if not re.match(r"^(?:tech|tools|stack|key numbers|note)s?\s*:", l, re.I)]
+            project.bullets, project.notes = work[:4], [l for l in project.notes if l not in work[:4]]
         if project.bullets or project.notes:
             jobs[p.job].projects.append(project)
     bank.jobs = [j for j in jobs if j and j.projects]

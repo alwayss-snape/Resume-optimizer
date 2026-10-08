@@ -10,6 +10,79 @@ Timestamped record of every **major** commit (anything touching `app/`, `scripts
 
 <!-- entries below; newest first -->
 
+<!-- entry:2026-10-09T01:35:16+05:30 -->
+## 2026-10-09 01:35 (+0530) · P11.2–P11.7, P11.9–P11.11: strategist mode (brief, questions, project writing, skills, Classic)
+
+Kshitij Chaubey · branch `fb_ksh`
+
+**Why / details**
+
+> The 2026-10-08 comparison with a Claude-chat resume showed Tailores
+> editing bullets one by one on a thin evidence base. This builds the rest
+> of Phase 11 so the tool decides what the job needs, asks for what's
+> missing, and writes whole projects, still inventing nothing:
+>
+> - P11.3 role brief: what the job needs, stated or inferred from its own
+>   words (a competency is kept only when its JD words are in the JD).
+> - P11.4 a verified map of which projects show each need (a link is kept
+>   only with a quote of the project's own words; embeddings alone called
+>   the least-far project "showing" pricing), and selection that covers
+>   different needs, stated ones first.
+> - P11.2 a Questions step before any writing: needs nothing shows yet
+>   (the user says where they did it) and projects with no figure; answers
+>   become that project's evidence and bullets, saved for next time.
+> - P11.5 each kept project written whole from all its material (built ->
+>   how -> result), every new bullet fact-checked against that material.
+>   The owner's live run found superseded bank bullets (wrong platform, an
+>   unverified figure) reaching the writer: the notes reader now holds back
+>   lines a "to verify" note refers to or the notes call superseded.
+> - P11.6 headline from the job's title as far as the owner's titles
+>   support it; summary aimed at the brief; stated years give way to the
+>   dates only when the run added a job (P9.9 otherwise).
+> - P11.7 Skills rebuilt from evidence (the decision moves from "never
+>   extended" to "never beyond evidence").
+> - P11.9 a Classic template as an option; its first, Claude-like version
+>   failed the ATS read-back (company read as a title), so titles keep
+>   their own dated lines.
+> - P11.10 a private reference eval (resume, notes, JD, answers vs another
+>   resume, judged both ways round); the live gate waits for answers.
+> - P11.11 left-out projects can come back in Arrange, and a project ticked
+>   back on Review is written like the rest.
+
+**Changed files**
+
+- Analysis: `A` app/analysis/interview.py, `M` app/analysis/project_bank.py, `M` app/analysis/project_select.py, `M` app/analysis/rewriter.py, `A` app/analysis/role_brief.py, `M` app/analysis/skills_tailor.py, `M` app/analysis/summary_writer.py, `M` app/analysis/tailor_planner.py
+- Docs: `M` docs/ACTION_ITEMS.md, `M` docs/PROJECT_OVERVIEW.md
+- Domain models: `M` app/domain/resume_document.py, `M` app/domain/tailoring.py
+- LLM: `A` app/llm/prompts/project_evidence.txt, `M` app/llm/prompts/read_bank.txt, `A` app/llm/prompts/role_brief.txt, `A` app/llm/prompts/skills_rebuild.txt, `M` app/llm/prompts/summary.txt, `A` app/llm/prompts/write_project.txt, `M` app/llm/schemas.py
+- Rendering: `M` app/rendering/html_renderer.py, `M` app/rendering/template_renderer.py
+- Root: `M` app/eval/__main__.py, `A` app/eval/reference.py, `M` web/src/App.test.tsx, `M` web/src/App.tsx, `M` web/src/components/ProjectChoices.tsx, `M` web/src/components/ProposalCard.tsx, `A` web/src/components/RoleBriefPanel.tsx, `M` web/src/lib/api.ts, `M` web/src/lib/arrange.ts, `M` web/src/lib/review.ts, `M` web/src/lib/store.ts, `M` web/src/lib/types.ts, `M` web/src/pages/Arrange.tsx, `M` web/src/pages/Details.tsx, `A` web/src/pages/Questions.tsx, `M` web/src/pages/Review.tsx
+- Services: `M` app/services/arrange.py, `M` app/services/profile_store.py, `M` app/services/tailor.py
+- Tests: `A` tests/unit/test_classic_template_p119.py, `M` tests/unit/test_cli_parity.py, `A` tests/unit/test_headline_summary_p116.py, `A` tests/unit/test_interview_p112.py, `M` tests/unit/test_project_bank_p111.py, `M` tests/unit/test_project_select_p1013.py, `A` tests/unit/test_project_writing_p115.py, `A` tests/unit/test_reference_eval_p1110.py, `A` tests/unit/test_role_brief_p113.py, `A` tests/unit/test_skills_rebuild_p117.py
+- Tooling: `M` scripts/update_docs.py
+- Validation: `M` app/validation/factual.py
+- Web API: `M` app/api/routes.py
+
+**Structure delta**
+
+- new module `app/analysis/interview.py`: `class InterviewAnswer`, `class InterviewQuestion`
+- `app/analysis/project_select.py`: added `_select_by_competency()`, `competency_fit()`
+- `app/analysis/rewriter.py`: added `LLMRewriter.propose_projects()`, `LLMRewriter.write_projects()`, `_digits_back()`
+- new module `app/analysis/role_brief.py`: `class Competency`, `class RoleBrief`
+- `app/analysis/skills_tailor.py`: added `_in_material()`, `rebuild_skills()`
+- `app/analysis/summary_writer.py`: added `SummaryWriter._brief_lines()`, `SummaryWriter.evidenced_title()`
+- `app/api/routes.py`: added `class DraftProjectIn`, `class PrepareIn`, `draft_project()`, `prepare()`
+- `app/domain/resume_document.py`: added `apply_style()`
+- new module `app/eval/reference.py`
+- `app/llm/schemas.py`: added `class BriefCompetency`, `class ProjectEvidenceItem`, `class ProjectEvidenceResult`, `class ProjectShows`, `class ProjectWriteResult`, `class RoleBriefResult`, `class SkillGroup`, `class SkillsRebuildResult`, `class WrittenProject`
+- `app/rendering/html_renderer.py`: added `HtmlResumeRenderer._classic_entry()`
+- `app/rendering/template_renderer.py`: added `TemplateRenderer._add_classic_job()`, `TemplateRenderer._add_top_border()`, `metric_runs()`
+- `app/services/profile_store.py`: added `ProfileStore.interview_key()`, `ProfileStore.prefill_interview()`, `ProfileStore.record_interview()`
+- `app/services/tailor.py`: added `TailorService._apply_projects()`, `TailorService._project_notes()`, `TailorService.apply_answers()`, `TailorService.draft_project()`, `TailorService.prepare()`
+- `app/validation/factual.py`: added `FactualValidator._validate_project()`
+
+---
+
 <!-- entry:2026-10-09T00:05:14+05:30 -->
 ## 2026-10-09 00:05 (+0530) · P11.8, P11.1: today's bug fixes, and project notes read as a document
 

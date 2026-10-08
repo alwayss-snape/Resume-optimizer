@@ -1,11 +1,12 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import type { ReviewState } from "./review";
-import type { AnalysisReport, Details, ProposalsResult, TailorResult, UnplacedLine } from "./types";
+import type { AnalysisReport, Details, PrepareResult, ProposalsResult, TailorResult, UnplacedLine } from "./types";
 
 export const STEPS = [
   { id: "upload", label: "Upload" },
   { id: "details", label: "Check details" },
+  { id: "questions", label: "Questions" },
   { id: "review", label: "Review" },
   { id: "results", label: "Results" },
 ] as const;
@@ -29,6 +30,8 @@ export interface Run {
   parseNotes: string[]; // how the file was read, e.g. a LinkedIn export (P10.11)
   unplaced: UnplacedLine[]; // lines the parse put nowhere (P8.26)
   toVerify: string[]; // project-note lines held back until verified (P11.1)
+  prepared: PrepareResult | null; // the role brief and the interview, before drafting (P11.2)
+  answers: Record<string, InterviewAnswer>; // the interview's answers
   report: AnalysisReport | null;
   drafted: ProposalsResult | null;
   review: ReviewState | null; // decisions on the drafted proposals, kept across Back
@@ -36,6 +39,13 @@ export interface Run {
   resultsVersion: number; // changes per tailoring run, so previews reload
   // Review opens at "What the job asks for", or at "Add anything else" when nothing is asked (from Results).
   jumpTo: "gaps" | "addition" | null;
+}
+
+/** An answer to an interview question (P11.2), and where it goes. */
+export interface InterviewAnswer {
+  answer: string;
+  experience_id: string;
+  project: string;
 }
 
 /** Project notes: a file, or text pasted on the upload page (P11.1). */
@@ -46,7 +56,7 @@ export interface ProjectNotes {
 
 export const EMPTY_RUN: Run = {
   intent: "tailor", file: null, notes: null, jdText: "", template: "ats", details: null, parseIssues: [], parseNotes: [], unplaced: [],
-  toVerify: [],
+  toVerify: [], prepared: null, answers: {},
   report: null, drafted: null, review: null, results: null, resultsVersion: 0, jumpTo: null,
 };
 export type Theme = "dark" | "light" | "system";

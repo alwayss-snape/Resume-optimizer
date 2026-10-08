@@ -69,6 +69,7 @@ class TailoringPlanner:
         job_description: JobDescription,
         evidence_list: List[Evidence],
         matches: List[Match],
+        brief=None,
     ) -> TailoringPlan:
         unsupported = [m.requirement_text for m in matches if m.status == "MISSING"]
         requirements = job_description.requirements
@@ -165,8 +166,16 @@ class TailoringPlanner:
         plan = TailoringPlan(actions=actions, unsupported_requirements=unsupported, bullet_order=bullet_order,
                              ranked_by_impact=jd_is_thin(job_description))
         # Choose projects, not lines (P10.13): a job keeps its best 2-3 projects.
-        apply_to_plan(plan, select_projects(resume, actions, job_description, embedder=self.embedder), resume,
-                      job_description, self.embedder)
+        # P11.4: with a role brief, projects are chosen to cover its competencies;
+        # a project's notes from the owner's project bank (P11.1) count too.
+        notes: Dict[str, List[str]] = {}
+        for ev in evidence_list:
+            if "::" in (ev.source_id or ""):
+                notes.setdefault(ev.source_id, []).append(ev.text)
+        apply_to_plan(plan, select_projects(resume, actions, job_description, embedder=self.embedder, brief=brief,
+                                            notes=notes), resume, job_description, self.embedder)
+        if brief is not None and getattr(brief, "source", "") == "llm":
+            plan.ranked_by_impact = False  # the brief gives the job's needs, however short the post
         return plan
 
     def rank_missing_requirements(

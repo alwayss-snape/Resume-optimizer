@@ -11,7 +11,9 @@ function stubApi(routes: Record<string, () => Response>) {
   const calls: { url: string; init?: RequestInit }[] = [];
   vi.stubGlobal("fetch", vi.fn(async (url: string, init?: RequestInit) => {
     calls.push({ url, init });
-    const handler = routes[url];
+    // P11.2: drafting starts with /api/prepare; by default nothing to ask, so it goes straight on.
+    const handler = routes[url] ?? (url === "/api/prepare"
+      ? () => sseResponse([["result", { role_brief: null, questions: [] }]]) : undefined);
     if (!handler) return jsonResponse({ detail: "not found" }, 404);
     return handler();
   }));
@@ -47,7 +49,7 @@ test("tailor: upload -> check details -> drafting with progress -> review", asyn
   await user.click(screen.getByRole("button", { name: /draft rewrites/ }));
 
   expect(await screen.findByRole("heading", { name: "Review changes" })).toBeInTheDocument();
-  const sent = JSON.parse(String(calls.find((c) => c.url === "/api/proposals")!.init!.body));
+  const sent = JSON.parse(String(calls.find((c) => c.url === "/api/prepare")!.init!.body));
   expect(sent.corrections.candidate.name).toBe("Avery J. Lee");
   expect(sent.corrections.candidate.links).toEqual(["github.com/avery"]);
   expect(sent.corrections.experience[1].roles).toEqual([{ title: "Engineer", start_date: "", end_date: "" }]);
@@ -133,7 +135,7 @@ test("Start over while drafting: the late result is ignored and the server is to
   const fetchMock = globalThis.fetch as ReturnType<typeof vi.fn>;
   const base = fetchMock.getMockImplementation() as (url: string, init?: RequestInit) => Promise<Response>;
   fetchMock.mockImplementation(async (url: string, init?: RequestInit) =>
-    url === "/api/proposals" ? new Promise<Response>((resolve) => { finish = resolve; }) : base(url, init));
+    url === "/api/prepare" ? new Promise<Response>((resolve) => { finish = resolve; }) : base(url, init));
 
   const user = userEvent.setup();
   render(<App />);
@@ -141,10 +143,10 @@ test("Start over while drafting: the late result is ignored and the server is to
   await user.click(screen.getByRole("button", { name: /^Tailor my resume$/ }));
   await screen.findByRole("heading", { name: "Check your details" });
   await user.click(screen.getByRole("button", { name: /draft rewrites/ }));
-  expect(await screen.findByRole("heading", { name: "Drafting your rewrites" })).toHaveFocus();
+  expect(await screen.findByRole("heading", { name: "Reading the job" })).toHaveFocus();
 
   await user.click(screen.getByRole("button", { name: "Start over" }));
-  finish(sseResponse([["result", DRAFTED]]));
+  finish(sseResponse([["result", { role_brief: null, questions: [] }]]));
   await new Promise((r) => setTimeout(r, 20));
   expect(useApp.getState().step).toBe("upload");
   expect(useApp.getState().run.drafted).toBeNull();
@@ -164,7 +166,8 @@ test("an untouched details form sends no corrections", async () => {
   await screen.findByRole("heading", { name: "Check your details" });
   await user.click(screen.getByRole("button", { name: /draft rewrites/ }));
   await screen.findByRole("heading", { name: "Review changes" });
-  expect(JSON.parse(String(calls.find((c) => c.url === "/api/proposals")!.init!.body))).toEqual({ corrections: null });
+  expect(JSON.parse(String(calls.find((c) => c.url === "/api/prepare")!.init!.body))).toEqual({ corrections: null });
+  expect(JSON.parse(String(calls.find((c) => c.url === "/api/proposals")!.init!.body))).toEqual({ corrections: null, answers: [] });
 });
 
 test("details: a missed job is added, a misread one removed, and both are sent", async () => {
@@ -197,7 +200,7 @@ test("details: a missed job is added, a misread one removed, and both are sent",
   await user.click(screen.getByRole("button", { name: /draft rewrites/ }));
   expect(screen.getByRole("alert")).toHaveTextContent(/New job 2: To add the job, fill in: job title.*Or remove it/);
   await user.click(screen.getByRole("button", { name: "Remove new job 1" }));
-  expect(calls.some((c) => c.url === "/api/proposals")).toBe(false);
+  expect(calls.some((c) => c.url === "/api/prepare" || c.url === "/api/proposals")).toBe(false);
   await user.type(screen.getByLabelText("Job title *"), "Engineer");
   await user.selectOptions(screen.getByLabelText("Start *: month"), "03");
   await user.selectOptions(screen.getByLabelText("Start *: year"), "2019");
@@ -212,7 +215,7 @@ test("details: a missed job is added, a misread one removed, and both are sent",
   await user.type(screen.getByLabelText(/What did you do there/), "Built the billing service");
   await user.click(screen.getByRole("button", { name: /draft rewrites/ }));
   await screen.findByRole("heading", { name: "Review changes" });
-  const { corrections } = JSON.parse(String(calls.find((c) => c.url === "/api/proposals")!.init!.body));
+  const { corrections } = JSON.parse(String(calls.find((c) => c.url === "/api/prepare")!.init!.body));
   expect(corrections.removed_jobs).toEqual(["exp_2"]);
   expect(corrections.experience.map((e: { id: string }) => e.id)).toEqual(["exp_1"]);
   expect(corrections.added_jobs).toEqual([{ company: "Acme", title: "Engineer", location: "", current: false,
@@ -389,4 +392,31 @@ test("review: the CV type and paper choices show once, outside the sticky aside,
   expect(await screen.findByRole("heading", { name: "Your resume is ready." })).toBeInTheDocument();
   const body = JSON.parse(String(calls.find((c) => c.url === "/api/tailor")!.init!.body));
   expect([body.region, body.cv_mode]).toEqual(["uk_eu", "academic"]);
+});
+
+
+test("questions (P11.2): asked before drafting, answers go with the draft, any can be skipped", async () => {
+  const question = { id: "need_0", kind: "need", competency: "Pricing analytics", experience_id: "exp_1",
+    project: "Membership Analytics", job: "Acme", question: "The job needs pricing analytics. Did it involve prices?",
+    hint: "e.g. Tuned the discount tiers.", saved_answer: "" };
+  const calls = stubApi({
+    "/api/config": () => jsonResponse(CONFIG),
+    "/api/parse": () => jsonResponse({ details: DETAILS, parse_issues: [] }),
+    "/api/prepare": () => sseResponse([["result", { role_brief: null, questions: [question] }]]),
+    "/api/proposals": () => sseResponse([["result", DRAFTED]]),
+  });
+  const user = userEvent.setup();
+  render(<App />);
+  await fillUpload(user);
+  await user.click(screen.getByRole("button", { name: /^Tailor my resume$/ }));
+  await screen.findByRole("heading", { name: "Check your details" });
+  await user.click(screen.getByRole("button", { name: /draft rewrites/ }));
+  await screen.findByRole("heading", { name: "A few questions" });
+  expect(calls.some((c) => c.url === "/api/proposals")).toBe(false);  // nothing written yet
+  await user.type(screen.getByLabelText("Your answer (optional)"), "Set the membership fee tiers");
+  await user.click(screen.getByRole("button", { name: "Draft my resume with 1 answer" }));
+  await screen.findByRole("heading", { name: "Review changes" });
+  const sent = JSON.parse(String(calls.find((c) => c.url === "/api/proposals")!.init!.body));
+  expect(sent).toEqual({ corrections: null, answers: [{ id: "need_0", answer: "Set the membership fee tiers",
+    experience_id: "exp_1", project: "Membership Analytics" }] });
 });

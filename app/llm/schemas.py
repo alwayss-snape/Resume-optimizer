@@ -109,6 +109,57 @@ class BankStructure(BaseModel):
     skill_lines: List[int] = Field(default_factory=list)        # tools and methods lists
 
 
+class BriefCompetency(BaseModel):
+    name: str                   # "Pricing analytics", "Experimentation and causal inference"
+    kind: Literal["stated", "inferred"] = "inferred"
+    jd_words: str = ""          # the JD's own words it rests on, copied exactly
+    look_for: List[str] = Field(default_factory=list)  # words in a resume that would show it
+
+
+class RoleBriefResult(BaseModel):
+    """What the job really needs (P11.3), read from even a short post."""
+    target_title: str = ""
+    competencies: List[BriefCompetency] = Field(default_factory=list)
+    positioning: str = ""       # one line: how this candidate fits, from their own work
+
+
+class ProjectShows(BaseModel):
+    competency: str
+    quote: str                  # the project's own words that show it, copied exactly
+
+
+class ProjectEvidenceItem(BaseModel):
+    project: int                # the project's number in the list given
+    shows: List[ProjectShows] = Field(default_factory=list)
+
+
+class ProjectEvidenceResult(BaseModel):
+    """Which of the job's competencies each project really shows (P11.4)."""
+    projects: List[ProjectEvidenceItem] = Field(default_factory=list)
+
+
+class WrittenProject(BaseModel):
+    project: int                # the project's number in the list given
+    heading: str
+    bullets: List[str] = Field(default_factory=list)
+
+
+class ProjectWriteResult(BaseModel):
+    """A job's projects written from all their material (P11.5)."""
+    projects: List[WrittenProject] = Field(default_factory=list)
+
+
+class SkillGroup(BaseModel):
+    category: str
+    items: List[str] = Field(default_factory=list)
+
+
+class SkillsRebuildResult(BaseModel):
+    """The Skills section rebuilt from the candidate's evidence (P11.7)."""
+    groups: List[SkillGroup] = Field(default_factory=list)
+    dropped: List[str] = Field(default_factory=list)
+
+
 class SummaryResult(BaseModel):
     """A tailored professional summary (P1.5)."""
     summary: str

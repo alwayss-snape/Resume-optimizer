@@ -42,6 +42,7 @@ class Layout(BaseModel):
     trim: bool = True  # False: "don't trim", render at full length
     region: Optional[str] = None  # P10.3: "us", "uk_eu", "india", "other"; None keeps the run's
     cv_mode: Optional[str] = None  # P10.5: "standard", "academic", "federal"; None keeps the run's
+    style: Optional[str] = None  # P11.9: "standard" or "classic"; None keeps the run's
 
 
 def _owners(resume: Resume):

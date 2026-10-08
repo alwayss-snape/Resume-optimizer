@@ -236,6 +236,40 @@ class FactualValidator:
 
     # ------------------------------------------------------------------
 
+    def _validate_project(self, proposal, evidence_list: List[Evidence], jd_keywords, jd_text) -> ValidationResult:
+        """A project written whole (P11.5): every new bullet is checked like a
+        rewrite, against the project's own material (its bullets, the owner's
+        notes and answers) instead of one source bullet; a figure the project
+        had and no new bullet keeps is worth a look."""
+        cited = set(getattr(proposal, "evidence_ids", None) or [])
+        material = [e.text for e in evidence_list if e.id in cited]
+        original = getattr(proposal, "original_text", "") or ""
+        sid = f"__project__{getattr(proposal, 'id', '')}"
+        synthetic = [Evidence(id=f"{sid}_{i}", source_type="experience", source_id=sid, text=t)
+                     for i, t in enumerate(material or [original])]
+        whole = "\n".join([original, *material])
+        lines = [l.strip() for l in (getattr(proposal, "proposed_text", None) or "").splitlines() if l.strip()]
+        rank = {"PASS": 0, "NEEDS_CONFIRM": 1, "REJECT": 2}
+        verdict: Verdict = "PASS" if lines else "REJECT"
+        warnings: List[str] = [] if lines else ["Rewrite rejected: no bullets."]
+        confirm: List[str] = []
+        for n, line in enumerate(lines, start=1):
+            one = RewriteProposal(target_semantic_id=sid, target_source_location_id=sid, original_text=whole,
+                                  proposed_text=line, evidence_ids=[e.id for e in synthetic])
+            one.numbers_subset = True
+            result = self.validate_proposal(one, list(evidence_list) + synthetic, jd_keywords=jd_keywords, jd_text=jd_text)
+            if rank[result.verdict] > rank[verdict]:
+                verdict = result.verdict
+            warnings += [f"Bullet {n}: {w}" for w in result.warnings]
+            confirm += [t for t in result.confirm_terms if t not in confirm]
+        kept = self.extract_numbers("\n".join(lines))
+        lost = sorted(self.extract_numbers(original) - kept)
+        if lost and verdict != "REJECT":
+            warnings.append("Please check: leaves out " + ", ".join(lost) + " from this project.")
+            verdict = "NEEDS_CONFIRM" if verdict == "PASS" else verdict
+        return ValidationResult(approved=verdict != "REJECT", proposal=proposal, verdict=verdict,
+                                confirm_terms=confirm, warnings=warnings)
+
     def _validate_heading(self, proposal, evidence_list: List[Evidence]) -> ValidationResult:
         """A project heading (P10.13) may only reword what the old heading and
         the project's own bullets say."""
@@ -247,11 +281,15 @@ class FactualValidator:
         verdict: Verdict = "REJECT" if problem else "PASS"
         return ValidationResult(approved=not problem, proposal=proposal, verdict=verdict, warnings=warnings)
 
-    def _validate_skills(self, proposal) -> ValidationResult:
-        """The skills section may be reordered and respelled, never extended (P1.6)."""
-        from app.analysis.skills_tailor import parse_skills, unknown_skills
+    def _validate_skills(self, proposal, evidence_list: Optional[List[Evidence]] = None) -> ValidationResult:
+        """The skills section may be reordered and respelled, and gain what the
+        candidate's own material names (P11.7: never beyond evidence; was
+        never extended, P1.6)."""
+        from app.analysis.skills_tailor import _in_material, _key, parse_skills, unknown_skills
         added = unknown_skills(parse_skills(getattr(proposal, "original_text", "")),
                                parse_skills(getattr(proposal, "proposed_text", None) or ""))
+        keys = " " + " ".join(_key(e.text) for e in evidence_list or []) + " "
+        added = [a for a in added if not _in_material(a, keys)]
         warnings = ["Skills rejected: not in your resume: " + ", ".join(added)] if added else []
         verdict: Verdict = "REJECT" if added else "PASS"
         check = ClaimCheck(claim=getattr(proposal, "proposed_text", "") or "", status="SUPPORTED" if not added
@@ -388,9 +426,11 @@ class FactualValidator:
         if getattr(proposal, "kind", "bullet") == "summary":
             return self._validate_summary(proposal, evidence_list, jd_keywords, jd_text)
         if getattr(proposal, "kind", "bullet") == "skills":
-            return self._validate_skills(proposal)
+            return self._validate_skills(proposal, evidence_list)
         if getattr(proposal, "kind", "bullet") == "heading":
             return self._validate_heading(proposal, evidence_list)
+        if getattr(proposal, "kind", "bullet") == "project":
+            return self._validate_project(proposal, evidence_list, jd_keywords, jd_text)
 
         # The cited evidence that belongs to this bullet (by semantic id or raw location id).
         source_evidence = []
@@ -409,7 +449,9 @@ class FactualValidator:
             warnings.append("Rewrite rejected: no cited evidence belongs to the source bullet or location.")
         else:
             original_numbers = self.extract_numbers(getattr(proposal, "original_text", ""))
-            if self.extract_numbers(rewritten_text) != original_numbers:
+            subset = getattr(proposal, "numbers_subset", False)  # P11.5: one bullet of a project uses some of its figures
+            new_numbers = self.extract_numbers(rewritten_text)
+            if (new_numbers - original_numbers) if subset else (new_numbers != original_numbers):
                 verdict = "REJECT"
                 warnings.append("Rewrite rejected: numbers, dates, or percentages must be preserved exactly.")
 
@@ -453,6 +495,8 @@ class FactualValidator:
             dropped_terms, lost_words, retention, lost_items = self.dropped_facts(
                 getattr(proposal, "original_text", ""), rewritten_text, vocab)
             drops_info = bool(dropped_terms) or retention < self.MIN_CONTENT_RETENTION or len(lost_items) >= 2
+            if subset:  # judged for the project as a whole (_validate_project)
+                drops_info = False
             if drops_info:
                 lost_note = dropped_terms or (lost_items if len(lost_items) >= 2 else lost_words[:6])
                 warnings.append(

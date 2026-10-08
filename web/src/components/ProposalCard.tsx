@@ -23,9 +23,10 @@ export type ProofView = "proof" | "split";
 
 const TITLES: Record<Proposal["kind"], string> = {
   summary: "Professional summary",
-  skills: "Skills (reordered only; nothing is added)",
+  skills: "Skills (only what your own work names)",
   bullet: "Bullet",
   heading: "Project heading",
+  project: "Project, rewritten whole",
 };
 
 /** One proposed rewrite. Keys while the card has focus: A accept, R reject,
@@ -135,7 +136,7 @@ export const ProposalCard = forwardRef<HTMLElement, {
       {editing ? (
         <div className="flex flex-col gap-3">
           <label htmlFor={editId} className="text-sm font-semibold text-pencil">Your version</label>
-          <textarea id={editId} ref={box} value={draft} rows={p.kind === "skills" ? 6 : 3}
+          <textarea id={editId} ref={box} value={draft} rows={p.kind === "skills" || p.kind === "project" ? 6 : 3}
             onChange={(e) => setDraft(e.target.value)}
             onBlur={() => save(false)}
             onKeyDown={(e) => {
@@ -160,6 +161,18 @@ export const ProposalCard = forwardRef<HTMLElement, {
             <div className="flex flex-col gap-1.5">
               <span className="text-xs font-semibold text-pencil">Your version</span>
               <p className="m-0 whitespace-pre-line break-words font-serif text-[17px] leading-[1.8]">{text}</p>
+            </div>
+          ) : p.kind === "project" ? (
+            /* P11.5: a project written whole: your lines, then the new bullets */
+            <div className="grid gap-5 sm:grid-cols-2 sm:gap-6">
+              {([["Your lines", p.original, "text-muted"], ["Proposed", text, "text-pencil"]] as const).map(([title, body, tone]) => (
+                <div key={title} className="flex flex-col gap-1.5">
+                  <span className={`text-xs font-semibold ${tone}`}>{title}</span>
+                  <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5 font-serif text-[16px] leading-relaxed">
+                    {body.split("\n").filter((l) => l.trim()).map((l, i) => <li key={i}>{l}</li>)}
+                  </ul>
+                </div>
+              ))}
             </div>
           ) : view === "proof" ? (
             p.diff.original.length || p.diff.proposed.length

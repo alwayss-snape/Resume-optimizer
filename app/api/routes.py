@@ -31,6 +31,8 @@ from app.ingestion import errors
 from app.ingestion.errors import UnreadableFile
 from app.validation.output import OutputQAValidator
 from app.analysis.cv_mode import CV_MODES, suggest_cv_mode
+from app.analysis.interview import InterviewAnswer
+from app.domain.resume_document import STYLES
 from app.analysis.project_select import left_out_ids
 from app.analysis.region import DEFAULT_REGION, REGIONS, suggest_region
 from app.services.arrange import Layout
@@ -56,6 +58,12 @@ class ProposalsIn(BaseModel):
     # The "check details" form: {"candidate": {...}, "experience": [...],
     # "removed_jobs": [...], "added_jobs": [...]}, as
     # TailorService.apply_parse_corrections takes it. None = no changes.
+    corrections: Optional[Dict] = None
+    # P11.2: answers to the interview from /api/prepare (corrections were sent there).
+    answers: List[InterviewAnswer] = Field(default_factory=list)
+
+
+class PrepareIn(BaseModel):
     corrections: Optional[Dict] = None
 
 
@@ -102,6 +110,8 @@ class TailorIn(BaseModel):
     region: Optional[str] = None  # P10.3: the region the user confirmed on Review; None: the template's default
     cv_mode: Optional[str] = None  # P10.5: confirmed on Review; None: the suggested one
     left_out: Optional[List[str]] = None  # P10.13: project keys left out; None: as the planner chose
+    role_brief: Optional[Dict[str, str]] = None  # P11.3: {"title", "positioning"} as confirmed on Review
+    style: Optional[str] = None  # P11.9: "standard" or "classic"
 
 
 # ---------------------------------------------------------------------------
@@ -384,7 +394,7 @@ def _proposal_out(p, keywords: List[str], sections: Dict[str, Dict]) -> Dict:
     note = p.error if state == "failed" else (p.validation_note if state in ("dropped", "check") else None)
     return {"id": p.id, "kind": p.kind, "section": sections.get(p.target_semantic_id),
             # P10.13: a bullet's id, or a project heading's key; hidden with a left-out project.
-            "target": p.target_semantic_id if p.kind in ("bullet", "heading") else None,
+            "target": p.target_semantic_id if p.kind in ("bullet", "heading", "project") else None,
             "original": original, "proposed": proposed, "rationale": p.rationale,
             "state": state, "state_label": label, "state_meaning": meaning, "note": note,
             "opt_in": bool(getattr(p, "opt_in", False)),
@@ -503,6 +513,33 @@ async def parse(request: Request, response: Response, file: Optional[UploadFile]
             "to_verify": session.data["to_verify"]}
 
 
+@router.post("/prepare", dependencies=[Depends(rate_limited)])
+def prepare(request: Request, body: PrepareIn, session: Session = Depends(current_session)):
+    """Step 2b (P11.2): apply the user's fixes, read the job, write the role
+    brief and build the interview. Streams progress."""
+    _require(session, "parsed")
+    service = _service(request, session, session.data.get("model"))
+    _claim(session)
+
+    def work(progress):
+        parsed, changed = session.data["parsed"], False
+        if body.corrections:
+            try:
+                parsed, changed = service.apply_parse_corrections(parsed, body.corrections)
+            except ValueError as e:
+                raise HTTPException(422, str(e))
+        changed = changed or bool(session.data.get("parse_corrected"))
+        prepared = service.prepare(parsed, session.data["jd_text"], progress=progress)
+        prepared["parsed"] = parsed  # before any answers: drafting again starts from here
+        session.data.update(parsed=parsed, parse_corrected=changed, prepared=prepared)
+        session.data.pop("results", None)
+        brief = prepared["role_brief"]
+        return {"details": _details(parsed[1].resume), "role_brief": brief.model_dump() if brief else None,
+                "questions": [q.model_dump() for q in prepared["questions"]]}
+
+    return _stream(session, work)
+
+
 @router.post("/proposals", dependencies=[Depends(rate_limited)])
 def proposals(request: Request, body: ProposalsIn, session: Session = Depends(current_session)):
     """Step 2: apply the user's fixes, then draft rewrites and gap
@@ -513,6 +550,7 @@ def proposals(request: Request, body: ProposalsIn, session: Session = Depends(cu
 
     def work(progress):
         parsed, changed = session.data["parsed"], False
+        prepared = session.data.get("prepared") if not body.corrections else None
         if body.corrections:
             try:
                 parsed, changed = service.apply_parse_corrections(parsed, body.corrections)
@@ -520,12 +558,19 @@ def proposals(request: Request, body: ProposalsIn, session: Session = Depends(cu
                 raise HTTPException(422, str(e))
         # Drafting again after going back: fixes applied the first time count too.
         changed = changed or bool(session.data.get("parse_corrected"))
+        job_desc = brief = None
+        drafted_from = parsed
+        if prepared:  # P11.2: the analysis made before the interview, plus the answers
+            job_desc, brief = prepared["job_description"], prepared["role_brief"]
+            base = prepared.get("parsed", parsed)
+            drafted_from, brief, _ = service.apply_answers(base, brief, prepared["questions"], body.answers)
         generated = service.generate_proposals(session.data["resume_path"], session.data["jd_text"],
-                                               parsed=parsed, progress=progress)
+                                               parsed=drafted_from, progress=progress, job_desc=job_desc, brief=brief)
+        parsed = drafted_from  # what was drafted from is what Apply builds on
         session.data.update(
             parsed=parsed, parse_corrected=changed, proposals=generated["proposals"],
             gap_questions=generated.get("gap_questions") or [], keyword_match=generated.get("keyword_match"),
-            projects=generated.get("projects") or [],
+            projects=generated.get("projects") or [], role_brief=generated.get("role_brief"),
             job_description=generated.get("job_description"), proposal_usage=generated.get("llm_usage"),
             pre_score=generated["alignment_score"], experience_options=generated["experience_options"],
         )
@@ -549,6 +594,8 @@ def proposals(request: Request, body: ProposalsIn, session: Session = Depends(cu
             "gaps": gap_table(report, asked=[k for q in questions for k in q.keywords]),
             "pre_score": generated["alignment_score"],
             "experience_options": generated["experience_options"],
+            # P11.3: what the job really needs, stated or inferred from the JD's words.
+            "role_brief": generated["role_brief"].model_dump() if generated.get("role_brief") else None,
             # P10.13: each job's projects, kept or left out, with the reason.
             "projects": [c.model_dump() for c in generated.get("projects") or []],
             "projects_ranked_by_impact": bool(generated.get("projects_ranked_by_impact")),
@@ -562,6 +609,31 @@ def proposals(request: Request, body: ProposalsIn, session: Session = Depends(cu
         }
 
     return _stream(session, work)
+
+
+class DraftProjectIn(BaseModel):
+    key: str  # "<job id>::<project>"
+
+
+@router.post("/draft-project", dependencies=[Depends(rate_limited)])
+def draft_project(request: Request, body: DraftProjectIn, session: Session = Depends(current_session)) -> Dict:
+    """P11.11: write a project the user ticked back on Review; its cards join the rest."""
+    _require(session, "proposals", "job_description")
+    if not any(c.key == body.key for c in session.data.get("projects") or []):
+        raise HTTPException(404, "No such project in this run.")
+    service = _service(request, session, session.data.get("model"))
+    _claim(session)
+    try:
+        made = service.draft_project(session.data["parsed"], body.key, session.data["job_description"],
+                                     session.data.get("role_brief"))
+    finally:
+        session.busy.release()
+    session.data["proposals"] = [p for p in session.data["proposals"]
+                                 if p.target_semantic_id != body.key] + made
+    report = session.data.get("keyword_match")
+    keywords = [r.keyword for r in getattr(report, "rows", [])]
+    sections = _sections(session.data["parsed"][1].resume)
+    return {"proposals": [_proposal_out(p, keywords, sections) for p in made]}
 
 
 @router.post("/match-preview")
@@ -588,6 +660,8 @@ def tailor(request: Request, body: TailorIn, session: Session = Depends(current_
         raise HTTPException(422, "Unknown region.")
     if body.cv_mode is not None and body.cv_mode not in CV_MODES:
         raise HTTPException(422, "Unknown CV type.")
+    if body.style is not None and body.style not in STYLES:
+        raise HTTPException(422, "Unknown template.")
     exp_ids = [o["id"] for o in session.data.get("experience_options") or []]
     questions = session.data.get("gap_questions") or []
     answers = forms.gap_answers(questions, {k: v.model_dump() for k, v in body.gap_answers.items()}, exp_ids)
@@ -612,6 +686,7 @@ def tailor(request: Request, body: TailorIn, session: Session = Depends(current_
             gap_questions=questions, remember_answers=body.remember_answers, progress=progress,
             conditions_confirmed=[c.text for c in session.data.get("conditions") or [] if c.id in set(body.conditions)],
             region=body.region, cv_mode=body.cv_mode, left_out_projects=body.left_out,
+            role_brief=session.data.get("role_brief"), brief_edits=body.role_brief, style=body.style,
         )
         session.data["arrange"] = results.pop("arrange", None)
         session.data.pop("layout", None)  # a new run starts from its own arrangement
@@ -702,6 +777,8 @@ def arrange(request: Request, body: ArrangeIn, session: Session = Depends(curren
     layout = body.layout
     if layout.region is not None and layout.region not in REGIONS:
         raise HTTPException(422, "Unknown region.")
+    if layout.style is not None and layout.style not in STYLES:
+        raise HTTPException(422, "Unknown template.")
     if layout.cv_mode is not None and layout.cv_mode not in CV_MODES:
         raise HTTPException(422, "Unknown CV type.")
     if layout.page_target not in (None, 1, 2, 3):
