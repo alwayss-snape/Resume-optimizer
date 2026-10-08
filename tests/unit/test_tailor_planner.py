@@ -198,8 +198,9 @@ def test_v2_rewriter_inputs_are_scoped_to_the_bullet():
 
 def test_v2_orders_bullets_within_sub_headings():
     plan = _v2_plan()
-    # b2 outranks b1 inside "Platform"; the "Ranking" group stays after it.
-    assert plan.bullet_order["exp_001"] == ["b2", "b1", "b3"]
+    # b2 outranks b1 inside "Platform", but b1 opens the project (what it is)
+    # and stays first (P11.8); the "Ranking" group stays after it.
+    assert plan.bullet_order["exp_001"] == ["b1", "b2", "b3"]
 
 
 def test_v2_uses_embeddings_when_given_and_falls_back_on_error():

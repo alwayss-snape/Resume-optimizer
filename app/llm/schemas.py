@@ -83,6 +83,32 @@ class HeadingRenameResult(BaseModel):
     headings: List[HeadingRename] = Field(default_factory=list)
 
 
+class BankJob(BaseModel):
+    company: str
+    title: str = ""
+    start_date: str = ""
+    end_date: str = ""          # "" when the notes don't say; "Present" for a current job
+    line: int                   # the line that names the job
+
+
+class BankProject(BaseModel):
+    name: str                   # as written on its heading line
+    job: int                    # index into `jobs`
+    heading_line: int
+    last_line: int              # the project's lines run heading_line+1 .. last_line
+
+
+class BankStructure(BaseModel):
+    """A project bank read as line numbers (P11.1): code keeps every line's
+    words as written; the model only says what each line is."""
+    jobs: List[BankJob] = Field(default_factory=list)
+    projects: List[BankProject] = Field(default_factory=list)
+    bullet_lines: List[int] = Field(default_factory=list)       # resume-ready statements of work
+    to_verify_lines: List[int] = Field(default_factory=list)    # the notes say to check before use
+    achievement_lines: List[int] = Field(default_factory=list)  # wins, awards
+    skill_lines: List[int] = Field(default_factory=list)        # tools and methods lists
+
+
 class SummaryResult(BaseModel):
     """A tailored professional summary (P1.5)."""
     summary: str

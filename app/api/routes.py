@@ -451,11 +451,16 @@ async def analyze(request: Request, file: Optional[UploadFile] = File(None), jd_
 @router.post("/parse", dependencies=[Depends(rate_limited)])
 async def parse(request: Request, response: Response, file: Optional[UploadFile] = File(None),
                 jd_text: str = Form(...), model: Optional[str] = Form(None),
-                resume_text: Optional[str] = Form(None)) -> Dict:
+                resume_text: Optional[str] = Form(None), bank: Optional[UploadFile] = File(None),
+                bank_text: Optional[str] = Form(None)) -> Dict:
     """Step 1: read the resume and start a fresh session for this run."""
     _check_jd(jd_text)
     model = _model(model)
     path = await _save_upload(request, file, resume_text)
+    # P11.1: the owner's project notes, as a file or pasted, beside the resume.
+    bank_path = await _save_upload(request, bank, None) if bank is not None and (bank.filename or "").strip() else None
+    if bank_text and len(bank_text) > MAX_PASTED_CHARS:
+        raise HTTPException(413, "The project notes are too long; keep them under 60,000 characters.")
     store = request.app.state.sessions
     session = store.get(request.cookies.get(SESSION_COOKIE))
     is_new = session is None
@@ -470,12 +475,19 @@ async def parse(request: Request, response: Response, file: Optional[UploadFile]
         service = _service(request, session, model)
         parsed = await run_in_threadpool(service.parse_resume, path)
         issues = list(service.last_parse_issues)
+        bank_notes, to_verify = [], []
+        if bank_path or (bank_text or "").strip():
+            try:
+                parsed, bank_notes, to_verify = await run_in_threadpool(service.apply_bank, parsed, bank_path, bank_text)
+            finally:
+                if bank_path:
+                    remove_path(bank_path)
         from app.analysis.language import english_only_note, other_language
         jd_language = other_language(jd_text)
         if jd_language:  # P8.25
             issues.append(english_only_note("job description", jd_language))
         session.data.update(parsed=parsed, jd_text=jd_text, model=model, parse_issues=issues,
-                            parse_notes=list(service.last_parse_notes))
+                            parse_notes=list(service.last_parse_notes) + bank_notes, to_verify=to_verify)
     except BaseException as e:
         session.busy.release()
         if is_new:  # no cookie was sent, so nobody could reach it again
@@ -487,7 +499,8 @@ async def parse(request: Request, response: Response, file: Optional[UploadFile]
     response.set_cookie(SESSION_COOKIE, session.id, httponly=True, samesite="lax",
                         max_age=store.ttl_seconds)
     return {"details": _details(parsed[1].resume), "parse_issues": [plain_issue(i) for i in session.data["parse_issues"]],
-            "parse_notes": session.data["parse_notes"], "unplaced": unplaced_lines(parsed[0], parsed[1].resume)}
+            "parse_notes": session.data["parse_notes"], "unplaced": unplaced_lines(parsed[0], parsed[1].resume),
+            "to_verify": session.data["to_verify"]}
 
 
 @router.post("/proposals", dependencies=[Depends(rate_limited)])

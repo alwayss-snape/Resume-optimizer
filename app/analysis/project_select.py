@@ -213,12 +213,15 @@ def apply_to_plan(plan, choices: Sequence[ProjectChoice], resume: Resume, job_de
                 a.rationale = f"Polished for a project kept for this job ({c.name})."
         for bid in sorted(ids, key=lambda b: -by_id[b].relevance)[BULLETS_PER_PROJECT:]:
             by_id[bid].trim_candidate = True
-    # Bullet order follows the new scores, still project by project.
+    # Bullet order follows the new scores, still project by project; a
+    # project's opening bullet (what it is) stays first (P11.8).
     for exp in resume.experience:
         if exp.id in plan.bullet_order:
             order = []
-            for _, group_bullets in exp.bullet_groups():
-                order += [b.id for b in sorted(group_bullets, key=lambda b: -(by_id[b.id].relevance if b.id in by_id else 0.0))]
+            for name, group_bullets in exp.bullet_groups():
+                head, rest = (group_bullets[:1], group_bullets[1:]) if name else ([], group_bullets)
+                order += [b.id for b in head]
+                order += [b.id for b in sorted(rest, key=lambda b: -(by_id[b.id].relevance if b.id in by_id else 0.0))]
             plan.bullet_order[exp.id] = order
     plan.projects = list(choices)
 

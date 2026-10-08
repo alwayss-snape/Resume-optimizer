@@ -1,5 +1,5 @@
 import { type DragEvent, useEffect, useId, useRef, useState } from "react";
-import type { Intent, Template } from "../lib/store";
+import type { Intent, ProjectNotes, Template } from "../lib/store";
 import { Button } from "./Button";
 import { Icon } from "./Icon";
 
@@ -9,6 +9,7 @@ export interface UploadValues {
   file: File;
   jdText: string;
   template: Template;
+  notes?: ProjectNotes | null; // P11.1: the owner's project bank, optional
 }
 
 export const MAX_UPLOAD_MB = 5; // until /api/config says otherwise
@@ -73,6 +74,9 @@ export function UploadForm({ onSubmit, busy = false, initial, maxUploadMb = MAX_
 }) {
   const [file, setFile] = useState<File | null>(initial?.file ?? null);
   const [pasteText, setPasteText] = useState("");
+  const [notesFile, setNotesFile] = useState<File | null>(null);
+  const [notesText, setNotesText] = useState("");
+  const notesInput = useRef<HTMLInputElement>(null);
   const [jdText, setJdText] = useState(initial?.jdText ?? "");
   const [template, setTemplate] = useState<Template>(initial?.template ?? "ats");
   const [dragging, setDragging] = useState(false);
@@ -129,12 +133,21 @@ export function UploadForm({ onSubmit, busy = false, initial, maxUploadMb = MAX_
       // Pasted text goes up as a plain-text file; the server reads it like any upload (P8.22).
       if (!jdText.trim()) return fail("Paste the job description.", "jd");
       setError(null);
-      return onSubmit({ file: new File([pasted], "resume.txt", { type: "text/plain" }), jdText, template: "ats" }, intent);
+      return onSubmit({ file: new File([pasted], "resume.txt", { type: "text/plain" }), jdText, template: "ats", notes }, intent);
     }
     if (!file) return fail("Add your resume first, or paste it as text.", "file");
     if (!jdText.trim()) return fail("Paste the job description.", "jd");
     setError(null);
-    onSubmit({ file, jdText, template }, intent);
+    onSubmit({ file, jdText, template, notes }, intent);
+  };
+  const notes: ProjectNotes | null = notesFile || notesText.trim() ? { file: notesFile, text: notesText } : null;
+  const chooseNotes = (files: FileList | null | undefined) => {
+    const picked = files?.[0];
+    if (!picked) return;
+    const problem = fileProblem(picked, maxUploadMb);
+    if (problem) return fail(`Project notes: ${problem}`, "file");
+    setError(null);
+    setNotesFile(picked);
   };
 
   const invalid = (field: "file" | "jd") =>
@@ -191,6 +204,41 @@ export function UploadForm({ onSubmit, busy = false, initial, maxUploadMb = MAX_
                 className="mt-2 w-full resize-y rounded-[3px] border border-field bg-panel p-3.5 text-[15px] leading-relaxed text-ink placeholder:text-muted hover:border-ink focus-visible:border-pencil" />
             </details>
           )}
+          <details className="group border-t border-line pt-3" open={Boolean(notes)}>
+            <summary className="flex min-h-11 w-fit cursor-pointer list-none items-center gap-2 text-sm font-medium text-pencil [&::-webkit-details-marker]:hidden">
+              <Icon name="arrow-right" size={14} strokeWidth={2} className="transition-transform group-open:rotate-90" />
+              Add your project notes (optional)
+            </summary>
+            <div className="mt-2 flex flex-col gap-3">
+              <p className="m-0 text-[13px] leading-relaxed text-muted">
+                Everything you've worked on, with notes and numbers, even what isn't on your resume yet. We pick what suits
+                this job; nothing outside your own words is added, and lines your notes mark "to verify" are left out.
+              </p>
+              <div className="flex flex-wrap items-center gap-3">
+                <input id={`${fileId}-notes`} ref={notesInput} type="file" accept={ACCEPTED.join(",")} className="sr-only"
+                  onChange={(e) => { chooseNotes(e.target.files); e.target.value = ""; }} />
+                <Button type="button" onClick={() => notesInput.current?.click()}>
+                  {notesFile ? "Replace notes file" : "Choose a notes file"}
+                </Button>
+                {notesFile && (
+                  <span className="flex min-w-0 items-center gap-2 text-sm">
+                    <Icon name="check" size={16} className="shrink-0 text-success" />
+                    <span className="truncate">{notesFile.name}</span>
+                    <button type="button" onClick={() => setNotesFile(null)}
+                      className="min-h-11 text-sm font-medium text-pencil underline-offset-4 hover:underline">Remove</button>
+                  </span>
+                )}
+              </div>
+              {!notesFile && (
+                <>
+                  <label htmlFor={`${fileId}-notes-paste`} className="text-sm font-medium">Or paste them</label>
+                  <textarea id={`${fileId}-notes-paste`} value={notesText} onChange={(e) => setNotesText(e.target.value)} rows={5}
+                    placeholder={"Company, title, dates\nProject name:\nWhat you did, with numbers"}
+                    className="w-full resize-y rounded-[3px] border border-field bg-panel p-3.5 text-[15px] leading-relaxed text-ink placeholder:text-muted hover:border-ink focus-visible:border-pencil" />
+                </>
+              )}
+            </div>
+          </details>
         </section>
 
         <section className="sheet flex flex-col gap-4 rounded-[3px] p-6 md:p-7">

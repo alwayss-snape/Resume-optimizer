@@ -106,3 +106,18 @@ test("pasted text is sent as a plain-text resume with the ATS template", async (
   expect(values.file.name).toBe("resume.txt");
   expect(values.template).toBe("ats");
 });
+
+test("project notes (P11.1) are optional and go with the resume", async () => {
+  const user = userEvent.setup({ applyAccept: false });
+  const onSubmit = vi.fn();
+  render(<UploadForm onSubmit={onSubmit} />);
+  await user.upload(screen.getByLabelText(/Drop your resume here/), file("cv.docx"));
+  await user.type(screen.getByLabelText("The job description"), "Data Scientist");
+  await user.click(screen.getByRole("button", { name: /Tailor my resume/ }));
+  expect(onSubmit.mock.calls[0][0].notes).toBeNull();
+
+  await user.click(screen.getByText("Add your project notes (optional)"));
+  await user.type(screen.getByLabelText("Or paste them"), "Harbor Foods{Enter}Targeting Engine:{Enter}Built a scoring pipeline");
+  await user.click(screen.getByRole("button", { name: /Tailor my resume/ }));
+  expect(onSubmit.mock.calls[1][0].notes).toEqual({ file: null, text: "Harbor Foods\nTargeting Engine:\nBuilt a scoring pipeline" });
+});

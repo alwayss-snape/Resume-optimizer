@@ -46,23 +46,23 @@ export function App() {
 
   /** A new upload is a new run: earlier results and steps are gone at once,
    *  even if this one fails (the server has already reset its side). */
-  const freshRun = (intent: Intent, file: File, jdText: string, template = run.template) => {
-    updateRun({ intent, file, jdText, template, report: null, details: null, parseIssues: [], parseNotes: [], unplaced: [], drafted: null,
-      review: null, results: null });
+  const freshRun = (intent: Intent, file: File, jdText: string, template = run.template, notes = run.notes) => {
+    updateRun({ intent, file, notes, jdText, template, report: null, details: null, parseIssues: [], parseNotes: [], unplaced: [],
+      toVerify: [], drafted: null, review: null, results: null });
     useApp.setState({ reached: 0 });
   };
 
   const readResume = async (file: File, jdText: string, isCurrent: () => boolean) => {
-    const parsed = await parseResume(file, jdText, model);
+    const parsed = await parseResume(file, jdText, model, useApp.getState().run.notes);
     if (!isCurrent()) return;
     updateRun({ details: parsed.details, parseIssues: parsed.parse_issues, parseNotes: parsed.parse_notes ?? [],
-      unplaced: parsed.unplaced ?? [] });
+      unplaced: parsed.unplaced ?? [], toVerify: parsed.to_verify ?? [] });
     advance("details");
   };
 
   const onStart = (intent: Intent, values: UploadValues) =>
     run_(async (isCurrent) => {
-      freshRun(intent, values.file, values.jdText, values.template);
+      freshRun(intent, values.file, values.jdText, values.template, values.notes ?? null);
       if (intent === "check") {
         const report = await analyze(values.file, values.jdText, model);
         if (!isCurrent()) return;

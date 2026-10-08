@@ -178,6 +178,8 @@ class PageFitter:
             in_group = sum(1 for b in section.bullets if b.group == group) if group else 0
             if group and f"{section.id}::{group}" in kept_projects and in_group <= MIN_BULLETS_PER_KEPT_PROJECT:
                 continue  # a project the user kept stays, with its best bullets
+            if group and in_group > 1 and next(b for b in section.bullets if b.group == group) is bullet:
+                continue  # P11.8: a project's opening bullet says what it is; it goes last
             # The last bullet under a sub-heading takes the heading with it.
             alone = bool(group) and in_group == 1
             section.bullets.remove(bullet)

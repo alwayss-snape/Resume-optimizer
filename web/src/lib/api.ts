@@ -1,3 +1,4 @@
+import type { ProjectNotes } from "./store";
 // Thin client for the FastAPI backend (app/api/routes.py). Same origin:
 // Vite proxies /api in development and FastAPI serves this app in
 // production, so the session cookie just works.
@@ -79,8 +80,13 @@ const json = (body: unknown): RequestInit => ({
 export const analyze = (file: File, jdText: string, model: string | null) =>
   request<AnalysisReport>("/api/analyze", { method: "POST", body: uploadForm(file, jdText, model) });
 
-export const parseResume = (file: File, jdText: string, model: string | null) =>
-  request<ParseResult>("/api/parse", { method: "POST", body: uploadForm(file, jdText, model) });
+export const parseResume = (file: File, jdText: string, model: string | null, notes?: ProjectNotes | null) => {
+  const form = uploadForm(file, jdText, model);
+  // P11.1: project notes beside the resume, as a file or pasted text.
+  if (notes?.file) form.append("bank", notes.file);
+  else if (notes?.text.trim()) form.append("bank_text", notes.text);
+  return request<ParseResult>("/api/parse", { method: "POST", body: form });
+};
 
 export const resetSession = () => request<{ ok: boolean }>("/api/reset", { method: "POST" });
 

@@ -93,6 +93,25 @@ def keep_present_tense(original: str, rewritten: str) -> str:
     return rewritten
 
 
+def keep_past_tense(original: str, rewritten: str) -> str:
+    """For a current job (P11.8): finished work written in the past tense
+    ("Deployed the pipeline") keeps it when the rewrite turned it into a
+    bare command ("Deploy the pipeline"), as the model did on 2026-10-08
+    after being told to keep present tense for an ongoing job. Puts back the
+    bullet's own word; never anything new."""
+    orig_words, new_words = (original or "").split(), (rewritten or "").split()
+    if not orig_words or not new_words:
+        return rewritten
+    first = re.sub(r"[^A-Za-z]", "", orig_words[0])
+    new_first = re.sub(r"[^A-Za-z]", "", new_words[0])
+    if not first or not new_first or first.lower() == new_first.lower():
+        return rewritten
+    if first.lower() in _past_forms(new_first):
+        word = first[0].upper() + first[1:] if new_words[0][:1].isupper() else first
+        return " ".join([word] + new_words[1:])
+    return rewritten
+
+
 def _count(n: int, noun: str) -> str:
     """"1 bullet", "10 bullets" (P9.7: was "10 bullet(s)")."""
     return f"{n} {noun}" if n == 1 else f"{n} {noun}s"
@@ -219,8 +238,10 @@ class LLMRewriter:
             if dates:
                 header.append(f"Dates: {dates}")
             if current:
-                header.append("This is the candidate's current job: keep a bullet written in the present "
-                              "tense in the present tense (\"Lead\", \"Teach\"), never turn it into the past.")
+                header.append("This is the candidate's current job: keep each bullet's tense as written. A "
+                              "bullet in the present tense (\"Lead\", \"Teach\") stays present; finished work in "
+                              "the past tense (\"Built\", \"Deployed\") stays past. Never start with a bare "
+                              "command form (\"Build\", \"Deploy\").")
         lines = list(header or []) + (["", note] if note else []) + ["", "Bullets:"]
         for item in items:
             lines.append(f"- bullet_id: {item['bullet_id']}")
@@ -249,7 +270,7 @@ class LLMRewriter:
                 continue  # unknown or duplicate id from the model
             text = normalize_llm_text(bullet.rewritten or "").lstrip("•- ").strip()
             if current:
-                text = keep_present_tense(item["text"], text)
+                text = keep_past_tense(item["text"], keep_present_tense(item["text"], text))
             allowed = {k.lower() for k in item["keywords"]}
             used = [k for k in bullet.keywords_used if k.lower() in allowed and k.lower() in text.lower()]
             if not text or _same_wording(text, item["text"]):

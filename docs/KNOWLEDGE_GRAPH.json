@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "ee8d9d1a0906db25",
+  "source_hash": "161178eb4bd2b4f4",
   "stats": {
-    "files": 184,
-    "python_files": 157,
-    "app_modules": 64,
-    "test_files": 82,
-    "classes": 121,
-    "functions": 1228,
-    "lines_of_python": 24537
+    "files": 188,
+    "python_files": 160,
+    "app_modules": 65,
+    "test_files": 84,
+    "classes": 128,
+    "functions": 1250,
+    "lines_of_python": 25015
   },
   "axes": {
     "x": "location (path)",
@@ -767,13 +767,95 @@
       "functions": []
     },
     {
+      "id": "app/analysis/project_bank.py",
+      "type": "python",
+      "layer": "Analysis",
+      "stages": [
+        "1 Ingest"
+      ],
+      "lines": 208,
+      "doc": "A project bank as a document (P11.1).",
+      "classes": [
+        {
+          "name": "BankProjectNotes",
+          "line": 27,
+          "doc": "",
+          "methods": []
+        },
+        {
+          "name": "BankJobNotes",
+          "line": 33,
+          "doc": "",
+          "methods": []
+        },
+        {
+          "name": "Bank",
+          "line": 41,
+          "doc": "",
+          "methods": []
+        }
+      ],
+      "functions": [
+        {
+          "name": "bank_lines",
+          "line": 48,
+          "doc": ""
+        },
+        {
+          "name": "_clean",
+          "line": 53,
+          "doc": ""
+        },
+        {
+          "name": "read_bank",
+          "line": 57,
+          "doc": "The bank's structure, or None when there's no AI or its answer can't"
+        },
+        {
+          "name": "_verbatim",
+          "line": 75,
+          "doc": "A value the model returned, kept only if the notes say it."
+        },
+        {
+          "name": "structure_to_bank",
+          "line": 81,
+          "doc": "Check every index and value against the notes; build the bank from"
+        },
+        {
+          "name": "_tokens",
+          "line": 124,
+          "doc": ""
+        },
+        {
+          "name": "_same_company",
+          "line": 128,
+          "doc": ""
+        },
+        {
+          "name": "_same_text",
+          "line": 133,
+          "doc": ""
+        },
+        {
+          "name": "_same_project",
+          "line": 138,
+          "doc": ""
+        },
+        {
+          "name": "merge_bank",
+          "line": 143,
+          "doc": "Merge the bank into the parsed resume, in place. Returns plain notes"
+        }
+      ]
+    },
+    {
       "id": "app/analysis/project_select.py",
       "type": "python",
       "layer": "Analysis",
       "stages": [
         "6 Plan"
       ],
-      "lines": 267,
+      "lines": 270,
       "doc": "Choose projects, not lines (P10.13).",
       "classes": [],
       "functions": [
@@ -834,22 +916,22 @@
         },
         {
           "name": "left_out_ids",
-          "line": 226,
+          "line": 229,
           "doc": "Bullet ids to leave out: the user's choice (project keys) when given,"
         },
         {
           "name": "remove_bullets",
-          "line": 233,
+          "line": 236,
           "doc": "Take the left-out bullets off the resume; returns their text (and the"
         },
         {
           "name": "_stem",
-          "line": 250,
+          "line": 253,
           "doc": ""
         },
         {
           "name": "heading_problem",
-          "line": 254,
+          "line": 257,
           "doc": "Why a proposed project heading can't be used, or None. Every word must"
         }
       ]
@@ -1133,42 +1215,42 @@
       "stages": [
         "7 Rewrite"
       ],
-      "lines": 407,
+      "lines": 428,
       "doc": "",
       "classes": [
         {
           "name": "LLMRewriter",
-          "line": 107,
+          "line": 126,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
-              "line": 108,
+              "line": 127,
               "doc": ""
             },
             {
               "name": "rewrite_bullet",
-              "line": 111,
+              "line": 130,
               "doc": "Rewrite (or, given a single free-text `original_text` with no"
             },
             {
               "name": "rewrite_bullet_with_status",
-              "line": 131,
+              "line": 150,
               "doc": "Like rewrite_bullet, plus what happened, so failures are visible"
             },
             {
               "name": "rewrite_role",
-              "line": 189,
+              "line": 208,
               "doc": "Rewrite several bullets of one role in ONE call (P1.4)."
             },
             {
               "name": "rename_headings",
-              "line": 261,
+              "line": 282,
               "doc": "Plain, searchable headings for one job's projects (P10.13), in one"
             },
             {
               "name": "execute_plan",
-              "line": 289,
+              "line": 310,
               "doc": "One LLM call per role (P1.4): all of a job's bullets that the"
             }
           ]
@@ -1201,8 +1283,13 @@
           "doc": "For a job the candidate still holds (P9.24): a bullet written in the"
         },
         {
-          "name": "_count",
+          "name": "keep_past_tense",
           "line": 96,
+          "doc": "For a current job (P11.8): finished work written in the past tense"
+        },
+        {
+          "name": "_count",
+          "line": 115,
           "doc": "\"1 bullet\", \"10 bullets\" (P9.7: was \"10 bullet(s)\")."
         }
       ]
@@ -1616,7 +1703,7 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 75,
+      "lines": 88,
       "doc": "The web app (P5.1): `uvicorn app.api.main:app`.",
       "classes": [],
       "functions": [
@@ -1653,7 +1740,7 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 763,
+      "lines": 776,
       "doc": "HTTP endpoints, one per step of the review flow (P5.1).",
       "classes": [
         {
@@ -1717,7 +1804,7 @@
         },
         {
           "name": "ArrangeIn",
-          "line": 675,
+          "line": 688,
           "doc": "",
           "methods": []
         }
@@ -1845,57 +1932,57 @@
         },
         {
           "name": "proposals",
-          "line": 494,
+          "line": 507,
           "doc": "Step 2: apply the user's fixes, then draft rewrites and gap"
         },
         {
           "name": "match_preview",
-          "line": 555,
+          "line": 568,
           "doc": "The match rate if the selected (and edited) proposals were applied."
         },
         {
           "name": "tailor",
-          "line": 566,
+          "line": 579,
           "doc": "Step 3: apply the review and generate the files. Streams progress."
         },
         {
           "name": "_region_out",
-          "line": 611,
+          "line": 624,
           "doc": "The region the files are formatted for (P10.3), with the JD's evidence"
         },
         {
           "name": "_mode_out",
-          "line": 623,
+          "line": 636,
           "doc": "The CV type the files use (P10.5), with the signals when it is the"
         },
         {
           "name": "_results_out",
-          "line": 634,
+          "line": 647,
           "doc": "What the Results (and Arrange) screen gets after a run."
         },
         {
           "name": "arrange",
-          "line": 683,
+          "line": 696,
           "doc": "Re-render the tailored resume as the user arranged it (P8.13). No LLM"
         },
         {
           "name": "_result_path",
-          "line": 726,
+          "line": 739,
           "doc": ""
         },
         {
           "name": "download",
-          "line": 734,
+          "line": 747,
           "doc": ""
         },
         {
           "name": "preview",
-          "line": 742,
+          "line": 755,
           "doc": "One page of the tailored PDF as a PNG (Chrome blocks embedded PDFs)."
         },
         {
           "name": "reset",
-          "line": 751,
+          "line": 764,
           "doc": "Start over: delete this visitor's files and state. If a step is still"
         }
       ]
@@ -3101,6 +3188,13 @@
       "lines": 3
     },
     {
+      "id": "app/llm/prompts/read_bank.txt",
+      "type": "prompt",
+      "layer": "LLM",
+      "stages": [],
+      "lines": 11
+    },
+    {
       "id": "app/llm/prompts/rename_headings.txt",
       "type": "prompt",
       "layer": "LLM",
@@ -3136,7 +3230,7 @@
         "3 JD analysis",
         "7 Rewrite"
       ],
-      "lines": 108,
+      "lines": 134,
       "doc": "",
       "classes": [
         {
@@ -3212,20 +3306,38 @@
           "methods": []
         },
         {
-          "name": "SummaryResult",
+          "name": "BankJob",
           "line": 86,
+          "doc": "",
+          "methods": []
+        },
+        {
+          "name": "BankProject",
+          "line": 94,
+          "doc": "",
+          "methods": []
+        },
+        {
+          "name": "BankStructure",
+          "line": 101,
+          "doc": "A project bank read as line numbers (P11.1): code keeps every line's",
+          "methods": []
+        },
+        {
+          "name": "SummaryResult",
+          "line": 112,
           "doc": "A tailored professional summary (P1.5).",
           "methods": []
         },
         {
           "name": "JudgeRubric",
-          "line": 93,
+          "line": 119,
           "doc": "LLM-as-judge rubric for one tailored resume (P4.3).",
           "methods": []
         },
         {
           "name": "JudgePairwise",
-          "line": 105,
+          "line": 131,
           "doc": "Which of two resume versions is better for the JD (P4.3).",
           "methods": []
         }
@@ -3472,7 +3584,7 @@
       "stages": [
         "9 Render"
       ],
-      "lines": 259,
+      "lines": 261,
       "doc": "Page-fit loop (P2.4): render, count pages, trim, render again.",
       "classes": [
         {
@@ -3519,12 +3631,12 @@
             },
             {
               "name": "_drop_sections",
-              "line": 190,
+              "line": 192,
               "doc": "Least relevant job sub-section or project, as a whole; never one"
             },
             {
               "name": "_compact",
-              "line": 232,
+              "line": 234,
               "doc": ""
             }
           ]
@@ -3543,17 +3655,17 @@
         },
         {
           "name": "_is_current",
-          "line": 239,
+          "line": 241,
           "doc": "The first job, and any other job that hasn't ended, keep the larger"
         },
         {
           "name": "_owner_label",
-          "line": 246,
+          "line": 248,
           "doc": "\"Lakeshore Electric (Journeyman Electrician)\" or a project's name, so"
         },
         {
           "name": "_short",
-          "line": 257,
+          "line": 259,
           "doc": ""
         }
       ]
@@ -3997,7 +4109,7 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 1630,
+      "lines": 1660,
       "doc": "",
       "classes": [
         {
@@ -4121,48 +4233,53 @@
               "doc": "The uploaded file as raw blocks, or UnreadableFile with a message"
             },
             {
-              "name": "normalize_raw",
+              "name": "apply_bank",
               "line": 531,
+              "doc": "Read the owner's project notes (P11.1) and merge them into the"
+            },
+            {
+              "name": "normalize_raw",
+              "line": 561,
               "doc": ""
             },
             {
               "name": "_copy_parsed",
-              "line": 558,
+              "line": 588,
               "doc": "Deep copies, so a parse kept in UI session state is never mutated."
             },
             {
               "name": "preview_keyword_match",
-              "line": 563,
+              "line": 593,
               "doc": "Match rate if these proposals were applied (P3.4 \"recalculate\"):"
             },
             {
               "name": "apply_parse_corrections",
-              "line": 590,
+              "line": 620,
               "doc": "Apply the user's fixes from the \"Check parsed resume\" step (P3.5)."
             },
             {
               "name": "analyze_only",
-              "line": 725,
+              "line": 755,
               "doc": ""
             },
             {
               "name": "generate_proposals",
-              "line": 755,
+              "line": 785,
               "doc": "Generate rewrite proposals without applying them, plus questions"
             },
             {
               "name": "incorporate_user_addition",
-              "line": 835,
+              "line": 865,
               "doc": "Fold a user-supplied free-text addition (a project, an"
             },
             {
               "name": "tailor_resume",
-              "line": 914,
+              "line": 944,
               "doc": "`region` (\"us\", \"uk_eu\", \"india\", \"other\", P10.3) sets the paper"
             },
             {
               "name": "arrange",
-              "line": 1483,
+              "line": 1513,
               "doc": "Re-render the tailored resume as the user arranged it (P8.13\u2013P8.16):"
             }
           ]
@@ -4176,12 +4293,12 @@
         },
         {
           "name": "_hidden_text",
-          "line": 1585,
+          "line": 1615,
           "doc": "Text of the sections the user hid, so coverage counts it as their choice."
         },
         {
           "name": "_merge_usage",
-          "line": 1612,
+          "line": 1642,
           "doc": "Combine two LLMClient.get_usage_summary() dicts into one. When one"
         }
       ]
@@ -4654,118 +4771,118 @@
       "type": "python",
       "layer": "Tooling",
       "stages": [],
-      "lines": 747,
+      "lines": 748,
       "doc": "Regenerate the repo's living docs: the knowledge graph and the change log.",
       "classes": [],
       "functions": [
         {
           "name": "git",
-          "line": 142,
+          "line": 143,
           "doc": ""
         },
         {
           "name": "layer_of",
-          "line": 149,
+          "line": 150,
           "doc": ""
         },
         {
           "name": "module_name",
-          "line": 156,
+          "line": 157,
           "doc": ""
         },
         {
           "name": "first_line",
-          "line": 163,
+          "line": 164,
           "doc": ""
         },
         {
           "name": "list_files",
-          "line": 172,
+          "line": 173,
           "doc": "Tracked + new (not ignored) files, restricted to the project map."
         },
         {
           "name": "parse_python",
-          "line": 190,
+          "line": 191,
           "doc": ""
         },
         {
           "name": "symbols_of",
-          "line": 218,
+          "line": 219,
           "doc": ""
         },
         {
           "name": "settings_fields",
-          "line": 231,
+          "line": 232,
           "doc": ""
         },
         {
           "name": "build_graph",
-          "line": 250,
+          "line": 251,
           "doc": ""
         },
         {
           "name": "render_graph_md",
-          "line": 324,
+          "line": 325,
           "doc": ""
         },
         {
           "name": "write_graph",
-          "line": 522,
+          "line": 523,
           "doc": ""
         },
         {
           "name": "commit_info",
-          "line": 565,
+          "line": 566,
           "doc": ""
         },
         {
           "name": "changed_files",
-          "line": 576,
+          "line": 577,
           "doc": ""
         },
         {
           "name": "is_major",
-          "line": 589,
+          "line": 590,
           "doc": ""
         },
         {
           "name": "blob",
-          "line": 598,
+          "line": 599,
           "doc": ""
         },
         {
           "name": "structure_delta",
-          "line": 603,
+          "line": 604,
           "doc": ""
         },
         {
           "name": "render_entry",
-          "line": 626,
+          "line": 627,
           "doc": ""
         },
         {
           "name": "_split_entries",
-          "line": 669,
+          "line": 670,
           "doc": ""
         },
         {
           "name": "_join",
-          "line": 684,
+          "line": 685,
           "doc": ""
         },
         {
           "name": "log_entry",
-          "line": 688,
+          "line": 689,
           "doc": ""
         },
         {
           "name": "backfill",
-          "line": 706,
+          "line": 707,
           "doc": ""
         },
         {
           "name": "main",
-          "line": 723,
+          "line": 724,
           "doc": ""
         }
       ]
@@ -5473,6 +5590,32 @@
         {
           "name": "test_institution_dates_are_not_the_location",
           "line": 141,
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "tests/unit/test_bugs_p118.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 39,
+      "doc": "P11.8: bugs found in the owner's 2026-10-08 runs.",
+      "classes": [],
+      "functions": [
+        {
+          "name": "test_finished_work_in_a_current_job_stays_in_the_past_tense",
+          "line": 12,
+          "doc": ""
+        },
+        {
+          "name": "test_a_projects_opening_bullet_is_trimmed_last",
+          "line": 21,
+          "doc": ""
+        },
+        {
+          "name": "test_the_page_is_revalidated_and_the_bundle_cached",
+          "line": 32,
           "doc": ""
         }
       ]
@@ -7728,6 +7871,60 @@
       ]
     },
     {
+      "id": "tests/unit/test_project_bank_p111.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 121,
+      "doc": "P11.1: a project bank read as a document beside the resume.",
+      "classes": [
+        {
+          "name": "_BankLLM",
+          "line": 91,
+          "doc": "",
+          "methods": [
+            {
+              "name": "is_available",
+              "line": 94,
+              "doc": ""
+            },
+            {
+              "name": "generate_json",
+              "line": 97,
+              "doc": ""
+            }
+          ]
+        }
+      ],
+      "functions": [
+        {
+          "name": "test_the_structure_keeps_the_notes_words_and_drops_bad_indices",
+          "line": 43,
+          "doc": ""
+        },
+        {
+          "name": "test_a_company_the_notes_dont_name_is_dropped",
+          "line": 62,
+          "doc": ""
+        },
+        {
+          "name": "test_merging_adds_new_work_and_never_duplicates_the_resume",
+          "line": 70,
+          "doc": ""
+        },
+        {
+          "name": "test_the_api_reads_pasted_notes_beside_the_resume",
+          "line": 103,
+          "doc": ""
+        },
+        {
+          "name": "test_without_the_ai_the_notes_are_not_read_and_the_page_says_so",
+          "line": 117,
+          "doc": ""
+        }
+      ]
+    },
+    {
       "id": "tests/unit/test_project_rewrites.py",
       "type": "python",
       "layer": "Tests",
@@ -8761,7 +8958,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 233,
+      "lines": 234,
       "doc": "",
       "classes": [],
       "functions": [
@@ -8812,12 +9009,12 @@
         },
         {
           "name": "test_v2_uses_embeddings_when_given_and_falls_back_on_error",
-          "line": 205,
+          "line": 206,
           "doc": ""
         },
         {
           "name": "test_v2_rewriter_gets_only_scoped_requirements_and_keywords",
-          "line": 217,
+          "line": 218,
           "doc": ""
         }
       ]
@@ -9572,6 +9769,46 @@
       "type": "tested_by"
     },
     {
+      "from": "app/analysis/project_bank.py",
+      "to": "app/analysis/project_bank.py::Bank",
+      "type": "contains"
+    },
+    {
+      "from": "app/analysis/project_bank.py",
+      "to": "app/analysis/project_bank.py::BankJobNotes",
+      "type": "contains"
+    },
+    {
+      "from": "app/analysis/project_bank.py",
+      "to": "app/analysis/project_bank.py::BankProjectNotes",
+      "type": "contains"
+    },
+    {
+      "from": "app/analysis/project_bank.py",
+      "to": "app/domain/evidence.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/analysis/project_bank.py",
+      "to": "app/domain/resume.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/analysis/project_bank.py",
+      "to": "app/llm/prompts/read_bank.txt",
+      "type": "uses_prompt"
+    },
+    {
+      "from": "app/analysis/project_bank.py",
+      "to": "app/llm/schemas.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/analysis/project_bank.py",
+      "to": "tests/unit/test_project_bank_p111.py",
+      "type": "tested_by"
+    },
+    {
       "from": "app/analysis/project_select.py",
       "to": "app/analysis/experience.py",
       "type": "imports"
@@ -9789,6 +10026,11 @@
     {
       "from": "app/analysis/rewriter.py",
       "to": "tests/integration/test_preserve_rewrite_end_to_end.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/analysis/rewriter.py",
+      "to": "tests/unit/test_bugs_p118.py",
       "type": "tested_by"
     },
     {
@@ -10148,6 +10390,11 @@
     },
     {
       "from": "app/api/main.py",
+      "to": "tests/unit/test_bugs_p118.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/api/main.py",
       "to": "tests/unit/test_cv_mode_p105.py",
       "type": "tested_by"
     },
@@ -10159,6 +10406,11 @@
     {
       "from": "app/api/main.py",
       "to": "tests/unit/test_privacy_p98.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/api/main.py",
+      "to": "tests/unit/test_project_bank_p111.py",
       "type": "tested_by"
     },
     {
@@ -10648,6 +10900,11 @@
     },
     {
       "from": "app/domain/resume.py",
+      "to": "tests/unit/test_bugs_p118.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/resume.py",
       "to": "tests/unit/test_check_parsed_resume.py",
       "type": "tested_by"
     },
@@ -10749,6 +11006,11 @@
     {
       "from": "app/domain/resume.py",
       "to": "tests/unit/test_parsing_fixes_p19.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/resume.py",
+      "to": "tests/unit/test_project_bank_p111.py",
       "type": "tested_by"
     },
     {
@@ -11478,6 +11740,21 @@
     },
     {
       "from": "app/llm/schemas.py",
+      "to": "app/llm/schemas.py::BankJob",
+      "type": "contains"
+    },
+    {
+      "from": "app/llm/schemas.py",
+      "to": "app/llm/schemas.py::BankProject",
+      "type": "contains"
+    },
+    {
+      "from": "app/llm/schemas.py",
+      "to": "app/llm/schemas.py::BankStructure",
+      "type": "contains"
+    },
+    {
+      "from": "app/llm/schemas.py",
       "to": "app/llm/schemas.py::BulletRewriteResult",
       "type": "contains"
     },
@@ -11574,6 +11851,11 @@
     {
       "from": "app/llm/schemas.py",
       "to": "tests/unit/test_llm_client.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/llm/schemas.py",
+      "to": "tests/unit/test_project_bank_p111.py",
       "type": "tested_by"
     },
     {
@@ -11815,6 +12097,11 @@
       "from": "app/rendering/page_fit.py",
       "to": "app/rendering/page_fit.py::PageFitter",
       "type": "contains"
+    },
+    {
+      "from": "app/rendering/page_fit.py",
+      "to": "tests/unit/test_bugs_p118.py",
+      "type": "tested_by"
     },
     {
       "from": "app/rendering/page_fit.py",
@@ -12138,6 +12425,11 @@
     },
     {
       "from": "app/services/tailor.py",
+      "to": "app/analysis/project_bank.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/services/tailor.py",
       "to": "app/analysis/project_select.py",
       "type": "imports"
     },
@@ -12404,6 +12696,11 @@
     {
       "from": "app/services/tailor.py",
       "to": "tests/unit/test_profile_store.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/services/tailor.py",
+      "to": "tests/unit/test_project_bank_p111.py",
       "type": "tested_by"
     },
     {
@@ -12744,6 +13041,11 @@
     {
       "from": "tests/unit/test_page_fit.py",
       "to": "tests/unit/test_page_fit.py::FakeLayout",
+      "type": "contains"
+    },
+    {
+      "from": "tests/unit/test_project_bank_p111.py",
+      "to": "tests/unit/test_project_bank_p111.py::_BankLLM",
       "type": "contains"
     },
     {

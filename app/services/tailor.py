@@ -528,6 +528,36 @@ class TailorService:
             raise errors.UnreadableFile(errors.NO_TEXT)
         return raw_doc
 
+    def apply_bank(self, parsed, bank_path: Optional[str] = None, bank_text: Optional[str] = None):
+        """Read the owner's project notes (P11.1) and merge them into the
+        parsed resume. Returns (parsed, notes for Check details, lines held
+        back to verify). Without the AI the notes aren't read, and the note
+        says so."""
+        from app.analysis.project_bank import bank_lines, merge_bank, read_bank
+        text = bank_text or ""
+        if bank_path:
+            raw = self.read_file(bank_path)
+            text = "\n".join(b.text for b in raw.blocks) if getattr(raw, "blocks", None) else raw.raw_text
+        lines = bank_lines(text)
+        if not lines:
+            return parsed, [], []
+        bank = read_bank(lines, self.llm_client)
+        if bank is None:
+            return parsed, ["Your project notes couldn't be read just now (the AI is needed for that). "
+                            "You can paste them under a job on this page instead."], []
+        raw_doc, resume_doc, evidence = self._copy_parsed(parsed)
+        resume = resume_doc.resume
+
+        def new_job(role):
+            return self._new_experience(role, "notes")
+        notes = merge_bank(resume, evidence, bank, new_experience=new_job)
+        # Jobs from the notes go in date order, like any added job.
+        added = [e for e in resume.experience if e.id.startswith("exp_user_")]
+        for exp in added:
+            resume.experience.remove(exp)
+            self._insert_by_date(resume, exp)
+        return (raw_doc, resume_doc, evidence), notes, list(bank.to_verify)
+
     def normalize_raw(self, raw_doc):
         resume_doc, evidence_list = self.resume_normalizer.normalize(raw_doc)
         # Information about how the file was read, shown apart from the

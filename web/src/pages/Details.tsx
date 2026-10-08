@@ -162,6 +162,18 @@ export function Details() {
         </ul>
       )}
 
+      {run.toVerify.length > 0 && (
+        <details className="rounded-[3px] border border-line bg-panel p-4 text-sm">
+          <summary className="min-h-6 cursor-pointer font-medium">
+            {run.toVerify.length} line{run.toVerify.length === 1 ? "" : "s"} from your notes held back until you verify {run.toVerify.length === 1 ? "it" : "them"}
+          </summary>
+          <p className="mt-2 text-[13px] text-muted">Your notes mark these as unconfirmed, so they're not used. Confirm them in your notes and upload again to include them.</p>
+          <ul className="mt-2 flex list-disc flex-col gap-1 pl-5">
+            {run.toVerify.map((line) => <li key={line}>{line}</li>)}
+          </ul>
+        </details>
+      )}
+
       {run.parseIssues.length > 0 && (
         <ul className="flex flex-col gap-2 rounded-[3px] border border-warning bg-panel p-4 text-sm">
           {run.parseIssues.map((issue) => (

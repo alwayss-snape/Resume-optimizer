@@ -10,6 +10,50 @@ Timestamped record of every **major** commit (anything touching `app/`, `scripts
 
 <!-- entries below; newest first -->
 
+<!-- entry:2026-10-09T00:05:14+05:30 -->
+## 2026-10-09 00:05 (+0530) · P11.8, P11.1: today's bug fixes, and project notes read as a document
+
+Kshitij Chaubey · branch `fb_ksh`
+
+**Why / details**
+
+> P11.8, from the owner's 2026-10-08 runs: a current job's finished work came
+> back as commands ("Deploy", "Build") after the prompt said to keep present
+> tense for an ongoing job; the past-tense verb is now put back and the
+> prompt says to keep each bullet's tense. Page-fit cut a project's opening
+> bullet (what the project is) because the trim prefers bullets with
+> figures; it now stays first and goes last. A cached index.html kept
+> loading an old bundle after an update; the page is now revalidated.
+>
+> P11.1: the comparison with a Claude-chat resume showed the owner's best
+> material never reached the tool. Project notes can now be uploaded or
+> pasted beside the resume. The AI says what each line is by number only,
+> so the owner's words are kept; code checks every index and value, merges
+> new jobs and projects, keeps overviews and figures as project evidence
+> (not bullets) for project-level writing later, and holds back lines the
+> notes mark "to verify".
+
+**Changed files**
+
+- Analysis: `A` app/analysis/project_bank.py, `M` app/analysis/project_select.py, `M` app/analysis/rewriter.py
+- Docs: `M` docs/ACTION_ITEMS.md
+- LLM: `A` app/llm/prompts/read_bank.txt, `M` app/llm/schemas.py
+- Rendering: `M` app/rendering/page_fit.py
+- Root: `M` web/src/App.tsx, `M` web/src/components/UploadForm.test.tsx, `M` web/src/components/UploadForm.tsx, `M` web/src/lib/api.ts, `M` web/src/lib/store.ts, `M` web/src/lib/types.ts, `M` web/src/pages/Details.tsx
+- Services: `M` app/services/tailor.py
+- Tests: `A` tests/unit/test_bugs_p118.py, `A` tests/unit/test_project_bank_p111.py, `M` tests/unit/test_tailor_planner.py
+- Tooling: `M` scripts/update_docs.py
+- Web API: `M` app/api/main.py, `M` app/api/routes.py
+
+**Structure delta**
+
+- new module `app/analysis/project_bank.py`: `class Bank`, `class BankJobNotes`, `class BankProjectNotes`
+- `app/analysis/rewriter.py`: added `keep_past_tense()`
+- `app/llm/schemas.py`: added `class BankJob`, `class BankProject`, `class BankStructure`
+- `app/services/tailor.py`: added `TailorService.apply_bank()`
+
+---
+
 <!-- entry:2026-10-08T19:41:42+05:30 -->
 ## 2026-10-08 19:41 (+0530) · P10.13: choose projects, not lines
 

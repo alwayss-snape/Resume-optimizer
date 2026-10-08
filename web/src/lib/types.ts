@@ -44,6 +44,8 @@ export interface ParseResult {
   parse_notes?: string[];
   /** Lines of the file the parse put nowhere, for the user to assign (P8.26). */
   unplaced?: UnplacedLine[];
+  /** Lines of the project notes that say to verify them: held back, not used (P11.1). */
+  to_verify?: string[];
 }
 
 export type KeywordKind = "hard" | "title" | "education" | "certification" | "soft";

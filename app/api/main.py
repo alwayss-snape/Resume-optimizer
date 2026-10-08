@@ -67,6 +67,19 @@ def create_app(make_service: Callable = default_service, sessions: Optional[Sess
             response.set_cookie(SESSION_COOKIE, sid, httponly=True, samesite="lax",
                                 max_age=app.state.sessions.ttl_seconds)
         return response
+
+    @app.middleware("http")
+    async def cache_policy(request: Request, call_next):
+        """P11.8: the page itself is checked on every visit, so an update is
+        seen at once (a cached index.html kept loading an old bundle); the
+        bundle's files have hashed names and can be kept for good."""
+        response = await call_next(request)
+        path = request.url.path
+        if path.startswith("/assets/"):
+            response.headers.setdefault("Cache-Control", "public, max-age=31536000, immutable")
+        elif not path.startswith("/api/") and response.headers.get("content-type", "").startswith("text/html"):
+            response.headers["Cache-Control"] = "no-cache"
+        return response
     if serve_web and os.path.isdir(WEB_DIST):
         app.mount("/", StaticFiles(directory=WEB_DIST, html=True), name="web")
     return app

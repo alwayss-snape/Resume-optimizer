@@ -21,12 +21,14 @@ export type Template = "ats" | "keep";
 export interface Run {
   intent: Intent;
   file: File | null;
+  notes: ProjectNotes | null; // the owner's project bank, read beside the resume (P11.1)
   jdText: string;
   template: Template;
   details: Details | null;
   parseIssues: string[];
   parseNotes: string[]; // how the file was read, e.g. a LinkedIn export (P10.11)
   unplaced: UnplacedLine[]; // lines the parse put nowhere (P8.26)
+  toVerify: string[]; // project-note lines held back until verified (P11.1)
   report: AnalysisReport | null;
   drafted: ProposalsResult | null;
   review: ReviewState | null; // decisions on the drafted proposals, kept across Back
@@ -36,8 +38,15 @@ export interface Run {
   jumpTo: "gaps" | "addition" | null;
 }
 
+/** Project notes: a file, or text pasted on the upload page (P11.1). */
+export interface ProjectNotes {
+  file: File | null;
+  text: string;
+}
+
 export const EMPTY_RUN: Run = {
-  intent: "tailor", file: null, jdText: "", template: "ats", details: null, parseIssues: [], parseNotes: [], unplaced: [],
+  intent: "tailor", file: null, notes: null, jdText: "", template: "ats", details: null, parseIssues: [], parseNotes: [], unplaced: [],
+  toVerify: [],
   report: null, drafted: null, review: null, results: null, resultsVersion: 0, jumpTo: null,
 };
 export type Theme = "dark" | "light" | "system";
