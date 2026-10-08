@@ -41,3 +41,19 @@ def test_the_check_allows_evidenced_skills_and_rejects_others():
     assert v.validate_proposal(ok, ev).verdict == "PASS"
     bad = RewriteProposal(kind="skills", original_text="Tools: MySQL", proposed_text="Data: MySQL, Snowflake")
     assert v.validate_proposal(bad, ev).verdict == "REJECT"
+
+
+class _LabelLLM(_SkillsLLM):
+    def generate_json(self, messages, schema_model, **kwargs):
+        return SkillsRebuildResult(groups=[
+            {"category": "Pricing & Operations Research", "items": ["LightGBM", "MLflow"]},  # a label the work never shows
+            {"category": "Data & Platforms", "items": ["PySpark", "BigQuery", "MySQL", "Python"]}])
+
+
+def test_a_category_name_is_a_claim_too():
+    p = rebuild_skills(RESUME, EVIDENCE, None, _LabelLLM())
+    assert "Operations Research" not in p.proposed_text and "Pricing" not in p.proposed_text
+    assert p.proposed_text.splitlines()[0] == "Skills: LightGBM, MLflow"
+    v = FactualValidator()
+    bad = RewriteProposal(kind="skills", original_text="Tools: MySQL", proposed_text="Operations Research: MySQL")
+    assert v.validate_proposal(bad, EVIDENCE).verdict == "REJECT"

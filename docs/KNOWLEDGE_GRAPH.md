@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**68 app modules · 91 test files · 148 classes · 1337 functions/methods · 26,857 lines of Python** · source hash `3c53564930c91bf4`
+**68 app modules · 91 test files · 150 classes · 1349 functions/methods · 27,077 lines of Python** · source hash `dffd4333701fa7e7`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -444,7 +444,7 @@ _Is this text in English? (P8.25)_
 
 ### `app/analysis/project_bank.py`
 
-**Layer:** Analysis · **Stage:** 1 Ingest · **Lines:** 212
+**Layer:** Analysis · **Stage:** 1 Ingest · **Lines:** 322
 
 _A project bank as a document (P11.1)._
 
@@ -453,14 +453,17 @@ _A project bank as a document (P11.1)._
 - class **`Bank`** ([app/analysis/project_bank.py:41](../app/analysis/project_bank.py#L41))
 - function **`bank_lines()`** ([app/analysis/project_bank.py:48](../app/analysis/project_bank.py#L48))
 - function **`_clean()`** ([app/analysis/project_bank.py:53](../app/analysis/project_bank.py#L53))
-- function **`read_bank()`** ([app/analysis/project_bank.py:57](../app/analysis/project_bank.py#L57)) — The bank's structure, or None when there's no AI or its answer can't
-- function **`_verbatim()`** ([app/analysis/project_bank.py:75](../app/analysis/project_bank.py#L75)) — A value the model returned, kept only if the notes say it.
-- function **`structure_to_bank()`** ([app/analysis/project_bank.py:81](../app/analysis/project_bank.py#L81)) — Check every index and value against the notes; build the bank from
-- function **`_tokens()`** ([app/analysis/project_bank.py:128](../app/analysis/project_bank.py#L128))
-- function **`_same_company()`** ([app/analysis/project_bank.py:132](../app/analysis/project_bank.py#L132))
-- function **`_same_text()`** ([app/analysis/project_bank.py:137](../app/analysis/project_bank.py#L137))
-- function **`_same_project()`** ([app/analysis/project_bank.py:142](../app/analysis/project_bank.py#L142))
-- function **`merge_bank()`** ([app/analysis/project_bank.py:147](../app/analysis/project_bank.py#L147)) — Merge the bank into the parsed resume, in place. Returns plain notes
+- function **`read_bank()`** ([app/analysis/project_bank.py:61](../app/analysis/project_bank.py#L61)) — The bank's structure, or None when there's no AI or its answer can't
+- function **`bank_parts()`** ([app/analysis/project_bank.py:102](../app/analysis/project_bank.py#L102)) — (line span, extra context lines) per part: split where a job starts
+- function **`merge_structures()`** ([app/analysis/project_bank.py:124](../app/analysis/project_bank.py#L124)) — Parts read separately, as one: jobs matched by company, each part's
+- function **`doubted_lines()`** ([app/analysis/project_bank.py:153](../app/analysis/project_bank.py#L153)) — Lines the notes themselves doubt, whatever the AI said (P11.1): the
+- function **`_verbatim()`** ([app/analysis/project_bank.py:179](../app/analysis/project_bank.py#L179)) — A value the model returned, kept only if the notes say it.
+- function **`structure_to_bank()`** ([app/analysis/project_bank.py:185](../app/analysis/project_bank.py#L185)) — Check every index and value against the notes; build the bank from
+- function **`_tokens()`** ([app/analysis/project_bank.py:238](../app/analysis/project_bank.py#L238))
+- function **`_same_company()`** ([app/analysis/project_bank.py:242](../app/analysis/project_bank.py#L242))
+- function **`_same_text()`** ([app/analysis/project_bank.py:247](../app/analysis/project_bank.py#L247))
+- function **`_same_project()`** ([app/analysis/project_bank.py:252](../app/analysis/project_bank.py#L252))
+- function **`merge_bank()`** ([app/analysis/project_bank.py:257](../app/analysis/project_bank.py#L257)) — Merge the bank into the parsed resume, in place. Returns plain notes
 - **Imports:** `domain/evidence.py`, `domain/resume.py`, `llm/schemas.py`
 - **Imported by:** `services/tailor.py`
 - **Tested by:** `tests/unit/test_project_bank_p111.py`
@@ -636,7 +639,7 @@ _Semantic (embedding-based) matching layer._
 
 ### `app/analysis/skills_tailor.py`
 
-**Layer:** Analysis · **Stage:** 7 Rewrite · **Lines:** 252
+**Layer:** Analysis · **Stage:** 7 Rewrite · **Lines:** 278
 
 _Skills tailoring (P1.6), deterministic: no LLM, nothing added._
 
@@ -651,8 +654,9 @@ _Skills tailoring (P1.6), deterministic: no LLM, nothing added._
 - function **`skill_type()`** ([app/analysis/skills_tailor.py:161](../app/analysis/skills_tailor.py#L161)) — language / framework / tool / practice / expertise, or None if unknown.
 - function **`jd_spelling()`** ([app/analysis/skills_tailor.py:170](../app/analysis/skills_tailor.py#L170)) — The keyword as the JD writes it ("CI" for "ci"), else as given.
 - function **`skill_category()`** ([app/analysis/skills_tailor.py:176](../app/analysis/skills_tailor.py#L176)) — The category a confirmed skill belongs under: an existing one of its
-- function **`_in_material()`** ([app/analysis/skills_tailor.py:199](../app/analysis/skills_tailor.py#L199))
-- function **`rebuild_skills()`** ([app/analysis/skills_tailor.py:204](../app/analysis/skills_tailor.py#L204)) — A skills proposal rebuilt from evidence, or None (no AI, nothing usable).
+- function **`category_name()`** ([app/analysis/skills_tailor.py:213](../app/analysis/skills_tailor.py#L213)) — The category name with any word that is neither a plain category word
+- function **`_in_material()`** ([app/analysis/skills_tailor.py:225](../app/analysis/skills_tailor.py#L225))
+- function **`rebuild_skills()`** ([app/analysis/skills_tailor.py:230](../app/analysis/skills_tailor.py#L230)) — A skills proposal rebuilt from evidence, or None (no AI, nothing usable).
 - **Imports:** `analysis/change_proposal.py`, `analysis/keyword_match.py`, `domain/report.py`, `domain/resume.py`, `llm/schemas.py`
 - **Imported by:** `analysis/gap_questions.py`, `services/tailor.py`, `validation/factual.py`
 - **Tested by:** `tests/unit/test_skill_placement_p912.py`, `tests/unit/test_skills_rebuild_p117.py`, `tests/unit/test_skills_tailor.py`
@@ -1499,7 +1503,7 @@ _Content coverage (P8.2): does every line of the uploaded resume reach the_
 
 ### `app/validation/factual.py`
 
-**Layer:** Validation · **Stage:** 8 Validate · **Lines:** 559
+**Layer:** Validation · **Stage:** 8 Validate · **Lines:** 564
 
 - class **`ClaimCheck`** ([app/validation/factual.py:13](../app/validation/factual.py#L13))
 - class **`ValidationResult`** ([app/validation/factual.py:20](../app/validation/factual.py#L20))
@@ -1515,13 +1519,13 @@ _Content coverage (P8.2): does every line of the uploaded resume reach the_
   - `_validate_project()` :239 — A project written whole (P11.5): every new bullet is checked like a
   - `_validate_heading()` :273 — A project heading (P10.13) may only reword what the old heading and
   - `_validate_skills()` :284 — The skills section may be reordered and respelled, and gain what the
-  - `_validate_summary()` :300 — A summary may draw on the whole resume (P1.5): every factual term
-  - `_owner_prefix()` :356 — 'exp_001_b03' -> 'exp_001_': the job (or project) a bullet belongs to.
-  - `_content_tokens()` :361 — Plain words of a text in order, hyphenated words split into parts
-  - `_is_plain()` :369
-  - `_new_words()` :374 — Plain words a rewrite adds (P8.9): (borrowed from the JD only,
-  - `_words_from_elsewhere()` :393 — Runs of consecutive plain words that the resume uses only under
-  - `validate_proposal()` :414
+  - `_validate_summary()` :305 — A summary may draw on the whole resume (P1.5): every factual term
+  - `_owner_prefix()` :361 — 'exp_001_b03' -> 'exp_001_': the job (or project) a bullet belongs to.
+  - `_content_tokens()` :366 — Plain words of a text in order, hyphenated words split into parts
+  - `_is_plain()` :374
+  - `_new_words()` :379 — Plain words a rewrite adds (P8.9): (borrowed from the JD only,
+  - `_words_from_elsewhere()` :398 — Runs of consecutive plain words that the resume uses only under
+  - `validate_proposal()` :419
 - **Imports:** `analysis/project_select.py`, `analysis/rewriter.py`, `analysis/skills_tailor.py`, `analysis/terminology.py`, `domain/evidence.py`
 - **Imported by:** `analysis/rewriter.py`, `services/tailor.py`
 - **Tested by:** `tests/unit/test_fact_check_p89.py`, `tests/unit/test_project_writing_p115.py`, `tests/unit/test_skills_rebuild_p117.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_validation.py`

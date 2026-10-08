@@ -54,22 +54,126 @@ def _clean(line: str) -> str:
     return _NUMBERING.sub("", line).strip()
 
 
+CHUNK_LINES = 90      # a large bank is read in parts of this many lines ...
+CONTEXT_LINES = 12    # ... each with the bank's opening lines (where the jobs are usually listed)
+
+
 def read_bank(lines: List[str], llm_client) -> Optional[Bank]:
     """The bank's structure, or None when there's no AI or its answer can't
-    be used (the person is told and can paste notes under a job instead)."""
+    be used (the person is told and can paste notes under a job instead).
+    A large bank whose answer runs out of room is read in parts (as P10.10
+    did for long roles): the owner's 2026-10-09 bank failed whole twice."""
     if not lines or not llm_client or not llm_client.is_available():
         return None
     path = os.path.join(os.path.dirname(__file__), "..", "llm", "prompts", "read_bank.txt")
     with open(path, "r", encoding="utf-8") as f:
         system = f.read()
-    numbered = "\n".join(f"{i}: {l}" for i, l in enumerate(lines))
-    try:
-        result: BankStructure = llm_client.generate_json(
-            messages=[{"role": "system", "content": system}, {"role": "user", "content": f"Numbered lines:\n{numbered}"}],
-            schema_model=BankStructure, temperature=0.0, effort="medium")
-    except Exception:
+
+    def ask(indices: List[int]) -> Optional[BankStructure]:
+        numbered = "\n".join(f"{i}: {lines[i]}" for i in indices)
+        try:
+            return llm_client.generate_json(
+                messages=[{"role": "system", "content": system},
+                          {"role": "user", "content": f"Numbered lines:\n{numbered}"}],
+                schema_model=BankStructure, temperature=0.0, effort="low")
+        except Exception:
+            return None
+
+    # One call for a small bank; a large one goes straight to parts (Groq's free
+    # tier refuses a 190-line bank outright: "Request too large").
+    if len(lines) <= SINGLE_CALL_LINES:
+        whole = ask(list(range(len(lines))))
+        if whole is not None:
+            return structure_to_bank(lines, whole)
+    parts = []
+    for span, extra in bank_parts(lines):
+        context = [i for i in range(min(CONTEXT_LINES, len(lines))) if i < span[0]] + extra
+        got = ask(sorted(set(context)) + list(span))
+        if got is not None:
+            parts.append((set(span), got))
+    if not parts:
         return None
-    return structure_to_bank(lines, result)
+    return structure_to_bank(lines, merge_structures(lines, parts))
+
+
+SINGLE_CALL_LINES = 100
+
+
+def bank_parts(lines: List[str]):
+    """(line span, extra context lines) per part: split where a job starts
+    (a short line with a date range: "Part B — Acme (Aug 2022 – Mar 2026)"),
+    then a long job into pieces that keep its heading as context, so a part
+    never mixes the end of one job with the start of another."""
+    starts = [i for i, l in enumerate(lines) if _RANGE.search(l) and len(l.split()) <= 14 and i > 0]
+    bounds = sorted(set([0] + starts + [len(lines)]))
+    out = []
+    for a, b in zip(bounds, bounds[1:]):
+        for piece in range(a, b, CHUNK_LINES):
+            span = list(range(piece, min(b, piece + CHUNK_LINES)))
+            out.append((span, [a] if piece > a else []))
+    # Tiny sections (a snapshot line, a lone heading) join the next part.
+    merged = []
+    for span, extra in out:
+        if merged and len(merged[-1][0]) < 8:
+            prev_span, prev_extra = merged.pop()
+            span, extra = prev_span + span, prev_extra + extra
+        merged.append((span, extra))
+    return merged
+
+
+def merge_structures(lines: List[str], parts) -> BankStructure:
+    """Parts read separately, as one: jobs matched by company, each part's
+    projects and line lists kept for the lines that part was reading."""
+    merged = BankStructure()
+    for span, part in parts:
+        index_of = {}
+        for k, job in enumerate(part.jobs):
+            same = next((n for n, j in enumerate(merged.jobs) if _same_company(j.company, job.company)), None)
+            if same is None:
+                merged.jobs.append(job)
+                same = len(merged.jobs) - 1
+            index_of[k] = same
+        for proj in part.projects:
+            if proj.heading_line in span and proj.job in index_of:
+                merged.projects.append(proj.model_copy(update={"job": index_of[proj.job]}))
+        for name in ("bullet_lines", "to_verify_lines", "achievement_lines", "skill_lines"):
+            getattr(merged, name).extend(i for i in getattr(part, name) if i in span)
+    return merged
+
+
+_DATE = r"(?:[A-Z][a-z]{2,8}\.?\s+)?(?:19|20)\d{2}"
+_RANGE = re.compile(rf"({_DATE})\s*(?:–|-|—|to)\s*({_DATE}|Present|Current|Now)", re.I)
+_NOT_BUILT = re.compile(r"\b(?:concept|idea|proposal|proposed|planned|poc|proof of concept|exploring|exploration|"
+                        r"to verify|tbd|draft)\b", re.I)
+_QUOTED = re.compile(r"[\"“]([^\"”]{3,60})[\"”]")
+_CORRECTED = re.compile(r"\bnot\s+((?:[A-Z][\w+#-]*\s?){2,6})")
+_DOUBT = re.compile(r"\b(?:to verify|verify|confirm|unconfirmed|tbd|to add|not sure|check)\b", re.I)
+
+
+def doubted_lines(lines: List[str], verify: set, projects) -> set:
+    """Lines the notes themselves doubt, whatever the AI said (P11.1): the
+    owner's 2026-10-09 run printed an unbuilt "(Concept)" project as done
+    and kept a figure a "to verify" note questioned and a platform a note
+    said was wrong. Held back: a project whose heading says it isn't built
+    (concept, idea, proposal, planned, POC, exploring); any line holding a
+    phrase a doubting line quotes ("hours to seconds"); any line naming what a
+    note corrects ("..., not Platform X")."""
+    n = len(lines)
+    out = set()
+    for p in projects:
+        if 0 <= p.heading_line < n and _NOT_BUILT.search(lines[p.heading_line]):
+            out |= set(range(p.heading_line, min(p.last_line, n - 1) + 1))
+    doubting = [lines[i] for i in range(n) if i in verify or _DOUBT.search(lines[i])]
+    phrases = {m.group(1).strip().lower() for l in doubting for m in _QUOTED.finditer(l)}
+    phrases |= {m.group(1).strip().lower() for l in lines for m in _CORRECTED.finditer(l)
+                if re.search(r"\b(?:note|use|instead|actually|revised|wrong|correct)", l, re.I)}
+    phrases = {ph for ph in phrases if len(ph.split()) >= 2 or len(ph) >= 6}
+    for i, line in enumerate(lines):
+        low = line.lower()
+        if any(ph in low for ph in phrases) and i not in out:
+            # The doubting note itself and lines that merely repeat the correction stay out too.
+            out.add(i)
+    return out
 
 
 def _verbatim(value: str, text: str) -> str:
@@ -85,6 +189,7 @@ def structure_to_bank(lines: List[str], s: BankStructure) -> Optional[Bank]:
     ok = lambda i: isinstance(i, int) and 0 <= i < n
     text = "\n".join(lines)
     verify = {i for i in s.to_verify_lines if ok(i)}
+    verify |= doubted_lines(lines, verify, s.projects)
     bullets = {i for i in s.bullet_lines if ok(i)} - verify
     achievements = [i for i in s.achievement_lines if ok(i) and i not in verify]
     skills = [i for i in s.skill_lines if ok(i)]
@@ -96,8 +201,13 @@ def structure_to_bank(lines: List[str], s: BankStructure) -> Optional[Bank]:
             jobs.append(None)
             continue
         end = "Present" if (j.end_date or "").strip().lower() in ("present", "current", "now") else _verbatim(j.end_date, text)
-        jobs.append(BankJobNotes(company=company, title=_verbatim(j.title, text),
-                                 start_date=_verbatim(j.start_date, text), end_date=end))
+        start = _verbatim(j.start_date, text)
+        if not (start and end):  # the job's own line says it: "Acme (August 2022 – March 2026)"
+            m = _RANGE.search(lines[j.line])
+            if m:
+                start = start or m.group(1)
+                end = end or ("Present" if m.group(2).lower() in ("present", "current", "now") else m.group(2))
+        jobs.append(BankJobNotes(company=company, title=_verbatim(j.title, text), start_date=start, end_date=end))
     used = set(achievements) | set(skills)
     for p in sorted(s.projects, key=lambda p: p.heading_line):
         if not (ok(p.heading_line) and ok(p.last_line) and 0 <= p.job < len(jobs) and jobs[p.job]):

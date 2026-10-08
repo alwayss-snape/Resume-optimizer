@@ -196,6 +196,32 @@ def skill_category(skills: Dict[str, List[str]], term: str) -> str:
 # (the resume, the project notes, the interview answers) or the old section.
 # ---------------------------------------------------------------------------
 
+# Plain words a Skills category may be named with; any other word must be in
+# the candidate's own material. "Optimization & Operations Research" over
+# Optuna and ASHA counted as the JD's "operations research" (2026-10-09).
+CATEGORY_WORDS = {
+    "languages", "language", "programming", "machine", "learning", "ml", "ai", "data", "platforms", "platform",
+    "tools", "tooling", "cloud", "statistics", "statistical", "experimentation", "analytics", "analysis",
+    "engineering", "mlops", "deployment", "frameworks", "framework", "libraries", "databases", "database",
+    "visualization", "visualisation", "bi", "devops", "infrastructure", "big", "methods", "techniques",
+    "modeling", "modelling", "deep", "nlp", "genai", "generative", "llms", "llm", "agents", "web", "backend",
+    "frontend", "software", "skills", "core", "technical", "other", "and", "&", "/", "storage", "warehousing",
+    "orchestration", "monitoring", "testing", "apis", "api", "certifications", "office", "security",
+}
+
+
+def category_name(name: str, material_keys: str) -> str:
+    """The category name with any word that is neither a plain category word
+    nor in the material taken out ("" when nothing sensible is left)."""
+    words = re.findall(r"[A-Za-z][\w+#-]*|&|/", name or "")
+    kept = [w for w in words if w.lower() in CATEGORY_WORDS or f" {_key(w)} " in material_keys]
+    while kept and kept[-1] in ("&", "/", "and"):
+        kept.pop()
+    while kept and kept[0] in ("&", "/", "and"):
+        kept.pop(0)
+    return " ".join(kept) if any(k not in ("&", "/", "and") for k in kept) else ""
+
+
 def _in_material(item: str, material_keys: str) -> bool:
     key = _key(item)
     return bool(key) and f" {key} " in material_keys
@@ -227,8 +253,8 @@ def rebuild_skills(resume: Resume, evidence, brief, llm_client) -> Optional[Chan
     groups: Dict[str, List[str]] = {}
     seen = set()
     for g in result.groups:
-        name = re.sub(r"\s+", " ", g.category or "").strip().rstrip(":")
-        if not name or len(name.split()) > 4:
+        name = category_name(re.sub(r"\s+", " ", g.category or "").strip().rstrip(":"), keys) or "Skills"
+        if len(name.split()) > 4:
             continue
         for item in g.items:
             item = re.sub(r"\s+", " ", item or "").strip()

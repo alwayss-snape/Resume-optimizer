@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "3c53564930c91bf4",
+  "source_hash": "dffd4333701fa7e7",
   "stats": {
     "files": 202,
     "python_files": 170,
     "app_modules": 68,
     "test_files": 91,
-    "classes": 148,
-    "functions": 1337,
-    "lines_of_python": 26857
+    "classes": 150,
+    "functions": 1349,
+    "lines_of_python": 27077
   },
   "axes": {
     "x": "location (path)",
@@ -824,7 +824,7 @@
       "stages": [
         "1 Ingest"
       ],
-      "lines": 212,
+      "lines": 322,
       "doc": "A project bank as a document (P11.1).",
       "classes": [
         {
@@ -859,42 +859,57 @@
         },
         {
           "name": "read_bank",
-          "line": 57,
+          "line": 61,
           "doc": "The bank's structure, or None when there's no AI or its answer can't"
         },
         {
+          "name": "bank_parts",
+          "line": 102,
+          "doc": "(line span, extra context lines) per part: split where a job starts"
+        },
+        {
+          "name": "merge_structures",
+          "line": 124,
+          "doc": "Parts read separately, as one: jobs matched by company, each part's"
+        },
+        {
+          "name": "doubted_lines",
+          "line": 153,
+          "doc": "Lines the notes themselves doubt, whatever the AI said (P11.1): the"
+        },
+        {
           "name": "_verbatim",
-          "line": 75,
+          "line": 179,
           "doc": "A value the model returned, kept only if the notes say it."
         },
         {
           "name": "structure_to_bank",
-          "line": 81,
+          "line": 185,
           "doc": "Check every index and value against the notes; build the bank from"
         },
         {
           "name": "_tokens",
-          "line": 128,
+          "line": 238,
           "doc": ""
         },
         {
           "name": "_same_company",
-          "line": 132,
+          "line": 242,
           "doc": ""
         },
         {
           "name": "_same_text",
-          "line": 137,
+          "line": 247,
           "doc": ""
         },
         {
           "name": "_same_project",
-          "line": 142,
+          "line": 252,
           "doc": ""
         },
         {
           "name": "merge_bank",
-          "line": 147,
+          "line": 257,
           "doc": "Merge the bank into the parsed resume, in place. Returns plain notes"
         }
       ]
@@ -1527,7 +1542,7 @@
       "stages": [
         "7 Rewrite"
       ],
-      "lines": 252,
+      "lines": 278,
       "doc": "Skills tailoring (P1.6), deterministic: no LLM, nothing added.",
       "classes": [
         {
@@ -1590,13 +1605,18 @@
           "doc": "The category a confirmed skill belongs under: an existing one of its"
         },
         {
+          "name": "category_name",
+          "line": 213,
+          "doc": "The category name with any word that is neither a plain category word"
+        },
+        {
           "name": "_in_material",
-          "line": 199,
+          "line": 225,
           "doc": ""
         },
         {
           "name": "rebuild_skills",
-          "line": 204,
+          "line": 230,
           "doc": "A skills proposal rebuilt from evidence, or None (no AI, nothing usable)."
         }
       ]
@@ -4780,7 +4800,7 @@
       "stages": [
         "8 Validate"
       ],
-      "lines": 559,
+      "lines": 564,
       "doc": "",
       "classes": [
         {
@@ -4857,37 +4877,37 @@
             },
             {
               "name": "_validate_summary",
-              "line": 300,
+              "line": 305,
               "doc": "A summary may draw on the whole resume (P1.5): every factual term"
             },
             {
               "name": "_owner_prefix",
-              "line": 356,
+              "line": 361,
               "doc": "'exp_001_b03' -> 'exp_001_': the job (or project) a bullet belongs to."
             },
             {
               "name": "_content_tokens",
-              "line": 361,
+              "line": 366,
               "doc": "Plain words of a text in order, hyphenated words split into parts"
             },
             {
               "name": "_is_plain",
-              "line": 369,
+              "line": 374,
               "doc": ""
             },
             {
               "name": "_new_words",
-              "line": 374,
+              "line": 379,
               "doc": "Plain words a rewrite adds (P8.9): (borrowed from the JD only,"
             },
             {
               "name": "_words_from_elsewhere",
-              "line": 393,
+              "line": 398,
               "doc": "Runs of consecutive plain words that the resume uses only under"
             },
             {
               "name": "validate_proposal",
-              "line": 414,
+              "line": 419,
               "doc": ""
             }
           ]
@@ -8360,22 +8380,44 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 131,
+      "lines": 194,
       "doc": "P11.1: a project bank read as a document beside the resume.",
       "classes": [
         {
           "name": "_BankLLM",
-          "line": 91,
+          "line": 92,
           "doc": "",
           "methods": [
             {
               "name": "is_available",
-              "line": 94,
+              "line": 95,
               "doc": ""
             },
             {
               "name": "generate_json",
-              "line": 97,
+              "line": 98,
+              "doc": ""
+            }
+          ]
+        },
+        {
+          "name": "_TruncatingLLM",
+          "line": 135,
+          "doc": "Fails on the whole bank (its answer runs out of room), reads parts.",
+          "methods": [
+            {
+              "name": "__init__",
+              "line": 137,
+              "doc": ""
+            },
+            {
+              "name": "is_available",
+              "line": 140,
+              "doc": ""
+            },
+            {
+              "name": "generate_json",
+              "line": 143,
               "doc": ""
             }
           ]
@@ -8389,27 +8431,42 @@
         },
         {
           "name": "test_a_company_the_notes_dont_name_is_dropped",
-          "line": 62,
+          "line": 63,
           "doc": ""
         },
         {
           "name": "test_merging_adds_new_work_and_never_duplicates_the_resume",
-          "line": 70,
+          "line": 71,
           "doc": ""
         },
         {
           "name": "test_the_api_reads_pasted_notes_beside_the_resume",
-          "line": 103,
+          "line": 104,
           "doc": ""
         },
         {
           "name": "test_without_the_ai_the_notes_are_not_read_and_the_page_says_so",
-          "line": 117,
+          "line": 118,
           "doc": ""
         },
         {
           "name": "test_a_project_with_notes_only_uses_them_as_its_bullets",
-          "line": 124,
+          "line": 125,
+          "doc": ""
+        },
+        {
+          "name": "test_a_bank_too_big_for_one_answer_is_read_in_parts",
+          "line": 156,
+          "doc": ""
+        },
+        {
+          "name": "test_lines_the_notes_doubt_are_held_back_whatever_the_ai_says",
+          "line": 169,
+          "doc": ""
+        },
+        {
+          "name": "test_a_jobs_dates_come_from_its_own_line_when_the_ai_leaves_them_out",
+          "line": 189,
           "doc": ""
         }
       ]
@@ -9312,7 +9369,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 43,
+      "lines": 59,
       "doc": "P11.7: the Skills section rebuilt from the candidate's evidence.",
       "classes": [
         {
@@ -9331,6 +9388,18 @@
               "doc": ""
             }
           ]
+        },
+        {
+          "name": "_LabelLLM",
+          "line": 46,
+          "doc": "",
+          "methods": [
+            {
+              "name": "generate_json",
+              "line": 47,
+              "doc": ""
+            }
+          ]
         }
       ],
       "functions": [
@@ -9342,6 +9411,11 @@
         {
           "name": "test_the_check_allows_evidenced_skills_and_rejects_others",
           "line": 37,
+          "doc": ""
+        },
+        {
+          "name": "test_a_category_name_is_a_claim_too",
+          "line": 53,
           "doc": ""
         }
       ]
@@ -14177,6 +14251,11 @@
       "type": "contains"
     },
     {
+      "from": "tests/unit/test_project_bank_p111.py",
+      "to": "tests/unit/test_project_bank_p111.py::_TruncatingLLM",
+      "type": "contains"
+    },
+    {
       "from": "tests/unit/test_project_select_p1013.py",
       "to": "tests/unit/test_project_select_p1013.py::_HeadingLLM",
       "type": "contains"
@@ -14199,6 +14278,11 @@
     {
       "from": "tests/unit/test_role_brief_p113.py",
       "to": "tests/unit/test_role_brief_p113.py::_MapLLM",
+      "type": "contains"
+    },
+    {
+      "from": "tests/unit/test_skills_rebuild_p117.py",
+      "to": "tests/unit/test_skills_rebuild_p117.py::_LabelLLM",
       "type": "contains"
     },
     {

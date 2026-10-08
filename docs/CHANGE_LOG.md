@@ -10,6 +10,48 @@ Timestamped record of every **major** commit (anything touching `app/`, `scripts
 
 <!-- entries below; newest first -->
 
+<!-- entry:2026-10-09T02:03:30+05:30 -->
+## 2026-10-09 02:03 (+0530) · P11.1, P11.7, P11.10: notes read in parts, doubted lines held back, category names checked
+
+Kshitij Chaubey · branch `fb_ksh`
+
+**Why / details**
+
+> The first live reference runs on the owner's real notes found three
+> things the unit tests couldn't:
+>
+> - A 190-line project bank is refused whole by Groq's free tier
+>   ("Request too large"), and fixed 90-line slices cut across jobs, so one
+>   job's projects came back without their job. A large bank is now read
+>   in parts split at each job's own heading, and a job's dates are read off
+>   its line when the AI leaves them out.
+> - At low effort the AI let through an unbuilt "(Concept)" project (printed
+>   as "Implemented ...") and a figure and a platform the notes themselves
+>   doubted. Code now holds those back whatever the AI says: a project whose
+>   heading says it isn't built, lines with a phrase a "to verify" note
+>   quotes, and lines naming what a note corrects.
+> - The skills rebuild named a category "Optimization & Operations
+>   Research" over tuning tools, and the match counted the JD's "operations
+>   research" (48% -> 89%). Category names may now only use plain category
+>   words or the material's own, checked in the fact check too.
+>
+> Reference baseline without the owner's answers: the reference wins both
+> ways round; the gate waits for the answers.
+
+**Changed files**
+
+- Analysis: `M` app/analysis/project_bank.py, `M` app/analysis/skills_tailor.py
+- Docs: `M` docs/ACTION_ITEMS.md
+- Tests: `M` tests/unit/test_project_bank_p111.py, `M` tests/unit/test_skills_rebuild_p117.py
+- Validation: `M` app/validation/factual.py
+
+**Structure delta**
+
+- `app/analysis/project_bank.py`: added `bank_parts()`, `doubted_lines()`, `merge_structures()`
+- `app/analysis/skills_tailor.py`: added `category_name()`
+
+---
+
 <!-- entry:2026-10-09T01:35:16+05:30 -->
 ## 2026-10-09 01:35 (+0530) · P11.2–P11.7, P11.9–P11.11: strategist mode (brief, questions, project writing, skills, Classic)
 

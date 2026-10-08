@@ -290,6 +290,11 @@ class FactualValidator:
                                parse_skills(getattr(proposal, "proposed_text", None) or ""))
         keys = " " + " ".join(_key(e.text) for e in evidence_list or []) + " "
         added = [a for a in added if not _in_material(a, keys)]
+        # A category's name is a claim too (P11.7): only plain category words or the material's own.
+        from app.analysis.skills_tailor import category_name
+        old_names = {c.lower() for c in parse_skills(getattr(proposal, "original_text", ""))}
+        added += [f"{c} (category)" for c in parse_skills(getattr(proposal, "proposed_text", None) or "")
+                  if c.lower() not in old_names and category_name(c, keys + " " + _key(getattr(proposal, "original_text", "")) + " ") != c]
         warnings = ["Skills rejected: not in your resume: " + ", ".join(added)] if added else []
         verdict: Verdict = "REJECT" if added else "PASS"
         check = ClaimCheck(claim=getattr(proposal, "proposed_text", "") or "", status="SUPPORTED" if not added
