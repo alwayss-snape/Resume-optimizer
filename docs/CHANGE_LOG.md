@@ -10,6 +10,35 @@ Timestamped record of every **major** commit (anything touching `app/`, `scripts
 
 <!-- entries below; newest first -->
 
+<!-- entry:2026-10-09T03:21:46+05:30 -->
+## 2026-10-09 03:21 (+0530) · P11.13: a summary's kind of work must be a phrase the resume uses
+
+Kshitij Chaubey · branch `fb_ksh`
+
+**Why / details**
+
+> "Builds optimization models" was written from "hyperparameter optimization":
+> every word is in the resume, so the word check passed it, but the sense is
+> new. The summary check now reads each work claim (after builds / develops /
+> designs…, or "experienced in" / "expertise in") and needs its last two words
+> next to each other in one line of the resume or notes; otherwise the summary
+> is flagged to check, with the phrase the resume does use as a hint.
+>
+> Independent review: 2 fixes (filler words dropped between two words made
+> them look adjacent; "Experienced backend engineer" was read as a claim).
+
+**Changed files**
+
+- Docs: `M` docs/ACTION_ITEMS.md, `M` docs/PROJECT_OVERVIEW.md
+- Tests: `A` tests/unit/test_summary_sense_p1113.py
+- Validation: `M` app/validation/factual.py
+
+**Structure delta**
+
+- `app/validation/factual.py`: added `FactualValidator._claim_words()`, `FactualValidator._pair_keys()`, `FactualValidator._work_claims_unsupported()`
+
+---
+
 <!-- entry:2026-10-09T02:59:32+05:30 -->
 ## 2026-10-09 02:59 (+0530) · P11.12: kept projects that don't fit the page become a choice, not a silent second page
 

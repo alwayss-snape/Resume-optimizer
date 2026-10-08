@@ -1,5 +1,5 @@
 import re
-from typing import Iterable, List, Literal, Optional, Set
+from typing import Iterable, List, Literal, Optional, Set, Tuple
 
 from pydantic import BaseModel, Field
 
@@ -351,11 +351,112 @@ class FactualValidator:
             verdict = "REJECT"
             warnings.append("Summary rejected: borrows the job description's wording, which your resume doesn't "
                             "support: " + ", ".join(f"'{t}'" for t in borrowed))
+        # P11.13: "builds optimization models" from "hyperparameter optimization"
+        # passes a word check; the kind of work claimed must be a phrase the
+        # resume itself uses.
+        for phrase, seen in self._work_claims_unsupported(text, all_text):
+            if verdict == "PASS":
+                verdict = "NEEDS_CONFIRM"
+            hint = f" (your resume says '{seen}')" if seen else ""
+            warnings.append(f"Please check: the summary says '{phrase}', which isn't a phrase your resume uses{hint}.")
         check = ClaimCheck(claim=text, evidence_ids=getattr(proposal, "evidence_ids", None) or [],
                            status="SUPPORTED" if verdict == "PASS" else "UNSUPPORTED",
                            explanation=" ".join(warnings) or "Every term and number appears in the resume.")
         return ValidationResult(approved=verdict != "REJECT", proposal=proposal, verdict=verdict,
                                 claim_checks=[check], warnings=warnings)
+
+    # P11.13: a work verb in a summary, then the kind of work it claims.
+    WORK_VERBS = ("build", "builds", "building", "develop", "develops", "developing", "design", "designs",
+                  "designing", "deliver", "delivers", "delivering", "create", "creates", "creating", "deploy",
+                  "deploys", "deploying", "ship", "ships", "shipping", "architect", "architects", "architecting")
+    # These start a claim only before "in" / "with" / "on" ("experienced in X",
+    # not "Experienced backend engineer").
+    LEAD_VERBS = ("specializing", "specialising", "specializes", "specialises", "focused", "focusing",
+                  "expertise", "experience", "experienced", "skilled")
+    CLAIM_STOPS = {"and", "or", "for", "to", "with", "that", "across", "using", "at", "in", "on", "by", "from",
+                   "which", "while", "into", "through", "via", "of", "as", "who", "where", "when", "than"}
+    CLAIM_LEAD = {"in", "with", "on", "a", "an", "the"}
+    ARTICLES = {"a", "an", "the"}
+    REVERSED_BY = {"in", "for", "of", "with", "on"}  # "dashboards in Power BI" shows "Power BI dashboards"
+
+    def _claim_words(self, text: str) -> List[List[str]]:
+        """Content words of each work claim, in order: "builds optimization
+        models for pricing" -> ["optimization", "models"]."""
+        claims: List[List[str]] = []
+        current: Optional[List[str]] = None
+        pending = False  # a lead verb waiting for its "in" / "with" / "on"
+        last_end = 0
+        for m in self.TOKEN_RE.finditer(text):
+            low = m.group(0).lower()
+            if re.search(r"[,.;:()!?]", text[last_end:m.start()]):
+                if current:
+                    claims.append(current)
+                current, pending = None, False
+            last_end = m.end()
+            if pending:
+                pending = False
+                current = [] if low in ("in", "with", "on") else None
+                continue
+            if low in self.WORK_VERBS or low in self.LEAD_VERBS:
+                if current:
+                    claims.append(current)
+                current, pending = (None, True) if low in self.LEAD_VERBS else ([], False)
+                continue
+            if current is None:
+                continue
+            if not current and low in self.CLAIM_LEAD:
+                continue
+            if low in self.CLAIM_STOPS:
+                claims.append(current)
+                current = None
+                continue
+            if low not in self.FILLER_WORDS and low not in self.GENERAL_WORDS:
+                current.extend(p for p in m.group(0).split("-") if p)
+        if current:
+            claims.append(current)
+        return [c for c in claims if c]
+
+    def _pair_keys(self, word: str) -> Set[str]:
+        """A word's keys plus, for an alias of a longer term ("ML"), the keys of
+        that term's last word, so "ML models" and "machine learning models" pair."""
+        keys = self._keys(word)
+        canon = self._canon.get(word.lower())
+        if canon and " " in canon:
+            keys |= self._keys(canon.split()[-1])
+        return keys
+
+    def _work_claims_unsupported(self, text: str, sources: List[str]) -> List[Tuple[str, Optional[str]]]:
+        """Claims of two or more words whose last two (the kind of work) are
+        not next to each other in any one line of the resume (or written the
+        other way round, "dashboards in Power BI"), with a pair the resume
+        does use for a hint."""
+        lines = []
+        for src in sources:
+            tokens = [t for t in self._content_tokens(src or "") if t.lower() not in self.ARTICLES]
+            lines.append([(t, self._pair_keys(t)) for t in tokens])
+        out: List[Tuple[str, Optional[str]]] = []
+        for words in self._claim_words(text):
+            if len(words) < 2:
+                continue
+            a, b = self._pair_keys(words[-2]), self._pair_keys(words[-1])
+            found, hint = False, None
+            for tokens in lines:
+                for i, (x, kx) in enumerate(tokens[:-1]):
+                    y, ky = tokens[i + 1]
+                    if kx & a and ky & b:
+                        found = True
+                    elif kx & b and y.lower() in self.REVERSED_BY and any(k & a for _, k in tokens[i + 2:i + 5]):
+                        found = True
+                    elif hint is None and ky & a and x.lower() not in self.FILLER_WORDS \
+                            and x.lower() not in self.GENERAL_WORDS:
+                        hint = f"{x} {y}"
+                    if found:
+                        break
+                if found:
+                    break
+            if not found:
+                out.append((" ".join(words[-2:]), hint))
+        return out
 
     @staticmethod
     def _owner_prefix(semantic_id: Optional[str]) -> Optional[str]:

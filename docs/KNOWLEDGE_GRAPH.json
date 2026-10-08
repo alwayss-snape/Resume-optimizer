@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "ade5e670c1d421e1",
+  "source_hash": "f401eb08b3a746ea",
   "stats": {
-    "files": 205,
-    "python_files": 173,
-    "app_modules": 68,
-    "test_files": 94,
+    "files": 207,
+    "python_files": 175,
+    "app_modules": 69,
+    "test_files": 95,
     "classes": 151,
-    "functions": 1382,
-    "lines_of_python": 27552
+    "functions": 1399,
+    "lines_of_python": 27759
   },
   "axes": {
     "x": "location (path)",
@@ -232,6 +232,52 @@
       "layer": "Root",
       "stages": [],
       "lines": 51
+    },
+    {
+      "id": "app/analysis/achievement_context.py",
+      "type": "python",
+      "layer": "Analysis",
+      "stages": [],
+      "lines": 103,
+      "doc": "Achievements with context (P11.15): where and when, from evidence only.",
+      "classes": [],
+      "functions": [
+        {
+          "name": "_words",
+          "line": 22,
+          "doc": ""
+        },
+        {
+          "name": "_named",
+          "line": 26,
+          "doc": "`name` (a company or project heading) is named in the text: all its"
+        },
+        {
+          "name": "_year_of",
+          "line": 39,
+          "doc": ""
+        },
+        {
+          "name": "context_for",
+          "line": 44,
+          "doc": "\"Northwind, 2025\", \"Northwind\", \"2025\" or None, for one achievement."
+        },
+        {
+          "name": "with_context",
+          "line": 75,
+          "doc": ""
+        },
+        {
+          "name": "achievement_proposals",
+          "line": 81,
+          "doc": "One proposal per achievement that gains context; targets \"achievement::<index>\"."
+        },
+        {
+          "name": "added_context",
+          "line": 95,
+          "doc": "The parenthetical a proposal adds to its achievement, or None when"
+        }
+      ]
     },
     {
       "id": "app/analysis/change_proposal.py",
@@ -4835,7 +4881,7 @@
       "stages": [
         "8 Validate"
       ],
-      "lines": 638,
+      "lines": 665,
       "doc": "",
       "classes": [
         {
@@ -4917,42 +4963,47 @@
             },
             {
               "name": "_claim_words",
-              "line": 378,
+              "line": 382,
               "doc": "Content words of each work claim, in order: \"builds optimization"
             },
             {
+              "name": "_pair_keys",
+              "line": 419,
+              "doc": "A word's keys plus, for an alias of a longer term (\"ML\"), the keys of"
+            },
+            {
               "name": "_work_claims_unsupported",
-              "line": 409,
+              "line": 428,
               "doc": "Claims of two or more words whose last two (the kind of work) are"
             },
             {
               "name": "_owner_prefix",
-              "line": 435,
+              "line": 462,
               "doc": "'exp_001_b03' -> 'exp_001_': the job (or project) a bullet belongs to."
             },
             {
               "name": "_content_tokens",
-              "line": 440,
+              "line": 467,
               "doc": "Plain words of a text in order, hyphenated words split into parts"
             },
             {
               "name": "_is_plain",
-              "line": 448,
+              "line": 475,
               "doc": ""
             },
             {
               "name": "_new_words",
-              "line": 453,
+              "line": 480,
               "doc": "Plain words a rewrite adds (P8.9): (borrowed from the JD only,"
             },
             {
               "name": "_words_from_elsewhere",
-              "line": 472,
+              "line": 499,
               "doc": "Runs of consecutive plain words that the resume uses only under"
             },
             {
               "name": "validate_proposal",
-              "line": 493,
+              "line": 520,
               "doc": ""
             }
           ]
@@ -5775,6 +5826,47 @@
         {
           "name": "test_an_appointment_read_as_education_becomes_a_job",
           "line": 52,
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "tests/unit/test_achievement_context_p1115.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 54,
+      "doc": "P11.15: achievements gain where and when, from evidence only, as a proposal.",
+      "classes": [],
+      "functions": [
+        {
+          "name": "_resume",
+          "line": 6,
+          "doc": ""
+        },
+        {
+          "name": "test_a_project_named_in_an_achievement_gives_its_company_and_its_one_year",
+          "line": 19,
+          "doc": ""
+        },
+        {
+          "name": "test_a_year_comes_only_from_evidence_never_from_a_running_job",
+          "line": 27,
+          "doc": ""
+        },
+        {
+          "name": "test_a_company_named_already_gets_only_its_year_from_an_ended_job",
+          "line": 34,
+          "doc": ""
+        },
+        {
+          "name": "test_nothing_named_or_two_jobs_named_gives_no_proposal",
+          "line": 39,
+          "doc": ""
+        },
+        {
+          "name": "test_only_a_parenthetical_counts_as_added_context",
+          "line": 49,
           "doc": ""
         }
       ]
@@ -9787,7 +9879,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 42,
+      "lines": 65,
       "doc": "P11.13: a summary's kind of work must be a phrase the resume uses, not one shared word.",
       "classes": [],
       "functions": [
@@ -9819,6 +9911,21 @@
         {
           "name": "test_each_claim_after_and_is_checked_on_its_own",
           "line": 40,
+          "doc": ""
+        },
+        {
+          "name": "_check_with",
+          "line": 45,
+          "doc": ""
+        },
+        {
+          "name": "test_filler_words_between_do_not_make_a_phrase_review_p1113",
+          "line": 52,
+          "doc": ""
+        },
+        {
+          "name": "test_ordinary_true_summaries_pass_review_p1113",
+          "line": 61,
           "doc": ""
         }
       ]
@@ -10421,6 +10528,21 @@
     }
   ],
   "edges": [
+    {
+      "from": "app/analysis/achievement_context.py",
+      "to": "app/analysis/change_proposal.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/analysis/achievement_context.py",
+      "to": "app/domain/resume.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/analysis/achievement_context.py",
+      "to": "tests/unit/test_achievement_context_p1115.py",
+      "type": "tested_by"
+    },
     {
       "from": "app/analysis/change_proposal.py",
       "to": "app/analysis/change_proposal.py::ChangeProposal",
@@ -12094,6 +12216,11 @@
     {
       "from": "app/domain/resume.py",
       "to": "tests/unit/test_academic_cv_p106.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/resume.py",
+      "to": "tests/unit/test_achievement_context_p1115.py",
       "type": "tested_by"
     },
     {

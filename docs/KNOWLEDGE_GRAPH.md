@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**68 app modules · 94 test files · 151 classes · 1382 functions/methods · 27,552 lines of Python** · source hash `ade5e670c1d421e1`
+**69 app modules · 95 test files · 151 classes · 1399 functions/methods · 27,759 lines of Python** · source hash `f401eb08b3a746ea`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -32,6 +32,7 @@ pyproject.toml
 app/
   cli.py                                         check_llm(), write_proposals(), _without_mirrors(), read_proposals(), …
   analysis/
+    achievement_context.py                       Achievements with context (P11.15): where and when, from evidence only.
     change_proposal.py                           ChangeProposal
     checklist.py                                 Job conditions that aren't keywords (P8.20).
     cv_mode.py                                   CV mode (P10.5): a standard resume, an Academic CV or a US Federal
@@ -158,6 +159,7 @@ tests/
     test_preserve_rewrite_end_to_end.py          test_approved_rewrite_appears_in_all_outputs()
   unit/
     test_academic_cv_p106.py                     P10.6: the Academic CV template. Appointments are jobs, publications a…
+    test_achievement_context_p1115.py            P11.15: achievements gain where and when, from evidence only, as a pro…
     test_api.py                                  Web API (P5.1): the full flow through HTTP, plus the shared form helpe…
     test_ats_round_trip.py                       P2.5: the rendered template must read back exactly as rendered, and the
     test_bugs_p118.py                            P11.8: bugs found in the owner's 2026-10-08 runs.
@@ -265,6 +267,22 @@ Spanning all stages: `app/api/main.py`, `app/api/routes.py`, `app/cli.py`, `app/
 
 ## 3. Module cards
 
+### `app/analysis/achievement_context.py`
+
+**Layer:** Analysis · **Stage:** — · **Lines:** 103
+
+_Achievements with context (P11.15): where and when, from evidence only._
+
+- function **`_words()`** ([app/analysis/achievement_context.py:22](../app/analysis/achievement_context.py#L22))
+- function **`_named()`** ([app/analysis/achievement_context.py:26](../app/analysis/achievement_context.py#L26)) — `name` (a company or project heading) is named in the text: all its
+- function **`_year_of()`** ([app/analysis/achievement_context.py:39](../app/analysis/achievement_context.py#L39))
+- function **`context_for()`** ([app/analysis/achievement_context.py:44](../app/analysis/achievement_context.py#L44)) — "Northwind, 2025", "Northwind", "2025" or None, for one achievement.
+- function **`with_context()`** ([app/analysis/achievement_context.py:75](../app/analysis/achievement_context.py#L75))
+- function **`achievement_proposals()`** ([app/analysis/achievement_context.py:81](../app/analysis/achievement_context.py#L81)) — One proposal per achievement that gains context; targets "achievement::<index>".
+- function **`added_context()`** ([app/analysis/achievement_context.py:95](../app/analysis/achievement_context.py#L95)) — The parenthetical a proposal adds to its achievement, or None when
+- **Imports:** `analysis/change_proposal.py`, `domain/resume.py`
+- **Tested by:** `tests/unit/test_achievement_context_p1115.py`
+
 ### `app/analysis/change_proposal.py`
 
 **Layer:** Analysis · **Stage:** 7 Rewrite · **Lines:** 88
@@ -274,7 +292,7 @@ Spanning all stages: `app/api/main.py`, `app/api/routes.py`, `app/cli.py`, `app/
   - `semantic_id()` :63
   - `source_id()` :73
   - `rewritten_text()` :82
-- **Imported by:** `analysis/rewriter.py`, `analysis/skills_tailor.py`, `analysis/summary_writer.py`
+- **Imported by:** `analysis/achievement_context.py`, `analysis/rewriter.py`, `analysis/skills_tailor.py`, `analysis/summary_writer.py`
 - **Tested by:** `tests/unit/test_api.py`, `tests/unit/test_review_view.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_sense_p1113.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_validation.py`
 
 ### `app/analysis/checklist.py`
@@ -907,8 +925,8 @@ _Per-visitor state for the web API (P5.1)._
 - class **`SectionLine`** ([app/domain/resume.py:92](../app/domain/resume.py#L92))
 - class **`OtherSection`** ([app/domain/resume.py:98](../app/domain/resume.py#L98)) — A section the resume model has no fields for (Publications, Bar
 - class **`Resume`** ([app/domain/resume.py:110](../app/domain/resume.py#L110))
-- **Imported by:** `analysis/checklist.py`, `analysis/cv_mode.py`, `analysis/experience.py`, `analysis/interview.py`, `analysis/keyword_match.py`, `analysis/project_bank.py`, `analysis/project_select.py`, `analysis/region.py`, `analysis/resume_normalizer.py`, `analysis/rewriter.py`, `analysis/role_brief.py`, `analysis/skills_tailor.py`, `analysis/structure_extractor.py`, `analysis/summary_writer.py`, `analysis/tailor_planner.py`, `domain/resume_document.py`, `eval/golden.py`, `rendering/html_renderer.py`, `rendering/layout.py`, `rendering/page_fit.py`, `services/arrange.py`, `services/tailor.py`, `validation/content_lint.py`, `validation/structural.py`
-- **Tested by:** `tests/integration/test_arrange.py`, `tests/unit/test_academic_cv_p106.py`, `tests/unit/test_ats_round_trip.py`, `tests/unit/test_bugs_p118.py`, `tests/unit/test_check_parsed_resume.py`, `tests/unit/test_checklist_p820.py`, `tests/unit/test_content_lint.py`, `tests/unit/test_cv_mode_p105.py`, `tests/unit/test_dates_p86.py`, `tests/unit/test_details_p826.py`, `tests/unit/test_docx_renderer.py`, `tests/unit/test_experience.py`, `tests/unit/test_federal_p107.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_global_p825.py`, `tests/unit/test_guidance_p821.py`, `tests/unit/test_headline_summary_p116.py`, `tests/unit/test_html_renderer.py`, `tests/unit/test_interview_p112.py`, `tests/unit/test_jd_p818.py`, `tests/unit/test_keyword_match.py`, `tests/unit/test_matching_p817.py`, `tests/unit/test_new_role.py`, `tests/unit/test_page_fit.py`, `tests/unit/test_page_overflow_p1112.py`, `tests/unit/test_page_size_p102.py`, `tests/unit/test_parser_regressions_p42.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_project_bank_p111.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_project_select_p1013.py`, `tests/unit/test_project_writing_p115.py`, `tests/unit/test_region_p103.py`, `tests/unit/test_resume_document.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_review_view.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_role_brief_p113.py`, `tests/unit/test_skill_placement_p912.py`, `tests/unit/test_skills_rebuild_p117.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_stuffing_p819.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_summary_years_p99.py`, `tests/unit/test_tailor_planner.py`, `tests/unit/test_tailor_service_addition.py`, `tests/unit/test_template_layout.py`, `tests/unit/test_template_renderer_standalone.py`
+- **Imported by:** `analysis/achievement_context.py`, `analysis/checklist.py`, `analysis/cv_mode.py`, `analysis/experience.py`, `analysis/interview.py`, `analysis/keyword_match.py`, `analysis/project_bank.py`, `analysis/project_select.py`, `analysis/region.py`, `analysis/resume_normalizer.py`, `analysis/rewriter.py`, `analysis/role_brief.py`, `analysis/skills_tailor.py`, `analysis/structure_extractor.py`, `analysis/summary_writer.py`, `analysis/tailor_planner.py`, `domain/resume_document.py`, `eval/golden.py`, `rendering/html_renderer.py`, `rendering/layout.py`, `rendering/page_fit.py`, `services/arrange.py`, `services/tailor.py`, `validation/content_lint.py`, `validation/structural.py`
+- **Tested by:** `tests/integration/test_arrange.py`, `tests/unit/test_academic_cv_p106.py`, `tests/unit/test_achievement_context_p1115.py`, `tests/unit/test_ats_round_trip.py`, `tests/unit/test_bugs_p118.py`, `tests/unit/test_check_parsed_resume.py`, `tests/unit/test_checklist_p820.py`, `tests/unit/test_content_lint.py`, `tests/unit/test_cv_mode_p105.py`, `tests/unit/test_dates_p86.py`, `tests/unit/test_details_p826.py`, `tests/unit/test_docx_renderer.py`, `tests/unit/test_experience.py`, `tests/unit/test_federal_p107.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_global_p825.py`, `tests/unit/test_guidance_p821.py`, `tests/unit/test_headline_summary_p116.py`, `tests/unit/test_html_renderer.py`, `tests/unit/test_interview_p112.py`, `tests/unit/test_jd_p818.py`, `tests/unit/test_keyword_match.py`, `tests/unit/test_matching_p817.py`, `tests/unit/test_new_role.py`, `tests/unit/test_page_fit.py`, `tests/unit/test_page_overflow_p1112.py`, `tests/unit/test_page_size_p102.py`, `tests/unit/test_parser_regressions_p42.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_project_bank_p111.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_project_select_p1013.py`, `tests/unit/test_project_writing_p115.py`, `tests/unit/test_region_p103.py`, `tests/unit/test_resume_document.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_review_view.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_role_brief_p113.py`, `tests/unit/test_skill_placement_p912.py`, `tests/unit/test_skills_rebuild_p117.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_stuffing_p819.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_summary_years_p99.py`, `tests/unit/test_tailor_planner.py`, `tests/unit/test_tailor_service_addition.py`, `tests/unit/test_template_layout.py`, `tests/unit/test_template_renderer_standalone.py`
 
 ### `app/domain/resume_document.py`
 
@@ -1513,7 +1531,7 @@ _Content coverage (P8.2): does every line of the uploaded resume reach the_
 
 ### `app/validation/factual.py`
 
-**Layer:** Validation · **Stage:** 8 Validate · **Lines:** 638
+**Layer:** Validation · **Stage:** 8 Validate · **Lines:** 665
 
 - class **`ClaimCheck`** ([app/validation/factual.py:13](../app/validation/factual.py#L13))
 - class **`ValidationResult`** ([app/validation/factual.py:20](../app/validation/factual.py#L20))
@@ -1530,14 +1548,15 @@ _Content coverage (P8.2): does every line of the uploaded resume reach the_
   - `_validate_heading()` :273 — A project heading (P10.13) may only reword what the old heading and
   - `_validate_skills()` :284 — The skills section may be reordered and respelled, and gain what the
   - `_validate_summary()` :305 — A summary may draw on the whole resume (P1.5): every factual term
-  - `_claim_words()` :378 — Content words of each work claim, in order: "builds optimization
-  - `_work_claims_unsupported()` :409 — Claims of two or more words whose last two (the kind of work) are
-  - `_owner_prefix()` :435 — 'exp_001_b03' -> 'exp_001_': the job (or project) a bullet belongs to.
-  - `_content_tokens()` :440 — Plain words of a text in order, hyphenated words split into parts
-  - `_is_plain()` :448
-  - `_new_words()` :453 — Plain words a rewrite adds (P8.9): (borrowed from the JD only,
-  - `_words_from_elsewhere()` :472 — Runs of consecutive plain words that the resume uses only under
-  - `validate_proposal()` :493
+  - `_claim_words()` :382 — Content words of each work claim, in order: "builds optimization
+  - `_pair_keys()` :419 — A word's keys plus, for an alias of a longer term ("ML"), the keys of
+  - `_work_claims_unsupported()` :428 — Claims of two or more words whose last two (the kind of work) are
+  - `_owner_prefix()` :462 — 'exp_001_b03' -> 'exp_001_': the job (or project) a bullet belongs to.
+  - `_content_tokens()` :467 — Plain words of a text in order, hyphenated words split into parts
+  - `_is_plain()` :475
+  - `_new_words()` :480 — Plain words a rewrite adds (P8.9): (borrowed from the JD only,
+  - `_words_from_elsewhere()` :499 — Runs of consecutive plain words that the resume uses only under
+  - `validate_proposal()` :520
 - **Imports:** `analysis/project_select.py`, `analysis/rewriter.py`, `analysis/skills_tailor.py`, `analysis/terminology.py`, `domain/evidence.py`
 - **Imported by:** `analysis/rewriter.py`, `services/tailor.py`
 - **Tested by:** `tests/unit/test_fact_check_p89.py`, `tests/unit/test_project_writing_p115.py`, `tests/unit/test_skills_rebuild_p117.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_sense_p1113.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_validation.py`
@@ -1584,6 +1603,7 @@ Arrows point from importer to imported module (app code only; domain models omit
 ```mermaid
 flowchart LR
   subgraph Analysis[Analysis]
+    analysis_achievement_context[achievement_context]
     analysis_change_proposal[change_proposal]
     analysis_checklist[checklist]
     analysis_cv_mode[cv_mode]
@@ -1663,6 +1683,7 @@ flowchart LR
     api_routes[routes]
     api_sessions[sessions]
   end
+  analysis_achievement_context --> analysis_change_proposal
   analysis_checklist --> analysis_experience
   analysis_cv_mode --> analysis_region
   analysis_gap_questions --> analysis_keyword_match
@@ -1886,9 +1907,11 @@ From `app/config/settings.py`; each can be overridden by the env var of the same
 
 **Not imported by any app code** (possibly dead code, or only used by tests/scripts):
 
+- `app/analysis/achievement_context.py`
 - `app/api/forms.py`
 - `app/eval/__main__.py`
 
 **Not in `STAGE_MAP`** (add them in `scripts/update_docs.py`):
 
+- `app/analysis/achievement_context.py`
 - `app/analysis/language.py`
