@@ -10,6 +10,61 @@ Timestamped record of every **major** commit (anything touching `app/`, `scripts
 
 <!-- entries below; newest first -->
 
+<!-- entry:2026-10-08T19:41:42+05:30 -->
+## 2026-10-08 19:41 (+0530) · P10.13: choose projects, not lines
+
+Kshitij Chaubey · branch `fb_ksh`
+
+**Why / details**
+
+> A job with several projects now keeps its best few for the JD (current
+> job 3, older 2) instead of every one, and a job added on Check details
+> takes a whole project bank (up to 40 lines, "Project:" headings) instead
+> of 6 flat lines. Found on the owner's own run: the bank held 11 projects
+> for the new job, the form took 6, and the existing job kept all 4.
+>
+> Ranking: relevance from the bullets plus a keyword-by-keyword embedding
+> fit (a whole requirement sentence buried "inventory management" among
+> filler words), with impact read by rules (shipped work, figures counted
+> once, awards, early-stage words outside names). A JD naming fewer than 3
+> skills ranks mostly by impact and says so. Every choice shows its reason
+> on Review, where any project can be kept or left out; left-out projects
+> aren't sent to the AI and count as chosen, not lost, in coverage.
+>
+> The owner's runs showed page-fit undoing the choice, so kept projects are
+> now shortened to 2 bullets at most and never removed (also in Arrange),
+> and all their bullets are polished. Project headings get plain, searchable
+> titles proposed by one AI call per job; code allows only words from the
+> heading or its bullets. An "Achievements:" heading goes to Achievements.
+> The template separates jobs (12pt, employer in body colour) and quietens
+> project headings. Also fixed: a one-line "Interests: A • B" dropped by
+> page-fit counted as lost; an added job's bullets had lost their evidence.
+
+**Changed files**
+
+- Analysis: `A` app/analysis/project_select.py, `M` app/analysis/rewriter.py, `M` app/analysis/tailor_planner.py
+- Docs: `M` docs/ACTION_ITEMS.md, `M` docs/PROJECT_OVERVIEW.md
+- Domain models: `M` app/domain/tailoring.py
+- LLM: `A` app/llm/prompts/rename_headings.txt, `M` app/llm/prompts/rewrite_role.txt, `M` app/llm/schemas.py
+- Rendering: `M` app/rendering/html_renderer.py, `M` app/rendering/page_fit.py, `M` app/rendering/template_renderer.py
+- Root: `M` web/src/App.test.tsx, `A` web/src/components/ProjectChoices.tsx, `M` web/src/components/ProposalCard.tsx, `M` web/src/lib/api.ts, `M` web/src/lib/review.test.ts, `M` web/src/lib/review.ts, `M` web/src/lib/types.ts, `M` web/src/pages/Details.tsx, `M` web/src/pages/Review.tsx
+- Services: `M` app/services/tailor.py
+- Tests: `A` tests/unit/test_project_select_p1013.py
+- Tooling: `M` scripts/update_docs.py
+- Validation: `M` app/validation/factual.py
+- Web API: `M` app/api/routes.py
+
+**Structure delta**
+
+- new module `app/analysis/project_select.py`
+- `app/analysis/rewriter.py`: added `LLMRewriter.rename_headings()`
+- `app/domain/tailoring.py`: added `class ProjectChoice`
+- `app/llm/schemas.py`: added `class HeadingRename`, `class HeadingRenameResult`
+- `app/services/tailor.py`: added `TailorService._project_lines()`, `TailorService._rename_headings()`
+- `app/validation/factual.py`: added `FactualValidator._validate_heading()`
+
+---
+
 <!-- entry:2026-10-07T22:25:18+05:30 -->
 ## 2026-10-07 22:25 (+0530) · P10.7: US Federal template: job fields one per line in USAJOBS order
 

@@ -1,7 +1,7 @@
 import { expect, test } from "vitest";
 import { DRAFTED } from "../test/fixtures";
 import type { Proposal } from "./types";
-import { EMPTY_JOB, groupProposals, initialReview, newJobProblem, selection, tailorRequest, willApply } from "./review";
+import { EMPTY_JOB, groupProposals, initialReview, newJobProblem, selection, tailorRequest, visibleProposals, willApply } from "./review";
 
 const p = (id: string, extra: Partial<Proposal> = {}): Proposal => ({ ...DRAFTED.proposals[0], id, ...extra });
 
@@ -75,4 +75,18 @@ test("the CV type starts as the suggestion and goes with the request (P10.5)", (
   const r = initialReview(drafted);
   expect(tailorRequest(drafted.proposals, r, opts).cv_mode).toBe("federal");
   expect(tailorRequest(drafted.proposals, { ...r, cvMode: "standard" }, opts).cv_mode).toBe("standard");
+});
+
+test("projects (P10.13): the ones not suggested start left out, hide their cards and go with the request", () => {
+  const project = (name: string, chosen: boolean, bullet_ids: string[]) => ({ key: `e1::${name}`, experience_id: "e1",
+    job: "Acme — Engineer", name, bullet_ids, chosen, reason: "why", relevance: 0, impact: 0 });
+  const drafted = { ...DRAFTED, proposals: [p("a", { target: "b1" }), p("b", { target: "b2" }), p("s", { kind: "summary", target: null })],
+    projects: [project("Kept", true, ["b1"]), project("Out", false, ["b2"])] };
+  const r = initialReview(drafted);
+  expect(r.leftOut).toEqual(["e1::Out"]);
+  expect(visibleProposals(drafted, r).map((x) => x.id)).toEqual(["a", "s"]);
+  expect(tailorRequest(visibleProposals(drafted, r), r, { keepLayout: false, strictFactual: false, rememberAnswers: true }))
+    .toMatchObject({ left_out: ["e1::Out"], selection: [{ id: "a" }, { id: "s" }] });
+  const back = { ...r, leftOut: [] };  // brought back by the user
+  expect(visibleProposals(drafted, back).map((x) => x.id)).toEqual(["a", "b", "s"]);
 });

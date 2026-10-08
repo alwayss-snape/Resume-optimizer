@@ -203,9 +203,11 @@ test("details: a missed job is added, a misread one removed, and both are sent",
   await user.selectOptions(screen.getByLabelText("Start *: year"), "2019");
   await user.selectOptions(screen.getByLabelText("End *: month"), "12");
   await user.selectOptions(screen.getByLabelText("End *: year"), "2021");
-  await user.type(screen.getByLabelText(/What did you do there/), "a{Enter}b{Enter}c{Enter}d{Enter}e{Enter}f{Enter}g");
+  // P10.13: a whole project bank fits (the next step chooses), up to 40 lines.
+  await user.click(screen.getByLabelText(/What did you do there/));
+  await user.paste(Array.from({ length: 41 }, (_, i) => `point ${i}`).join("\n"));
   await user.click(screen.getByRole("button", { name: /draft rewrites/ }));
-  expect(screen.getByRole("alert")).toHaveTextContent("New job 1: Keep it to 6 lines (one per bullet point); it has 7.");
+  expect(screen.getByRole("alert")).toHaveTextContent("New job 1: Keep it to 40 lines (one per bullet point); it has 41.");
   await user.clear(screen.getByLabelText(/What did you do there/));
   await user.type(screen.getByLabelText(/What did you do there/), "Built the billing service");
   await user.click(screen.getByRole("button", { name: /draft rewrites/ }));
@@ -261,7 +263,7 @@ test("review: live match follows decisions; generate sends them and opens result
   await user.click(screen.getByRole("button", { name: "Reject" }));
   await waitFor(() => {
     const previews = calls.filter((c) => c.url === "/api/match-preview");
-    expect(JSON.parse(String(previews.at(-1)!.init!.body))).toEqual({ selection: [] });
+    expect(JSON.parse(String(previews.at(-1)!.init!.body))).toEqual({ selection: [], left_out: [] });
   }, { timeout: 2000 });
 
   await user.click(screen.getByRole("checkbox", { name: "Airflow" }));

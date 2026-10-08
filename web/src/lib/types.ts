@@ -120,8 +120,9 @@ export type ProposalState = "failed" | "dropped" | "check" | "unchanged" | "pass
 
 export interface Proposal {
   id: string;
-  kind: "bullet" | "summary" | "skills";
+  kind: "bullet" | "summary" | "skills" | "heading";
   section: { id: string; kind: "experience" | "project"; label: string } | null;
+  target?: string | null; // the bullet's id (P10.13: its card hides with a left-out project)
   original: string;
   proposed: string;
   rationale: string | null;
@@ -188,6 +189,19 @@ export const CV_MODE_LABELS: Record<string, string> = {
   standard: "Standard resume", academic: "Academic CV", federal: "US Federal (USAJOBS)",
 };
 
+/** A project inside a job, kept for this job or left out, and why (P10.13). */
+export interface ProjectChoice {
+  key: string; // "<experience id>::<project>"
+  experience_id: string;
+  job: string;
+  name: string;
+  bullet_ids: string[];
+  chosen: boolean;
+  reason: string;
+  relevance: number;
+  impact: number;
+}
+
 export interface ProposalsResult {
   details?: Details; // what the server holds after the corrections (added jobs included)
   proposals: Proposal[];
@@ -199,6 +213,8 @@ export interface ProposalsResult {
   experience_options: { id: string; label: string }[];
   region?: RegionInfo;
   cv_mode?: CvModeInfo;
+  projects?: ProjectChoice[]; // P10.13
+  projects_ranked_by_impact?: boolean; // the job description was too short to rank projects by
   llm: LlmStatus;
 }
 

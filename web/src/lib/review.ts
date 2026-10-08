@@ -30,6 +30,7 @@ export interface ReviewState {
   conditions?: string[]; // job conditions the user meets (P8.20)
   region?: string | null; // paper and dates, suggested from the JD (P10.3)
   cvMode?: string | null; // standard / academic / federal, suggested from the resume and JD (P10.5)
+  leftOut?: string[]; // project keys left out (P10.13), starting with the ones not suggested
 }
 
 export const EMPTY_JOB: NewJob = { company: "", title: "", location: "", current: false, start: "", end: "", description: "" };
@@ -47,7 +48,21 @@ export function initialReview(drafted: ProposalsResult): ReviewState {
     conditions: [],
     region: drafted.region?.region ?? null,
     cvMode: drafted.cv_mode?.mode ?? null,
+    leftOut: (drafted.projects ?? []).filter((p) => !p.chosen).map((p) => p.key),
   };
+}
+
+/** Bullet ids of the projects left out: their cards hide and they don't count. */
+export function leftOutBullets(drafted: ProposalsResult, review: ReviewState): Set<string> {
+  const keys = new Set(review.leftOut ?? []);
+  // The project's bullets, and its key (a heading card's target).
+  return new Set((drafted.projects ?? []).filter((p) => keys.has(p.key)).flatMap((p) => [p.key, ...p.bullet_ids]));
+}
+
+/** Proposals still on the page: not those of a left-out project. */
+export function visibleProposals(drafted: ProposalsResult, review: ReviewState): Proposal[] {
+  const gone = leftOutBullets(drafted, review);
+  return drafted.proposals.filter((p) => !p.target || !gone.has(p.target));
 }
 
 export const textOf = (p: Proposal, review: ReviewState) => review.edits[p.id] ?? p.proposed;
@@ -117,6 +132,7 @@ export function tailorRequest(proposals: Proposal[], review: ReviewState, option
     conditions: review.conditions ?? [],
     region: review.region ?? null,
     cv_mode: review.cvMode ?? null,
+    left_out: review.leftOut ?? null,
   };
 }
 
@@ -130,7 +146,9 @@ export function groupProposals(proposals: Proposal[]): { key: string; label: str
   };
   for (const p of proposals.filter((x) => x.kind === "summary")) find("summary", "Professional summary").items.push(p);
   for (const p of proposals.filter((x) => x.kind === "skills")) find("skills", "Skills").items.push(p);
-  for (const p of proposals.filter((x) => x.kind === "bullet")) {
+  // A job's project headings first, then its bullets (P10.13).
+  for (const p of proposals.filter((x) => x.kind === "heading" || x.kind === "bullet").sort((a, b) =>
+    Number(a.kind === "bullet") - Number(b.kind === "bullet"))) {
     find(p.section?.id ?? "other", p.section?.label ?? "Other bullets").items.push(p);
   }
   return groups;

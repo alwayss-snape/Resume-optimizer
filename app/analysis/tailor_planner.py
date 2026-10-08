@@ -2,6 +2,7 @@ import math
 from typing import Callable, Dict, List, Optional, Sequence
 
 from app.analysis.keyword_match import KeywordMatcher, tokens
+from app.analysis.project_select import apply_to_plan, jd_is_thin, select_projects
 from app.domain.evidence import Evidence
 from app.domain.job import JobDescription
 from app.domain.report import Match
@@ -161,7 +162,12 @@ class TailoringPlanner:
         for proj in resume.projects:
             bullet_order[proj.id] = [b.id for b in sorted(proj.bullets, key=lambda b: -relevance_by_id.get(b.id, 0.0))]
 
-        return TailoringPlan(actions=actions, unsupported_requirements=unsupported, bullet_order=bullet_order)
+        plan = TailoringPlan(actions=actions, unsupported_requirements=unsupported, bullet_order=bullet_order,
+                             ranked_by_impact=jd_is_thin(job_description))
+        # Choose projects, not lines (P10.13): a job keeps its best 2-3 projects.
+        apply_to_plan(plan, select_projects(resume, actions, job_description, embedder=self.embedder), resume,
+                      job_description, self.embedder)
+        return plan
 
     def rank_missing_requirements(
         self,

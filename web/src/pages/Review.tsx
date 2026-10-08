@@ -9,6 +9,7 @@ import { KeywordList } from "../components/KeywordList";
 import { ProgressPanel, progressHandler, type Wait } from "../components/ProgressPanel";
 import { type ProofView, ProposalCard } from "../components/ProposalCard";
 import { ProofStack } from "../components/ProofStack";
+import { ProjectChoices } from "../components/ProjectChoices";
 import { ScoreDial, verdict } from "../components/ScoreDial";
 import { ApiError, friendlyError, matchPreview, tailorResume } from "../lib/api";
 import { CvModeChoice } from "../components/CvModeChoice";
@@ -16,7 +17,7 @@ import { RegionChoice } from "../components/RegionChoice";
 import { beginStep, isAbort } from "../lib/inflight";
 import {
   type Decision, type ReviewState, anyJobField, groupProposals, initialReview, isEdited, newJobProblem, selection, tailorRequest,
-  textOf, willApply,
+  textOf, visibleProposals, willApply,
 } from "../lib/review";
 import { useApp } from "../lib/store";
 import type { MatchPreview } from "../lib/types";
@@ -75,14 +76,18 @@ export function Review() {
         onChange={(region) => update((r) => ({ ...r, region }))} />
     </div>
   ) : null;
-  const groups = useMemo(() => groupProposals(drafted.proposals), [drafted.proposals]);
-  const selectionKey = JSON.stringify(selection(drafted.proposals, review));
+  // P10.13: cards of a left-out project hide, and don't count.
+  const leftOutKey = JSON.stringify(review.leftOut ?? []);
+  const shown = useMemo(() => visibleProposals(drafted, { ...review, leftOut: JSON.parse(leftOutKey) }),
+    [drafted, leftOutKey]); // eslint-disable-line react-hooks/exhaustive-deps
+  const groups = useMemo(() => groupProposals(shown), [shown]);
+  const selectionKey = JSON.stringify(selection(shown, review));
 
   // Live match rate for the current choices (no AI, no files), debounced.
   useEffect(() => {
     const controller = new AbortController();
     const timer = setTimeout(() => {
-      matchPreview(JSON.parse(selectionKey), controller.signal)
+      matchPreview(JSON.parse(selectionKey), controller.signal, JSON.parse(leftOutKey))
         .then((m) => { setLive(m); setLiveError(null); })
         .catch((e) => {
           if (isAbort(e)) return;
@@ -91,7 +96,7 @@ export function Review() {
         });
     }, 450);
     return () => { clearTimeout(timer); controller.abort(); };
-  }, [selectionKey]);
+  }, [selectionKey, leftOutKey]);
 
   useEffect(() => {
     if (progress !== null) progressHeading.current?.focus({ preventScroll: true });
@@ -110,7 +115,11 @@ export function Review() {
       return { ...r, edits };
     });
   const setAll = (d: Decision) =>
-    update((r) => ({ ...r, decisions: Object.fromEntries(drafted.proposals.map((p) => [p.id, d])) }));
+    update((r) => ({ ...r, decisions: { ...r.decisions, ...Object.fromEntries(shown.map((p) => [p.id, d])) } }));
+  const toggleProject = (key: string) => update((r) => {
+    const now = r.leftOut ?? [];
+    return { ...r, leftOut: now.includes(key) ? now.filter((k) => k !== key) : [...now, key] };
+  });
   const navigate = (from: number, step: 1 | -1) => cards.current[from + step]?.focus();
 
   const targets: TargetOption[] = [
@@ -120,10 +129,10 @@ export function Review() {
   ];
 
   const counts = {
-    accepted: drafted.proposals.filter((p) => review.decisions[p.id] !== "reject").length,
-    rejected: drafted.proposals.filter((p) => review.decisions[p.id] === "reject").length,
-    edited: drafted.proposals.filter((p) => isEdited(p, review)).length,
-    dropped: drafted.proposals.filter((p) => review.decisions[p.id] !== "reject" && !willApply(p, review)).length,
+    accepted: shown.filter((p) => review.decisions[p.id] !== "reject").length,
+    rejected: shown.filter((p) => review.decisions[p.id] === "reject").length,
+    edited: shown.filter((p) => isEdited(p, review)).length,
+    dropped: shown.filter((p) => review.decisions[p.id] !== "reject" && !willApply(p, review)).length,
   };
 
   const generate = async () => {
@@ -145,7 +154,7 @@ export function Review() {
     const onProgress = progressHandler(setProgress, setWait);
     try {
       const results = await tailorResume(
-        tailorRequest(drafted.proposals, current, {
+        tailorRequest(visibleProposals(drafted, current), current, {
           keepLayout: run.template === "keep", strictFactual: settings.strictFactual, rememberAnswers: settings.rememberAnswers,
         }),
         (m, w) => step.isCurrent() && onProgress(m, w),
@@ -191,7 +200,7 @@ export function Review() {
             <div className="flex flex-col gap-2">
               <h1 ref={heading} tabIndex={-1} className="font-display text-[44px] font-bold leading-none tracking-[-0.035em] outline-none">Review changes</h1>
               <p className="tabular text-sm text-muted">
-                {drafted.proposals.length} proposals · {counts.accepted} accepted · {counts.rejected} rejected
+                {shown.length} proposals · {counts.accepted} accepted · {counts.rejected} rejected
                 {counts.edited ? ` · ${counts.edited} edited` : ""}
               </p>
             </div>
@@ -212,6 +221,8 @@ export function Review() {
             )}
           </div>
           {regionChoice("region", "sheet rounded-[3px] p-4")}
+          <ProjectChoices projects={drafted.projects ?? []} rankedByImpact={Boolean(drafted.projects_ranked_by_impact)}
+            leftOut={review.leftOut ?? []} onToggle={toggleProject} />
           {liveError && (
             <p role="status" className="m-0 flex items-start gap-2 rounded-[3px] border border-warning bg-panel p-3 text-sm font-medium">
               <Icon name="alert" size={16} className="mt-0.5 shrink-0 text-warning" />{liveError}
@@ -368,7 +379,7 @@ export function Review() {
           </div>
           {drafted.proposals.length > 0 && (
             <div className="hidden px-1 pt-2 lg:block">
-              <ProofStack proposals={drafted.proposals} review={review} />
+              <ProofStack proposals={shown} review={review} />
             </div>
           )}
           {(live ?? drafted.keyword_match) && (

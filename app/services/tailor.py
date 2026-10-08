@@ -13,6 +13,7 @@ from app.analysis.gap_questions import GapAnswer, build_questions, infer_kind
 from app.analysis.jd_analyzer import JDAnalyzer
 from app.analysis.keyword_match import KeywordMatcher, _contains_seq, reconcile, resume_sections, tokens
 from app.analysis.matcher import EvidenceMatcher
+from app.analysis.project_select import left_out_ids, remove_bullets
 from app.analysis.resume_normalizer import ResumeNormalizer
 from app.analysis.rewriter import FAILED_STATUSES, LLMRewriter, RewriteProposal
 from app.analysis.scoring import AlignmentScorer
@@ -156,8 +157,8 @@ class TailorService:
         emptied so the old summary doesn't remain."""
         out = []
         for p in proposals:
-            if getattr(p, "kind", "bullet") == "skills":
-                continue  # skills order can't be patched in place; the template shows it
+            if getattr(p, "kind", "bullet") in ("skills", "heading"):
+                continue  # skills order and project headings can't be patched in place; the template shows them
             if getattr(p, "kind", "bullet") != "summary":
                 out.append(p)
                 continue
@@ -258,6 +259,27 @@ class TailorService:
         return resume, updated, text
 
     MAX_NEW_ROLE_BULLETS = 6
+    MAX_PROJECT_BANK_LINES = 40  # a job added on Check details: notes to choose from (P10.13)
+    _ACHIEVEMENT_HEADING = re.compile(r"^(?:key\s+)?(?:achievements?|awards?(?:\s+and\s+recognition)?|honou?rs|recognition)$", re.I)
+
+    @classmethod
+    def _project_lines(cls, text: str) -> List[Tuple[Optional[str], str]]:
+        """An added job's notes -> (project, line) pairs. A short line ending
+        in ":" or starting with "#" names a project; the lines under it are
+        its bullets. Lines before any heading sit directly under the job."""
+        out: List[Tuple[Optional[str], str]] = []
+        group = None
+        for raw in (text or "").splitlines():
+            line = raw.strip()
+            heading = re.match(r"^#+\s*(.+)$", line) or re.match(r"^(.{2,80}):$", line)
+            if heading and len(heading.group(1).split()) <= 10:
+                group = heading.group(1).strip().rstrip(":").strip()
+                continue
+            for chunk in cls._split_description(line):
+                out.append((group, chunk))
+        if not any(g for g, _ in out):  # no headings: the old behaviour (one paragraph splits into sentences)
+            out = [(None, chunk) for chunk in cls._split_description(text)]
+        return out
 
     @staticmethod
     def _split_description(text: str) -> List[str]:
@@ -406,7 +428,10 @@ class TailorService:
             reworded |= {b.id for b in raw_doc.blocks if b.text.strip() and b.text.strip() in (original.summary or "")}
         trimmed = fit_bullets - set(final_bullets)
         final_groups = {b.group for e in final.experience for b in e.bullets if b.group}
-        removed = [*[i for i in before_fit.interests if i not in final.interests],
+        dropped_interests = [i for i in before_fit.interests if i not in final.interests]
+        removed = [*dropped_interests,
+                   # a one-line "Interests: Chess • Cycling" takes its label along
+                   *(["Interests"] if dropped_interests else []),
                    *[t for p in before_fit.projects if p not in final.projects
                      for t in [p.name, *(b.text for b in p.bullets)]],
                    # a job sub-section page-fit removed takes its heading along
@@ -415,6 +440,35 @@ class TailorService:
         return content_coverage(raw_doc.blocks, docx_text(docx_path), heading_texts=resume_doc.section_headings,
                                 reworded_blocks=reworded, trimmed_blocks=trimmed, removed_text="\n".join(removed),
                                 ignore_words=list(original.skills))
+
+    @staticmethod
+    def _rename_headings(resume: Resume, resume_doc: ResumeDocument, raw_doc, approved: List, kept_projects: set,
+                         note: Callable[[str], None]) -> set:
+        """Rename each project the user accepted a new heading for; the old
+        heading line of the file counts as reworded, not lost. Returns the
+        kept-project keys under their new names."""
+        renamed = 0
+        for p in approved:
+            if getattr(p, "kind", "bullet") != "heading":
+                continue
+            exp_id, _, old = (getattr(p, "target_semantic_id", "") or "").partition("::")
+            new = (getattr(p, "proposed_text", None) or "").strip()
+            exp = next((e for e in resume.experience if e.id == exp_id), None)
+            if not exp or not new or not old:
+                continue
+            hits = [b for b in exp.bullets if b.group == old]
+            for b in hits:
+                b.group = new
+            if hits:
+                renamed += 1
+                if f"{exp_id}::{old}" in kept_projects:
+                    kept_projects = (kept_projects - {f"{exp_id}::{old}"}) | {f"{exp_id}::{new}"}
+                if raw_doc is not None:
+                    resume_doc.user_changed_blocks.extend(
+                        b.id for b in raw_doc.blocks if re.sub(r"\s+", " ", b.text).strip() == old)
+        if renamed:
+            note(f"Renamed {renamed} project heading(s) to plain, searchable titles")
+        return kept_projects
 
     @staticmethod
     def _apply_bullet_order(resume: Resume, bullet_order: Dict[str, List[str]]) -> int:
@@ -506,11 +560,15 @@ class TailorService:
         raw_doc, resume_doc, evidence_list = parsed
         return raw_doc, resume_doc.model_copy(deep=True), [e.model_copy(deep=True) for e in evidence_list]
 
-    def preview_keyword_match(self, parsed, job_desc: JobDescription, proposals: List[Dict]):
+    def preview_keyword_match(self, parsed, job_desc: JobDescription, proposals: List[Dict],
+                              left_out: Optional[List[str]] = None):
         """Match rate if these proposals were applied (P3.4 "recalculate"):
         no LLM, no files. `proposals` are dicts with kind, target_semantic_id
-        and proposed_text, i.e. the ticked (and possibly edited) ones."""
+        and proposed_text, i.e. the ticked (and possibly edited) ones.
+        `left_out`: bullet ids of projects left out (P10.13)."""
         resume = parsed[1].resume.model_copy(deep=True)
+        if left_out:
+            remove_bullets(resume, left_out)
         for p in proposals:
             text = (p.get("proposed_text") or "").strip()
             if not text:
@@ -614,11 +672,20 @@ class TailorService:
         added = [(job, self._new_experience(job, job.get("description", "")))
                  for job in corrections.get("added_jobs") or []]
         for job, exp in added:
-            lines = self._split_description(job.get("description", ""))[:self.MAX_NEW_ROLE_BULLETS]
-            for n, line in enumerate(lines, start=1):
-                exp.bullets.append(ResumeBullet(id=f"{exp.id}_b{n:02d}", text=line))
+            lines = self._project_lines(job.get("description", ""))[:self.MAX_PROJECT_BANK_LINES]
+            for n, (group, line) in enumerate(lines, start=1):
+                if group and self._ACHIEVEMENT_HEADING.match(group):
+                    # "Achievements:" in the notes: a win or award, not a project
+                    # under the job (P10.13). It goes to Achievements as written.
+                    resume.achievements.append(line)
+                    evidence_list.append(Evidence(id=f"ev_user_{uuid4().hex[:6]}", source_type="achievement",
+                                                  source_id=f"{exp.id}_a{n:02d}", text=line))
+                    continue
+                exp.bullets.append(ResumeBullet(id=f"{exp.id}_b{n:02d}", text=line, group=group))
                 evidence_list.append(Evidence(id=f"ev_user_{uuid4().hex[:6]}", source_type="experience",
                                               source_id=f"{exp.id}_b{n:02d}", text=f"{exp.company}: {line}"))
+            if not exp.bullets:
+                raise ValueError(f"Describe at least one thing you did at {exp.company}, not only achievements.")
             self._insert_by_date(resume, exp)
             changed.append(f"{exp.id}.added")
 
@@ -760,6 +827,9 @@ class TailorService:
             "llm_usage": self.llm_client.get_usage_summary() if self.llm_client else None,
             "parse_issues": list(self.last_parse_issues),
             "experience_options": [{"id": e.id, "label": " — ".join(v for v in (e.company, e.title) if v) or e.id} for e in resume.experience],
+            # P10.13: projects kept and left out per job, with the reason.
+            "projects": list(plan.projects),
+            "projects_ranked_by_impact": plan.ranked_by_impact,
         }
 
     def incorporate_user_addition(
@@ -863,11 +933,14 @@ class TailorService:
         conditions_confirmed: Optional[List[str]] = None,
         region: Optional[str] = None,
         cv_mode: Optional[str] = None,
+        left_out_projects: Optional[List[str]] = None,
     ) -> Dict[str, str]:
         """`region` ("us", "uk_eu", "india", "other", P10.3) sets the paper
         and date style; None keeps the template's default (A4, "Jan 2022").
         `cv_mode` ("standard", "academic", "federal", P10.5): None takes the
-        one the resume and JD suggest (the CLI and eval have no one to ask)."""
+        one the resume and JD suggest (the CLI and eval have no one to ask).
+        `left_out_projects` (P10.13): project keys the user left out on Review;
+        None leaves out the ones the planner didn't choose."""
         run_dir = self.run_manager.create_run(resume_path, jd_text) if self.run_manager else None
         clean_jd_text = self.safety_guard.sanitize(jd_text)
         
@@ -1074,6 +1147,25 @@ class TailorService:
                 pass  # revision history is best-effort; never fail the run for it
             _append_progress(f"Applied {len(approved_proposals)} approved rewrites to canonical resume model")
 
+        # Choose projects, not lines (P10.13): a job keeps its best few
+        # projects. Only the template can drop them; a DOCX patch keeps all.
+        left_out_text: List[str] = []
+        leave_out = left_out_ids(plan.projects, left_out_projects)
+        # Kept projects stay through page-fit, shortened at most (P10.13).
+        kept_projects = {c.key for c in plan.projects if not set(c.bullet_ids) <= set(leave_out)}
+        # Accepted project headings (plain, searchable titles, P10.13).
+        if mode != "PRESERVE" or is_pdf:
+            kept_projects = self._rename_headings(resume, resume_doc, raw_doc, approved_proposals, kept_projects,
+                                                  _append_progress)
+        if leave_out and (mode != "PRESERVE" or is_pdf):
+            left_out_text = remove_bullets(resume, leave_out)
+            gone = set(leave_out)
+            evidence_list[:] = [ev for ev in evidence_list if ev.source_id not in gone]
+            names = [c.name for c in plan.projects if set(c.bullet_ids) <= gone]
+            _append_progress(f"Left out {len(names)} project(s) as less "
+                             f"{'impactful' if plan.ranked_by_impact else 'relevant'} for this job: "
+                             f"{', '.join(names)}. Bring any back on Review")
+
         # Most relevant bullets first within each sub-heading (P1.3). Only the
         # template can move bullets; an in-place DOCX patch keeps the order.
         # Never silently (P8.14): only when the user accepted changes, and the
@@ -1155,7 +1247,7 @@ class TailorService:
             trim_candidates = {a.source_id for a in plan.actions if a.trim_candidate}
             fit = PageFitter(self._render_template).fit(
                 resume_doc, docx_output_path, output_dir, page_target,
-                relevance=relevance, trim_candidates=trim_candidates, trim=capped,
+                relevance=relevance, trim_candidates=trim_candidates, trim=capped, kept_projects=kept_projects,
             )
             _append_progress(f"DOCX reconstructed via template renderer at {docx_output_path} "
                              f"({fit.pages or '?'} page(s), target {page_target}, {fit.renders} render(s))")
@@ -1174,7 +1266,8 @@ class TailorService:
         # the template rebuilds the document; a PRESERVE patch keeps it all.
         coverage = None
         if fit:
-            coverage = self._coverage(raw_doc, resume_doc, original_resume, before_fit, docx_output_path)
+            coverage = self._coverage(raw_doc, resume_doc, original_resume, before_fit, docx_output_path,
+                                      extra_removed="\n".join(left_out_text))
             if coverage.lost:
                 shown = "; ".join(f"\"{line[:70]}\"" for line in coverage.lost[:5])
                 more = f" and {len(coverage.lost) - 5} more" if len(coverage.lost) > 5 else ""
@@ -1359,6 +1452,8 @@ class TailorService:
                 "relevance": relevance, "trim_candidates": trim_candidates, "initial_score": initial_score,
                 "applied": applied, "changes_md": report_md_path, "default_layout": layout,
                 "trimmed": trimmed_items(before_fit, resume),
+                "left_out_text": left_out_text,  # P10.13: left out on Review, not lost
+                "kept_projects": kept_projects,
             }
 
         return {
@@ -1421,7 +1516,7 @@ class TailorService:
         doc.user_changed_blocks = changed
         # Sub-headings the user emptied go with their bullets.
         kept_groups = {b.group for e in resume.experience for b in e.bullets if b.group}
-        hidden_text = "\n".join([_hidden_text(full, layout),
+        hidden_text = "\n".join([_hidden_text(full, layout), *state.get("left_out_text", []),
                                  *({b.group for e in full.experience for b in e.bullets if b.group} - kept_groups)])
 
         base_name = output_basename(resume, job_desc.company) or "tailored_resume"
@@ -1434,7 +1529,7 @@ class TailorService:
             doc, docx_path, output_dir, page_target, relevance=state["relevance"],
             trim_candidates=state["trim_candidates"],
             pinned=set(layout.pinned) | {b for b, t in layout.edits.items() if (t or "").strip()},  # your words stay
-            trim=layout.trim and not uncapped)
+            trim=layout.trim and not uncapped, kept_projects=state.get("kept_projects"))
         warnings: List[str] = list(fit.notes)
         if not layout.trim and fit.pages and fit.pages > page_target:
             warnings.append(f"{fit.pages} pages (not trimmed, as you chose).")

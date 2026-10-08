@@ -12,7 +12,7 @@ from app.domain.job import JobDescription
 from app.domain.resume import Experience, Resume
 from app.domain.tailoring import TailoringAction, TailoringPlan
 from app.llm.client import LLMClient
-from app.llm.schemas import BulletRewriteResult, RoleRewriteResult
+from app.llm.schemas import BulletRewriteResult, HeadingRenameResult, RoleRewriteResult
 
 
 # Typographic Unicode that some models (e.g. gpt-oss) emit: non-breaking /
@@ -258,6 +258,34 @@ class LLMRewriter:
                 out[bullet.bullet_id] = {"text": text, "keywords_used": used, "status": STATUS_OK}
         return out, None, STATUS_LLM_ERROR
 
+    def rename_headings(self, exp: Experience, groups: List[Tuple[str, List[str]]]) -> Dict[str, str]:
+        """Plain, searchable headings for one job's projects (P10.13), in one
+        call: {old heading: new heading}, only those that changed. Empty when
+        there's no AI or the call fails: the headings then stay as written."""
+        if not groups or not self.llm_client or not self.llm_client.is_available():
+            return {}
+        prompt_path = os.path.join(os.path.dirname(__file__), "..", "llm", "prompts", "rename_headings.txt")
+        with open(prompt_path, "r", encoding="utf-8") as f:
+            system_prompt = f.read()
+        titles = ", ".join(r.title for r in exp.all_roles() if r.title) or "(not given)"
+        lines = [f"Company: {exp.company or '(not given)'}", f"Titles: {titles}", "", "Projects:"]
+        for name, texts in groups:
+            lines.append(f"- heading: {name}")
+            lines += [f"  bullet: {t}" for t in texts]
+        try:
+            result = self.llm_client.generate_json(
+                messages=[{"role": "system", "content": system_prompt}, {"role": "user", "content": "\n".join(lines)}],
+                schema_model=HeadingRenameResult, temperature=0.1, effort="low")
+        except Exception:
+            return {}
+        names = {name for name, _ in groups}
+        out = {}
+        for h in result.headings:
+            new = normalize_llm_text(h.renamed or "").strip().rstrip(":.")
+            if h.original in names and new and new != h.original:
+                out[h.original] = new
+        return out
+
     def execute_plan(
         self,
         resume: Resume,
@@ -345,6 +373,28 @@ class LLMRewriter:
             if todo:
                 step(f"Rewriting {_count(len(todo), 'bullet')} for {exp.company or exp.title or 'a job'}")
                 collect(todo, *rewrite_with_follow_up(exp, [item_for(b, b.group) for b in todo]))
+
+        # Plain, searchable headings for the projects kept (P10.13): one call per job.
+        kept = {(c.experience_id, c.name) for c in getattr(plan, "projects", []) if c.chosen}
+        for exp in resume.experience:
+            groups = [(name, bullets) for name, bullets in exp.bullet_groups()
+                      if name and ((exp.id, name) in kept or any(b.id in actions for b in bullets))]
+            if not groups:
+                continue
+            step(f"Naming {_count(len(groups), 'project')} for {exp.company or exp.title or 'a job'}")
+            renamed = self.rename_headings(exp, [(n, [b.text for b in bs]) for n, bs in groups])
+            for name, bullets in groups:
+                if name not in renamed:
+                    continue
+                ev_ids = [ev.id for ev in evidence_list if ev.source_id in {b.id for b in bullets}]
+                proposals.append(RewriteProposal(
+                    id=f"prop_{uuid4().hex[:8]}", kind="heading",
+                    target_semantic_id=f"{exp.id}::{name}", target_source_location_id=f"{exp.id}::{name}",
+                    original_text=name, proposed_text=renamed[name], evidence_ids=ev_ids,
+                    rationale="A plain project title recruiters and applicant-tracking systems search for, "
+                              "from your own words.",
+                    status=STATUS_OK,
+                ))
 
         # All project bullets in one more call (P1.7), each with its
         # project name as the sub-heading.

@@ -3,7 +3,7 @@ You tailor the bullets of ONE job on a resume to a specific job description (JD)
 You get the role (company, titles) and a list of bullets. Each bullet has an id, its text, the project/sub-heading it sits under, the JD requirements it is closest to, and the JD keywords it may use.
 
 How to rewrite each bullet:
-1. Lead with what matters to the closest requirement. Put the JD-relevant part of the work first.
+1. Lead with what matters to the closest requirement. Put the JD-relevant part of the work first. Name the work in the standard terms recruiters and applicant-tracking systems search for, using only terms the bullet already contains (e.g. "time-series forecasting", "propensity models", "feature engineering", "fraud detection"), near the start of the sentence, and end with the result or scale when the bullet states one.
 2. Use a JD keyword only from the bullet's list of allowed keywords, i.e. where the bullet already says that thing, spelled the way the JD spells it. Otherwise keep the bullet's own words: do not swap them for the requirement's wording. A word that only the JD uses is a claim the resume doesn't make, and the fact check rejects it.
 3. Tighten to one sentence of at most 28 words: cut filler adjectives ("robust", "seamless", "dynamic", "intelligent", "fully") and vague phrases ("in various areas", "to drive impact").
 4. Start with a past-tense action verb (present tense only for ongoing work). No two bullets of this role may start with the same verb. No pronouns (I, my, we), no buzzwords ("synergy", "results-driven", "cutting-edge", "leveraged").

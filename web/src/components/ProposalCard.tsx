@@ -25,6 +25,7 @@ const TITLES: Record<Proposal["kind"], string> = {
   summary: "Professional summary",
   skills: "Skills (reordered only; nothing is added)",
   bullet: "Bullet",
+  heading: "Project heading",
 };
 
 /** One proposed rewrite. Keys while the card has focus: A accept, R reject,

@@ -170,8 +170,8 @@ export interface Selection {
   text?: string | null;
 }
 
-export const matchPreview = (selection: Selection[], signal?: AbortSignal) =>
-  request<MatchPreview>("/api/match-preview", { ...json({ selection }), signal });
+export const matchPreview = (selection: Selection[], signal?: AbortSignal, leftOut?: string[]) =>
+  request<MatchPreview>("/api/match-preview", { ...json({ selection, left_out: leftOut ?? null }), signal });
 
 export interface TailorRequest {
   selection: Selection[];
@@ -192,6 +192,7 @@ export interface TailorRequest {
   remember_answers: boolean;
   region?: string | null; // P10.3: confirmed on Review
   cv_mode?: string | null; // P10.5: confirmed on Review
+  left_out?: string[] | null; // P10.13: project keys left out; null: as suggested
 }
 
 export const tailorResume = (body: TailorRequest, onProgress: OnProgress, signal?: AbortSignal) =>

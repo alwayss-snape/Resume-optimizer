@@ -119,11 +119,12 @@ class TemplateRenderer:
             # No title found in the file: the company takes the bold line
             # rather than printing a placeholder.
             heading = (first.title if first and first.title else "") or company
+            # A clear gap before each new job, so one employer doesn't run into the next.
             self._add_title_dates_line(doc, heading, self._role_dates(first), content_width,
-                                       space_before=0 if i == 0 else 6)
+                                       space_before=0 if i == 0 else 12)
             meta = " · ".join(v for v in (company if heading != company else "", exp.location) if v)
             if meta:
-                self._add_meta_line(doc, meta)
+                self._add_meta_line(doc, meta, color=BODY_COLOR)
             # "40 hours per week | Salary: ..." as written (P8.5); a federal
             # resume puts each field on its own line in USAJOBS order (P10.7).
             for line in federal_fields(exp.details) if self._federal else exp.details:
@@ -141,8 +142,12 @@ class TemplateRenderer:
                     gp.paragraph_format.space_before = Pt(3 * self._gap)
                     gp.paragraph_format.space_after = Pt(1)
                     grun = gp.add_run(group)
+                    # A project reads as part of the job above it, not a new job:
+                    # smaller, italic and grey next to the black job title.
                     grun.bold = True
-                    grun.font.size = Pt(10.5)
+                    grun.italic = True
+                    grun.font.size = Pt(10)
+                    grun.font.color.rgb = META_COLOR
                 self._add_bullets(doc, (b.text for b in bullets))
 
     def _add_skills(self, doc, resume, content_width) -> None:
@@ -276,14 +281,15 @@ class TemplateRenderer:
     def _role_dates(self, role) -> str:
         return date_range(role.start_date, role.end_date, self._date_style) if role else ""
 
-    def _add_meta_line(self, doc, text: str) -> None:
-        """'Company · Location' in italic grey under a title line."""
+    def _add_meta_line(self, doc, text: str, color=META_COLOR) -> None:
+        """'Company · Location' in italic under a title line (the employer in
+        body colour, so it stands out from the project headings below)."""
         p = doc.add_paragraph()
         p.paragraph_format.space_after = Pt(2)
         run = p.add_run(text)
         run.italic = True
         run.font.size = Pt(10)
-        run.font.color.rgb = META_COLOR
+        run.font.color.rgb = color
 
     def _add_bullets(self, doc, texts) -> None:
         for text in texts:

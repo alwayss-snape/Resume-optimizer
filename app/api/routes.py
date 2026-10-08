@@ -31,6 +31,7 @@ from app.ingestion import errors
 from app.ingestion.errors import UnreadableFile
 from app.validation.output import OutputQAValidator
 from app.analysis.cv_mode import CV_MODES, suggest_cv_mode
+from app.analysis.project_select import left_out_ids
 from app.analysis.region import DEFAULT_REGION, REGIONS, suggest_region
 from app.services.arrange import Layout
 from app.services.arrange import view as arrange_view
@@ -65,6 +66,7 @@ class SelectionItem(BaseModel):
 
 class MatchPreviewIn(BaseModel):
     selection: List[SelectionItem] = Field(default_factory=list)
+    left_out: Optional[List[str]] = None  # P10.13: project keys left out; None: as the planner chose
 
 
 class GapInput(BaseModel):
@@ -99,6 +101,7 @@ class TailorIn(BaseModel):
     conditions: List[str] = Field(default_factory=list)  # ids of job conditions the user meets (P8.20)
     region: Optional[str] = None  # P10.3: the region the user confirmed on Review; None: the template's default
     cv_mode: Optional[str] = None  # P10.5: confirmed on Review; None: the suggested one
+    left_out: Optional[List[str]] = None  # P10.13: project keys left out; None: as the planner chose
 
 
 # ---------------------------------------------------------------------------
@@ -368,6 +371,8 @@ def _sections(resume) -> Dict[str, Dict]:
             label = " — ".join(v for v in (name, getattr(item, "title", None) if kind == "experience" else None) if v)
             for b in item.bullets:
                 out[b.id] = {"id": item.id, "kind": kind, "label": label or item.id}
+                if b.group and kind == "experience":  # a project heading's card (P10.13)
+                    out[f"{item.id}::{b.group}"] = out[b.id]
     return out
 
 
@@ -378,6 +383,8 @@ def _proposal_out(p, keywords: List[str], sections: Dict[str, Dict]) -> Dict:
     left, right = diff_spans(original, proposed, keywords)
     note = p.error if state == "failed" else (p.validation_note if state in ("dropped", "check") else None)
     return {"id": p.id, "kind": p.kind, "section": sections.get(p.target_semantic_id),
+            # P10.13: a bullet's id, or a project heading's key; hidden with a left-out project.
+            "target": p.target_semantic_id if p.kind in ("bullet", "heading") else None,
             "original": original, "proposed": proposed, "rationale": p.rationale,
             "state": state, "state_label": label, "state_meaning": meaning, "note": note,
             "opt_in": bool(getattr(p, "opt_in", False)),
@@ -505,6 +512,7 @@ def proposals(request: Request, body: ProposalsIn, session: Session = Depends(cu
         session.data.update(
             parsed=parsed, parse_corrected=changed, proposals=generated["proposals"],
             gap_questions=generated.get("gap_questions") or [], keyword_match=generated.get("keyword_match"),
+            projects=generated.get("projects") or [],
             job_description=generated.get("job_description"), proposal_usage=generated.get("llm_usage"),
             pre_score=generated["alignment_score"], experience_options=generated["experience_options"],
         )
@@ -528,6 +536,9 @@ def proposals(request: Request, body: ProposalsIn, session: Session = Depends(cu
             "gaps": gap_table(report, asked=[k for q in questions for k in q.keywords]),
             "pre_score": generated["alignment_score"],
             "experience_options": generated["experience_options"],
+            # P10.13: each job's projects, kept or left out, with the reason.
+            "projects": [c.model_dump() for c in generated.get("projects") or []],
+            "projects_ranked_by_impact": bool(generated.get("projects_ranked_by_impact")),
             # P10.3: paper and dates for the job, with the JD's words that decided it.
             "region": session.data["region_guess"].model_dump(),
             # P10.5: standard / Academic CV / US Federal, with the signals that decided it.
@@ -546,7 +557,8 @@ def match_preview(request: Request, body: MatchPreviewIn, session: Session = Dep
     No LLM, no files."""
     _require(session, "proposals", "job_description")
     report = _service(request, session).preview_keyword_match(
-        session.data["parsed"], session.data["job_description"], _selected(session, body.selection))
+        session.data["parsed"], session.data["job_description"], _selected(session, body.selection),
+        left_out=left_out_ids(session.data.get("projects") or [], body.left_out))
     return {**_match_out(report), "delta": report.rate - (session.data.get("pre_score") or 0)}
 
 
@@ -586,7 +598,7 @@ def tailor(request: Request, body: TailorIn, session: Session = Depends(current_
             job_desc=session.data.get("job_description"), gap_answers=answers, new_role=new_role,
             gap_questions=questions, remember_answers=body.remember_answers, progress=progress,
             conditions_confirmed=[c.text for c in session.data.get("conditions") or [] if c.id in set(body.conditions)],
-            region=body.region, cv_mode=body.cv_mode,
+            region=body.region, cv_mode=body.cv_mode, left_out_projects=body.left_out,
         )
         session.data["arrange"] = results.pop("arrange", None)
         session.data.pop("layout", None)  # a new run starts from its own arrangement

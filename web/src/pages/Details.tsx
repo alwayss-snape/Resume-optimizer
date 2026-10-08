@@ -12,7 +12,7 @@ import type { Details as DetailsData, JobDetails, Role } from "../lib/types";
 import { useFocusHeading } from "../lib/useFocusHeading";
 
 // The server's limit on bullets for a new job (TailorService.MAX_NEW_ROLE_BULLETS).
-const MAX_NEW_JOB_LINES = 6;
+const MAX_NEW_JOB_LINES = 40; // a project bank to choose from (P10.13); the server keeps the same cap
 
 /** Step 2 (P3.5): confirm or fix what was read from the file before any
  *  rewriting. Bullets are reviewed in the next step. */
@@ -236,8 +236,9 @@ export function Details() {
                 onClick={() => dropAdded(key)}>Remove</Button>
             </div>
             <p className="m-0 text-[13px] text-muted">
-              Up to {MAX_NEW_JOB_LINES} lines; each becomes a bullet point as written, and the next step suggests tailored
-              wording you can accept or reject.
+              One point per line, in your own words. Paste all your work: a short line ending in “:” names a
+              project, and the lines under it are its points. The next step keeps the projects that suit this job
+              best (you can change that) and suggests tailored wording you can accept or reject.
             </p>
             <AddJobForm value={job} onChange={(j) => setAddedJob(key, j)} />
           </fieldset>

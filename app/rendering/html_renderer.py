@@ -158,8 +158,10 @@ p {{ margin: 4px 0; }}
 ul {{ margin: 4px 0 8px; padding-left: 18px; }}
 li {{ margin: 2px 0; }}
 .entry {{ break-inside: avoid; margin-bottom: 4px; }}
+.entry + .entry {{ margin-top: 14px; }}
+.entry .meta {{ color: #111827; }}
 .entry-head.role {{ margin: 2px 0 0; }}
-.group {{ font-weight: 700; margin: 6px 0 0; }}
+.group {{ font-weight: 700; font-style: italic; font-size: 10pt; color: #4b5563; margin: 6px 0 0; }}
 strong {{ font-weight: 700; }}
 </style></head><body>
 <header><h1>{html.escape(resume.candidate.name)}</h1>{headline}<p class="contact">{contact}</p>{details}</header>

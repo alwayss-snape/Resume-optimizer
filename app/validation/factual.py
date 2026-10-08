@@ -236,6 +236,17 @@ class FactualValidator:
 
     # ------------------------------------------------------------------
 
+    def _validate_heading(self, proposal, evidence_list: List[Evidence]) -> ValidationResult:
+        """A project heading (P10.13) may only reword what the old heading and
+        the project's own bullets say."""
+        from app.analysis.project_select import heading_problem
+        cited = set(getattr(proposal, "evidence_ids", None) or [])
+        sources = [getattr(proposal, "original_text", "") or ""] + [e.text for e in evidence_list if e.id in cited]
+        problem = heading_problem(getattr(proposal, "proposed_text", None) or "", sources)
+        warnings = [f"Heading rejected: {problem}"] if problem else []
+        verdict: Verdict = "REJECT" if problem else "PASS"
+        return ValidationResult(approved=not problem, proposal=proposal, verdict=verdict, warnings=warnings)
+
     def _validate_skills(self, proposal) -> ValidationResult:
         """The skills section may be reordered and respelled, never extended (P1.6)."""
         from app.analysis.skills_tailor import parse_skills, unknown_skills
@@ -378,6 +389,8 @@ class FactualValidator:
             return self._validate_summary(proposal, evidence_list, jd_keywords, jd_text)
         if getattr(proposal, "kind", "bullet") == "skills":
             return self._validate_skills(proposal)
+        if getattr(proposal, "kind", "bullet") == "heading":
+            return self._validate_heading(proposal, evidence_list)
 
         # The cited evidence that belongs to this bullet (by semantic id or raw location id).
         source_evidence = []

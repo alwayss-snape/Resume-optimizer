@@ -29,6 +29,7 @@ from app.rendering.layout import PAGE_SPECS, page_spec
 MAX_RENDERS = 4
 MIN_BULLETS_CURRENT_ROLE = 3
 MIN_BULLETS_OTHER = 2
+MIN_BULLETS_PER_KEPT_PROJECT = 2  # P10.13: a project chosen for the job keeps at least this many
 
 # Layout estimates for the ATS template (Arial 10.5pt, 0.7" side and 0.6"
 # top/bottom margins); the page itself comes from the presentation's
@@ -86,9 +87,12 @@ class PageFitter:
 
     def fit(self, document: ResumeDocument, docx_path: str, out_dir: str, target_pages: int,
             relevance: Dict[str, float], trim_candidates: Optional[set] = None,
-            pinned: Optional[set] = None, trim: bool = True) -> FitResult:
+            pinned: Optional[set] = None, trim: bool = True,
+            kept_projects: Optional[set] = None) -> FitResult:
         """`pinned`: bullet ids, project ids and "interests" the user kept on
-        purpose (P8.16); they are never trimmed. `trim=False` ("don't trim")
+        purpose (P8.16); they are never trimmed. `kept_projects`: "<job id>::<sub-heading>"
+        keys of projects chosen for this job (P10.13): shortened to their best
+        MIN_BULLETS_PER_KEPT_PROJECT bullets at most, never removed. `trim=False` ("don't trim")
         renders once and reports the length."""
         resume = document.resume
         trim_candidates = trim_candidates or set()
@@ -98,8 +102,8 @@ class PageFitter:
         height = lambda text: bullet_height(text, page.bullet_chars_per_line)
         steps = [
             lambda need: self._drop_interests(resume) if "interests" not in pinned else (0.0, []),
-            lambda need: self._trim_bullets(resume, need, relevance, trim_candidates, pinned, height),
-            lambda need: self._drop_sections(resume, need, relevance, pinned, height),
+            lambda need: self._trim_bullets(resume, need, relevance, trim_candidates, pinned, height, kept_projects),
+            lambda need: self._drop_sections(resume, need, relevance, pinned, height, kept_projects),
             lambda need: self._compact(document),
         ] if trim else []
         result = FitResult(pdf_path=None, pages=None, target_pages=target_pages, renders=0)
@@ -143,10 +147,12 @@ class PageFitter:
 
     @staticmethod
     def _trim_bullets(resume: Resume, need: float, relevance: Dict[str, float], trim_candidates: set,
-                      pinned: Optional[set] = None, height: Callable[[str], float] = bullet_height):
+                      pinned: Optional[set] = None, height: Callable[[str], float] = bullet_height,
+                      kept_projects: Optional[set] = None):
         """Least relevant bullets first, within the per-role minimums; never
-        a pinned one."""
+        a pinned one, and never a kept project's last few (P10.13)."""
         pinned = pinned or set()
+        kept_projects = kept_projects or set()
         owners = []  # (section, minimum bullets, is current role)
         for i, exp in enumerate(resume.experience):
             current = _is_current(exp, i)
@@ -169,8 +175,11 @@ class PageFitter:
             if len(section.bullets) <= minimum[id(section)]:
                 continue
             group = getattr(bullet, "group", None)
+            in_group = sum(1 for b in section.bullets if b.group == group) if group else 0
+            if group and f"{section.id}::{group}" in kept_projects and in_group <= MIN_BULLETS_PER_KEPT_PROJECT:
+                continue  # a project the user kept stays, with its best bullets
             # The last bullet under a sub-heading takes the heading with it.
-            alone = bool(group) and sum(1 for b in section.bullets if b.group == group) == 1
+            alone = bool(group) and in_group == 1
             section.bullets.remove(bullet)
             saved += height(bullet.text) + (SUBHEADING_PT if alone else 0.0)
             notes.append(f"Removed a less relevant bullet from {_owner_label(section)} to fit the page: "
@@ -179,15 +188,16 @@ class PageFitter:
 
     @staticmethod
     def _drop_sections(resume: Resume, need: float, relevance: Dict[str, float], pinned: Optional[set] = None,
-                       height: Callable[[str], float] = bullet_height):
+                       height: Callable[[str], float] = bullet_height, kept_projects: Optional[set] = None):
         """Least relevant job sub-section or project, as a whole; never one
-        holding a pinned bullet, nor a pinned project."""
+        holding a pinned bullet, nor a pinned project, nor one kept for the job (P10.13)."""
         pinned = pinned or set()
+        kept_projects = kept_projects or set()
         options = []  # (mean relevance, height, label, remove)
         for i, exp in enumerate(resume.experience):
             minimum = MIN_BULLETS_CURRENT_ROLE if _is_current(exp, i) else MIN_BULLETS_OTHER
             for group, bullets in exp.bullet_groups():
-                if not group or len(exp.bullets) - len(bullets) < minimum:
+                if not group or len(exp.bullets) - len(bullets) < minimum or f"{exp.id}::{group}" in kept_projects:
                     continue
                 ids = {b.id for b in bullets}
                 if ids & pinned:

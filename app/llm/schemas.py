@@ -73,6 +73,16 @@ class RoleRewriteResult(BaseModel):
     bullets: List[RoleBulletRewrite] = Field(default_factory=list)
 
 
+class HeadingRename(BaseModel):
+    original: str
+    renamed: str
+
+
+class HeadingRenameResult(BaseModel):
+    """Plain, searchable project sub-headings for one job (P10.13)."""
+    headings: List[HeadingRename] = Field(default_factory=list)
+
+
 class SummaryResult(BaseModel):
     """A tailored professional summary (P1.5)."""
     summary: str
