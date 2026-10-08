@@ -3,7 +3,7 @@ import os
 import re
 import shutil
 from datetime import date, datetime
-from typing import Callable, Dict, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple
 from uuid import uuid4
 
 from app.analysis.checklist import build_checklist
@@ -481,6 +481,22 @@ class TailorService:
                                           text=f"{exp.company}: {b.text}") for b in new)
             done += 1
         return done
+
+    @staticmethod
+    def _page_overflow(fit, full_doc) -> Optional[Dict[str, Any]]:
+        """P11.12: the kept projects don't fit the page target even at their
+        minimum; the choice for Results (a longer target, or leave one out),
+        with each project's bullet ids in Arrange's copy."""
+        if not fit or not getattr(fit, "over_with_kept", None) or full_doc is None:
+            return None
+        projects = []
+        for p in fit.over_with_kept:
+            exp_id, name = p["key"].split("::", 1)
+            exp = next((e for e in full_doc.resume.experience if e.id == exp_id), None)
+            ids = [b.id for b in exp.bullets if b.group == name] if exp else []
+            if ids:
+                projects.append({**p, "bullet_ids": ids})
+        return {"pages": fit.pages, "target": fit.target_pages, "projects": projects} if projects else None
 
     @staticmethod
     def _rename_headings(resume: Resume, resume_doc: ResumeDocument, raw_doc, approved: List, kept_projects: set,
@@ -1645,6 +1661,7 @@ class TailorService:
             "pdf": pdf_output_path if pdf_res else "",
             "html": html_output_path,
             "target_pages": target_pages(resume) if capped else None,
+            "page_overflow": self._page_overflow(fit, arrange_state["full_doc"] if arrange_state else None),
             "content_lint": content_report,
             "changes_md": report_md_path,
             "alignment_score": f"{score:.1f}",
@@ -1758,7 +1775,8 @@ class TailorService:
         state["trimmed"] = trimmed_items(before_fit, resume)
         return {
             "docx": docx_path, "pdf": fit.pdf_path or "", "html": html_path, "changes_md": state["changes_md"],
-            "target_pages": None if uncapped else page_target, "content_lint": content_lint(resume, region=doc.presentation.region),
+            "target_pages": None if uncapped else page_target, "page_overflow": self._page_overflow(fit, full_doc),
+            "content_lint": content_lint(resume, region=doc.presentation.region),
             "alignment_score": f"{keyword_report.rate:.1f}",
             "initial_alignment_score": f"{state['initial_score']:.1f}", "keyword_match": keyword_report,
             "warnings": warnings, "docx_warnings": docx_warnings, "pdf_warnings": pdf_warnings,

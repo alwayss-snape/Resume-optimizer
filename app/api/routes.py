@@ -738,6 +738,7 @@ def _results_out(session: Session, results: Dict) -> Dict:
         "docx_warnings": results.get("docx_warnings") or [],
         "pdf_warnings": results.get("pdf_warnings") or [],
         "target_pages": results.get("target_pages"),
+        "page_overflow": results.get("page_overflow"),  # P11.12
         "applied": results.get("applied"),
         "coverage": results.get("coverage"),
         # Read-back checks split by weight (P8.26): serious ones fail the run.

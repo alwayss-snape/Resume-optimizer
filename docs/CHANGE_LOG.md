@@ -10,6 +10,38 @@ Timestamped record of every **major** commit (anything touching `app/`, `scripts
 
 <!-- entries below; newest first -->
 
+<!-- entry:2026-10-09T02:59:32+05:30 -->
+## 2026-10-09 02:59 (+0530) · P11.12: kept projects that don't fit the page become a choice, not a silent second page
+
+Kshitij Chaubey · branch `fb_ksh`
+
+**Why / details**
+
+> Projects kept for the job are never removed by page-fit, so a strong notes case
+> came out at 2 pages against a 1-page target with only a note in the log. Now the
+> kept projects are cut to their best 2 bullets first (also when the render cap
+> stopped the trim loop), and if it still doesn't fit, Results offers a longer page
+> target or leaving one project out. Both re-render through Arrange with no AI
+> call, and a project left out can be ticked back, so nothing is lost.
+>
+> Also logs P11.13-P11.17 in ACTION_ITEMS. Independent review: 2 fixes.
+
+**Changed files**
+
+- Docs: `M` docs/ACTION_ITEMS.md, `M` docs/PROJECT_OVERVIEW.md
+- Rendering: `M` app/rendering/page_fit.py
+- Root: `M` web/src/lib/types.ts, `M` web/src/pages/Results.test.tsx, `M` web/src/pages/Results.tsx
+- Services: `M` app/services/tailor.py
+- Tests: `A` tests/unit/test_page_overflow_p1112.py
+- Web API: `M` app/api/routes.py
+
+**Structure delta**
+
+- `app/rendering/page_fit.py`: added `PageFitter._cut_kept_projects()`, `_kept_on_page()`
+- `app/services/tailor.py`: added `TailorService._page_overflow()`
+
+---
+
 <!-- entry:2026-10-09T02:03:30+05:30 -->
 ## 2026-10-09 02:03 (+0530) · P11.1, P11.7, P11.10: notes read in parts, doubted lines held back, category names checked
 

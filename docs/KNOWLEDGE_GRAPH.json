@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "dffd4333701fa7e7",
+  "source_hash": "ade5e670c1d421e1",
   "stats": {
-    "files": 202,
-    "python_files": 170,
+    "files": 205,
+    "python_files": 173,
     "app_modules": 68,
-    "test_files": 91,
-    "classes": 150,
-    "functions": 1349,
-    "lines_of_python": 27077
+    "test_files": 94,
+    "classes": 151,
+    "functions": 1382,
+    "lines_of_python": 27552
   },
   "axes": {
     "x": "location (path)",
@@ -532,107 +532,107 @@
       "stages": [
         "3 JD analysis"
       ],
-      "lines": 520,
+      "lines": 529,
       "doc": "",
       "classes": [
         {
           "name": "JDAnalyzer",
-          "line": 11,
+          "line": 12,
           "doc": "Extract only text that is visibly present in the supplied job description.",
           "methods": [
             {
               "name": "__init__",
-              "line": 65,
+              "line": 66,
               "doc": ""
             },
             {
               "name": "clean_text",
-              "line": 104,
+              "line": 105,
               "doc": "A pasted JD as plain text (P8.18): HTML tags and entities removed"
             },
             {
               "name": "too_short",
-              "line": 123,
+              "line": 124,
               "doc": "Too little to score against (P8.18: a two-word JD scored 100%)."
             },
             {
               "name": "_not_benefit",
-              "line": 127,
+              "line": 128,
               "doc": ""
             },
             {
               "name": "extract_keywords_from_text",
-              "line": 131,
+              "line": 132,
               "doc": "Stopgap keyword extraction: keep only technical-looking terms,"
             },
             {
               "name": "_category",
-              "line": 227,
+              "line": 228,
               "doc": ""
             },
             {
               "name": "_clean_line",
-              "line": 240,
+              "line": 241,
               "doc": "Strip a bullet marker, including private-use glyphs pasted from Word/PDF."
             },
             {
               "name": "_is_heading",
-              "line": 245,
+              "line": 246,
               "doc": "A section heading: the known patterns, an ALL-CAPS short line"
             },
             {
               "name": "_is_requirement",
-              "line": 262,
+              "line": 263,
               "doc": ""
             },
             {
               "name": "_reflow_lines",
-              "line": 271,
+              "line": 272,
               "doc": "Undo hard line-wrapping from pasted JDs (job boards/PDFs often wrap"
             },
             {
               "name": "_verbatim",
-              "line": 309,
+              "line": 310,
               "doc": "The JD's own spelling of `value` if it occurs in the JD (case- and"
             },
             {
               "name": "_verbatim_list",
-              "line": 322,
+              "line": 323,
               "doc": ""
             },
             {
               "name": "_contains_term",
-              "line": 333,
+              "line": 334,
               "doc": "Whole-term containment: \"A/B\" is in \"A/B testing\", \"ML\" is not in \"MLflow\"."
             },
             {
               "name": "count_occurrences",
-              "line": 338,
+              "line": 339,
               "doc": "Whole-term, case-insensitive count (\"R\" doesn't match \"React\")."
             },
             {
               "name": "_heuristic_title_company",
-              "line": 344,
+              "line": 345,
               "doc": ""
             },
             {
               "name": "_seniority",
-              "line": 365,
+              "line": 366,
               "doc": ""
             },
             {
               "name": "_years",
-              "line": 372,
+              "line": 373,
               "doc": ""
             },
             {
               "name": "_llm_analyze",
-              "line": 380,
+              "line": 381,
               "doc": "One structured call: metadata, requirement lines by index, skills."
             },
             {
               "name": "analyze",
-              "line": 408,
+              "line": 409,
               "doc": ""
             }
           ]
@@ -1393,7 +1393,7 @@
         "3 JD analysis",
         "6 Plan"
       ],
-      "lines": 171,
+      "lines": 174,
       "doc": "Role brief (P11.3): what the job really needs, before choosing or writing.",
       "classes": [
         {
@@ -1448,7 +1448,7 @@
         },
         {
           "name": "with_headline",
-          "line": 166,
+          "line": 169,
           "doc": "The headline under the name (P11.6): the job's title as far as the"
         }
       ]
@@ -1924,7 +1924,7 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 853,
+      "lines": 855,
       "doc": "HTTP endpoints, one per step of the review flow (P5.1).",
       "classes": [
         {
@@ -1994,13 +1994,13 @@
         },
         {
           "name": "DraftProjectIn",
-          "line": 614,
+          "line": 615,
           "doc": "",
           "methods": []
         },
         {
           "name": "ArrangeIn",
-          "line": 763,
+          "line": 765,
           "doc": "",
           "methods": []
         }
@@ -2063,132 +2063,132 @@
         },
         {
           "name": "plain_issue",
-          "line": 303,
+          "line": 304,
           "doc": "A parse issue in plain words (P8.26: \"experience without a company"
         },
         {
           "name": "unplaced_lines",
-          "line": 313,
+          "line": 314,
           "doc": "Lines of the file that ended up in no field the resume shows (P8.26),"
         },
         {
           "name": "_resume_texts",
-          "line": 328,
+          "line": 329,
           "doc": ""
         },
         {
           "name": "_details",
-          "line": 345,
+          "line": 346,
           "doc": "What the \"check details\" step shows and edits (P3.5)."
         },
         {
           "name": "_sections",
-          "line": 375,
+          "line": 376,
           "doc": "Bullet id -> the job or project it belongs to, for grouping cards."
         },
         {
           "name": "_proposal_out",
-          "line": 389,
+          "line": 390,
           "doc": ""
         },
         {
           "name": "_match_out",
-          "line": 404,
+          "line": 405,
           "doc": ""
         },
         {
           "name": "_selected",
-          "line": 410,
+          "line": 411,
           "doc": ""
         },
         {
           "name": "health",
-          "line": 420,
+          "line": 421,
           "doc": ""
         },
         {
           "name": "config",
-          "line": 425,
+          "line": 426,
           "doc": ""
         },
         {
           "name": "_model",
-          "line": 435,
+          "line": 436,
           "doc": ""
         },
         {
           "name": "analyze",
-          "line": 442,
+          "line": 443,
           "doc": "\"Just check my match\": score only, nothing kept."
         },
         {
           "name": "parse",
-          "line": 462,
+          "line": 463,
           "doc": "Step 1: read the resume and start a fresh session for this run."
         },
         {
           "name": "prepare",
-          "line": 517,
+          "line": 518,
           "doc": "Step 2b (P11.2): apply the user's fixes, read the job, write the role"
         },
         {
           "name": "proposals",
-          "line": 544,
+          "line": 545,
           "doc": "Step 2: apply the user's fixes, then draft rewrites and gap"
         },
         {
           "name": "draft_project",
-          "line": 619,
+          "line": 620,
           "doc": "P11.11: write a project the user ticked back on Review; its cards join the rest."
         },
         {
           "name": "match_preview",
-          "line": 640,
+          "line": 641,
           "doc": "The match rate if the selected (and edited) proposals were applied."
         },
         {
           "name": "tailor",
-          "line": 651,
+          "line": 652,
           "doc": "Step 3: apply the review and generate the files. Streams progress."
         },
         {
           "name": "_region_out",
-          "line": 699,
+          "line": 700,
           "doc": "The region the files are formatted for (P10.3), with the JD's evidence"
         },
         {
           "name": "_mode_out",
-          "line": 711,
+          "line": 712,
           "doc": "The CV type the files use (P10.5), with the signals when it is the"
         },
         {
           "name": "_results_out",
-          "line": 722,
+          "line": 723,
           "doc": "What the Results (and Arrange) screen gets after a run."
         },
         {
           "name": "arrange",
-          "line": 771,
+          "line": 773,
           "doc": "Re-render the tailored resume as the user arranged it (P8.13). No LLM"
         },
         {
           "name": "_result_path",
-          "line": 816,
+          "line": 818,
           "doc": ""
         },
         {
           "name": "download",
-          "line": 824,
+          "line": 826,
           "doc": ""
         },
         {
           "name": "preview",
-          "line": 832,
+          "line": 834,
           "doc": "One page of the tailored PDF as a PNG (Chrome blocks embedded PDFs)."
         },
         {
           "name": "reset",
-          "line": 841,
+          "line": 843,
           "doc": "Start over: delete this visitor's files and state. If a step is still"
         }
       ]
@@ -2200,7 +2200,7 @@
       "stages": [
         "10 Report"
       ],
-      "lines": 96,
+      "lines": 100,
       "doc": "Per-visitor state for the web API (P5.1).",
       "classes": [
         {
@@ -2210,44 +2210,44 @@
           "methods": [
             {
               "name": "reset",
-              "line": 37,
+              "line": 40,
               "doc": "Delete the session's temp files and forget everything."
             }
           ]
         },
         {
           "name": "SessionStore",
-          "line": 56,
+          "line": 60,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
-              "line": 57,
+              "line": 61,
               "doc": ""
             },
             {
               "name": "get",
-              "line": 62,
+              "line": 66,
               "doc": ""
             },
             {
               "name": "create",
-              "line": 70,
+              "line": 74,
               "doc": ""
             },
             {
               "name": "drop",
-              "line": 76,
+              "line": 80,
               "doc": "Forget a session now, deleting its temp files."
             },
             {
               "name": "sweep",
-              "line": 82,
+              "line": 86,
               "doc": "Drop sessions idle longer than the TTL; returns how many. A"
             },
             {
               "name": "__len__",
-              "line": 95,
+              "line": 99,
               "doc": ""
             }
           ]
@@ -2256,7 +2256,7 @@
       "functions": [
         {
           "name": "remove_path",
-          "line": 44,
+          "line": 48,
           "doc": ""
         }
       ]
@@ -3273,7 +3273,7 @@
         "3 JD analysis",
         "7 Rewrite"
       ],
-      "lines": 731,
+      "lines": 733,
       "doc": "",
       "classes": [
         {
@@ -3355,39 +3355,39 @@
             },
             {
               "name": "_split_system",
-              "line": 453,
+              "line": 455,
               "doc": "The Messages API takes the system prompt as a top-level field,"
             },
             {
               "name": "_anthropic_request",
-              "line": 460,
+              "line": 462,
               "doc": ""
             },
             {
               "name": "_anthropic_response",
-              "line": 497,
+              "line": 499,
               "doc": ""
             },
             {
               "name": "_generate_anthropic",
-              "line": 514,
+              "line": 516,
               "doc": ""
             },
             {
               "name": "_generate_json_anthropic",
-              "line": 519,
+              "line": 521,
               "doc": "Structured outputs guarantee the response matches the schema, so"
             },
             {
               "name": "generate_json",
-              "line": 540,
+              "line": 542,
               "doc": "Generate structured JSON conforming to a Pydantic model."
             }
           ]
         },
         {
           "name": "LLMDailyLimitError",
-          "line": 686,
+          "line": 688,
           "doc": "The provider's daily free limit is used up (P8.23).",
           "methods": []
         }
@@ -3395,27 +3395,27 @@
       "functions": [
         {
           "name": "_requested_wait",
-          "line": 666,
+          "line": 668,
           "doc": "How long Groq asks us to wait: the retry-after header, else the"
         },
         {
           "name": "daily_limit_message",
-          "line": 690,
+          "line": 692,
           "doc": ""
         },
         {
           "name": "_too_long_to_wait",
-          "line": 697,
+          "line": 699,
           "doc": "A 429 not worth waiting for: the daily limit, or a wait over a minute."
         },
         {
           "name": "_retry_after_seconds",
-          "line": 703,
+          "line": 705,
           "doc": "Seconds to wait before retrying a 429: the server's `retry-after`"
         },
         {
           "name": "strict_json_schema",
-          "line": 718,
+          "line": 720,
           "doc": "Adapt a Pydantic JSON schema for strict structured-output modes: every"
         }
       ]
@@ -3925,7 +3925,7 @@
       "stages": [
         "9 Render"
       ],
-      "lines": 261,
+      "lines": 314,
       "doc": "Page-fit loop (P2.4): render, count pages, trim, render again.",
       "classes": [
         {
@@ -3935,49 +3935,54 @@
           "methods": [
             {
               "name": "trimmed",
-              "line": 55,
+              "line": 59,
               "doc": ""
             },
             {
               "name": "fits",
-              "line": 59,
+              "line": 63,
               "doc": ""
             }
           ]
         },
         {
           "name": "PageFitter",
-          "line": 78,
+          "line": 82,
           "doc": "`render(document, docx_path, out_dir)` writes the DOCX and returns the",
           "methods": [
             {
               "name": "__init__",
-              "line": 83,
+              "line": 87,
               "doc": ""
             },
             {
               "name": "fit",
-              "line": 88,
+              "line": 92,
               "doc": "`pinned`: bullet ids, project ids and \"interests\" the user kept on"
             },
             {
               "name": "_drop_interests",
-              "line": 142,
+              "line": 161,
               "doc": ""
             },
             {
               "name": "_trim_bullets",
-              "line": 149,
+              "line": 168,
               "doc": "Least relevant bullets first, within the per-role minimums; never"
             },
             {
+              "name": "_cut_kept_projects",
+              "line": 211,
+              "doc": "Every kept project down to MIN_BULLETS_PER_KEPT_PROJECT bullets,"
+            },
+            {
               "name": "_drop_sections",
-              "line": 192,
+              "line": 234,
               "doc": "Least relevant job sub-section or project, as a whole; never one"
             },
             {
               "name": "_compact",
-              "line": 234,
+              "line": 276,
               "doc": ""
             }
           ]
@@ -3986,27 +3991,32 @@
       "functions": [
         {
           "name": "measure_pdf",
-          "line": 63,
+          "line": 67,
           "doc": "(page count, points of the last page used by text below its top margin)."
         },
         {
           "name": "bullet_height",
-          "line": 74,
+          "line": 78,
           "doc": ""
         },
         {
+          "name": "_kept_on_page",
+          "line": 283,
+          "doc": "The kept projects still in the resume, in its order (P11.12)."
+        },
+        {
           "name": "_is_current",
-          "line": 241,
+          "line": 294,
           "doc": "The first job, and any other job that hasn't ended, keep the larger"
         },
         {
           "name": "_owner_label",
-          "line": 248,
+          "line": 301,
           "doc": "\"Lakeshore Electric (Journeyman Electrician)\" or a project's name, so"
         },
         {
           "name": "_short",
-          "line": 259,
+          "line": 312,
           "doc": ""
         }
       ]
@@ -4481,7 +4491,7 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 1815,
+      "lines": 1868,
       "doc": "",
       "classes": [
         {
@@ -4496,187 +4506,212 @@
             },
             {
               "name": "_save_run",
-              "line": 104,
+              "line": 105,
               "doc": "A run artifact for the CLI / eval; nothing when no run is kept (P9.8)."
             },
             {
               "name": "generate_preview_md",
-              "line": 109,
+              "line": 110,
               "doc": ""
             },
             {
               "name": "_patchable",
-              "line": 155,
+              "line": 156,
               "doc": "Proposals as in-place DOCX patches. A summary proposal targets the"
             },
             {
               "name": "_apply_gap_answers",
-              "line": 175,
+              "line": 176,
               "doc": "Ticked keywords join the skills section; a typed answer becomes a"
             },
             {
               "name": "_prefill_from_profile",
-              "line": 234,
+              "line": 235,
               "doc": "Answers confirmed for an earlier JD pre-fill the same questions"
             },
             {
               "name": "_draft_from_answer",
-              "line": 246,
+              "line": 247,
               "doc": "Polish the candidate's answer into one bullet that may use only"
             },
             {
               "name": "_project_lines",
-              "line": 267,
+              "line": 268,
               "doc": "An added job's notes -> (project, line) pairs. A short line ending"
             },
             {
               "name": "_split_description",
-              "line": 286,
+              "line": 287,
               "doc": "Pasted role description -> bullet-sized chunks: one per line (list"
             },
             {
               "name": "validate_new_role",
-              "line": 296,
+              "line": 297,
               "doc": "Check a new job before any work is done; raises ValueError with a"
             },
             {
               "name": "_new_experience",
-              "line": 321,
+              "line": 322,
               "doc": "An empty job from the \"add a job\" fields, validated."
             },
             {
               "name": "_insert_by_date",
-              "line": 329,
+              "line": 330,
               "doc": "Place a job in date order: current jobs first, then most recent start."
             },
             {
               "name": "add_new_role",
-              "line": 342,
+              "line": 343,
               "doc": "Add a job the resume doesn't have yet (P3.3). Each chunk of the"
             },
             {
               "name": "_skills_proposals",
-              "line": 379,
+              "line": 380,
               "doc": "The skills section rebuilt from the candidate's evidence for this job"
             },
             {
               "name": "_summary_proposals",
-              "line": 389,
+              "line": 390,
               "doc": "The tailored summary as a proposal, when one was written (P1.5)."
             },
             {
               "name": "_embed",
-              "line": 394,
+              "line": 395,
               "doc": "Sentence embeddings for the planner, loaded lazily; raises when the"
             },
             {
               "name": "_fit_relevance",
-              "line": 403,
+              "line": 404,
               "doc": "Planner relevance per bullet for the page-fit loop. Bullets the user"
             },
             {
               "name": "_render_template",
-              "line": 413,
+              "line": 414,
               "doc": "One template render plus PDF conversion (the page-fit loop's step)."
             },
             {
               "name": "_coverage",
-              "line": 421,
+              "line": 422,
               "doc": "Content coverage of the rendered DOCX against the uploaded file (P8.2)."
             },
             {
               "name": "_project_notes",
-              "line": 451,
+              "line": 452,
               "doc": "A project's notes from the owner's project bank (P11.1), by project key."
             },
             {
               "name": "_apply_projects",
-              "line": 460,
+              "line": 461,
               "doc": "Replace each accepted project's bullets with its new ones (P11.5),"
             },
             {
+              "name": "ai_cache",
+              "line": 487,
+              "doc": "P11.14: per-session answers of the AI calls that shape the run"
+            },
+            {
+              "name": "ai_cache",
+              "line": 494,
+              "doc": ""
+            },
+            {
+              "name": "_cached",
+              "line": 498,
+              "doc": "P11.14: the answer an AI call gave for the same inputs earlier in"
+            },
+            {
+              "name": "_brief",
+              "line": 514,
+              "doc": "The role brief with its project map (P11.3, P11.4), the same for"
+            },
+            {
+              "name": "_page_overflow",
+              "line": 524,
+              "doc": "P11.12: the kept projects don't fit the page target even at their"
+            },
+            {
               "name": "_rename_headings",
-              "line": 486,
+              "line": 540,
               "doc": "Rename each project the user accepted a new heading for; the old"
             },
             {
               "name": "_apply_bullet_order",
-              "line": 515,
+              "line": 569,
               "doc": "Reorder bullets as planned (most relevant first within each"
             },
             {
               "name": "parse_resume",
-              "line": 530,
+              "line": 584,
               "doc": "File -> (raw document, ResumeDocument, evidence). The deterministic"
             },
             {
               "name": "read_file",
-              "line": 537,
+              "line": 591,
               "doc": "The uploaded file as raw blocks, or UnreadableFile with a message"
             },
             {
               "name": "apply_bank",
-              "line": 572,
+              "line": 626,
               "doc": "Read the owner's project notes (P11.1) and merge them into the"
             },
             {
               "name": "normalize_raw",
-              "line": 602,
+              "line": 656,
               "doc": ""
             },
             {
               "name": "_copy_parsed",
-              "line": 629,
+              "line": 683,
               "doc": "Deep copies, so a parse kept in UI session state is never mutated."
             },
             {
               "name": "preview_keyword_match",
-              "line": 634,
+              "line": 688,
               "doc": "Match rate if these proposals were applied (P3.4 \"recalculate\"):"
             },
             {
               "name": "apply_parse_corrections",
-              "line": 670,
+              "line": 724,
               "doc": "Apply the user's fixes from the \"Check parsed resume\" step (P3.5)."
             },
             {
               "name": "analyze_only",
-              "line": 805,
+              "line": 859,
               "doc": ""
             },
             {
               "name": "prepare",
-              "line": 835,
+              "line": 889,
               "doc": "Before drafting (P11.2): read the job, write the role brief, map"
             },
             {
               "name": "draft_project",
-              "line": 861,
+              "line": 914,
               "doc": "P11.11: a project ticked back on Review is written like the rest"
             },
             {
               "name": "apply_answers",
-              "line": 878,
+              "line": 931,
               "doc": "The interview's answers as evidence and bullets of their projects"
             },
             {
               "name": "generate_proposals",
-              "line": 894,
+              "line": 947,
               "doc": "Generate rewrite proposals without applying them, plus questions"
             },
             {
               "name": "incorporate_user_addition",
-              "line": 983,
+              "line": 1035,
               "doc": "Fold a user-supplied free-text addition (a project, an"
             },
             {
               "name": "tailor_resume",
-              "line": 1062,
+              "line": 1114,
               "doc": "`region` (\"us\", \"uk_eu\", \"india\", \"other\", P10.3) sets the paper"
             },
             {
               "name": "arrange",
-              "line": 1666,
+              "line": 1718,
               "doc": "Re-render the tailored resume as the user arranged it (P8.13\u2013P8.16):"
             }
           ]
@@ -4690,12 +4725,12 @@
         },
         {
           "name": "_hidden_text",
-          "line": 1770,
+          "line": 1823,
           "doc": "Text of the sections the user hid, so coverage counts it as their choice."
         },
         {
           "name": "_merge_usage",
-          "line": 1797,
+          "line": 1850,
           "doc": "Combine two LLMClient.get_usage_summary() dicts into one. When one"
         }
       ]
@@ -4800,7 +4835,7 @@
       "stages": [
         "8 Validate"
       ],
-      "lines": 564,
+      "lines": 638,
       "doc": "",
       "classes": [
         {
@@ -4881,33 +4916,43 @@
               "doc": "A summary may draw on the whole resume (P1.5): every factual term"
             },
             {
+              "name": "_claim_words",
+              "line": 378,
+              "doc": "Content words of each work claim, in order: \"builds optimization"
+            },
+            {
+              "name": "_work_claims_unsupported",
+              "line": 409,
+              "doc": "Claims of two or more words whose last two (the kind of work) are"
+            },
+            {
               "name": "_owner_prefix",
-              "line": 361,
+              "line": 435,
               "doc": "'exp_001_b03' -> 'exp_001_': the job (or project) a bullet belongs to."
             },
             {
               "name": "_content_tokens",
-              "line": 366,
+              "line": 440,
               "doc": "Plain words of a text in order, hyphenated words split into parts"
             },
             {
               "name": "_is_plain",
-              "line": 374,
+              "line": 448,
               "doc": ""
             },
             {
               "name": "_new_words",
-              "line": 379,
+              "line": 453,
               "doc": "Plain words a rewrite adds (P8.9): (borrowed from the JD only,"
             },
             {
               "name": "_words_from_elsewhere",
-              "line": 398,
+              "line": 472,
               "doc": "Runs of consecutive plain words that the resume uses only under"
             },
             {
               "name": "validate_proposal",
-              "line": 419,
+              "line": 493,
               "doc": ""
             }
           ]
@@ -7938,6 +7983,52 @@
       ]
     },
     {
+      "id": "tests/unit/test_page_overflow_p1112.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 103,
+      "doc": "P11.12: kept projects that don't fit the page target are a choice, not a silent second page.",
+      "classes": [],
+      "functions": [
+        {
+          "name": "_job",
+          "line": 12,
+          "doc": ""
+        },
+        {
+          "name": "_doc",
+          "line": 19,
+          "doc": ""
+        },
+        {
+          "name": "test_kept_projects_are_cut_to_their_minimum_then_offered_as_a_choice",
+          "line": 23,
+          "doc": ""
+        },
+        {
+          "name": "test_without_kept_projects_the_old_note_stands",
+          "line": 34,
+          "doc": ""
+        },
+        {
+          "name": "test_dont_trim_or_a_fit_offers_no_choice",
+          "line": 42,
+          "doc": ""
+        },
+        {
+          "name": "test_results_offer_a_longer_target_or_leaving_a_project_out_and_lose_nothing",
+          "line": 52,
+          "doc": "End to end with a fake page count: 2 pages while the heavy project is in."
+        },
+        {
+          "name": "test_kept_projects_are_cut_even_when_the_renders_run_out_reviewer_p1112",
+          "line": 94,
+          "doc": "Review finding: the loop stopped at MAX_RENDERS with one kept project still whole."
+        }
+      ]
+    },
+    {
       "id": "tests/unit/test_page_size_p102.py",
       "type": "python",
       "layer": "Tests",
@@ -9477,6 +9568,80 @@
       ]
     },
     {
+      "id": "tests/unit/test_stability_p1114.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 130,
+      "doc": "P11.14: the same input keeps the same brief, map and projects within a session.",
+      "classes": [
+        {
+          "name": "_DriftingLLM",
+          "line": 11,
+          "doc": "Recorded answers, except the map names a different project each call,",
+          "methods": [
+            {
+              "name": "__init__",
+              "line": 16,
+              "doc": ""
+            },
+            {
+              "name": "is_available",
+              "line": 19,
+              "doc": ""
+            },
+            {
+              "name": "get_usage_summary",
+              "line": 22,
+              "doc": ""
+            },
+            {
+              "name": "generate_json",
+              "line": 25,
+              "doc": ""
+            }
+          ]
+        }
+      ],
+      "functions": [
+        {
+          "name": "_run",
+          "line": 45,
+          "doc": ""
+        },
+        {
+          "name": "_parsed",
+          "line": 55,
+          "doc": ""
+        },
+        {
+          "name": "test_two_runs_in_a_session_keep_the_same_projects",
+          "line": 60,
+          "doc": ""
+        },
+        {
+          "name": "test_without_the_cache_the_drift_shows_so_the_test_above_means_something",
+          "line": 72,
+          "doc": ""
+        },
+        {
+          "name": "test_a_fallback_is_not_kept_and_a_new_input_is_asked_again",
+          "line": 81,
+          "doc": ""
+        },
+        {
+          "name": "test_start_over_forgets_the_cache",
+          "line": 98,
+          "doc": ""
+        },
+        {
+          "name": "test_groq_calls_at_temperature_zero_send_a_fixed_seed",
+          "line": 106,
+          "doc": ""
+        }
+      ]
+    },
+    {
       "id": "tests/unit/test_stage_h_review.py",
       "type": "python",
       "layer": "Tests",
@@ -9613,6 +9778,47 @@
         {
           "name": "test_stuffed_skills_line_scores_below_real_experience",
           "line": 11,
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "tests/unit/test_summary_sense_p1113.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 42,
+      "doc": "P11.13: a summary's kind of work must be a phrase the resume uses, not one shared word.",
+      "classes": [],
+      "functions": [
+        {
+          "name": "_evidence",
+          "line": 13,
+          "doc": ""
+        },
+        {
+          "name": "_check",
+          "line": 17,
+          "doc": ""
+        },
+        {
+          "name": "test_optimization_models_from_hyperparameter_optimization_is_flagged",
+          "line": 23,
+          "doc": ""
+        },
+        {
+          "name": "test_a_phrase_the_resume_uses_passes_in_any_tense",
+          "line": 29,
+          "doc": ""
+        },
+        {
+          "name": "test_one_word_claims_and_text_without_a_work_verb_are_left_to_the_word_check",
+          "line": 35,
+          "doc": ""
+        },
+        {
+          "name": "test_each_claim_after_and_is_checked_on_its_own",
+          "line": 40,
           "doc": ""
         }
       ]
@@ -10237,6 +10443,11 @@
     },
     {
       "from": "app/analysis/change_proposal.py",
+      "to": "tests/unit/test_summary_sense_p1113.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/analysis/change_proposal.py",
       "to": "tests/unit/test_summary_writer.py",
       "type": "tested_by"
     },
@@ -10673,6 +10884,11 @@
     {
       "from": "app/analysis/project_select.py",
       "to": "tests/unit/test_role_brief_p113.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/analysis/project_select.py",
+      "to": "tests/unit/test_stability_p1114.py",
       "type": "tested_by"
     },
     {
@@ -11526,6 +11742,11 @@
       "type": "tested_by"
     },
     {
+      "from": "app/api/sessions.py",
+      "to": "tests/unit/test_stability_p1114.py",
+      "type": "tested_by"
+    },
+    {
       "from": "app/cli.py",
       "to": "app/analysis/gap_questions.py",
       "type": "imports"
@@ -11613,6 +11834,11 @@
     {
       "from": "app/domain/evidence.py",
       "to": "tests/unit/test_skills_rebuild_p117.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/evidence.py",
+      "to": "tests/unit/test_summary_sense_p1113.py",
       "type": "tested_by"
     },
     {
@@ -11982,6 +12208,11 @@
     },
     {
       "from": "app/domain/resume.py",
+      "to": "tests/unit/test_page_overflow_p1112.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/resume.py",
       "to": "tests/unit/test_page_size_p102.py",
       "type": "tested_by"
     },
@@ -12177,6 +12408,11 @@
     },
     {
       "from": "app/domain/resume_document.py",
+      "to": "tests/unit/test_page_overflow_p1112.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/resume_document.py",
       "to": "tests/unit/test_page_size_p102.py",
       "type": "tested_by"
     },
@@ -12268,6 +12504,11 @@
     {
       "from": "app/domain/tailoring.py",
       "to": "tests/unit/test_role_brief_p113.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/tailoring.py",
+      "to": "tests/unit/test_stability_p1114.py",
       "type": "tested_by"
     },
     {
@@ -12787,6 +13028,11 @@
     },
     {
       "from": "app/llm/client.py",
+      "to": "tests/unit/test_stability_p1114.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/llm/client.py",
       "to": "tests/unit/test_tailor_resume_flow.py",
       "type": "tested_by"
     },
@@ -12993,6 +13239,11 @@
     {
       "from": "app/llm/schemas.py",
       "to": "tests/unit/test_skills_rebuild_p117.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/llm/schemas.py",
+      "to": "tests/unit/test_stability_p1114.py",
       "type": "tested_by"
     },
     {
@@ -13243,6 +13494,11 @@
     {
       "from": "app/rendering/page_fit.py",
       "to": "tests/unit/test_page_fit.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/rendering/page_fit.py",
+      "to": "tests/unit/test_page_overflow_p1112.py",
       "type": "tested_by"
     },
     {
@@ -13862,6 +14118,11 @@
     },
     {
       "from": "app/services/tailor.py",
+      "to": "tests/unit/test_page_overflow_p1112.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/services/tailor.py",
       "to": "tests/unit/test_privacy_p98.py",
       "type": "tested_by"
     },
@@ -13913,6 +14174,11 @@
     {
       "from": "app/services/tailor.py",
       "to": "tests/unit/test_skills_tailor.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/services/tailor.py",
+      "to": "tests/unit/test_stability_p1114.py",
       "type": "tested_by"
     },
     {
@@ -14058,6 +14324,11 @@
     {
       "from": "app/validation/factual.py",
       "to": "tests/unit/test_skills_tailor.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/validation/factual.py",
+      "to": "tests/unit/test_summary_sense_p1113.py",
       "type": "tested_by"
     },
     {
@@ -14257,8 +14528,18 @@
     },
     {
       "from": "tests/unit/test_project_select_p1013.py",
+      "to": "tests/unit/test_page_overflow_p1112.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "tests/unit/test_project_select_p1013.py",
       "to": "tests/unit/test_project_select_p1013.py::_HeadingLLM",
       "type": "contains"
+    },
+    {
+      "from": "tests/unit/test_project_select_p1013.py",
+      "to": "tests/unit/test_stability_p1114.py",
+      "type": "tested_by"
     },
     {
       "from": "tests/unit/test_project_writing_p115.py",
@@ -14281,6 +14562,11 @@
       "type": "contains"
     },
     {
+      "from": "tests/unit/test_role_brief_p113.py",
+      "to": "tests/unit/test_stability_p1114.py",
+      "type": "tested_by"
+    },
+    {
       "from": "tests/unit/test_skills_rebuild_p117.py",
       "to": "tests/unit/test_skills_rebuild_p117.py::_LabelLLM",
       "type": "contains"
@@ -14288,6 +14574,11 @@
     {
       "from": "tests/unit/test_skills_rebuild_p117.py",
       "to": "tests/unit/test_skills_rebuild_p117.py::_SkillsLLM",
+      "type": "contains"
+    },
+    {
+      "from": "tests/unit/test_stability_p1114.py",
+      "to": "tests/unit/test_stability_p1114.py::_DriftingLLM",
       "type": "contains"
     },
     {

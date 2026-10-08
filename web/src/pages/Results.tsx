@@ -5,9 +5,10 @@ import { Icon } from "../components/Icon";
 import { MatchGuidance } from "../components/MatchGuidance";
 import { MiniMarkdown } from "../components/MiniMarkdown";
 import { CountUp, ScoreRule, verdict } from "../components/ScoreDial";
-import { downloadFile, fileUrl, friendlyError, getChangeLog, previewUrl } from "../lib/api";
+import { arrangeResume, downloadFile, fileUrl, friendlyError, getChangeLog, previewUrl } from "../lib/api";
+import { setPageTarget, toggleBullet } from "../lib/arrange";
 import { useApp } from "../lib/store";
-import type { KeywordRow, TailorResult } from "../lib/types";
+import type { KeywordRow, Layout, TailorResult } from "../lib/types";
 import { useFocusHeading } from "../lib/useFocusHeading";
 import { Arrange } from "./Arrange";
 
@@ -152,6 +153,50 @@ function ScoreReveal({ result, beforeRows, asked, onAddKeywords }: {
   );
 }
 
+/** P11.12: the projects you kept don't fit the page target; choose a longer
+ * target or leave one out, never a silent extra page. Re-rendered with no AI. */
+function PageChoice({ result }: { result: TailorResult }) {
+  const { run, updateRun } = useApp();
+  const [busy, setBusy] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const over = result.page_overflow!;
+  const longer = Math.min(over.pages, 3); // Arrange offers 1, 2 or 3 pages
+  const layout = result.arrangement!.layout;
+  const apply = async (key: string, next: Layout) => {
+    setBusy(key);
+    setError(null);
+    try {
+      const r = await arrangeResume(next);
+      updateRun({ results: r, resultsVersion: run.resultsVersion + 1 });
+    } catch (e) {
+      setError(friendlyError(e));
+    } finally {
+      setBusy(null);
+    }
+  };
+  const leaveOut = (ids: string[]) => ids.reduce((l, id) => (l.removed_bullets.includes(id) ? l : toggleBullet(l, id)), layout);
+  return (
+    <div role="group" aria-labelledby="page-choice" className="flex flex-col gap-3 rounded-[3px] border border-warning bg-panel p-4">
+      <p id="page-choice" className="m-0 text-sm leading-relaxed">
+        The projects you kept don't fit on {over.target} page{over.target === 1 ? "" : "s"}, even cut to their best
+        bullets, so it's {over.pages} pages. Choose one:
+      </p>
+      <div className="flex flex-wrap gap-2">
+        <Button variant="secondary" disabled={busy !== null} onClick={() => void apply("pages", setPageTarget(layout, longer, true))}>
+          {busy === "pages" ? "Updating…" : `Use ${longer} pages`}
+        </Button>
+        {over.projects.map((p) => (
+          <Button key={p.key} variant="secondary" disabled={busy !== null} onClick={() => void apply(p.key, leaveOut(p.bullet_ids))}>
+            {busy === p.key ? "Updating…" : `Leave out “${p.name}”`}
+          </Button>
+        ))}
+      </div>
+      <p className="m-0 text-xs text-muted">Nothing is lost: a project you leave out can be ticked back in Arrange.</p>
+      {error && <p role="alert" className="m-0 text-sm font-medium text-danger">{error}</p>}
+    </div>
+  );
+}
+
 const TABS = ["Preview", "Change log", "Content checks", "Notes", "File checks"] as const;
 type Tab = (typeof TABS)[number];
 
@@ -245,6 +290,7 @@ function ResultsView({ onArrange }: { onArrange: () => void }) {
             <p className="m-0 text-xs text-muted">A PDF couldn't be made on the server (it needs LibreOffice); the DOCX is ready.</p>
           )}
           {result.addition_note && <p className="m-0 text-sm text-muted">Your addition was included: {result.addition_note}</p>}
+          {result.page_overflow && result.arrangement && <PageChoice result={result} />}
           {result.arrangement && (
             <div className="flex flex-col gap-1.5 border-t border-line pt-4 sm:flex-row sm:items-center sm:gap-4">
               <Button onClick={onArrange} className="shrink-0 whitespace-nowrap">Arrange and edit</Button>

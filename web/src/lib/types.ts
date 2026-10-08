@@ -272,6 +272,8 @@ export interface TailorResult {
   docx_warnings: string[];
   pdf_warnings: string[];
   target_pages: number | null;
+  /** P11.12: the kept projects don't fit the page target even cut to their best bullets. */
+  page_overflow?: PageOverflow | null;
   applied: { bullets: number; bullets_edited: number; summary: boolean; skills: boolean; rejected: number;
     strict_withheld: boolean } | null;
   pages: number;
@@ -285,6 +287,12 @@ export interface TailorResult {
   region?: RegionInfo | null;
   /** The CV type the files use (P10.5). */
   cv_mode?: CvModeInfo | null;
+}
+
+export interface PageOverflow {
+  pages: number;
+  target: number;
+  projects: { key: string; name: string; owner: string; bullet_ids: string[] }[];
 }
 
 export interface ArrangeBullet {

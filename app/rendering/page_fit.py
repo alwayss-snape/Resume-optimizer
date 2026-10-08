@@ -50,6 +50,10 @@ class FitResult:
     target_pages: int
     renders: int
     notes: List[str] = field(default_factory=list)
+    # P11.12: still over the target with every kept project down to its
+    # minimum: [{"key", "name", "owner"}] of those projects, so the user can
+    # choose a longer target or leave one out instead of silently going over.
+    over_with_kept: List[Dict[str, str]] = field(default_factory=list)
 
     @property
     def trimmed(self) -> bool:
@@ -130,7 +134,22 @@ class PageFitter:
                     step += 1
             if saved == 0.0:
                 break  # every step is used up
-        if not result.fits and trim:
+        if not result.fits and trim and result.pages is not None and kept_projects:
+            # P11.12: kept projects go down to their best bullets before the
+            # user is asked to choose, even when the loop ran out of renders.
+            if self._cut_kept_projects(resume, relevance, pinned, kept_projects, result.notes):
+                result.pdf_path = self.render(document, docx_path, out_dir)
+                result.renders += 1
+                if result.pdf_path:
+                    result.pages, _ = self.measure(result.pdf_path)
+            if not result.fits:
+                result.over_with_kept = _kept_on_page(resume, kept_projects)
+        if result.over_with_kept:
+            result.notes.append(
+                f"Still {result.pages} pages with the projects you kept, cut to their best "
+                f"{MIN_BULLETS_PER_KEPT_PROJECT} bullets where they could be (target {target_pages}): choose a longer "
+                "page target, or leave a project out.")
+        elif not result.fits and trim:
             result.notes.append(
                 f"Still {result.pages} pages after trimming (target {target_pages}); "
                 "you can remove or shorten content in Arrange, or choose a longer page target.")
@@ -189,6 +208,29 @@ class PageFitter:
         return saved, notes
 
     @staticmethod
+    def _cut_kept_projects(resume: Resume, relevance: Dict[str, float], pinned: set, kept_projects: set,
+                           notes: List[str]) -> bool:
+        """Every kept project down to MIN_BULLETS_PER_KEPT_PROJECT bullets,
+        least relevant first, its opening bullet and pinned ones kept, the
+        job's minimum respected (P11.12). True when anything was removed."""
+        removed = False
+        for i, exp in enumerate(resume.experience):
+            minimum = MIN_BULLETS_CURRENT_ROLE if _is_current(exp, i) else MIN_BULLETS_OTHER
+            for group, bullets in exp.bullet_groups():
+                if not group or f"{exp.id}::{group}" not in kept_projects:
+                    continue
+                spare = [b for b in bullets[1:] if b.id not in pinned]
+                for bullet in sorted(spare, key=lambda b: relevance.get(b.id, 0.0)):
+                    left = sum(1 for b in exp.bullets if b.group == group)
+                    if left <= MIN_BULLETS_PER_KEPT_PROJECT or len(exp.bullets) <= minimum:
+                        break
+                    exp.bullets.remove(bullet)
+                    removed = True
+                    notes.append(f"Removed a less relevant bullet from {_owner_label(exp)} to fit the page: "
+                                 f"\"{_short(bullet.text)}\"")
+        return removed
+
+    @staticmethod
     def _drop_sections(resume: Resume, need: float, relevance: Dict[str, float], pinned: Optional[set] = None,
                        height: Callable[[str], float] = bullet_height, kept_projects: Optional[set] = None):
         """Least relevant job sub-section or project, as a whole; never one
@@ -236,6 +278,17 @@ class PageFitter:
             return 0.0, []
         document.presentation.compact = True
         return 3 * LINE_PT, ["Used compact spacing to fit the page."]
+
+
+def _kept_on_page(resume: Resume, kept_projects: set) -> List[Dict[str, str]]:
+    """The kept projects still in the resume, in its order (P11.12)."""
+    out = []
+    for exp in resume.experience:
+        for group, _bullets in exp.bullet_groups():
+            key = f"{exp.id}::{group}"
+            if group and key in kept_projects and all(o["key"] != key for o in out):
+                out.append({"key": key, "name": group, "owner": _owner_label(exp)})
+    return out
 
 
 def _is_current(exp, index: int) -> bool:

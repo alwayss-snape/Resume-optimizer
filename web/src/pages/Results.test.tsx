@@ -157,3 +157,44 @@ test("a stretch match gets its guidance too, not only a different field (P9.5)",
   expect(screen.queryByText(/the match didn't/)).not.toBeInTheDocument();
   expect(screen.queryByText(/To go further/)).not.toBeInTheDocument();
 });
+
+test("kept projects that don't fit: keep the longer length or leave one out, re-rendered with no AI (P11.12)", async () => {
+  const layout = { section_order: [], hidden_sections: [], entry_order: {}, bullet_order: {}, removed_bullets: ["x"],
+    edits: {}, pinned: [], page_target: null, trim: true };
+  const arrangement = { sections: [], layout, source_order: { bullets: {}, experience: [], projects: [], education: [] }, trimmed: [] };
+  const fetchMock = vi.fn(async (_url: string, init?: RequestInit) =>
+    new Response(JSON.stringify({ ...RESULT, pages: 1, page_overflow: null,
+      arrangement: { ...arrangement, layout: JSON.parse(String(init?.body)).layout } })));
+  vi.stubGlobal("fetch", fetchMock);
+  const user = userEvent.setup();
+  show({ arrangement, page_overflow: { pages: 2, target: 1, projects: [
+    { key: "j1::Route Pilot", name: "Route Pilot", owner: "Northwind", bullet_ids: ["b1", "b2"] }] } });
+  expect(screen.getByText(/don't fit on 1 page/)).toBeInTheDocument();
+  await user.click(screen.getByRole("button", { name: "Leave out “Route Pilot”" }));
+  expect(JSON.parse(String(fetchMock.mock.calls[0][1]?.body)).layout.removed_bullets).toEqual(["x", "b1", "b2"]);
+  expect(await screen.findByRole("heading", { name: "Your resume is ready." })).toBeInTheDocument();
+  expect(screen.queryByText(/don't fit on 1 page/)).toBeNull();
+});
+
+test("kept projects that don't fit: choosing the longer length sends that page target (P11.12)", async () => {
+  const layout = { section_order: [], hidden_sections: [], entry_order: {}, bullet_order: {}, removed_bullets: [],
+    edits: {}, pinned: [], page_target: null, trim: true };
+  const arrangement = { sections: [], layout, source_order: { bullets: {}, experience: [], projects: [], education: [] }, trimmed: [] };
+  const fetchMock = vi.fn(async (_url: string, _init?: RequestInit) => new Response(JSON.stringify({ ...RESULT, page_overflow: null, arrangement })));
+  vi.stubGlobal("fetch", fetchMock);
+  const user = userEvent.setup();
+  show({ arrangement, page_overflow: { pages: 2, target: 1, projects: [
+    { key: "j1::Route Pilot", name: "Route Pilot", owner: "Northwind", bullet_ids: ["b1"] }] } });
+  await user.click(screen.getByRole("button", { name: "Use 2 pages" }));
+  const sent = JSON.parse(String(fetchMock.mock.calls[0][1]?.body)).layout;
+  expect([sent.page_target, sent.trim]).toEqual([2, true]);
+});
+
+test("a run that ends at 4 pages offers 3, the longest Arrange allows (P11.12 review)", () => {
+  const layout = { section_order: [], hidden_sections: [], entry_order: {}, bullet_order: {}, removed_bullets: [],
+    edits: {}, pinned: [], page_target: 2, trim: true };
+  const arrangement = { sections: [], layout, source_order: { bullets: {}, experience: [], projects: [], education: [] }, trimmed: [] };
+  show({ arrangement, page_overflow: { pages: 4, target: 2, projects: [
+    { key: "j1::Route Pilot", name: "Route Pilot", owner: "Northwind", bullet_ids: ["b1"] }] } });
+  expect(screen.getByRole("button", { name: "Use 3 pages" })).toBeInTheDocument();
+});
