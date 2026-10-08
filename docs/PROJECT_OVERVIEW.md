@@ -68,6 +68,7 @@ Semantic matching uses a local embedding model (`all-MiniLM-L6-v2`).
 | Resumes outside tech, outside the US, not in English | ✅ Works | Unknown sections kept verbatim under their own heading; header details kept; non-tech job-line formats, EU / US numeric dates, seasons, "Till Date"; phone formats worldwide; text boxes; .txt, pasted text, .doc / .odt / .rtf; a content coverage check fails any run that loses a line (P8.1–P8.8, P8.22). Non-English text is kept and named "English only for now" (P8.25) |
 | Fair score | ✅ Works | Alternatives, slash terms ("Compact/NLC", "PL/SQL"), acronyms, degree levels, places excluded, sections kept verbatim (Clinical Rotations, Volunteer) read too (P9.15), skills-only keywords at a quarter credit, perks never keywords, low scores explained, job conditions (licences, shifts, lifting…) as a separate checklist (P8.17–P8.21) |
 | Multiple JDs / history / cover letter | ❌ Not built | Backlog in Phase 8 |
+| Strategist mode (interview, role brief, project-level writing, skills from evidence, classic template) | ❌ Planned | Phase 11, P11.1–P11.10, after a 2026-10-08 comparison with a Claude-chat resume |
 
 ## Open issues
 
