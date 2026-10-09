@@ -10,6 +10,39 @@ Timestamped record of every **major** commit (anything touching `app/`, `scripts
 
 <!-- entries below; newest first -->
 
+<!-- entry:2026-10-09T15:20:01+05:30 -->
+## 2026-10-09 15:20 (+0530) · P11.16, P11.18: LinkedIn degrees read back; company-first job headers read right
+
+Kshitij Chaubey · branch `fb_ksh`
+
+**Why / details**
+
+> P11.16: the read-back split "Bachelor of Engineering - BE, Computer Science"
+> at " - " as degree and institution, shifting every education entry after it,
+> so the LinkedIn export never read back clean. Two degree-like parts with no
+> institution word are now one degree.
+>
+> P11.18 (found by the owner on Check details): "Company<tab>dates" then
+> "Title<tab>City" put the dates in Location and swapped company and title,
+> and promotions on one line stayed one title. Such a pair is now one job with
+> one role per dated part; undated parts stay one title, never two roles dated
+> by guess. Title-first layouts are unchanged.
+>
+> Independent review: 2 fixes ("Remote" / a bare city as the place; undated
+> promotions given the job's dates).
+
+**Changed files**
+
+- Analysis: `M` app/analysis/resume_normalizer.py
+- Docs: `M` docs/ACTION_ITEMS.md, `M` docs/PROJECT_OVERVIEW.md
+- Tests: `A` tests/unit/test_company_first_headers_p1118.py, `A` tests/unit/test_linkedin_education_p1116.py
+
+**Structure delta**
+
+- `app/analysis/resume_normalizer.py`: added `ResumeNormalizer._company_first_pair()`
+
+---
+
 <!-- entry:2026-10-09T15:13:35+05:30 -->
 ## 2026-10-09 15:13 (+0530) · P11.15: achievements gain where and when, from evidence only, as an opt-in card
 

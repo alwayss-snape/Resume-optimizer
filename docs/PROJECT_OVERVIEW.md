@@ -46,7 +46,7 @@ Semantic matching uses a local embedding model (`all-MiniLM-L6-v2`).
 | Area | Status | Notes |
 |---|---|---|
 | DOCX parsing (incl. table layouts) | ✅ Works | Paragraphs and tables in document order, hyperlinks, page-header contact (P1.9) |
-| PDF parsing | ✅ Works | Layout-aware (font size, bold, indent, right columns; P1.11). Several roles per company and project sub-sections inside a job (P1.12). The user's resume matches its golden file. A LinkedIn "Save to PDF" profile export is recognised and read by its two-column layout (sidebar and main column apart, durations and page footers dropped; falls back to the normal parse when unsure; P10.1). Text PDFs only; `ocr.py` is a stub path. PDF input always uses the ATS template |
+| PDF parsing | ✅ Works | Layout-aware (font size, bold, indent, right columns; P1.11). Several roles per company and project sub-sections inside a job (P1.12). Company-first headers ("Company ⇥ dates" then "Title ⇥ City", promotions on one line) read right (P11.18). The user's resume matches its golden file. A LinkedIn "Save to PDF" profile export is recognised and read by its two-column layout (sidebar and main column apart, durations and page footers dropped; falls back to the normal parse when unsure; P10.1). Text PDFs only; `ocr.py` is a stub path. PDF input always uses the ATS template |
 | JD requirement extraction | ✅ Works | One structured LLM call (title, company, seniority, years, whole-line requirements with priority, skills), every value checked against the JD; deterministic fallback (P1.1) |
 | Matching + score | ✅ Works | Headline = keyword match rate with a matched/missing table (P1.2), plural- and verb-form-insensitive (P7.2); requirement-level evidence score kept as secondary. Results names the keywords still missing and links to where they can be confirmed (P7.2) |
 | Tailor content | ✅ Works | All relevant job and project bullets (one call per role), summary, skills order; nothing invented, dropped details flagged (P1.3–P1.7, P1.14) |
@@ -93,9 +93,8 @@ and unused prompts (P0.8, P1.10) are all fixed. What remains:
    "3 years 7 months"); the figure computed from role dates ("4+ years") is used only when the resume states none.
    The user can still edit the summary in Review. Since P11.6 a job added in the run (from notes or on Check
    details) makes the stated figure out of date, and the computed years are used.
-4. **LinkedIn export education doesn't read back** (seen 2026-10-09 with both templates): "Bachelor of Engineering -
-   BE, Computer Science  2013 – 2017" is rendered but the ATS read-back doesn't find the entry. Pre-existing, not logged
-   as an item yet.
+4. **LinkedIn export education doesn't read back** (resolved 2026-10-09, P11.16): a degree with a dash in it was
+   split as "<Degree> - <Institution>" on read-back; it now reads back clean with both templates.
 5. **User's source resume** has "LinkedIn | Email | Leetcode" placeholder text with no hyperlinks (to fix in their
    own file).
 6. **Rewrites can borrow the job's wording** (was P1.15, now P8.9): a fact-checked rewrite added "batch pipeline",

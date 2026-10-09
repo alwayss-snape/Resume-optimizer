@@ -1,5 +1,5 @@
 import re
-from typing import List, Optional, Tuple
+from typing import List, Optional, Set, Tuple
 from app.domain.evidence import Evidence
 from app.domain.resume import (Candidate, Education, Experience, OtherSection, Project, Resume, ResumeBullet, Role,
                                SectionLine)
@@ -361,6 +361,36 @@ class ResumeNormalizer:
             others = [seg for seg in segments if title not in split_dash(seg)]
             return title, split_dash(others[0])[0]
         return title, [p for p in parts if p is not title][-1]
+
+    def _company_first_pair(self, blocks, idx: int, company: str, left: str, start: Optional[str]):
+        """A dated line naming a company ("Northwind Grocers<tab>Mar 2023 – Present")
+        followed by the title line ("ML Engineer<tab>Pune, India", or promotions
+        "Analyst II (Aug 2024 – Mar 2026) | Analyst I (Aug 2022 – Aug 2024)").
+        Returns (location, [(title, start, end)]) or None."""
+        if start is None or not company or company != left.strip() or self._title_score(company) == 2:
+            return None
+        nxt = blocks[idx + 1] if idx + 1 < len(blocks) else None
+        if nxt is None or nxt.block_type == "bullet" or "\t" not in (nxt.text or ""):
+            return None
+        n_left, n_right = [p.strip() for p in nxt.text.split("\t", 1)]
+        if not n_right or self.YEAR_OR_PRESENT.search(n_right) or re.search(r"\d", n_right) \
+                or self._looks_like_title(n_right) or len(n_right.split()) > 5:
+            return None  # a place ("Pune, India", "Remote", "Bangalore"), never dates or a title
+        roles = []
+        for part in re.split(r"\s+\|\s+", n_left):
+            m = re.fullmatch(r"(.+?)\s*\((.+)\)", part.strip())
+            inner = self._header_range(m.group(2)) if m else None
+            if m and inner and inner.start() == 0:
+                roles.append((self._trim(m.group(1)), inner.group(1).strip(), inner.group(2).strip()))
+            else:
+                roles.append((part.strip(), None, None))
+        if not all(t and self._title_score(t) > self._title_score(company) for t, _, _ in roles):
+            return None
+        if len(roles) > 1 and not all(r_start for _, r_start, _ in roles):
+            # "Senior Analyst | Analyst" with no dates of their own: one line
+            # as written, never two roles dated with the whole job's dates.
+            roles = [(re.sub(r"\s+", " ", n_left), None, None)]
+        return n_right, roles
 
     def _title_score(self, text: str) -> int:
         """2 when a role word ends the phrase ("Data Analyst"), 1 when it's
@@ -787,9 +817,10 @@ class ResumeNormalizer:
         current_kind = "header"
         current_other: Optional[OtherSection] = None
         candidate_details: List[str] = []
+        taken: Set[int] = set()  # lines already read with the line above (company-first headers)
         for idx, block in enumerate(blocks):
             text = block.text.strip()
-            if not text:
+            if not text or idx in taken:
                 continue
 
             if block.block_type == "name" or block.hint == "name":
@@ -942,6 +973,19 @@ class ResumeNormalizer:
                             extras = left[m.end():].strip(self._TRIM_CHARS + "|·") or None
                         else:
                             title = left.strip()
+                    pair = self._company_first_pair(blocks, idx, title, left, start)
+                    if pair is not None:
+                        # "Company<tab>dates" then "Title<tab>City" (company-first
+                        # layouts, e.g. the Classic template): one job.
+                        location, roles = pair
+                        current_exp = new_experience(title, location)
+                        for role_title, role_start, role_end in roles:
+                            self._add_role(current_exp, Role(title=role_title, start_date=role_start or start,
+                                                             end_date=role_end or end))
+                        current_group = None
+                        current_exp.source_blocks += [block.id, blocks[idx + 1].id]
+                        taken.add(idx + 1)
+                        continue
                     body = title
                     dash_parts = [p.strip() for p in re.split(r"\s+—\s+|\s+-\s+|\s+\|\s+", body) if p.strip()]
                     starts_entry = current_exp is None or current_exp_has_content or bool(current_exp.title)
@@ -1149,6 +1193,11 @@ class ResumeNormalizer:
                         self._extract_date_range(left) if has_date else None
                     )
                     dash_parts = [p.strip() for p in re.split(r"\s+—\s+|\s+-\s+", body) if p.strip()]
+                    # P11.16: "Bachelor of Engineering - BE, Computer Science" (LinkedIn's
+                    # way) is one degree, not "<Degree> — <Institution>".
+                    if len(dash_parts) >= 2 and all(self._looks_like_degree(p) for p in dash_parts[:2]) \
+                            and not self._INSTITUTION_RE.search(dash_parts[1]):
+                        dash_parts = [body]
 
                     if current_edu is None or (current_edu.institution and current_edu.degree):
                         edu_counter += 1

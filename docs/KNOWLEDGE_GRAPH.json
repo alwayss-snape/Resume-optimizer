@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "c74a566fbb011676",
+  "source_hash": "5bf934ea35babbe7",
   "stats": {
     "files": 209,
     "python_files": 177,
     "app_modules": 69,
     "test_files": 97,
     "classes": 151,
-    "functions": 1414,
-    "lines_of_python": 28033
+    "functions": 1416,
+    "lines_of_python": 28056
   },
   "axes": {
     "x": "location (path)",
@@ -1124,7 +1124,7 @@
       "stages": [
         "2 Normalize"
       ],
-      "lines": 1349,
+      "lines": 1354,
       "doc": "",
       "classes": [
         {
@@ -1219,122 +1219,122 @@
             },
             {
               "name": "_title_score",
-              "line": 390,
+              "line": 395,
               "doc": "2 when a role word ends the phrase (\"Data Analyst\"), 1 when it's"
             },
             {
               "name": "_split_company_location",
-              "line": 419,
+              "line": 424,
               "doc": "'Banner Medical Center, Phoenix, AZ' -> ('Banner Medical Center',"
             },
             {
               "name": "_split_comma_job",
-              "line": 443,
+              "line": 448,
               "doc": "'Shift Supervisor, Starbucks, Atlanta GA' -> (title, company,"
             },
             {
               "name": "_ends_with_suffix",
-              "line": 459,
+              "line": 464,
               "doc": "\"CloudMetrics Inc.\" ends with a full stop but is a company, not a sentence."
             },
             {
               "name": "_next_is_meta_line",
-              "line": 464,
+              "line": 469,
               "doc": "The ATS template prints 'Company \u00b7 Location' under the title line."
             },
             {
               "name": "_next_is_company_line",
-              "line": 470,
+              "line": 475,
               "doc": "The ATS template prints just the company under \"Title<tab>dates\""
             },
             {
               "name": "_trim",
-              "line": 492,
+              "line": 497,
               "doc": "Strip separators left around removed dates, keeping a closing"
             },
             {
               "name": "_split_skill_line",
-              "line": 508,
+              "line": 513,
               "doc": "'Languages: Python, SQL<tab>Frameworks: Pandas, and XGBoost' ->"
             },
             {
               "name": "_skill_items",
-              "line": 529,
+              "line": 534,
               "doc": ""
             },
             {
               "name": "_split_education_line",
-              "line": 547,
+              "line": 552,
               "doc": "'B.S. Biology, University of Texas at Austin, 2016' -> (degree,"
             },
             {
               "name": "_looks_like_degree",
-              "line": 593,
+              "line": 598,
               "doc": "'B.Tech in Computer Science' yes; 'State University' no."
             },
             {
               "name": "_split_middle_dot",
-              "line": 599,
+              "line": 604,
               "doc": "'Acme Corp \u00b7 Pune, India' -> ('Acme Corp', 'Pune, India'), the"
             },
             {
               "name": "_is_dated_line",
-              "line": 608,
+              "line": 613,
               "doc": "A job title/company line carrying a date range or year. A date"
             },
             {
               "name": "_header_range",
-              "line": 623,
+              "line": 628,
               "doc": "A date range inside a job header line, or None. Trailing ranges"
             },
             {
               "name": "_experience_line_kind",
-              "line": 640,
+              "line": 645,
               "doc": "'dated' (title and/or company with dates), 'header_line' (a short"
             },
             {
               "name": "_add_role",
-              "line": 659,
+              "line": 664,
               "doc": "Record a role; the first one also fills the entry's title/dates."
             },
             {
               "name": "_merge_links",
-              "line": 669,
+              "line": 674,
               "doc": "Profile links from the file's hyperlinks and from URLs written in"
             },
             {
               "name": "_trailing_dates",
-              "line": 683,
+              "line": 688,
               "doc": "(match, start, end) for a trailing date range or single date."
             },
             {
               "name": "_extract_date_range",
-              "line": 693,
+              "line": 698,
               "doc": ""
             },
             {
               "name": "_strip_date_range",
-              "line": 699,
+              "line": 704,
               "doc": ""
             },
             {
               "name": "_parse_title_and_dates",
-              "line": 703,
+              "line": 708,
               "doc": "'Data Scientist II | August 2024 - Present' ->"
             },
             {
               "name": "_split_list_items",
-              "line": 718,
+              "line": 723,
               "doc": "Items of a certification / award line. ';' always separates"
             },
             {
               "name": "_split_respecting_parens",
-              "line": 737,
+              "line": 742,
               "doc": "Split on sep_chars, but never inside ( ) or [ ] groups \u2014 so"
             },
             {
               "name": "normalize",
-              "line": 760,
+              "line": 765,
               "doc": ""
             }
           ]
@@ -6391,7 +6391,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 35,
+      "lines": 53,
       "doc": "P11.18 (owner's run, 2026-10-09): \"Company<tab>dates\" then \"Title<tab>City\" is one job, not a date in Location.",
       "classes": [],
       "functions": [
@@ -6408,6 +6408,16 @@
         {
           "name": "test_title_first_headers_are_unchanged",
           "line": 29,
+          "doc": ""
+        },
+        {
+          "name": "test_review_p1118_remote_or_a_bare_city_is_a_location",
+          "line": 38,
+          "doc": ""
+        },
+        {
+          "name": "test_review_p1118_promotions_without_their_own_dates_are_not_given_the_jobs",
+          "line": 48,
           "doc": ""
         }
       ]
