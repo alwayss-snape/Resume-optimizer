@@ -10,6 +10,43 @@ Timestamped record of every **major** commit (anything touching `app/`, `scripts
 
 <!-- entries below; newest first -->
 
+<!-- entry:2026-10-09T15:13:35+05:30 -->
+## 2026-10-09 15:13 (+0530) · P11.15: achievements gain where and when, from evidence only, as an opt-in card
+
+Kshitij Chaubey · branch `fb_ksh`
+
+**Why / details**
+
+> Left over from P11.6: an achievement line often leaves out where it
+> happened. Code (no AI call) adds the job's company when the line names
+> exactly one job's project heading or company, and a year only when that
+> project's own lines give exactly one as a date or the ended job's dates
+> fall in one year. It is a Review card that starts unticked; the fact check
+> allows only the added "(…)" and every word of it must be in the evidence or
+> the job's own dates; Strict Factual Mode rolls it back.
+>
+> Independent review: 5 fixes (a count read as a year; one-word headings
+> matched ordinary words; strict mode kept it; applied unseen on the CLI path;
+> the company repeated when named in part).
+
+**Changed files**
+
+- Analysis: `A` app/analysis/achievement_context.py
+- Docs: `M` docs/ACTION_ITEMS.md, `M` docs/PROJECT_OVERVIEW.md
+- Root: `M` web/src/components/ProposalCard.tsx, `M` web/src/lib/review.test.ts, `M` web/src/lib/review.ts, `M` web/src/lib/types.ts
+- Services: `M` app/services/tailor.py
+- Tests: `A` tests/unit/test_achievement_context_p1115.py
+- Tooling: `M` scripts/update_docs.py
+- Validation: `M` app/validation/factual.py
+
+**Structure delta**
+
+- new module `app/analysis/achievement_context.py`
+- `app/services/tailor.py`: added `TailorService._apply_achievement()`
+- `app/validation/factual.py`: added `FactualValidator._validate_achievement()`
+
+---
+
 <!-- entry:2026-10-09T12:08:22+05:30 -->
 ## 2026-10-09 12:08 (+0530) · P11.14: the same input keeps the same brief, map and projects within a session
 

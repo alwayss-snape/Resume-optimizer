@@ -21,6 +21,7 @@ from app.analysis.scoring import AlignmentScorer
 from app.analysis.semantic_matcher import SemanticMatcher
 from app.analysis.structure_extractor import StructureExtractor
 from app.analysis.skills_tailor import SkillsTailor, is_trait, jd_spelling, parse_skills, skill_category
+from app.analysis.achievement_context import achievement_proposals
 from app.analysis.summary_writer import SummaryWriter
 from app.analysis.tailor_planner import TailoringPlanner
 from app.domain.evidence import Evidence
@@ -525,6 +526,13 @@ class TailorService:
                             keep=lambda b: bool(getattr(b, "project_evidence", None)))
 
     @staticmethod
+    def _apply_achievement(resume: Resume, target: Optional[str], text: str) -> None:
+        """P11.15: "achievement::<index>" gets its line with where and when."""
+        _, _, index = (target or "").partition("::")
+        if index.isdigit() and int(index) < len(resume.achievements):
+            resume.achievements[int(index)] = text
+
+    @staticmethod
     def _page_overflow(fit, full_doc) -> Optional[Dict[str, Any]]:
         """P11.12: the kept projects don't fit the page target even at their
         minimum; the choice for Results (a longer target, or leave one out),
@@ -709,6 +717,8 @@ class TailorService:
                 resume.summary = text
             elif kind == "skills" and parse_skills(text):
                 resume.skills = parse_skills(text)
+            elif kind == "achievement":
+                self._apply_achievement(resume, p.get("target_semantic_id"), text)
             elif kind == "bullet":
                 for section in [*resume.experience, *resume.projects]:
                     for b in section.bullets:
@@ -987,6 +997,7 @@ class TailorService:
         step("Writing a tailored summary")
         proposals = self._summary_proposals(resume, job_desc, keyword_report, evidence_list, brief=brief)
         proposals += self._skills_proposals(resume, keyword_report, evidence_list, brief)
+        proposals += achievement_proposals(resume, self._project_notes(evidence_list))  # P11.15
         proposals += self.rewriter.execute_plan(resume, plan, evidence_list, job_desc, progress=step, brief=brief)
         step("Fact-checking every proposal")
         # Fact-check now so the review UI can show each proposal's verdict
@@ -1238,6 +1249,7 @@ class TailorService:
         else:
             proposals = self._summary_proposals(resume, job_desc, initial_keywords, evidence_list)
             proposals += self._skills_proposals(resume, initial_keywords)
+            proposals += achievement_proposals(resume, self._project_notes(evidence_list))  # P11.15
             proposals += self.rewriter.execute_plan(resume, plan, evidence_list, job_desc, brief=role_brief)
             # Nobody reviewed these: an opt-in proposal (a summary replacing
             # the user's own) stays out unless chosen (Stage I review).
@@ -1303,6 +1315,11 @@ class TailorService:
             if getattr(p, "kind", "bullet") == "skills" and parse_skills(_prop_text(p)):
                 resume.skills = parse_skills(_prop_text(p))
 
+        # An achievement with where and when (P11.15), by its place in the list.
+        for p in approved_proposals:
+            if getattr(p, "kind", "bullet") == "achievement" and _prop_text(p).strip():
+                self._apply_achievement(resume, _prop_key(p), _prop_text(p).strip())
+
         # Apply approved rewrites to the canonical resume model (semantic ids).
         prop_dict = {_prop_key(p): _prop_text(p) for p in approved_proposals
                      if getattr(p, "kind", "bullet") == "bullet"}
@@ -1337,6 +1354,7 @@ class TailorService:
                         b.text = original_text[b.id]
             resume.summary = original_resume.summary
             resume.skills = original_resume.skills
+            resume.achievements = list(original_resume.achievements)  # P11.15
             evidence_list[:] = original_evidence
             approved_proposals = []
             strict_withheld = True

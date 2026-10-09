@@ -27,6 +27,7 @@ const TITLES: Record<Proposal["kind"], string> = {
   bullet: "Bullet",
   heading: "Project heading",
   project: "Project, rewritten whole",
+  achievement: "Achievement, with where and when",
 };
 
 /** One proposed rewrite. Keys while the card has focus: A accept, R reject,

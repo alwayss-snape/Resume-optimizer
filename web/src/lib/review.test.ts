@@ -52,6 +52,11 @@ test("cards are grouped: summary, skills, then each job", () => {
   expect(groups.map((g) => g.label)).toEqual(["Professional summary", "Skills", "Northwind — Data Analyst", "Contoso"]);
 });
 
+test("an achievement with where and when gets its own group after skills (P11.15)", () => {
+  const groups = groupProposals([p("b1"), p("a0", { kind: "achievement", section: null }), p("s", { kind: "skills", section: null })]);
+  expect(groups.map((g) => g.label)).toEqual(["Skills", "Achievements", "Northwind — Data Analyst"]);
+});
+
 test("an opt-in proposal (a summary replacing the user's own) starts unticked", () => {
   const props: Proposal[] = DRAFTED.proposals.map((p, i) => (i === 0 ? { ...p, opt_in: true } : p));
   const r = initialReview({ ...DRAFTED, proposals: props });

@@ -90,6 +90,7 @@ STAGE_MAP: Dict[str, List[str]] = {
     "app/domain/report.py": ["4 Match", "5 Score"],
     "app/analysis/scoring.py": ["5 Score"],
     "app/analysis/summary_writer.py": ["7 Rewrite"],
+    "app/analysis/achievement_context.py": ["7 Rewrite"],
     "app/analysis/skills_tailor.py": ["7 Rewrite"],
     "app/analysis/gap_questions.py": ["6 Plan"],
     "app/analysis/checklist.py": ["4 Match"],

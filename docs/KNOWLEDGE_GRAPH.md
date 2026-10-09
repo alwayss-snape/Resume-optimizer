@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**69 app modules · 95 test files · 151 classes · 1400 functions/methods · 27,783 lines of Python** · source hash `a4bd81cf48a5166c`
+**69 app modules · 97 test files · 151 classes · 1414 functions/methods · 28,033 lines of Python** · source hash `c74a566fbb011676`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -168,6 +168,7 @@ tests/
     test_classic_template_p119.py                P11.9: the Classic template, an option that must read back like the st…
     test_cli.py                                  test_tailor_service_analyze_only(), test_tailor_service_end_to_end_doc…
     test_cli_parity.py                           P3.6: progress reporting, and the CLI doing what the UI does (review,
+    test_company_first_headers_p1118.py          P11.18 (owner's run, 2026-10-09): "Company<tab>dates" then "Title<tab>…
     test_contact_p84.py                          P8.4: phone numbers in any common grouping, and links with any common
     test_content_lint.py                         P2.6: deterministic content checks on the finished resume.
     test_coverage.py                             P8.2: content coverage of the output against the source lines.
@@ -197,6 +198,7 @@ tests/
     test_kept_sections_p83.py                    P8.3: sections the model has no fields for are kept verbatim under the…
     test_keyword_match.py                        Keyword-level match rate as the headline score (P1.2).
     test_layouts_p87.py                          P8.7: text boxes, a name in a separated page header, "·" bullets.
+    test_linkedin_education_p1116.py             P11.16: a LinkedIn-style degree ("Bachelor of Engineering - BE, Comput…
     test_linkedin_import_p101.py                 P10.1: a LinkedIn "Save to PDF" export is read by its own two-column
     test_llm_client.py                           SampleSchema
     test_matcher.py                              test_evidence_matcher_exact_and_alias(), test_one_generic_word_cannot_…
@@ -255,7 +257,7 @@ Rows = layer (what kind of code), columns = pipeline stage (when it runs during 
 | Layer | 1 Ingest | 2 Normalize | 3 JD analysis | 4 Match | 5 Score | 6 Plan | 7 Rewrite | 8 Validate | 9 Render | 10 Report |
 |---|---|---|---|---|---|---|---|---|---|---|
 | **Ingestion** | `docx`<br>`errors`<br>`linkedin`<br>`ocr`<br>`pdf`<br>`text` | · | · | · | · | · | · | · | · | · |
-| **Analysis** | `project_bank` | `experience`<br>`resume_normalizer`<br>`structure_extractor` | `jd_analyzer`<br>`role_brief` | `checklist`<br>`matcher`<br>`semantic_matcher`<br>`terminology` | `keyword_match`<br>`scoring` | `gap_questions`<br>`interview`<br>`project_select`<br>`role_brief`<br>`tailor_planner` | `change_proposal`<br>`experience`<br>`rewriter`<br>`skills_tailor`<br>`summary_writer` | `region` | `cv_mode`<br>`region` | · |
+| **Analysis** | `project_bank` | `experience`<br>`resume_normalizer`<br>`structure_extractor` | `jd_analyzer`<br>`role_brief` | `checklist`<br>`matcher`<br>`semantic_matcher`<br>`terminology` | `keyword_match`<br>`scoring` | `gap_questions`<br>`interview`<br>`project_select`<br>`role_brief`<br>`tailor_planner` | `achievement_context`<br>`change_proposal`<br>`experience`<br>`rewriter`<br>`skills_tailor`<br>`summary_writer` | `region` | `cv_mode`<br>`region` | · |
 | **LLM** | · | · | `client`<br>`schemas` | · | · | · | `client`<br>`schemas` | · | · | · |
 | **Validation** | · | · | `safety` | · | · | · | · | `content_lint`<br>`coverage`<br>`factual`<br>`output`<br>`structural` | · | · |
 | **Rendering** | `document_map` | · | · | · | · | · | `review_view` | · | `document_map`<br>`docx_patcher`<br>`html_renderer`<br>`layout`<br>`page_fit`<br>`pdf_converter`<br>`template_renderer` | · |
@@ -269,18 +271,20 @@ Spanning all stages: `app/api/main.py`, `app/api/routes.py`, `app/cli.py`, `app/
 
 ### `app/analysis/achievement_context.py`
 
-**Layer:** Analysis · **Stage:** — · **Lines:** 103
+**Layer:** Analysis · **Stage:** 7 Rewrite · **Lines:** 124
 
 _Achievements with context (P11.15): where and when, from evidence only._
 
-- function **`_words()`** ([app/analysis/achievement_context.py:22](../app/analysis/achievement_context.py#L22))
-- function **`_named()`** ([app/analysis/achievement_context.py:26](../app/analysis/achievement_context.py#L26)) — `name` (a company or project heading) is named in the text: all its
-- function **`_year_of()`** ([app/analysis/achievement_context.py:39](../app/analysis/achievement_context.py#L39))
-- function **`context_for()`** ([app/analysis/achievement_context.py:44](../app/analysis/achievement_context.py#L44)) — "Northwind, 2025", "Northwind", "2025" or None, for one achievement.
-- function **`with_context()`** ([app/analysis/achievement_context.py:75](../app/analysis/achievement_context.py#L75))
-- function **`achievement_proposals()`** ([app/analysis/achievement_context.py:81](../app/analysis/achievement_context.py#L81)) — One proposal per achievement that gains context; targets "achievement::<index>".
-- function **`added_context()`** ([app/analysis/achievement_context.py:95](../app/analysis/achievement_context.py#L95)) — The parenthetical a proposal adds to its achievement, or None when
+- function **`_words()`** ([app/analysis/achievement_context.py:29](../app/analysis/achievement_context.py#L29))
+- function **`_named()`** ([app/analysis/achievement_context.py:33](../app/analysis/achievement_context.py#L33)) — `name` (a company or project heading) is named in the text: all its
+- function **`_year_of()`** ([app/analysis/achievement_context.py:50](../app/analysis/achievement_context.py#L50))
+- function **`context_for()`** ([app/analysis/achievement_context.py:55](../app/analysis/achievement_context.py#L55)) — "Northwind, 2025", "Northwind", "2025" or None, for one achievement.
+- function **`_match()`** ([app/analysis/achievement_context.py:60](../app/analysis/achievement_context.py#L60)) — (context or None, the job it came from or None).
+- function **`with_context()`** ([app/analysis/achievement_context.py:93](../app/analysis/achievement_context.py#L93))
+- function **`achievement_proposals()`** ([app/analysis/achievement_context.py:99](../app/analysis/achievement_context.py#L99)) — One proposal per achievement that gains context; targets "achievement::<index>".
+- function **`added_context()`** ([app/analysis/achievement_context.py:116](../app/analysis/achievement_context.py#L116)) — The parenthetical a proposal adds to its achievement, or None when
 - **Imports:** `analysis/change_proposal.py`, `domain/resume.py`
+- **Imported by:** `services/tailor.py`, `validation/factual.py`
 - **Tested by:** `tests/unit/test_achievement_context_p1115.py`
 
 ### `app/analysis/change_proposal.py`
@@ -536,7 +540,7 @@ _Region of the job (P10.3): which paper and date style the resume uses._
 
 ### `app/analysis/resume_normalizer.py`
 
-**Layer:** Analysis · **Stage:** 2 Normalize · **Lines:** 1305
+**Layer:** Analysis · **Stage:** 2 Normalize · **Lines:** 1349
 
 - class **`ResumeNormalizer`** ([app/analysis/resume_normalizer.py:9](../app/analysis/resume_normalizer.py#L9))
   - `find_phone()` :62 — The first phone number in a line, as written, or None.
@@ -555,30 +559,31 @@ _Region of the job (P10.3): which paper and date style the resume uses._
   - `_is_section_title()` :315
   - `_looks_like_title()` :345
   - `_split_title_company()` :348 — 'Title | Company | Place', 'Company — Title', 'Title — Team — Company'
-  - `_title_score()` :365 — 2 when a role word ends the phrase ("Data Analyst"), 1 when it's
-  - `_split_company_location()` :394 — 'Banner Medical Center, Phoenix, AZ' -> ('Banner Medical Center',
-  - `_split_comma_job()` :418 — 'Shift Supervisor, Starbucks, Atlanta GA' -> (title, company,
-  - `_ends_with_suffix()` :434 — "CloudMetrics Inc." ends with a full stop but is a company, not a sentence.
-  - `_next_is_meta_line()` :439 — The ATS template prints 'Company · Location' under the title line.
-  - `_next_is_company_line()` :445 — The ATS template prints just the company under "Title<tab>dates"
-  - `_trim()` :467 — Strip separators left around removed dates, keeping a closing
-  - `_split_skill_line()` :483 — 'Languages: Python, SQL<tab>Frameworks: Pandas, and XGBoost' ->
-  - `_skill_items()` :504
-  - `_split_education_line()` :522 — 'B.S. Biology, University of Texas at Austin, 2016' -> (degree,
-  - `_looks_like_degree()` :568 — 'B.Tech in Computer Science' yes; 'State University' no.
-  - `_split_middle_dot()` :574 — 'Acme Corp · Pune, India' -> ('Acme Corp', 'Pune, India'), the
-  - `_is_dated_line()` :583 — A job title/company line carrying a date range or year. A date
-  - `_header_range()` :598 — A date range inside a job header line, or None. Trailing ranges
-  - `_experience_line_kind()` :615 — 'dated' (title and/or company with dates), 'header_line' (a short
-  - `_add_role()` :634 — Record a role; the first one also fills the entry's title/dates.
-  - `_merge_links()` :644 — Profile links from the file's hyperlinks and from URLs written in
-  - `_trailing_dates()` :658 — (match, start, end) for a trailing date range or single date.
-  - `_extract_date_range()` :668
-  - `_strip_date_range()` :674
-  - `_parse_title_and_dates()` :678 — 'Data Scientist II | August 2024 - Present' ->
-  - `_split_list_items()` :693 — Items of a certification / award line. ';' always separates
-  - `_split_respecting_parens()` :712 — Split on sep_chars, but never inside ( ) or [ ] groups — so
-  - `normalize()` :735
+  - `_company_first_pair()` :365 — A dated line naming a company ("Northwind Grocers<tab>Mar 2023 – Present")
+  - `_title_score()` :390 — 2 when a role word ends the phrase ("Data Analyst"), 1 when it's
+  - `_split_company_location()` :419 — 'Banner Medical Center, Phoenix, AZ' -> ('Banner Medical Center',
+  - `_split_comma_job()` :443 — 'Shift Supervisor, Starbucks, Atlanta GA' -> (title, company,
+  - `_ends_with_suffix()` :459 — "CloudMetrics Inc." ends with a full stop but is a company, not a sentence.
+  - `_next_is_meta_line()` :464 — The ATS template prints 'Company · Location' under the title line.
+  - `_next_is_company_line()` :470 — The ATS template prints just the company under "Title<tab>dates"
+  - `_trim()` :492 — Strip separators left around removed dates, keeping a closing
+  - `_split_skill_line()` :508 — 'Languages: Python, SQL<tab>Frameworks: Pandas, and XGBoost' ->
+  - `_skill_items()` :529
+  - `_split_education_line()` :547 — 'B.S. Biology, University of Texas at Austin, 2016' -> (degree,
+  - `_looks_like_degree()` :593 — 'B.Tech in Computer Science' yes; 'State University' no.
+  - `_split_middle_dot()` :599 — 'Acme Corp · Pune, India' -> ('Acme Corp', 'Pune, India'), the
+  - `_is_dated_line()` :608 — A job title/company line carrying a date range or year. A date
+  - `_header_range()` :623 — A date range inside a job header line, or None. Trailing ranges
+  - `_experience_line_kind()` :640 — 'dated' (title and/or company with dates), 'header_line' (a short
+  - `_add_role()` :659 — Record a role; the first one also fills the entry's title/dates.
+  - `_merge_links()` :669 — Profile links from the file's hyperlinks and from URLs written in
+  - `_trailing_dates()` :683 — (match, start, end) for a trailing date range or single date.
+  - `_extract_date_range()` :693
+  - `_strip_date_range()` :699
+  - `_parse_title_and_dates()` :703 — 'Data Scientist II | August 2024 - Present' ->
+  - `_split_list_items()` :718 — Items of a certification / award line. ';' always separates
+  - `_split_respecting_parens()` :737 — Split on sep_chars, but never inside ( ) or [ ] groups — so
+  - `normalize()` :760
 - **Imports:** `domain/evidence.py`, `domain/resume.py`, `domain/resume_document.py`, `ingestion/docx.py`
 - **Imported by:** `analysis/keyword_match.py`, `analysis/structure_extractor.py`, `eval/golden.py`, `services/tailor.py`, `validation/output.py`
 - **Tested by:** `tests/integration/test_preserve_rewrite_end_to_end.py`, `tests/unit/test_ats_round_trip.py`, `tests/unit/test_contact_p84.py`, `tests/unit/test_dates_p86.py`, `tests/unit/test_education_p88.py`, `tests/unit/test_job_lines_p85.py`, `tests/unit/test_kept_sections_p83.py`, `tests/unit/test_layouts_p87.py`, `tests/unit/test_linkedin_import_p101.py`, `tests/unit/test_parser_regressions_p42.py`, `tests/unit/test_parsing_fixes_p19.py`, `tests/unit/test_resume_model_v2.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_stage_h_review.py`, `tests/unit/test_structure_extractor.py`, `tests/unit/test_tailor_resume_flow.py`
@@ -885,7 +890,7 @@ _Per-visitor state for the web API (P5.1)._
 
 - class **`Evidence`** ([app/domain/evidence.py:4](../app/domain/evidence.py#L4))
 - **Imported by:** `analysis/interview.py`, `analysis/matcher.py`, `analysis/project_bank.py`, `analysis/resume_normalizer.py`, `analysis/rewriter.py`, `analysis/semantic_matcher.py`, `analysis/structure_extractor.py`, `analysis/summary_writer.py`, `analysis/tailor_planner.py`, `services/tailor.py`, `validation/factual.py`
-- **Tested by:** `tests/unit/test_fact_check_p89.py`, `tests/unit/test_matcher.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_project_writing_p115.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_semantic_matcher.py`, `tests/unit/test_skills_rebuild_p117.py`, `tests/unit/test_summary_sense_p1113.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_tailor_planner.py`, `tests/unit/test_tailor_service_addition.py`, `tests/unit/test_validation.py`
+- **Tested by:** `tests/unit/test_achievement_context_p1115.py`, `tests/unit/test_fact_check_p89.py`, `tests/unit/test_matcher.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_project_writing_p115.py`, `tests/unit/test_resume_normalizer.py`, `tests/unit/test_rewriter.py`, `tests/unit/test_semantic_matcher.py`, `tests/unit/test_skills_rebuild_p117.py`, `tests/unit/test_summary_sense_p1113.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_tailor_planner.py`, `tests/unit/test_tailor_service_addition.py`, `tests/unit/test_validation.py`
 
 ### `app/domain/job.py`
 
@@ -1445,58 +1450,59 @@ _Local profile of facts the user has confirmed (P3.2)._
 
 ### `app/services/tailor.py`
 
-**Layer:** Services · **Stage:** all · **Lines:** 1872
+**Layer:** Services · **Stage:** all · **Lines:** 1890
 
-- class **`TailorService`** ([app/services/tailor.py:67](../app/services/tailor.py#L67))
-  - `__init__()` :68 — `keep_run=False` (the web app): nothing is written to data/runs, so
-  - `_save_run()` :105 — A run artifact for the CLI / eval; nothing when no run is kept (P9.8).
-  - `generate_preview_md()` :110
-  - `_patchable()` :156 — Proposals as in-place DOCX patches. A summary proposal targets the
-  - `_apply_gap_answers()` :176 — Ticked keywords join the skills section; a typed answer becomes a
-  - `_prefill_from_profile()` :235 — Answers confirmed for an earlier JD pre-fill the same questions
-  - `_draft_from_answer()` :247 — Polish the candidate's answer into one bullet that may use only
-  - `_project_lines()` :268 — An added job's notes -> (project, line) pairs. A short line ending
-  - `_split_description()` :287 — Pasted role description -> bullet-sized chunks: one per line (list
-  - `validate_new_role()` :297 — Check a new job before any work is done; raises ValueError with a
-  - `_new_experience()` :322 — An empty job from the "add a job" fields, validated.
-  - `_insert_by_date()` :330 — Place a job in date order: current jobs first, then most recent start.
-  - `add_new_role()` :343 — Add a job the resume doesn't have yet (P3.3). Each chunk of the
-  - `_skills_proposals()` :380 — The skills section rebuilt from the candidate's evidence for this job
-  - `_summary_proposals()` :390 — The tailored summary as a proposal, when one was written (P1.5).
-  - `_embed()` :395 — Sentence embeddings for the planner, loaded lazily; raises when the
-  - `_fit_relevance()` :404 — Planner relevance per bullet for the page-fit loop. Bullets the user
-  - `_render_template()` :414 — One template render plus PDF conversion (the page-fit loop's step).
-  - `_coverage()` :422 — Content coverage of the rendered DOCX against the uploaded file (P8.2).
-  - `_project_notes()` :452 — A project's notes from the owner's project bank (P11.1), by project key.
-  - `_apply_projects()` :461 — Replace each accepted project's bullets with its new ones (P11.5),
-  - `ai_cache()` :487 — P11.14: per-session answers of the AI calls that shape the run
-  - `ai_cache()` :494
-  - `_cached()` :498 — P11.14: the answer an AI call gave for the same inputs earlier in
-  - `_brief()` :514 — The role brief with its project map (P11.3, P11.4), the same for
-  - `_page_overflow()` :528 — P11.12: the kept projects don't fit the page target even at their
-  - `_rename_headings()` :544 — Rename each project the user accepted a new heading for; the old
-  - `_apply_bullet_order()` :573 — Reorder bullets as planned (most relevant first within each
-  - `parse_resume()` :588 — File -> (raw document, ResumeDocument, evidence). The deterministic
-  - `read_file()` :595 — The uploaded file as raw blocks, or UnreadableFile with a message
-  - `apply_bank()` :630 — Read the owner's project notes (P11.1) and merge them into the
-  - `normalize_raw()` :660
-  - `_copy_parsed()` :687 — Deep copies, so a parse kept in UI session state is never mutated.
-  - `preview_keyword_match()` :692 — Match rate if these proposals were applied (P3.4 "recalculate"):
-  - `apply_parse_corrections()` :728 — Apply the user's fixes from the "Check parsed resume" step (P3.5).
-  - `analyze_only()` :863
-  - `prepare()` :893 — Before drafting (P11.2): read the job, write the role brief, map
-  - `draft_project()` :918 — P11.11: a project ticked back on Review is written like the rest
-  - `apply_answers()` :935 — The interview's answers as evidence and bullets of their projects
-  - `generate_proposals()` :951 — Generate rewrite proposals without applying them, plus questions
-  - `incorporate_user_addition()` :1039 — Fold a user-supplied free-text addition (a project, an
-  - `tailor_resume()` :1118 — `region` ("us", "uk_eu", "india", "other", P10.3) sets the paper
-  - `arrange()` :1722 — Re-render the tailored resume as the user arranged it (P8.13–P8.16):
-- function **`_progress()`** ([app/services/tailor.py:56](../app/services/tailor.py#L56)) — A progress reporter that can never break a run (P3.6).
-- function **`_hidden_text()`** ([app/services/tailor.py:1827](../app/services/tailor.py#L1827)) — Text of the sections the user hid, so coverage counts it as their choice.
-- function **`_merge_usage()`** ([app/services/tailor.py:1854](../app/services/tailor.py#L1854)) — Combine two LLMClient.get_usage_summary() dicts into one. When one
-- **Imports:** `analysis/checklist.py`, `analysis/cv_mode.py`, `analysis/experience.py`, `analysis/gap_questions.py`, `analysis/interview.py`, `analysis/jd_analyzer.py`, `analysis/keyword_match.py`, `analysis/language.py`, `analysis/matcher.py`, `analysis/project_bank.py`, `analysis/project_select.py`, `analysis/region.py`, `analysis/resume_normalizer.py`, `analysis/rewriter.py`, `analysis/role_brief.py`, `analysis/scoring.py`, `analysis/semantic_matcher.py`, `analysis/skills_tailor.py`, `analysis/structure_extractor.py`, `analysis/summary_writer.py`, `analysis/tailor_planner.py`, `domain/evidence.py`, `domain/job.py`, `domain/report.py`, `domain/resume.py`, `domain/resume_document.py`, `domain/tailoring.py`, `ingestion/docx.py`, `ingestion/linkedin.py`, `ingestion/pdf.py`, `ingestion/text.py`, `llm/client.py`, `rendering/docx_patcher.py`, `rendering/html_renderer.py`, `rendering/layout.py`, `rendering/page_fit.py`, `rendering/pdf_converter.py`, `rendering/template_renderer.py`, `services/arrange.py`, `services/profile_store.py`, `services/run_manager.py`, `validation/content_lint.py`, `validation/coverage.py`, `validation/factual.py`, `validation/output.py`, `validation/safety.py`, `validation/structural.py`
+- class **`TailorService`** ([app/services/tailor.py:68](../app/services/tailor.py#L68))
+  - `__init__()` :69 — `keep_run=False` (the web app): nothing is written to data/runs, so
+  - `_save_run()` :106 — A run artifact for the CLI / eval; nothing when no run is kept (P9.8).
+  - `generate_preview_md()` :111
+  - `_patchable()` :157 — Proposals as in-place DOCX patches. A summary proposal targets the
+  - `_apply_gap_answers()` :177 — Ticked keywords join the skills section; a typed answer becomes a
+  - `_prefill_from_profile()` :236 — Answers confirmed for an earlier JD pre-fill the same questions
+  - `_draft_from_answer()` :248 — Polish the candidate's answer into one bullet that may use only
+  - `_project_lines()` :269 — An added job's notes -> (project, line) pairs. A short line ending
+  - `_split_description()` :288 — Pasted role description -> bullet-sized chunks: one per line (list
+  - `validate_new_role()` :298 — Check a new job before any work is done; raises ValueError with a
+  - `_new_experience()` :323 — An empty job from the "add a job" fields, validated.
+  - `_insert_by_date()` :331 — Place a job in date order: current jobs first, then most recent start.
+  - `add_new_role()` :344 — Add a job the resume doesn't have yet (P3.3). Each chunk of the
+  - `_skills_proposals()` :381 — The skills section rebuilt from the candidate's evidence for this job
+  - `_summary_proposals()` :391 — The tailored summary as a proposal, when one was written (P1.5).
+  - `_embed()` :396 — Sentence embeddings for the planner, loaded lazily; raises when the
+  - `_fit_relevance()` :405 — Planner relevance per bullet for the page-fit loop. Bullets the user
+  - `_render_template()` :415 — One template render plus PDF conversion (the page-fit loop's step).
+  - `_coverage()` :423 — Content coverage of the rendered DOCX against the uploaded file (P8.2).
+  - `_project_notes()` :453 — A project's notes from the owner's project bank (P11.1), by project key.
+  - `_apply_projects()` :462 — Replace each accepted project's bullets with its new ones (P11.5),
+  - `ai_cache()` :488 — P11.14: per-session answers of the AI calls that shape the run
+  - `ai_cache()` :495
+  - `_cached()` :499 — P11.14: the answer an AI call gave for the same inputs earlier in
+  - `_brief()` :515 — The role brief with its project map (P11.3, P11.4), the same for
+  - `_apply_achievement()` :529 — P11.15: "achievement::<index>" gets its line with where and when.
+  - `_page_overflow()` :536 — P11.12: the kept projects don't fit the page target even at their
+  - `_rename_headings()` :552 — Rename each project the user accepted a new heading for; the old
+  - `_apply_bullet_order()` :581 — Reorder bullets as planned (most relevant first within each
+  - `parse_resume()` :596 — File -> (raw document, ResumeDocument, evidence). The deterministic
+  - `read_file()` :603 — The uploaded file as raw blocks, or UnreadableFile with a message
+  - `apply_bank()` :638 — Read the owner's project notes (P11.1) and merge them into the
+  - `normalize_raw()` :668
+  - `_copy_parsed()` :695 — Deep copies, so a parse kept in UI session state is never mutated.
+  - `preview_keyword_match()` :700 — Match rate if these proposals were applied (P3.4 "recalculate"):
+  - `apply_parse_corrections()` :738 — Apply the user's fixes from the "Check parsed resume" step (P3.5).
+  - `analyze_only()` :873
+  - `prepare()` :903 — Before drafting (P11.2): read the job, write the role brief, map
+  - `draft_project()` :928 — P11.11: a project ticked back on Review is written like the rest
+  - `apply_answers()` :945 — The interview's answers as evidence and bullets of their projects
+  - `generate_proposals()` :961 — Generate rewrite proposals without applying them, plus questions
+  - `incorporate_user_addition()` :1050 — Fold a user-supplied free-text addition (a project, an
+  - `tailor_resume()` :1129 — `region` ("us", "uk_eu", "india", "other", P10.3) sets the paper
+  - `arrange()` :1740 — Re-render the tailored resume as the user arranged it (P8.13–P8.16):
+- function **`_progress()`** ([app/services/tailor.py:57](../app/services/tailor.py#L57)) — A progress reporter that can never break a run (P3.6).
+- function **`_hidden_text()`** ([app/services/tailor.py:1845](../app/services/tailor.py#L1845)) — Text of the sections the user hid, so coverage counts it as their choice.
+- function **`_merge_usage()`** ([app/services/tailor.py:1872](../app/services/tailor.py#L1872)) — Combine two LLMClient.get_usage_summary() dicts into one. When one
+- **Imports:** `analysis/achievement_context.py`, `analysis/checklist.py`, `analysis/cv_mode.py`, `analysis/experience.py`, `analysis/gap_questions.py`, `analysis/interview.py`, `analysis/jd_analyzer.py`, `analysis/keyword_match.py`, `analysis/language.py`, `analysis/matcher.py`, `analysis/project_bank.py`, `analysis/project_select.py`, `analysis/region.py`, `analysis/resume_normalizer.py`, `analysis/rewriter.py`, `analysis/role_brief.py`, `analysis/scoring.py`, `analysis/semantic_matcher.py`, `analysis/skills_tailor.py`, `analysis/structure_extractor.py`, `analysis/summary_writer.py`, `analysis/tailor_planner.py`, `domain/evidence.py`, `domain/job.py`, `domain/report.py`, `domain/resume.py`, `domain/resume_document.py`, `domain/tailoring.py`, `ingestion/docx.py`, `ingestion/linkedin.py`, `ingestion/pdf.py`, `ingestion/text.py`, `llm/client.py`, `rendering/docx_patcher.py`, `rendering/html_renderer.py`, `rendering/layout.py`, `rendering/page_fit.py`, `rendering/pdf_converter.py`, `rendering/template_renderer.py`, `services/arrange.py`, `services/profile_store.py`, `services/run_manager.py`, `validation/content_lint.py`, `validation/coverage.py`, `validation/factual.py`, `validation/output.py`, `validation/safety.py`, `validation/structural.py`
 - **Imported by:** `api/main.py`, `cli.py`, `eval/harness.py`, `eval/reference.py`, `scripts/walkthrough_server.py`
-- **Tested by:** `tests/integration/test_arrange.py`, `tests/integration/test_coverage_tailor.py`, `tests/integration/test_end_to_end.py`, `tests/unit/test_academic_cv_p106.py`, `tests/unit/test_api.py`, `tests/unit/test_check_parsed_resume.py`, `tests/unit/test_classic_template_p119.py`, `tests/unit/test_cli.py`, `tests/unit/test_cli_parity.py`, `tests/unit/test_cv_mode_p105.py`, `tests/unit/test_details_p826.py`, `tests/unit/test_federal_p107.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_global_p825.py`, `tests/unit/test_headline_summary_p116.py`, `tests/unit/test_interview_p112.py`, `tests/unit/test_linkedin_import_p101.py`, `tests/unit/test_new_role.py`, `tests/unit/test_page_overflow_p1112.py`, `tests/unit/test_privacy_p98.py`, `tests/unit/test_profile_store.py`, `tests/unit/test_project_bank_p111.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_project_select_p1013.py`, `tests/unit/test_project_writing_p115.py`, `tests/unit/test_reference_eval_p1110.py`, `tests/unit/test_region_p103.py`, `tests/unit/test_review_view.py`, `tests/unit/test_skill_placement_p912.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_stability_p1114.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_tailor_resume_flow.py`, `tests/unit/test_tailor_service_addition.py`, `tests/unit/test_uploads_p822.py`
+- **Tested by:** `tests/integration/test_arrange.py`, `tests/integration/test_coverage_tailor.py`, `tests/integration/test_end_to_end.py`, `tests/unit/test_academic_cv_p106.py`, `tests/unit/test_achievement_context_p1115.py`, `tests/unit/test_api.py`, `tests/unit/test_check_parsed_resume.py`, `tests/unit/test_classic_template_p119.py`, `tests/unit/test_cli.py`, `tests/unit/test_cli_parity.py`, `tests/unit/test_company_first_headers_p1118.py`, `tests/unit/test_cv_mode_p105.py`, `tests/unit/test_details_p826.py`, `tests/unit/test_federal_p107.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_global_p825.py`, `tests/unit/test_headline_summary_p116.py`, `tests/unit/test_interview_p112.py`, `tests/unit/test_linkedin_education_p1116.py`, `tests/unit/test_linkedin_import_p101.py`, `tests/unit/test_new_role.py`, `tests/unit/test_page_overflow_p1112.py`, `tests/unit/test_privacy_p98.py`, `tests/unit/test_profile_store.py`, `tests/unit/test_project_bank_p111.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_project_select_p1013.py`, `tests/unit/test_project_writing_p115.py`, `tests/unit/test_reference_eval_p1110.py`, `tests/unit/test_region_p103.py`, `tests/unit/test_review_view.py`, `tests/unit/test_skill_placement_p912.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_stability_p1114.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_tailor_resume_flow.py`, `tests/unit/test_tailor_service_addition.py`, `tests/unit/test_uploads_p822.py`
 
 ### `app/validation/content_lint.py`
 
@@ -1531,7 +1537,7 @@ _Content coverage (P8.2): does every line of the uploaded resume reach the_
 
 ### `app/validation/factual.py`
 
-**Layer:** Validation · **Stage:** 8 Validate · **Lines:** 665
+**Layer:** Validation · **Stage:** 8 Validate · **Lines:** 697
 
 - class **`ClaimCheck`** ([app/validation/factual.py:13](../app/validation/factual.py#L13))
 - class **`ValidationResult`** ([app/validation/factual.py:20](../app/validation/factual.py#L20))
@@ -1547,19 +1553,20 @@ _Content coverage (P8.2): does every line of the uploaded resume reach the_
   - `_validate_project()` :239 — A project written whole (P11.5): every new bullet is checked like a
   - `_validate_heading()` :273 — A project heading (P10.13) may only reword what the old heading and
   - `_validate_skills()` :284 — The skills section may be reordered and respelled, and gain what the
-  - `_validate_summary()` :305 — A summary may draw on the whole resume (P1.5): every factual term
-  - `_claim_words()` :382 — Content words of each work claim, in order: "builds optimization
-  - `_pair_keys()` :419 — A word's keys plus, for an alias of a longer term ("ML"), the keys of
-  - `_work_claims_unsupported()` :428 — Claims of two or more words whose last two (the kind of work) are
-  - `_owner_prefix()` :462 — 'exp_001_b03' -> 'exp_001_': the job (or project) a bullet belongs to.
-  - `_content_tokens()` :467 — Plain words of a text in order, hyphenated words split into parts
-  - `_is_plain()` :475
-  - `_new_words()` :480 — Plain words a rewrite adds (P8.9): (borrowed from the JD only,
-  - `_words_from_elsewhere()` :499 — Runs of consecutive plain words that the resume uses only under
-  - `validate_proposal()` :520
-- **Imports:** `analysis/project_select.py`, `analysis/rewriter.py`, `analysis/skills_tailor.py`, `analysis/terminology.py`, `domain/evidence.py`
+  - `_validate_achievement()` :305 — P11.15: an achievement may only gain "(where, when)", and every word
+  - `_validate_summary()` :335 — A summary may draw on the whole resume (P1.5): every factual term
+  - `_claim_words()` :412 — Content words of each work claim, in order: "builds optimization
+  - `_pair_keys()` :449 — A word's keys plus, for an alias of a longer term ("ML"), the keys of
+  - `_work_claims_unsupported()` :458 — Claims of two or more words whose last two (the kind of work) are
+  - `_owner_prefix()` :492 — 'exp_001_b03' -> 'exp_001_': the job (or project) a bullet belongs to.
+  - `_content_tokens()` :497 — Plain words of a text in order, hyphenated words split into parts
+  - `_is_plain()` :505
+  - `_new_words()` :510 — Plain words a rewrite adds (P8.9): (borrowed from the JD only,
+  - `_words_from_elsewhere()` :529 — Runs of consecutive plain words that the resume uses only under
+  - `validate_proposal()` :550
+- **Imports:** `analysis/achievement_context.py`, `analysis/project_select.py`, `analysis/rewriter.py`, `analysis/skills_tailor.py`, `analysis/terminology.py`, `domain/evidence.py`
 - **Imported by:** `analysis/rewriter.py`, `services/tailor.py`
-- **Tested by:** `tests/unit/test_fact_check_p89.py`, `tests/unit/test_project_writing_p115.py`, `tests/unit/test_skills_rebuild_p117.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_sense_p1113.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_validation.py`
+- **Tested by:** `tests/unit/test_achievement_context_p1115.py`, `tests/unit/test_fact_check_p89.py`, `tests/unit/test_project_writing_p115.py`, `tests/unit/test_skills_rebuild_p117.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_summary_sense_p1113.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_validation.py`
 
 ### `app/validation/output.py`
 
@@ -1795,6 +1802,7 @@ flowchart LR
   services_arrange --> analysis_experience
   services_arrange --> rendering_layout
   services_profile_store --> config_settings
+  services_tailor --> analysis_achievement_context
   services_tailor --> analysis_checklist
   services_tailor --> analysis_cv_mode
   services_tailor --> analysis_experience
@@ -1839,6 +1847,7 @@ flowchart LR
   validation_content_lint --> analysis_experience
   validation_content_lint --> analysis_region
   validation_content_lint --> analysis_rewriter
+  validation_factual --> analysis_achievement_context
   validation_factual --> analysis_project_select
   validation_factual --> analysis_rewriter
   validation_factual --> analysis_skills_tailor
@@ -1907,11 +1916,9 @@ From `app/config/settings.py`; each can be overridden by the env var of the same
 
 **Not imported by any app code** (possibly dead code, or only used by tests/scripts):
 
-- `app/analysis/achievement_context.py`
 - `app/api/forms.py`
 - `app/eval/__main__.py`
 
 **Not in `STAGE_MAP`** (add them in `scripts/update_docs.py`):
 
-- `app/analysis/achievement_context.py`
 - `app/analysis/language.py`

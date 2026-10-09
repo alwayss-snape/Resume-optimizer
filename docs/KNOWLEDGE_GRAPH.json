@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "a4bd81cf48a5166c",
+  "source_hash": "c74a566fbb011676",
   "stats": {
-    "files": 207,
-    "python_files": 175,
+    "files": 209,
+    "python_files": 177,
     "app_modules": 69,
-    "test_files": 95,
+    "test_files": 97,
     "classes": 151,
-    "functions": 1400,
-    "lines_of_python": 27783
+    "functions": 1414,
+    "lines_of_python": 28033
   },
   "axes": {
     "x": "location (path)",
@@ -237,44 +237,51 @@
       "id": "app/analysis/achievement_context.py",
       "type": "python",
       "layer": "Analysis",
-      "stages": [],
-      "lines": 103,
+      "stages": [
+        "7 Rewrite"
+      ],
+      "lines": 124,
       "doc": "Achievements with context (P11.15): where and when, from evidence only.",
       "classes": [],
       "functions": [
         {
           "name": "_words",
-          "line": 22,
+          "line": 29,
           "doc": ""
         },
         {
           "name": "_named",
-          "line": 26,
+          "line": 33,
           "doc": "`name` (a company or project heading) is named in the text: all its"
         },
         {
           "name": "_year_of",
-          "line": 39,
+          "line": 50,
           "doc": ""
         },
         {
           "name": "context_for",
-          "line": 44,
+          "line": 55,
           "doc": "\"Northwind, 2025\", \"Northwind\", \"2025\" or None, for one achievement."
         },
         {
+          "name": "_match",
+          "line": 60,
+          "doc": "(context or None, the job it came from or None)."
+        },
+        {
           "name": "with_context",
-          "line": 75,
+          "line": 93,
           "doc": ""
         },
         {
           "name": "achievement_proposals",
-          "line": 81,
+          "line": 99,
           "doc": "One proposal per achievement that gains context; targets \"achievement::<index>\"."
         },
         {
           "name": "added_context",
-          "line": 95,
+          "line": 116,
           "doc": "The parenthetical a proposal adds to its achievement, or None when"
         }
       ]
@@ -1117,7 +1124,7 @@
       "stages": [
         "2 Normalize"
       ],
-      "lines": 1305,
+      "lines": 1349,
       "doc": "",
       "classes": [
         {
@@ -1206,123 +1213,128 @@
               "doc": "'Title | Company | Place', 'Company \u2014 Title', 'Title \u2014 Team \u2014 Company'"
             },
             {
-              "name": "_title_score",
+              "name": "_company_first_pair",
               "line": 365,
+              "doc": "A dated line naming a company (\"Northwind Grocers<tab>Mar 2023 \u2013 Present\")"
+            },
+            {
+              "name": "_title_score",
+              "line": 390,
               "doc": "2 when a role word ends the phrase (\"Data Analyst\"), 1 when it's"
             },
             {
               "name": "_split_company_location",
-              "line": 394,
+              "line": 419,
               "doc": "'Banner Medical Center, Phoenix, AZ' -> ('Banner Medical Center',"
             },
             {
               "name": "_split_comma_job",
-              "line": 418,
+              "line": 443,
               "doc": "'Shift Supervisor, Starbucks, Atlanta GA' -> (title, company,"
             },
             {
               "name": "_ends_with_suffix",
-              "line": 434,
+              "line": 459,
               "doc": "\"CloudMetrics Inc.\" ends with a full stop but is a company, not a sentence."
             },
             {
               "name": "_next_is_meta_line",
-              "line": 439,
+              "line": 464,
               "doc": "The ATS template prints 'Company \u00b7 Location' under the title line."
             },
             {
               "name": "_next_is_company_line",
-              "line": 445,
+              "line": 470,
               "doc": "The ATS template prints just the company under \"Title<tab>dates\""
             },
             {
               "name": "_trim",
-              "line": 467,
+              "line": 492,
               "doc": "Strip separators left around removed dates, keeping a closing"
             },
             {
               "name": "_split_skill_line",
-              "line": 483,
+              "line": 508,
               "doc": "'Languages: Python, SQL<tab>Frameworks: Pandas, and XGBoost' ->"
             },
             {
               "name": "_skill_items",
-              "line": 504,
+              "line": 529,
               "doc": ""
             },
             {
               "name": "_split_education_line",
-              "line": 522,
+              "line": 547,
               "doc": "'B.S. Biology, University of Texas at Austin, 2016' -> (degree,"
             },
             {
               "name": "_looks_like_degree",
-              "line": 568,
+              "line": 593,
               "doc": "'B.Tech in Computer Science' yes; 'State University' no."
             },
             {
               "name": "_split_middle_dot",
-              "line": 574,
+              "line": 599,
               "doc": "'Acme Corp \u00b7 Pune, India' -> ('Acme Corp', 'Pune, India'), the"
             },
             {
               "name": "_is_dated_line",
-              "line": 583,
+              "line": 608,
               "doc": "A job title/company line carrying a date range or year. A date"
             },
             {
               "name": "_header_range",
-              "line": 598,
+              "line": 623,
               "doc": "A date range inside a job header line, or None. Trailing ranges"
             },
             {
               "name": "_experience_line_kind",
-              "line": 615,
+              "line": 640,
               "doc": "'dated' (title and/or company with dates), 'header_line' (a short"
             },
             {
               "name": "_add_role",
-              "line": 634,
+              "line": 659,
               "doc": "Record a role; the first one also fills the entry's title/dates."
             },
             {
               "name": "_merge_links",
-              "line": 644,
+              "line": 669,
               "doc": "Profile links from the file's hyperlinks and from URLs written in"
             },
             {
               "name": "_trailing_dates",
-              "line": 658,
+              "line": 683,
               "doc": "(match, start, end) for a trailing date range or single date."
             },
             {
               "name": "_extract_date_range",
-              "line": 668,
+              "line": 693,
               "doc": ""
             },
             {
               "name": "_strip_date_range",
-              "line": 674,
+              "line": 699,
               "doc": ""
             },
             {
               "name": "_parse_title_and_dates",
-              "line": 678,
+              "line": 703,
               "doc": "'Data Scientist II | August 2024 - Present' ->"
             },
             {
               "name": "_split_list_items",
-              "line": 693,
+              "line": 718,
               "doc": "Items of a certification / award line. ';' always separates"
             },
             {
               "name": "_split_respecting_parens",
-              "line": 712,
+              "line": 737,
               "doc": "Split on sep_chars, but never inside ( ) or [ ] groups \u2014 so"
             },
             {
               "name": "normalize",
-              "line": 735,
+              "line": 760,
               "doc": ""
             }
           ]
@@ -4537,227 +4549,232 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 1872,
+      "lines": 1890,
       "doc": "",
       "classes": [
         {
           "name": "TailorService",
-          "line": 67,
+          "line": 68,
           "doc": "",
           "methods": [
             {
               "name": "__init__",
-              "line": 68,
+              "line": 69,
               "doc": "`keep_run=False` (the web app): nothing is written to data/runs, so"
             },
             {
               "name": "_save_run",
-              "line": 105,
+              "line": 106,
               "doc": "A run artifact for the CLI / eval; nothing when no run is kept (P9.8)."
             },
             {
               "name": "generate_preview_md",
-              "line": 110,
+              "line": 111,
               "doc": ""
             },
             {
               "name": "_patchable",
-              "line": 156,
+              "line": 157,
               "doc": "Proposals as in-place DOCX patches. A summary proposal targets the"
             },
             {
               "name": "_apply_gap_answers",
-              "line": 176,
+              "line": 177,
               "doc": "Ticked keywords join the skills section; a typed answer becomes a"
             },
             {
               "name": "_prefill_from_profile",
-              "line": 235,
+              "line": 236,
               "doc": "Answers confirmed for an earlier JD pre-fill the same questions"
             },
             {
               "name": "_draft_from_answer",
-              "line": 247,
+              "line": 248,
               "doc": "Polish the candidate's answer into one bullet that may use only"
             },
             {
               "name": "_project_lines",
-              "line": 268,
+              "line": 269,
               "doc": "An added job's notes -> (project, line) pairs. A short line ending"
             },
             {
               "name": "_split_description",
-              "line": 287,
+              "line": 288,
               "doc": "Pasted role description -> bullet-sized chunks: one per line (list"
             },
             {
               "name": "validate_new_role",
-              "line": 297,
+              "line": 298,
               "doc": "Check a new job before any work is done; raises ValueError with a"
             },
             {
               "name": "_new_experience",
-              "line": 322,
+              "line": 323,
               "doc": "An empty job from the \"add a job\" fields, validated."
             },
             {
               "name": "_insert_by_date",
-              "line": 330,
+              "line": 331,
               "doc": "Place a job in date order: current jobs first, then most recent start."
             },
             {
               "name": "add_new_role",
-              "line": 343,
+              "line": 344,
               "doc": "Add a job the resume doesn't have yet (P3.3). Each chunk of the"
             },
             {
               "name": "_skills_proposals",
-              "line": 380,
+              "line": 381,
               "doc": "The skills section rebuilt from the candidate's evidence for this job"
             },
             {
               "name": "_summary_proposals",
-              "line": 390,
+              "line": 391,
               "doc": "The tailored summary as a proposal, when one was written (P1.5)."
             },
             {
               "name": "_embed",
-              "line": 395,
+              "line": 396,
               "doc": "Sentence embeddings for the planner, loaded lazily; raises when the"
             },
             {
               "name": "_fit_relevance",
-              "line": 404,
+              "line": 405,
               "doc": "Planner relevance per bullet for the page-fit loop. Bullets the user"
             },
             {
               "name": "_render_template",
-              "line": 414,
+              "line": 415,
               "doc": "One template render plus PDF conversion (the page-fit loop's step)."
             },
             {
               "name": "_coverage",
-              "line": 422,
+              "line": 423,
               "doc": "Content coverage of the rendered DOCX against the uploaded file (P8.2)."
             },
             {
               "name": "_project_notes",
-              "line": 452,
+              "line": 453,
               "doc": "A project's notes from the owner's project bank (P11.1), by project key."
             },
             {
               "name": "_apply_projects",
-              "line": 461,
+              "line": 462,
               "doc": "Replace each accepted project's bullets with its new ones (P11.5),"
             },
             {
               "name": "ai_cache",
-              "line": 487,
+              "line": 488,
               "doc": "P11.14: per-session answers of the AI calls that shape the run"
             },
             {
               "name": "ai_cache",
-              "line": 494,
+              "line": 495,
               "doc": ""
             },
             {
               "name": "_cached",
-              "line": 498,
+              "line": 499,
               "doc": "P11.14: the answer an AI call gave for the same inputs earlier in"
             },
             {
               "name": "_brief",
-              "line": 514,
+              "line": 515,
               "doc": "The role brief with its project map (P11.3, P11.4), the same for"
             },
             {
+              "name": "_apply_achievement",
+              "line": 529,
+              "doc": "P11.15: \"achievement::<index>\" gets its line with where and when."
+            },
+            {
               "name": "_page_overflow",
-              "line": 528,
+              "line": 536,
               "doc": "P11.12: the kept projects don't fit the page target even at their"
             },
             {
               "name": "_rename_headings",
-              "line": 544,
+              "line": 552,
               "doc": "Rename each project the user accepted a new heading for; the old"
             },
             {
               "name": "_apply_bullet_order",
-              "line": 573,
+              "line": 581,
               "doc": "Reorder bullets as planned (most relevant first within each"
             },
             {
               "name": "parse_resume",
-              "line": 588,
+              "line": 596,
               "doc": "File -> (raw document, ResumeDocument, evidence). The deterministic"
             },
             {
               "name": "read_file",
-              "line": 595,
+              "line": 603,
               "doc": "The uploaded file as raw blocks, or UnreadableFile with a message"
             },
             {
               "name": "apply_bank",
-              "line": 630,
+              "line": 638,
               "doc": "Read the owner's project notes (P11.1) and merge them into the"
             },
             {
               "name": "normalize_raw",
-              "line": 660,
+              "line": 668,
               "doc": ""
             },
             {
               "name": "_copy_parsed",
-              "line": 687,
+              "line": 695,
               "doc": "Deep copies, so a parse kept in UI session state is never mutated."
             },
             {
               "name": "preview_keyword_match",
-              "line": 692,
+              "line": 700,
               "doc": "Match rate if these proposals were applied (P3.4 \"recalculate\"):"
             },
             {
               "name": "apply_parse_corrections",
-              "line": 728,
+              "line": 738,
               "doc": "Apply the user's fixes from the \"Check parsed resume\" step (P3.5)."
             },
             {
               "name": "analyze_only",
-              "line": 863,
+              "line": 873,
               "doc": ""
             },
             {
               "name": "prepare",
-              "line": 893,
+              "line": 903,
               "doc": "Before drafting (P11.2): read the job, write the role brief, map"
             },
             {
               "name": "draft_project",
-              "line": 918,
+              "line": 928,
               "doc": "P11.11: a project ticked back on Review is written like the rest"
             },
             {
               "name": "apply_answers",
-              "line": 935,
+              "line": 945,
               "doc": "The interview's answers as evidence and bullets of their projects"
             },
             {
               "name": "generate_proposals",
-              "line": 951,
+              "line": 961,
               "doc": "Generate rewrite proposals without applying them, plus questions"
             },
             {
               "name": "incorporate_user_addition",
-              "line": 1039,
+              "line": 1050,
               "doc": "Fold a user-supplied free-text addition (a project, an"
             },
             {
               "name": "tailor_resume",
-              "line": 1118,
+              "line": 1129,
               "doc": "`region` (\"us\", \"uk_eu\", \"india\", \"other\", P10.3) sets the paper"
             },
             {
               "name": "arrange",
-              "line": 1722,
+              "line": 1740,
               "doc": "Re-render the tailored resume as the user arranged it (P8.13\u2013P8.16):"
             }
           ]
@@ -4766,17 +4783,17 @@
       "functions": [
         {
           "name": "_progress",
-          "line": 56,
+          "line": 57,
           "doc": "A progress reporter that can never break a run (P3.6)."
         },
         {
           "name": "_hidden_text",
-          "line": 1827,
+          "line": 1845,
           "doc": "Text of the sections the user hid, so coverage counts it as their choice."
         },
         {
           "name": "_merge_usage",
-          "line": 1854,
+          "line": 1872,
           "doc": "Combine two LLMClient.get_usage_summary() dicts into one. When one"
         }
       ]
@@ -4881,7 +4898,7 @@
       "stages": [
         "8 Validate"
       ],
-      "lines": 665,
+      "lines": 697,
       "doc": "",
       "classes": [
         {
@@ -4957,53 +4974,58 @@
               "doc": "The skills section may be reordered and respelled, and gain what the"
             },
             {
-              "name": "_validate_summary",
+              "name": "_validate_achievement",
               "line": 305,
+              "doc": "P11.15: an achievement may only gain \"(where, when)\", and every word"
+            },
+            {
+              "name": "_validate_summary",
+              "line": 335,
               "doc": "A summary may draw on the whole resume (P1.5): every factual term"
             },
             {
               "name": "_claim_words",
-              "line": 382,
+              "line": 412,
               "doc": "Content words of each work claim, in order: \"builds optimization"
             },
             {
               "name": "_pair_keys",
-              "line": 419,
+              "line": 449,
               "doc": "A word's keys plus, for an alias of a longer term (\"ML\"), the keys of"
             },
             {
               "name": "_work_claims_unsupported",
-              "line": 428,
+              "line": 458,
               "doc": "Claims of two or more words whose last two (the kind of work) are"
             },
             {
               "name": "_owner_prefix",
-              "line": 462,
+              "line": 492,
               "doc": "'exp_001_b03' -> 'exp_001_': the job (or project) a bullet belongs to."
             },
             {
               "name": "_content_tokens",
-              "line": 467,
+              "line": 497,
               "doc": "Plain words of a text in order, hyphenated words split into parts"
             },
             {
               "name": "_is_plain",
-              "line": 475,
+              "line": 505,
               "doc": ""
             },
             {
               "name": "_new_words",
-              "line": 480,
+              "line": 510,
               "doc": "Plain words a rewrite adds (P8.9): (borrowed from the JD only,"
             },
             {
               "name": "_words_from_elsewhere",
-              "line": 499,
+              "line": 529,
               "doc": "Runs of consecutive plain words that the resume uses only under"
             },
             {
               "name": "validate_proposal",
-              "line": 520,
+              "line": 550,
               "doc": ""
             }
           ]
@@ -5269,118 +5291,118 @@
       "type": "python",
       "layer": "Tooling",
       "stages": [],
-      "lines": 751,
+      "lines": 752,
       "doc": "Regenerate the repo's living docs: the knowledge graph and the change log.",
       "classes": [],
       "functions": [
         {
           "name": "git",
-          "line": 146,
+          "line": 147,
           "doc": ""
         },
         {
           "name": "layer_of",
-          "line": 153,
+          "line": 154,
           "doc": ""
         },
         {
           "name": "module_name",
-          "line": 160,
+          "line": 161,
           "doc": ""
         },
         {
           "name": "first_line",
-          "line": 167,
+          "line": 168,
           "doc": ""
         },
         {
           "name": "list_files",
-          "line": 176,
+          "line": 177,
           "doc": "Tracked + new (not ignored) files, restricted to the project map."
         },
         {
           "name": "parse_python",
-          "line": 194,
+          "line": 195,
           "doc": ""
         },
         {
           "name": "symbols_of",
-          "line": 222,
+          "line": 223,
           "doc": ""
         },
         {
           "name": "settings_fields",
-          "line": 235,
+          "line": 236,
           "doc": ""
         },
         {
           "name": "build_graph",
-          "line": 254,
+          "line": 255,
           "doc": ""
         },
         {
           "name": "render_graph_md",
-          "line": 328,
+          "line": 329,
           "doc": ""
         },
         {
           "name": "write_graph",
-          "line": 526,
+          "line": 527,
           "doc": ""
         },
         {
           "name": "commit_info",
-          "line": 569,
+          "line": 570,
           "doc": ""
         },
         {
           "name": "changed_files",
-          "line": 580,
+          "line": 581,
           "doc": ""
         },
         {
           "name": "is_major",
-          "line": 593,
+          "line": 594,
           "doc": ""
         },
         {
           "name": "blob",
-          "line": 602,
+          "line": 603,
           "doc": ""
         },
         {
           "name": "structure_delta",
-          "line": 607,
+          "line": 608,
           "doc": ""
         },
         {
           "name": "render_entry",
-          "line": 630,
+          "line": 631,
           "doc": ""
         },
         {
           "name": "_split_entries",
-          "line": 673,
+          "line": 674,
           "doc": ""
         },
         {
           "name": "_join",
-          "line": 688,
+          "line": 689,
           "doc": ""
         },
         {
           "name": "log_entry",
-          "line": 692,
+          "line": 693,
           "doc": ""
         },
         {
           "name": "backfill",
-          "line": 710,
+          "line": 711,
           "doc": ""
         },
         {
           "name": "main",
-          "line": 727,
+          "line": 728,
           "doc": ""
         }
       ]
@@ -5835,7 +5857,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 54,
+      "lines": 122,
       "doc": "P11.15: achievements gain where and when, from evidence only, as a proposal.",
       "classes": [],
       "functions": [
@@ -5867,6 +5889,31 @@
         {
           "name": "test_only_a_parenthetical_counts_as_added_context",
           "line": 49,
+          "doc": ""
+        },
+        {
+          "name": "_evidence",
+          "line": 57,
+          "doc": ""
+        },
+        {
+          "name": "test_the_fact_check_passes_evidenced_context_and_rejects_anything_else",
+          "line": 64,
+          "doc": ""
+        },
+        {
+          "name": "test_an_accepted_achievement_reaches_the_resume_and_the_match_preview",
+          "line": 76,
+          "doc": ""
+        },
+        {
+          "name": "test_review_p1115_counts_ordinary_words_and_a_named_company_add_nothing",
+          "line": 95,
+          "doc": ""
+        },
+        {
+          "name": "test_review_p1115_achievements_start_unticked_and_strict_mode_rolls_them_back",
+          "line": 104,
           "doc": ""
         }
       ]
@@ -6335,6 +6382,32 @@
         {
           "name": "test_cli_prints_error_instead_of_traceback",
           "line": 150,
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "tests/unit/test_company_first_headers_p1118.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 35,
+      "doc": "P11.18 (owner's run, 2026-10-09): \"Company<tab>dates\" then \"Title<tab>City\" is one job, not a date in Location.",
+      "classes": [],
+      "functions": [
+        {
+          "name": "_parse",
+          "line": 14,
+          "doc": ""
+        },
+        {
+          "name": "test_company_first_headers_and_promotions_on_one_line",
+          "line": 20,
+          "doc": ""
+        },
+        {
+          "name": "test_title_first_headers_are_unchanged",
+          "line": 29,
           "doc": ""
         }
       ]
@@ -7570,6 +7643,27 @@
         {
           "name": "test_middle_dot_bullets",
           "line": 57,
+          "doc": ""
+        }
+      ]
+    },
+    {
+      "id": "tests/unit/test_linkedin_education_p1116.py",
+      "type": "python",
+      "layer": "Tests",
+      "stages": [],
+      "lines": 31,
+      "doc": "P11.16: a LinkedIn-style degree (\"Bachelor of Engineering - BE, Computer Science\") reads back as one degree.",
+      "classes": [],
+      "functions": [
+        {
+          "name": "test_the_linkedin_export_reads_back_clean_in_both_templates",
+          "line": 10,
+          "doc": ""
+        },
+        {
+          "name": "test_a_degree_dash_institution_line_still_splits",
+          "line": 22,
           "doc": ""
         }
       ]
@@ -11925,6 +12019,11 @@
     },
     {
       "from": "app/domain/evidence.py",
+      "to": "tests/unit/test_achievement_context_p1115.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/domain/evidence.py",
       "to": "tests/unit/test_fact_check_p89.py",
       "type": "tested_by"
     },
@@ -13920,6 +14019,11 @@
     },
     {
       "from": "app/services/tailor.py",
+      "to": "app/analysis/achievement_context.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/services/tailor.py",
       "to": "app/analysis/checklist.py",
       "type": "imports"
     },
@@ -14180,6 +14284,11 @@
     },
     {
       "from": "app/services/tailor.py",
+      "to": "tests/unit/test_achievement_context_p1115.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/services/tailor.py",
       "to": "tests/unit/test_api.py",
       "type": "tested_by"
     },
@@ -14201,6 +14310,11 @@
     {
       "from": "app/services/tailor.py",
       "to": "tests/unit/test_cli_parity.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/services/tailor.py",
+      "to": "tests/unit/test_company_first_headers_p1118.py",
       "type": "tested_by"
     },
     {
@@ -14236,6 +14350,11 @@
     {
       "from": "app/services/tailor.py",
       "to": "tests/unit/test_interview_p112.py",
+      "type": "tested_by"
+    },
+    {
+      "from": "app/services/tailor.py",
+      "to": "tests/unit/test_linkedin_education_p1116.py",
       "type": "tested_by"
     },
     {
@@ -14400,6 +14519,11 @@
     },
     {
       "from": "app/validation/factual.py",
+      "to": "app/analysis/achievement_context.py",
+      "type": "imports"
+    },
+    {
+      "from": "app/validation/factual.py",
       "to": "app/analysis/project_select.py",
       "type": "imports"
     },
@@ -14437,6 +14561,11 @@
       "from": "app/validation/factual.py",
       "to": "app/validation/factual.py::ValidationResult",
       "type": "contains"
+    },
+    {
+      "from": "app/validation/factual.py",
+      "to": "tests/unit/test_achievement_context_p1115.py",
+      "type": "tested_by"
     },
     {
       "from": "app/validation/factual.py",
@@ -14657,6 +14786,11 @@
       "from": "tests/unit/test_project_bank_p111.py",
       "to": "tests/unit/test_project_bank_p111.py::_TruncatingLLM",
       "type": "contains"
+    },
+    {
+      "from": "tests/unit/test_project_select_p1013.py",
+      "to": "tests/unit/test_achievement_context_p1115.py",
+      "type": "tested_by"
     },
     {
       "from": "tests/unit/test_project_select_p1013.py",

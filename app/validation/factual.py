@@ -302,6 +302,36 @@ class FactualValidator:
         return ValidationResult(approved=not added, proposal=proposal, verdict=verdict,
                                 claim_checks=[check], warnings=warnings)
 
+    def _validate_achievement(self, proposal, evidence_list: List[Evidence]) -> ValidationResult:
+        """P11.15: an achievement may only gain "(where, when)", and every word
+        and number of it must be in the resume or notes (a job's company, a
+        year a project's own lines give)."""
+        from app.analysis.achievement_context import added_context
+        original = getattr(proposal, "original_text", "") or ""
+        text = getattr(proposal, "proposed_text", None) or ""
+        context = added_context(original, text)
+        sources = [ev.text for ev in evidence_list] + [
+            " ".join(filter(None, (ev.source_id, getattr(ev, "source_location_id", None)))) for ev in evidence_list]
+        sources += list(getattr(proposal, "allowed_facts", None) or [])
+        warnings: List[str] = []
+        if context is None:
+            warnings.append("Achievement rejected: only where and when may be added; reword it yourself to change more.")
+        else:
+            known = self._term_keys(sources)
+            numbers = set()
+            for t in sources:
+                numbers |= self.extract_numbers(t)
+            new_numbers = self.extract_numbers(context) - numbers
+            unknown = [w for w in self.TOKEN_RE.findall(context) if not self._keys(w) & known]
+            if new_numbers or unknown:
+                warnings.append("Achievement rejected: not found in your resume or notes: "
+                                + ", ".join([*sorted(new_numbers), *unknown]))
+        ok = not warnings
+        check = ClaimCheck(claim=text, status="SUPPORTED" if ok else "UNSUPPORTED",
+                           explanation=" ".join(warnings) or "Where and when come from your resume and notes.")
+        return ValidationResult(approved=ok, proposal=proposal, verdict="PASS" if ok else "REJECT",
+                                claim_checks=[check], warnings=warnings)
+
     def _validate_summary(self, proposal, evidence_list: List[Evidence],
                           jd_keywords: Optional[List[str]], jd_text: Optional[str] = None) -> ValidationResult:
         """A summary may draw on the whole resume (P1.5): every factual term
@@ -533,6 +563,8 @@ class FactualValidator:
             return self._validate_summary(proposal, evidence_list, jd_keywords, jd_text)
         if getattr(proposal, "kind", "bullet") == "skills":
             return self._validate_skills(proposal, evidence_list)
+        if getattr(proposal, "kind", "bullet") == "achievement":
+            return self._validate_achievement(proposal, evidence_list)
         if getattr(proposal, "kind", "bullet") == "heading":
             return self._validate_heading(proposal, evidence_list)
         if getattr(proposal, "kind", "bullet") == "project":

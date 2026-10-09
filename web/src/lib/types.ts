@@ -122,7 +122,7 @@ export type ProposalState = "failed" | "dropped" | "check" | "unchanged" | "pass
 
 export interface Proposal {
   id: string;
-  kind: "bullet" | "summary" | "skills" | "heading" | "project";
+  kind: "bullet" | "summary" | "skills" | "heading" | "project" | "achievement";
   section: { id: string; kind: "experience" | "project"; label: string } | null;
   target?: string | null; // the bullet's id (P10.13: its card hides with a left-out project)
   original: string;

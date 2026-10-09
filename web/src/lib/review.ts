@@ -151,6 +151,8 @@ export function groupProposals(proposals: Proposal[]): { key: string; label: str
   };
   for (const p of proposals.filter((x) => x.kind === "summary")) find("summary", "Professional summary").items.push(p);
   for (const p of proposals.filter((x) => x.kind === "skills")) find("skills", "Skills").items.push(p);
+  // P11.15: where and when, from the resume and notes only
+  for (const p of proposals.filter((x) => x.kind === "achievement")) find("achievements", "Achievements").items.push(p);
   // A job's project headings first, then its bullets (P10.13).
   const order = { heading: 0, project: 1, bullet: 2 } as Record<string, number>;
   for (const p of proposals.filter((x) => x.kind in order).sort((a, b) => order[a.kind] - order[b.kind])) {
