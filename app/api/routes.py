@@ -280,6 +280,7 @@ def _service(request: Request, session: Optional[Session] = None, model: Optiona
     service = request.app.state.make_service(model)
     if session is not None:
         service.profile_store = session.profile
+        service.ai_cache = session.ai_cache  # P11.14
     return service
 
 

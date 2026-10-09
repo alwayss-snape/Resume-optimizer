@@ -1,3 +1,4 @@
+import copy
 import os
 import re
 from typing import Dict, List, Optional, Tuple
@@ -409,7 +410,15 @@ class JDAnalyzer:
         jd_text = self.clean_text(jd_text)  # HTML, entities, emoji (P8.18); spans point into this cleaned text
         span_from = 0  # where the next requirement's span is searched from, so a repeated line maps to its own place
         lines = self._reflow_lines(jd_text)
-        llm = self._llm_analyze(lines)
+        # P11.14: the same job read the same way within a session (set by the service).
+        cache = getattr(self, "cache", None)
+        key = "\n".join(lines)
+        if cache is not None and key in cache:
+            llm = copy.deepcopy(cache[key])
+        else:
+            llm = self._llm_analyze(lines)
+            if cache is not None and llm is not None:
+                cache[key] = copy.deepcopy(llm)
         llm_lines = {}
         if llm is not None:
             for item in llm.requirement_lines:

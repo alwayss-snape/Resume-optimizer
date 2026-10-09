@@ -1,14 +1,14 @@
 {
   "schema": 1,
-  "source_hash": "f401eb08b3a746ea",
+  "source_hash": "a4bd81cf48a5166c",
   "stats": {
     "files": 207,
     "python_files": 175,
     "app_modules": 69,
     "test_files": 95,
     "classes": 151,
-    "functions": 1399,
-    "lines_of_python": 27759
+    "functions": 1400,
+    "lines_of_python": 27783
   },
   "axes": {
     "x": "location (path)",
@@ -4537,7 +4537,7 @@
         "9 Render",
         "10 Report"
       ],
-      "lines": 1868,
+      "lines": 1872,
       "doc": "",
       "classes": [
         {
@@ -4672,92 +4672,92 @@
             },
             {
               "name": "_page_overflow",
-              "line": 524,
+              "line": 528,
               "doc": "P11.12: the kept projects don't fit the page target even at their"
             },
             {
               "name": "_rename_headings",
-              "line": 540,
+              "line": 544,
               "doc": "Rename each project the user accepted a new heading for; the old"
             },
             {
               "name": "_apply_bullet_order",
-              "line": 569,
+              "line": 573,
               "doc": "Reorder bullets as planned (most relevant first within each"
             },
             {
               "name": "parse_resume",
-              "line": 584,
+              "line": 588,
               "doc": "File -> (raw document, ResumeDocument, evidence). The deterministic"
             },
             {
               "name": "read_file",
-              "line": 591,
+              "line": 595,
               "doc": "The uploaded file as raw blocks, or UnreadableFile with a message"
             },
             {
               "name": "apply_bank",
-              "line": 626,
+              "line": 630,
               "doc": "Read the owner's project notes (P11.1) and merge them into the"
             },
             {
               "name": "normalize_raw",
-              "line": 656,
+              "line": 660,
               "doc": ""
             },
             {
               "name": "_copy_parsed",
-              "line": 683,
+              "line": 687,
               "doc": "Deep copies, so a parse kept in UI session state is never mutated."
             },
             {
               "name": "preview_keyword_match",
-              "line": 688,
+              "line": 692,
               "doc": "Match rate if these proposals were applied (P3.4 \"recalculate\"):"
             },
             {
               "name": "apply_parse_corrections",
-              "line": 724,
+              "line": 728,
               "doc": "Apply the user's fixes from the \"Check parsed resume\" step (P3.5)."
             },
             {
               "name": "analyze_only",
-              "line": 859,
+              "line": 863,
               "doc": ""
             },
             {
               "name": "prepare",
-              "line": 889,
+              "line": 893,
               "doc": "Before drafting (P11.2): read the job, write the role brief, map"
             },
             {
               "name": "draft_project",
-              "line": 914,
+              "line": 918,
               "doc": "P11.11: a project ticked back on Review is written like the rest"
             },
             {
               "name": "apply_answers",
-              "line": 931,
+              "line": 935,
               "doc": "The interview's answers as evidence and bullets of their projects"
             },
             {
               "name": "generate_proposals",
-              "line": 947,
+              "line": 951,
               "doc": "Generate rewrite proposals without applying them, plus questions"
             },
             {
               "name": "incorporate_user_addition",
-              "line": 1035,
+              "line": 1039,
               "doc": "Fold a user-supplied free-text addition (a project, an"
             },
             {
               "name": "tailor_resume",
-              "line": 1114,
+              "line": 1118,
               "doc": "`region` (\"us\", \"uk_eu\", \"india\", \"other\", P10.3) sets the paper"
             },
             {
               "name": "arrange",
-              "line": 1718,
+              "line": 1722,
               "doc": "Re-render the tailored resume as the user arranged it (P8.13\u2013P8.16):"
             }
           ]
@@ -4771,12 +4771,12 @@
         },
         {
           "name": "_hidden_text",
-          "line": 1823,
+          "line": 1827,
           "doc": "Text of the sections the user hid, so coverage counts it as their choice."
         },
         {
           "name": "_merge_usage",
-          "line": 1850,
+          "line": 1854,
           "doc": "Combine two LLMClient.get_usage_summary() dicts into one. When one"
         }
       ]
@@ -9664,7 +9664,7 @@
       "type": "python",
       "layer": "Tests",
       "stages": [],
-      "lines": 130,
+      "lines": 150,
       "doc": "P11.14: the same input keeps the same brief, map and projects within a session.",
       "classes": [
         {
@@ -9730,6 +9730,11 @@
           "name": "test_groq_calls_at_temperature_zero_send_a_fixed_seed",
           "line": 106,
           "doc": ""
+        },
+        {
+          "name": "test_a_failed_map_call_is_asked_again_review_p1114",
+          "line": 133,
+          "doc": "Review finding: a map call that failed once left the session with no map."
         }
       ]
     },

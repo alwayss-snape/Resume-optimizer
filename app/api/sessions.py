@@ -33,12 +33,16 @@ class Session:
     profile: MemoryProfileStore = field(default_factory=MemoryProfileStore)
     # "Start over" arrived while a step was running: reset when it ends.
     reset_pending: bool = False
+    # P11.14: the notes reader, role brief and project map for inputs this
+    # visitor already sent, so going back and drafting again gives the same answer.
+    ai_cache: Dict[str, Any] = field(default_factory=dict)
 
     def reset(self, keep: Optional[Dict[str, Any]] = None) -> None:
         """Delete the session's temp files and forget everything."""
         for key in FILE_KEYS:
             remove_path(self.data.get(key))
         self.data = dict(keep or {})
+        self.ai_cache = {}
 
 
 def remove_path(path: Optional[str]) -> None:

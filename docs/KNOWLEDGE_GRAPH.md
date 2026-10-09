@@ -3,7 +3,7 @@
 > **Auto-generated** by `scripts/update_docs.py graph` (run by the pre-commit hook). Do not edit by hand —
 > change the code, or the `STAGE_MAP` / `LAYERS` tables in the script. Machine-readable twin: `KNOWLEDGE_GRAPH.json`.
 
-**69 app modules · 95 test files · 151 classes · 1399 functions/methods · 27,759 lines of Python** · source hash `f401eb08b3a746ea`
+**69 app modules · 95 test files · 151 classes · 1400 functions/methods · 27,783 lines of Python** · source hash `a4bd81cf48a5166c`
 
 How to read this: every file sits at a point in a 3-D space — **where** it lives (path), **what** it is (layer), and **when** it runs (pipeline stage). Section 2 is that matrix; section 3 zooms into each module.
 
@@ -1445,7 +1445,7 @@ _Local profile of facts the user has confirmed (P3.2)._
 
 ### `app/services/tailor.py`
 
-**Layer:** Services · **Stage:** all · **Lines:** 1868
+**Layer:** Services · **Stage:** all · **Lines:** 1872
 
 - class **`TailorService`** ([app/services/tailor.py:67](../app/services/tailor.py#L67))
   - `__init__()` :68 — `keep_run=False` (the web app): nothing is written to data/runs, so
@@ -1473,27 +1473,27 @@ _Local profile of facts the user has confirmed (P3.2)._
   - `ai_cache()` :494
   - `_cached()` :498 — P11.14: the answer an AI call gave for the same inputs earlier in
   - `_brief()` :514 — The role brief with its project map (P11.3, P11.4), the same for
-  - `_page_overflow()` :524 — P11.12: the kept projects don't fit the page target even at their
-  - `_rename_headings()` :540 — Rename each project the user accepted a new heading for; the old
-  - `_apply_bullet_order()` :569 — Reorder bullets as planned (most relevant first within each
-  - `parse_resume()` :584 — File -> (raw document, ResumeDocument, evidence). The deterministic
-  - `read_file()` :591 — The uploaded file as raw blocks, or UnreadableFile with a message
-  - `apply_bank()` :626 — Read the owner's project notes (P11.1) and merge them into the
-  - `normalize_raw()` :656
-  - `_copy_parsed()` :683 — Deep copies, so a parse kept in UI session state is never mutated.
-  - `preview_keyword_match()` :688 — Match rate if these proposals were applied (P3.4 "recalculate"):
-  - `apply_parse_corrections()` :724 — Apply the user's fixes from the "Check parsed resume" step (P3.5).
-  - `analyze_only()` :859
-  - `prepare()` :889 — Before drafting (P11.2): read the job, write the role brief, map
-  - `draft_project()` :914 — P11.11: a project ticked back on Review is written like the rest
-  - `apply_answers()` :931 — The interview's answers as evidence and bullets of their projects
-  - `generate_proposals()` :947 — Generate rewrite proposals without applying them, plus questions
-  - `incorporate_user_addition()` :1035 — Fold a user-supplied free-text addition (a project, an
-  - `tailor_resume()` :1114 — `region` ("us", "uk_eu", "india", "other", P10.3) sets the paper
-  - `arrange()` :1718 — Re-render the tailored resume as the user arranged it (P8.13–P8.16):
+  - `_page_overflow()` :528 — P11.12: the kept projects don't fit the page target even at their
+  - `_rename_headings()` :544 — Rename each project the user accepted a new heading for; the old
+  - `_apply_bullet_order()` :573 — Reorder bullets as planned (most relevant first within each
+  - `parse_resume()` :588 — File -> (raw document, ResumeDocument, evidence). The deterministic
+  - `read_file()` :595 — The uploaded file as raw blocks, or UnreadableFile with a message
+  - `apply_bank()` :630 — Read the owner's project notes (P11.1) and merge them into the
+  - `normalize_raw()` :660
+  - `_copy_parsed()` :687 — Deep copies, so a parse kept in UI session state is never mutated.
+  - `preview_keyword_match()` :692 — Match rate if these proposals were applied (P3.4 "recalculate"):
+  - `apply_parse_corrections()` :728 — Apply the user's fixes from the "Check parsed resume" step (P3.5).
+  - `analyze_only()` :863
+  - `prepare()` :893 — Before drafting (P11.2): read the job, write the role brief, map
+  - `draft_project()` :918 — P11.11: a project ticked back on Review is written like the rest
+  - `apply_answers()` :935 — The interview's answers as evidence and bullets of their projects
+  - `generate_proposals()` :951 — Generate rewrite proposals without applying them, plus questions
+  - `incorporate_user_addition()` :1039 — Fold a user-supplied free-text addition (a project, an
+  - `tailor_resume()` :1118 — `region` ("us", "uk_eu", "india", "other", P10.3) sets the paper
+  - `arrange()` :1722 — Re-render the tailored resume as the user arranged it (P8.13–P8.16):
 - function **`_progress()`** ([app/services/tailor.py:56](../app/services/tailor.py#L56)) — A progress reporter that can never break a run (P3.6).
-- function **`_hidden_text()`** ([app/services/tailor.py:1823](../app/services/tailor.py#L1823)) — Text of the sections the user hid, so coverage counts it as their choice.
-- function **`_merge_usage()`** ([app/services/tailor.py:1850](../app/services/tailor.py#L1850)) — Combine two LLMClient.get_usage_summary() dicts into one. When one
+- function **`_hidden_text()`** ([app/services/tailor.py:1827](../app/services/tailor.py#L1827)) — Text of the sections the user hid, so coverage counts it as their choice.
+- function **`_merge_usage()`** ([app/services/tailor.py:1854](../app/services/tailor.py#L1854)) — Combine two LLMClient.get_usage_summary() dicts into one. When one
 - **Imports:** `analysis/checklist.py`, `analysis/cv_mode.py`, `analysis/experience.py`, `analysis/gap_questions.py`, `analysis/interview.py`, `analysis/jd_analyzer.py`, `analysis/keyword_match.py`, `analysis/language.py`, `analysis/matcher.py`, `analysis/project_bank.py`, `analysis/project_select.py`, `analysis/region.py`, `analysis/resume_normalizer.py`, `analysis/rewriter.py`, `analysis/role_brief.py`, `analysis/scoring.py`, `analysis/semantic_matcher.py`, `analysis/skills_tailor.py`, `analysis/structure_extractor.py`, `analysis/summary_writer.py`, `analysis/tailor_planner.py`, `domain/evidence.py`, `domain/job.py`, `domain/report.py`, `domain/resume.py`, `domain/resume_document.py`, `domain/tailoring.py`, `ingestion/docx.py`, `ingestion/linkedin.py`, `ingestion/pdf.py`, `ingestion/text.py`, `llm/client.py`, `rendering/docx_patcher.py`, `rendering/html_renderer.py`, `rendering/layout.py`, `rendering/page_fit.py`, `rendering/pdf_converter.py`, `rendering/template_renderer.py`, `services/arrange.py`, `services/profile_store.py`, `services/run_manager.py`, `validation/content_lint.py`, `validation/coverage.py`, `validation/factual.py`, `validation/output.py`, `validation/safety.py`, `validation/structural.py`
 - **Imported by:** `api/main.py`, `cli.py`, `eval/harness.py`, `eval/reference.py`, `scripts/walkthrough_server.py`
 - **Tested by:** `tests/integration/test_arrange.py`, `tests/integration/test_coverage_tailor.py`, `tests/integration/test_end_to_end.py`, `tests/unit/test_academic_cv_p106.py`, `tests/unit/test_api.py`, `tests/unit/test_check_parsed_resume.py`, `tests/unit/test_classic_template_p119.py`, `tests/unit/test_cli.py`, `tests/unit/test_cli_parity.py`, `tests/unit/test_cv_mode_p105.py`, `tests/unit/test_details_p826.py`, `tests/unit/test_federal_p107.py`, `tests/unit/test_gap_questions.py`, `tests/unit/test_global_p825.py`, `tests/unit/test_headline_summary_p116.py`, `tests/unit/test_interview_p112.py`, `tests/unit/test_linkedin_import_p101.py`, `tests/unit/test_new_role.py`, `tests/unit/test_page_overflow_p1112.py`, `tests/unit/test_privacy_p98.py`, `tests/unit/test_profile_store.py`, `tests/unit/test_project_bank_p111.py`, `tests/unit/test_project_rewrites.py`, `tests/unit/test_project_select_p1013.py`, `tests/unit/test_project_writing_p115.py`, `tests/unit/test_reference_eval_p1110.py`, `tests/unit/test_region_p103.py`, `tests/unit/test_review_view.py`, `tests/unit/test_skill_placement_p912.py`, `tests/unit/test_skills_tailor.py`, `tests/unit/test_stability_p1114.py`, `tests/unit/test_summary_writer.py`, `tests/unit/test_tailor_resume_flow.py`, `tests/unit/test_tailor_service_addition.py`, `tests/unit/test_uploads_p822.py`

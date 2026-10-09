@@ -160,6 +160,9 @@ def map_projects(brief: RoleBrief, resume: Resume, notes: Dict[str, List[str]], 
             if comp and quote and len(quote.split()) >= 2 and _norm(quote) in text:
                 if all(x["competency"] != comp for x in out.get(key, [])):
                     out.setdefault(key, []).append({"competency": comp, "quote": quote})
+    # P11.14: links in the brief's order, not the order the model listed them.
+    rank = {c.name: i for i, c in enumerate(brief.competencies)}
+    out = {k: sorted(v, key=lambda x: rank[x["competency"]]) for k, v in out.items()}
     return brief.model_copy(update={"project_evidence": out})
 
 

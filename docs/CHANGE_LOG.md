@@ -10,6 +10,39 @@ Timestamped record of every **major** commit (anything touching `app/`, `scripts
 
 <!-- entries below; newest first -->
 
+<!-- entry:2026-10-09T12:08:22+05:30 -->
+## 2026-10-09 12:08 (+0530) · P11.14: the same input keeps the same brief, map and projects within a session
+
+Kshitij Chaubey · branch `fb_ksh`
+
+**Why / details**
+
+> The role brief, project map and notes reader were already at temperature 0,
+> yet gave different answers on the same input, so going back and drafting
+> again could change which projects were kept. Each visitor's session now
+> keeps the answers of the calls that shape the run (job reading, notes
+> reader, brief, and the map apart from it), in memory only, cleared on Start
+> over. A failed call, an offline fallback or an empty map is never kept, so
+> it is asked again. Map links follow the brief's order; Groq calls at
+> temperature 0 send seed 0.
+>
+> Independent review: 1 fix (a failed map call was cached with a good brief).
+
+**Changed files**
+
+- Analysis: `M` app/analysis/jd_analyzer.py, `M` app/analysis/role_brief.py
+- Docs: `M` docs/ACTION_ITEMS.md, `M` docs/PROJECT_OVERVIEW.md
+- LLM: `M` app/llm/client.py
+- Services: `M` app/services/tailor.py
+- Tests: `A` tests/unit/test_stability_p1114.py
+- Web API: `M` app/api/routes.py, `M` app/api/sessions.py
+
+**Structure delta**
+
+- `app/services/tailor.py`: added `TailorService._brief()`, `TailorService._cached()`, `TailorService.ai_cache()`
+
+---
+
 <!-- entry:2026-10-09T03:21:46+05:30 -->
 ## 2026-10-09 03:21 (+0530) · P11.13: a summary's kind of work must be a phrase the resume uses
 

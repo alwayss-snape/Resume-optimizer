@@ -69,6 +69,7 @@ class TailorService:
         """`keep_run=False` (the web app): nothing is written to data/runs, so
         an upload lives only in the visitor's session files (P9.8)."""
         self.llm_client = llm_client or LLMClient()
+        self._ai_cache: Optional[Dict[str, Any]] = None
         self.docx_parser = DocxParser()
         self.pdf_parser = PdfParser()
         self.resume_normalizer = ResumeNormalizer()
@@ -482,6 +483,47 @@ class TailorService:
             done += 1
         return done
 
+    @property
+    def ai_cache(self) -> Optional[Dict[str, Any]]:
+        """P11.14: per-session answers of the AI calls that shape the run
+        (the job reading, notes reader, role brief and project map); set by
+        the web app for each visitor."""
+        return self._ai_cache
+
+    @ai_cache.setter
+    def ai_cache(self, cache: Optional[Dict[str, Any]]) -> None:
+        self._ai_cache = cache
+        self.jd_analyzer.cache = cache.setdefault("jd", {}) if cache is not None else None
+
+    def _cached(self, kind: str, parts, make: Callable[[], Any], keep: Callable[[Any], bool] = bool):
+        """P11.14: the answer an AI call gave for the same inputs earlier in
+        this session. Only answers `keep` accepts are kept, so a failed call
+        or an offline fallback is tried again next time."""
+        if self.ai_cache is None:
+            return make()
+        import hashlib
+        key = f"{kind}:{getattr(self.llm_client, 'provider', '')}:{getattr(self.llm_client, 'model', '')}:" + hashlib.sha256(
+            "\x1f".join(parts).encode("utf-8")).hexdigest()
+        if key in self.ai_cache:
+            return copy.deepcopy(self.ai_cache[key])
+        value = make()
+        if keep(value):
+            self.ai_cache[key] = copy.deepcopy(value)
+        return value
+
+    def _brief(self, job_desc, resume: Resume, notes: Dict[str, List[str]]):
+        """The role brief with its project map (P11.3, P11.4), the same for
+        the same job, resume and notes within a session (P11.14)."""
+        parts = [job_desc.model_dump_json(), resume.model_dump_json(),
+                 *(f"{k}\x1e" + "\x1e".join(v) for k, v in sorted(notes.items()))]
+        brief = self._cached("brief", parts, lambda: write_brief(job_desc, resume, self.llm_client),
+                             keep=lambda b: getattr(b, "source", "") == "llm")
+        # The map apart from the brief: a failed map call (rate limit, timeout)
+        # returns the brief with no links, and that must be asked again.
+        return self._cached("map", [*parts, brief.model_dump_json()],
+                            lambda: map_projects(brief, resume, notes, self.llm_client),
+                            keep=lambda b: bool(getattr(b, "project_evidence", None)))
+
     @staticmethod
     def _page_overflow(fit, full_doc) -> Optional[Dict[str, Any]]:
         """P11.12: the kept projects don't fit the page target even at their
@@ -598,7 +640,7 @@ class TailorService:
         lines = bank_lines(text)
         if not lines:
             return parsed, [], []
-        bank = read_bank(lines, self.llm_client)
+        bank = self._cached("bank", lines, lambda: read_bank(lines, self.llm_client), keep=lambda b: b is not None)
         if bank is None:
             return parsed, ["Your project notes couldn't be read just now (the AI is needed for that). "
                             "You can paste them under a job on this page instead."], []
@@ -862,8 +904,7 @@ class TailorService:
         job_desc = self.jd_analyzer.analyze(self.safety_guard.sanitize(jd_text))
         step("Working out what the job really needs")
         notes = self._project_notes(evidence_list)
-        brief = map_projects(write_brief(job_desc, resume, self.llm_client), resume, notes, self.llm_client)
-        brief = with_headline(brief, job_desc, resume)
+        brief = with_headline(self._brief(job_desc, resume, notes), job_desc, resume)
         step("Finding what to ask you")
         matches = self.matcher.match(job_desc, evidence_list)
         plan = self.planner.create_plan(resume, job_desc, evidence_list, matches, brief=brief)
@@ -934,8 +975,7 @@ class TailorService:
             job_desc = self.jd_analyzer.analyze(clean_jd_text)
         if brief is None:
             step("Working out what the job really needs")
-            brief = write_brief(job_desc, resume, self.llm_client)  # P11.3
-            brief = map_projects(brief, resume, self._project_notes(evidence_list), self.llm_client)  # P11.4
+            brief = self._brief(job_desc, resume, self._project_notes(evidence_list))  # P11.3, P11.4
             brief = with_headline(brief, job_desc, resume)
         step("Matching your resume to the job's keywords")
         matches = self.matcher.match(job_desc, evidence_list)
@@ -1187,8 +1227,7 @@ class TailorService:
         # plan feeds plan.json and the unsupported-requirements report.
         # The role brief from drafting (P11.3); the CLI, with no drafting step, writes its own.
         if role_brief is None:
-            role_brief = write_brief(job_desc, resume, self.llm_client)
-            role_brief = map_projects(role_brief, resume, self._project_notes(evidence_list), self.llm_client)
+            role_brief = self._brief(job_desc, resume, self._project_notes(evidence_list))
         plan = self.planner.create_plan(resume, job_desc, evidence_list, matches, brief=role_brief)
         if preapproved_proposals is not None:
             # The user already reviewed proposals in the UI. Re-running the

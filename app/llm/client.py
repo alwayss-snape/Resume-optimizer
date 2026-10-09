@@ -375,6 +375,8 @@ class LLMClient:
             "messages": messages,
             "temperature": temperature,
         }
+        if temperature == 0:
+            payload["seed"] = 0  # P11.14: the same input gets the same answer as far as Groq allows
         if json_schema is not None:
             payload["response_format"] = {
                 "type": "json_schema",
